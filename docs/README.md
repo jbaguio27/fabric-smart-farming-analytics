@@ -15,5 +15,6 @@ Documentation includes:
 - Monitoring strategy
 - Cost considerations
 - Architecture decisions
+- Requirements Traceability Matrix
 
 These documents are written as if this project were being delivered for an enterprise customer.
