@@ -1,7 +1,7 @@
 [project]
-name = "fabric-realtime-retail-monitoring"
+name = "fabric-smart-farming-analytics"
 version = "0.1.0"
-description = "Production-grade Microsoft Fabric Real-Time Retail Order Monitoring Platform"
+description = "Production-style Microsoft Fabric Smart Farming Analytics Platform"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
