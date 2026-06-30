@@ -1,0 +1,21 @@
+[project]
+name = "fabric-realtime-retail-monitoring"
+version = "0.1.0"
+description = "Production-grade Microsoft Fabric Real-Time Retail Order Monitoring Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Joseph Baguio" }
+]
+
+dependencies = [
+    "faker",
+    "pandas",
+    "requests",
+    "python-dotenv"
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"

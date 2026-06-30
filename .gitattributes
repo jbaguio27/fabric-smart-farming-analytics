@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+*.py text
+*.sql text
+*.kql text
+*.md text
+*.yml text
+*.yaml text
+*.json text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+
+*.ipynb text

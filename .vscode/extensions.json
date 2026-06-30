@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "GitHub.vscode-pull-request-github",
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker",
+        "yzhang.markdown-all-in-one"
+    ]
+}
