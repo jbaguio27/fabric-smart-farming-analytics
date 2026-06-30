@@ -1,348 +1,65 @@
-# Business KPIs
+# KPI Mapping Matrix
 
 ## Purpose
 
-This document defines the Key Performance Indicators (KPIs) used to measure the operational performance, crop health, equipment reliability, and data platform effectiveness of the Microsoft Fabric Smart Farming Analytics Platform.
+This document maps business KPIs to their underlying data sources, calculation logic, and reporting dashboards.
 
-These KPIs will drive executive reporting, operational dashboards, and continuous improvement initiatives.
-
----
-
-# KPI Categories
-
-The KPIs are organized into the following categories:
-
-- Crop Health
-- Operations
-- Equipment Performance
-- Environmental Stability
-- Data Platform
-- Executive Performance
+The KPI Mapping Matrix provides end-to-end traceability between business objectives and the Microsoft Fabric data platform. It ensures KPI definitions remain consistent across Eventhouse, Lakehouse, Warehouse, and Power BI.
 
 ---
 
-# Crop Health KPIs
+# KPI Mapping Matrix
 
-## KPI-001: Crop Health Score
-
-### Business Objective
-
-Measure the overall health of active crop batches.
-
-### Description
-
-A composite score calculated using environmental stability, sensor readings, and crop-specific thresholds.
-
-### Target
-
-≥ 95%
-
-### Primary Users
-
-- Agricultural Director
-- Executive Leadership
-
----
-
-## KPI-002: Crop Mortality Rate
-
-### Business Objective
-
-Measure the percentage of crops lost before harvest.
-
-### Formula
-
-Crop Losses / Total Crop Batches × 100
-
-### Target
-
-< 5%
-
-### Primary Users
-
-- Agricultural Director
-- Executive Leadership
+| KPI | Source Fact Table(s) | Source Dimension(s) | Calculation Logic | Dashboard(s) |
+|-----|----------------------|---------------------|-------------------|--------------|
+| Crop Health Score | fact_sensor_telemetry | dim_crop_batch, dim_facility_structure | Composite score derived from environmental measurements within acceptable thresholds | Executive Dashboard, Crop Analytics Dashboard |
+| Crop Mortality Rate | fact_sensor_telemetry | dim_crop_batch | (Failed Crop Batches ÷ Total Crop Batches) × 100 | Executive Dashboard, Crop Analytics Dashboard |
+| Growth Cycle Completion Rate | fact_sensor_telemetry | dim_crop_batch | (Harvested Crop Batches ÷ Total Crop Batches) × 100 | Crop Analytics Dashboard |
+| Active Critical Alerts | fact_sensor_telemetry, fact_hardware_metrics | dim_facility_structure | Count of unresolved critical alerts | Operations Dashboard, Regional Operations Dashboard |
+| Average Alert Response Time | fact_sensor_telemetry | dim_facility_structure | Average time between alert generation and acknowledgment | Regional Operations Dashboard |
+| Facility Health Score | fact_sensor_telemetry, fact_hardware_metrics | dim_facility_structure | Composite operational health score | Executive Dashboard, Regional Operations Dashboard |
+| Equipment Availability | fact_hardware_metrics | dim_sensor, dim_facility_structure | (Equipment Uptime ÷ Total Operating Time) × 100 | Executive Dashboard, Regional Operations Dashboard |
+| Pump Failure Rate | fact_hardware_metrics | dim_sensor | (Pump Failures ÷ Total Pump Events) × 100 | Regional Operations Dashboard |
+| Sensor Availability | fact_sensor_telemetry | dim_sensor | (Healthy Sensor Readings ÷ Total Expected Readings) × 100 | Platform Monitoring Dashboard |
+| Environmental Stability Score | fact_sensor_telemetry | dim_crop_batch, dim_facility_structure | Percentage of environmental readings within acceptable operating ranges | Crop Analytics Dashboard |
+| Out-of-Range Sensor Events | fact_sensor_telemetry | dim_sensor, dim_facility_structure | Count of telemetry events flagged as OUT_OF_BOUNDS | Operations Dashboard |
+| End-to-End Processing Latency | fact_sensor_telemetry | None | ingestion_timestamp − event_timestamp | Platform Monitoring Dashboard |
+| Data Quality Score | fact_sensor_telemetry | None | (GOOD Records ÷ Total Records) × 100 | Platform Monitoring Dashboard |
+| Pipeline Success Rate | Pipeline Monitoring Logs | None | (Successful Pipeline Runs ÷ Total Pipeline Runs) × 100 | Platform Monitoring Dashboard |
+| Multi-Facility Operational Score | fact_sensor_telemetry, fact_hardware_metrics | dim_crop_batch, dim_facility_structure | Weighted aggregation of operational KPIs across all facilities | Executive Dashboard |
 
 ---
 
-## KPI-003: Growth Cycle Completion Rate
+# KPI Ownership
 
-### Business Objective
-
-Measure the percentage of crop batches reaching harvest successfully.
-
-### Target
-
-≥ 98%
-
-### Primary Users
-
-- Agricultural Director
+| KPI Category | Business Owner |
+|--------------|----------------|
+| Crop Health | Agricultural Director |
+| Operations | Operations Manager |
+| Equipment | Operations Manager |
+| Environmental | Agricultural Director |
+| Data Platform | Data Engineering Team |
+| Executive | Executive Leadership |
 
 ---
 
-# Operations KPIs
+# Data Refresh Strategy
 
-## KPI-004: Active Critical Alerts
-
-### Business Objective
-
-Track unresolved operational incidents.
-
-### Target
-
-0 Active Critical Alerts
-
-### Primary Users
-
-- Farm Operator
-- Operations Manager
+| KPI Category | Refresh Frequency |
+|--------------|-------------------|
+| Crop Health | Hourly |
+| Operations | Near Real-Time |
+| Equipment | Near Real-Time |
+| Environmental | Near Real-Time |
+| Data Platform | Near Real-Time |
+| Executive | Near Real-Time |
 
 ---
 
-## KPI-005: Average Alert Response Time
+# Implementation Notes
 
-### Business Objective
+The calculation logic defined in this document represents the business definition of each KPI.
 
-Measure how quickly operational teams respond to alerts.
+Implementation details, including SQL queries, KQL queries, Spark transformations, or Power BI DAX measures, will be documented during the implementation phases of the project.
 
-### Target
-
-< 5 minutes
-
-### Primary Users
-
-- Operations Manager
-
----
-
-## KPI-006: Facility Health Score
-
-### Business Objective
-
-Provide an overall operational health score for each facility.
-
-### Components
-
-- Environmental Stability
-- Equipment Availability
-- Active Alerts
-- Sensor Availability
-
-### Target
-
-≥ 95%
-
-### Primary Users
-
-- Operations Manager
-- Executive Leadership
-
----
-
-# Equipment KPIs
-
-## KPI-007: Equipment Availability
-
-### Business Objective
-
-Measure equipment uptime across all facilities.
-
-### Formula
-
-Operating Time / Total Available Time × 100
-
-### Target
-
-≥ 99%
-
-### Primary Users
-
-- Operations Manager
-
----
-
-## KPI-008: Pump Failure Rate
-
-### Business Objective
-
-Track pump failures requiring maintenance.
-
-### Target
-
-< 1%
-
-### Primary Users
-
-- Operations Manager
-
----
-
-## KPI-009: Sensor Availability
-
-### Business Objective
-
-Measure the percentage of operational IoT sensors.
-
-### Target
-
-≥ 99%
-
-### Primary Users
-
-- Data Engineer
-- Operations Manager
-
----
-
-# Environmental KPIs
-
-## KPI-010: Environmental Stability Score
-
-### Business Objective
-
-Measure how consistently environmental conditions remain within acceptable operating ranges.
-
-### Components
-
-- Water pH
-- Temperature
-- Humidity
-- Dissolved Oxygen
-- Electrical Conductivity
-- Light Intensity
-
-### Target
-
-≥ 98%
-
-### Primary Users
-
-- Agricultural Director
-
----
-
-## KPI-011: Out-of-Range Sensor Events
-
-### Business Objective
-
-Monitor abnormal environmental readings.
-
-### Target
-
-Decreasing trend month over month
-
-### Primary Users
-
-- Farm Operator
-- Agricultural Director
-
----
-
-# Data Platform KPIs
-
-## KPI-012: End-to-End Processing Latency
-
-### Business Objective
-
-Measure the time required for telemetry to become visible in dashboards.
-
-### Target
-
-< 15 seconds
-
-### Primary Users
-
-- Data Engineer
-
----
-
-## KPI-013: Data Quality Score
-
-### Business Objective
-
-Measure the percentage of valid telemetry records successfully processed.
-
-### Formula
-
-Valid Records / Total Records × 100
-
-### Target
-
-≥ 99.5%
-
-### Primary Users
-
-- Data Engineer
-
----
-
-## KPI-014: Pipeline Success Rate
-
-### Business Objective
-
-Measure successful pipeline executions.
-
-### Target
-
-≥ 99.9%
-
-### Primary Users
-
-- Data Engineer
-
----
-
-# Executive KPIs
-
-## KPI-015: Multi-Facility Operational Score
-
-### Business Objective
-
-Provide a consolidated operational score across all facilities.
-
-### Components
-
-- Crop Health
-- Facility Health
-- Equipment Availability
-- Active Alerts
-- Data Quality
-
-### Target
-
-≥ 95%
-
-### Primary Users
-
-- Executive Leadership
-
----
-
-## KPI Summary
-
-| KPI | Category | Target | Primary Persona |
-|-----|----------|--------|-----------------|
-| Crop Health Score | Crop Health | ≥95% | Agricultural Director |
-| Crop Mortality Rate | Crop Health | <5% | Agricultural Director |
-| Growth Cycle Completion Rate | Crop Health | ≥98% | Agricultural Director |
-| Active Critical Alerts | Operations | 0 | Farm Operator |
-| Average Alert Response Time | Operations | <5 min | Operations Manager |
-| Facility Health Score | Operations | ≥95% | Operations Manager |
-| Equipment Availability | Equipment | ≥99% | Operations Manager |
-| Pump Failure Rate | Equipment | <1% | Operations Manager |
-| Sensor Availability | Equipment | ≥99% | Data Engineer |
-| Environmental Stability Score | Environment | ≥98% | Agricultural Director |
-| Out-of-Range Sensor Events | Environment | Downward Trend | Farm Operator |
-| End-to-End Processing Latency | Platform | <15 sec | Data Engineer |
-| Data Quality Score | Platform | ≥99.5% | Data Engineer |
-| Pipeline Success Rate | Platform | ≥99.9% | Data Engineer |
-| Multi-Facility Operational Score | Executive | ≥95% | Executive Leadership |
-
----
-
-# KPI Governance
-
-Business KPIs shall be reviewed periodically to ensure they remain aligned with operational goals and business priorities.
-
-Changes to KPI definitions, calculation methods, or target values shall be documented and approved before implementation.
+The Event Catalog and Event Schema documents will define the raw telemetry events that populate the fact and dimension tables referenced in this matrix.

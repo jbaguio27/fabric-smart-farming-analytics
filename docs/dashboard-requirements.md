@@ -1,232 +1,233 @@
-# User Personas
+# Dashboard Requirements
 
 ## Purpose
 
-This document defines the primary users of the Microsoft Fabric Smart Farming Analytics Platform.
+This document defines the reporting and dashboard requirements for the Microsoft Fabric Smart Farming Analytics Platform.
 
-Understanding the responsibilities, goals, and data needs of each user group ensures that dashboards, alerts, security, and reporting are designed to support day-to-day operations and strategic decision-making.
-
----
-
-# Persona 1: Farm Operator
-
-## Overview
-
-Farm Operators are responsible for monitoring the environmental conditions within a single smart farming facility. They respond to equipment failures, environmental anomalies, and operational alerts to ensure healthy crop growth.
-
-## Responsibilities
-
-- Monitor crop-growing conditions
-- Respond to environmental alerts
-- Investigate equipment failures
-- Escalate critical operational issues
-- Perform routine operational checks
-
-## Data Needs
-
-- Live environmental telemetry
-- Equipment status
-- Active alerts
-- Sensor health
-- Facility-specific dashboards
-
-## Success Criteria
-
-- Detect operational issues immediately
-- Minimize crop loss
-- Maintain healthy growing conditions
+The dashboards are designed to support the operational, analytical, and strategic needs of HydroGrow Solutions. Each dashboard is aligned with one or more user personas and provides role-specific insights to support timely and informed decision-making.
 
 ---
 
-# Persona 2: Operations Manager
+# Dashboard Overview
 
-## Overview
-
-Operations Managers oversee multiple farming facilities and ensure consistent operational performance across the organization.
-
-## Responsibilities
-
-- Monitor facility performance
-- Coordinate operational teams
-- Review equipment reliability
-- Investigate recurring operational issues
-- Manage operational efficiency
-
-## Data Needs
-
-- Multi-facility dashboards
-- Active incidents
-- Equipment utilization
-- Environmental trends
-- Facility performance comparisons
-
-## Success Criteria
-
-- Reduce operational downtime
-- Improve equipment reliability
-- Maintain production targets
+| Dashboard | Primary Persona | Refresh Type |
+|------------|-----------------|--------------|
+| Executive Dashboard | Executive Leadership | Near Real-Time |
+| Operations Dashboard | Farm Operator | Near Real-Time |
+| Regional Operations Dashboard | Operations Manager | Near Real-Time |
+| Crop Analytics Dashboard | Agricultural Director | Scheduled |
+| Business Intelligence Dashboard | Data Analyst | Scheduled |
+| Platform Monitoring Dashboard | Data Engineer | Near Real-Time |
 
 ---
 
-# Persona 3: Agricultural Director
+# Dashboard Requirements
 
-## Overview
+## Dashboard 1: Executive Dashboard
 
-The Agricultural Director focuses on crop health, production efficiency, and long-term farming performance.
+### Primary Users
 
-## Responsibilities
+- Executive Leadership
 
-- Monitor crop performance
-- Analyze historical growing conditions
-- Review environmental trends
-- Improve crop yield strategies
-- Evaluate biological risks
+### Business Purpose
 
-## Data Needs
+Provide executives with a high-level view of operational performance across all farming facilities.
 
-- Historical crop telemetry
-- Growth stage analysis
-- Environmental trend reports
-- Crop batch performance
-- Historical anomaly reports
+### Key Metrics
 
-## Success Criteria
+- Total Active Facilities
+- Overall Crop Health Score
+- Active Critical Alerts
+- Crop Yield Performance
+- Equipment Availability
+- Daily Energy Consumption
+- Monthly Production Trends
 
-- Improve crop yield
-- Reduce crop mortality
-- Optimize growing conditions
+### Visualizations
 
----
-
-# Persona 4: Data Engineer
-
-## Overview
-
-The Data Engineer is responsible for building, monitoring, and maintaining the Smart Farming Analytics Platform.
-
-## Responsibilities
-
-- Monitor data pipelines
-- Maintain Eventstream
-- Develop Spark transformations
-- Monitor Eventhouse ingestion
-- Resolve data quality issues
-- Maintain Lakehouse and Warehouse assets
-
-## Data Needs
-
-- Pipeline health metrics
-- Event ingestion metrics
-- Data quality reports
-- Processing latency
-- Failed event logs
-- Infrastructure monitoring
-
-## Success Criteria
-
-- Maintain reliable pipelines
-- Ensure high data quality
-- Meet performance targets
-- Minimize processing failures
+- KPI Cards
+- Geographic Facility Map
+- Trend Lines
+- Alert Summary
+- Facility Comparison Charts
 
 ---
 
-# Persona 5: Data Analyst
+## Dashboard 2: Operations Dashboard
 
-## Overview
+### Primary Users
 
-Data Analysts transform historical telemetry into business insights that support operational improvements and strategic planning.
+- Farm Operator
 
-## Responsibilities
+### Business Purpose
 
-- Build analytical reports
-- Analyze historical trends
-- Investigate operational patterns
-- Support business stakeholders
-- Develop Power BI reports
+Provide real-time monitoring of environmental conditions and equipment status within an assigned facility.
 
-## Data Needs
+### Key Metrics
 
-- Gold-layer datasets
-- Star-schema warehouse
-- Historical telemetry
-- Business KPIs
-- Trend analysis
+- Water pH
+- Dissolved Oxygen
+- Electrical Conductivity
+- Air Temperature
+- Humidity
+- Pump Status
+- Active Alerts
 
-## Success Criteria
+### Visualizations
 
-- Deliver accurate reporting
-- Identify operational trends
-- Support data-driven decisions
+- Live KPI Cards
+- Time-Series Charts
+- Equipment Status Indicators
+- Environmental Trend Graphs
+- Alert Feed
 
 ---
 
-# Persona 6: Executive Leadership
+## Dashboard 3: Regional Operations Dashboard
 
-## Overview
+### Primary Users
 
-Executives require a high-level operational view of the business to monitor organizational performance and support strategic decision-making.
+- Operations Manager
 
-## Responsibilities
+### Business Purpose
 
-- Review company performance
-- Monitor production efficiency
-- Evaluate operational risks
-- Track strategic KPIs
-- Support investment decisions
+Monitor operational performance across multiple facilities and identify emerging operational issues.
 
-## Data Needs
+### Key Metrics
 
-- Executive dashboards
+- Facility Health Score
+- Equipment Downtime
+- Active Alerts by Facility
+- Energy Consumption
+- Sensor Availability
+
+### Visualizations
+
+- Facility Comparison Matrix
+- Heat Maps
+- Trend Charts
+- Alert Distribution
+- Performance Rankings
+
+---
+
+## Dashboard 4: Crop Analytics Dashboard
+
+### Primary Users
+
+- Agricultural Director
+
+### Business Purpose
+
+Analyze historical crop performance and environmental trends to improve farming strategies.
+
+### Key Metrics
+
+- Crop Yield
+- Growth Stage Distribution
+- Historical pH Trends
+- Environmental Stability
+- Crop Mortality Rate
+
+### Visualizations
+
+- Historical Trend Charts
+- Growth Stage Breakdown
+- Correlation Charts
+- Seasonal Comparisons
+
+---
+
+## Dashboard 5: Business Intelligence Dashboard
+
+### Primary Users
+
+- Data Analyst
+
+### Business Purpose
+
+Support analytical reporting and ad hoc business analysis using curated Gold-layer datasets.
+
+### Key Metrics
+
+- Historical Sensor Readings
+- Equipment Performance
+- Data Quality Metrics
 - Production KPIs
-- Facility comparisons
-- Crop yield metrics
-- Operational summaries
+- Environmental Trends
 
-## Success Criteria
+### Visualizations
 
-- Improve business performance
-- Reduce operational costs
-- Increase production efficiency
-- Support company growth
-
----
-
-# Persona Summary
-
-| Persona | Primary Focus | Primary Dashboard |
-|----------|---------------|-------------------|
-| Farm Operator | Real-time facility monitoring | Operations Dashboard |
-| Operations Manager | Multi-facility operations | Regional Operations Dashboard |
-| Agricultural Director | Crop health and yield | Crop Analytics Dashboard |
-| Data Engineer | Platform operations | Monitoring Dashboard |
-| Data Analyst | Historical analytics | Business Intelligence Dashboard |
-| Executive Leadership | Business performance | Executive Dashboard |
+- Interactive Reports
+- Drill-Through Pages
+- Trend Analysis
+- Distribution Charts
+- Custom Filters
 
 ---
 
-# Role-Based Access Mapping
+## Dashboard 6: Platform Monitoring Dashboard
 
-| Persona | Access Level |
-|----------|--------------|
-| Farm Operator | Read access to assigned facility |
-| Operations Manager | Read access to all operational dashboards |
-| Agricultural Director | Read access to historical analytics |
-| Data Engineer | Administrative access to Fabric engineering resources |
-| Data Analyst | Read access to curated analytical datasets |
-| Executive Leadership | Read access to executive dashboards and KPIs |
+### Primary Users
+
+- Data Engineer
+
+### Business Purpose
+
+Monitor the health and performance of the Microsoft Fabric data platform.
+
+### Key Metrics
+
+- Eventstream Throughput
+- Eventhouse Ingestion Rate
+- Pipeline Success Rate
+- Processing Latency
+- Failed Events
+- Data Quality Score
+
+### Visualizations
+
+- Pipeline Health Cards
+- Latency Trends
+- Event Volume Charts
+- Failure Summary
+- Processing Timeline
 
 ---
 
-# Design Considerations
+# Dashboard to Persona Mapping
 
-The user personas influence the design of several project components:
+| Dashboard | Primary Persona | Secondary Persona |
+|------------|-----------------|-------------------|
+| Executive Dashboard | Executive Leadership | Operations Manager |
+| Operations Dashboard | Farm Operator | Operations Manager |
+| Regional Operations Dashboard | Operations Manager | Executive Leadership |
+| Crop Analytics Dashboard | Agricultural Director | Data Analyst |
+| Business Intelligence Dashboard | Data Analyst | Agricultural Director |
+| Platform Monitoring Dashboard | Data Engineer | Platform Administrator |
 
-- Power BI dashboards
-- Microsoft Fabric workspace security
-- Role-Based Access Control (RBAC)
-- Data Activator alert routing
-- Monitoring dashboards
-- Reporting requirements
+---
 
-These personas will be referenced throughout the remaining project epics to ensure the platform is designed around user needs rather than technology alone.
+# Dashboard Refresh Strategy
+
+| Dashboard | Refresh Frequency |
+|------------|-------------------|
+| Executive Dashboard | Near Real-Time |
+| Operations Dashboard | Near Real-Time |
+| Regional Operations Dashboard | Near Real-Time |
+| Crop Analytics Dashboard | Hourly |
+| Business Intelligence Dashboard | Scheduled Batch |
+| Platform Monitoring Dashboard | Near Real-Time |
+
+---
+
+# Design Principles
+
+All dashboards shall:
+
+- Follow a consistent visual design.
+- Display only role-relevant information.
+- Support interactive filtering and drill-through.
+- Clearly distinguish operational and historical metrics.
+- Highlight critical alerts using consistent visual indicators.
+- Minimize unnecessary visual clutter.
