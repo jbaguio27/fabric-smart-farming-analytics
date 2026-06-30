@@ -1,22 +1,54 @@
 # Documentation
 
-This directory contains all project documentation created throughout the development lifecycle.
+This directory contains all project documentation created throughout the development lifecycle of the Microsoft Fabric Smart Farming Analytics Platform.
 
-Documentation includes:
+The documentation is organized to reflect enterprise project standards and serves as the primary reference for business requirements, solution architecture, implementation, and operations.
 
-- Business requirements
-- Functional requirements
-- Non-functional requirements
-- User personas
-- Business KPIs
-- Event catalog
-- Event schemas
-- Security model
-- Monitoring strategy
-- Cost considerations
-- Architecture decisions
+---
+
+## Project Planning
+
+- Business Scenario
+- Functional Requirements
+- Non-Functional Requirements
 - Requirements Traceability Matrix
+- User Personas
 - Dashboard Requirements
-- KPI Mapping
+- Business KPIs
+- KPI Mapping Matrix
+- Event Catalog
+- Event Schema
 
-These documents are written as if this project were being delivered for an enterprise customer.
+---
+
+## Architecture
+
+- Architecture Decisions (ADR)
+- Microsoft Fabric Architecture
+- Streaming Architecture
+- Batch Architecture
+- Medallion Architecture
+
+---
+
+## Security & Governance
+
+- Security Model
+- Data Retention Strategy
+- Cost Considerations
+
+---
+
+## Operations
+
+- Monitoring Strategy
+- Troubleshooting Guide
+- Operations Guide
+
+---
+
+## Additional Documentation
+
+Additional documents will be added throughout the project as new features and capabilities are implemented.
+
+These documents are written to reflect enterprise engineering practices and are intended to support architecture reviews, operational readiness, and portfolio presentation.
