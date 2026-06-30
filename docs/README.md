@@ -16,5 +16,6 @@ Documentation includes:
 - Cost considerations
 - Architecture decisions
 - Requirements Traceability Matrix
+- Dashboard Requirements
 
 These documents are written as if this project were being delivered for an enterprise customer.
