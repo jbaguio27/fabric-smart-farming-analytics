@@ -17,5 +17,6 @@ Documentation includes:
 - Architecture decisions
 - Requirements Traceability Matrix
 - Dashboard Requirements
+- KPI Mapping
 
 These documents are written as if this project were being delivered for an enterprise customer.
