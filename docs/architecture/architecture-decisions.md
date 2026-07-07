@@ -189,7 +189,7 @@ A canonical event model improves:
 
 ---
 
-# AD-004: Eventhouse as the Streaming Landing Zone
+# AD-004: Eventhouse as the Operational Streaming Platform
 
 ## Decision
 
@@ -466,6 +466,110 @@ This separation follows Microsoft's recommended architecture for combining Real-
 
 ---
 
+---
+
+# AD-010: Dual Analytics Architecture
+
+## Decision
+
+Separate operational analytics from historical analytics by implementing two independent reporting paths.
+
+Operational analytics will query streaming telemetry directly from Eventhouse using KQL, while historical reporting will consume curated datasets from the Microsoft Fabric Warehouse.
+
+## Business Driver
+
+HydroGrow Solutions requires two distinct analytical capabilities:
+
+1. Real-time operational visibility for monitoring live environmental conditions and equipment health.
+2. Historical business intelligence for long-term trend analysis, executive reporting, and strategic decision-making.
+
+These workloads have different latency, storage, and query requirements.
+
+## Alternatives Considered
+
+### Single Power BI Dataset
+
+Use one reporting model for both operational and historical analytics.
+
+#### Reason Not Selected
+
+A single reporting model would combine streaming and historical workloads, increasing complexity and potentially impacting performance for low-latency operational monitoring.
+
+### Warehouse Only
+
+Serve all dashboards from the Fabric Warehouse.
+
+#### Reason Not Selected
+
+Warehouse refresh cycles introduce unnecessary latency for operational monitoring and are not designed for second-level streaming analytics.
+
+## Rationale
+
+Separating operational and historical analytics allows each platform component to specialize in its intended purpose.
+
+### Operational Analytics
+
+Powered by:
+
+- Eventhouse
+- KQL Queries
+- Power BI Real-Time Operations Dashboard
+- Data Activator
+
+Primary users:
+
+- Operations Team
+- Farm Managers
+
+Primary objectives:
+
+- Monitor live telemetry
+- Detect equipment failures
+- Visualize current environmental conditions
+- Respond to critical alerts
+
+### Historical Analytics
+
+Powered by:
+
+- OneLake Lakehouse
+- Spark Notebooks
+- Fabric Data Factory
+- Fabric Warehouse
+- Power BI Historical Dashboards
+
+Primary users:
+
+- Executives
+- Business Analysts
+- Operations Managers
+
+Primary objectives:
+
+- Historical trend analysis
+- KPI reporting
+- Facility performance comparison
+- Executive decision support
+
+This separation aligns with Microsoft Fabric best practices by isolating low-latency operational workloads from curated analytical reporting.
+
+## Tradeoffs
+
+### Advantages
+
+- Clear separation of responsibilities
+- Lower latency for operational monitoring
+- Improved reporting performance
+- Independent scaling of operational and analytical workloads
+- Simpler dashboard design for different user groups
+
+### Disadvantages
+
+- Two Power BI semantic models
+- Additional report maintenance
+- Separate data sources for operational and historical reporting
+
+---
 # Summary of Architecture Decisions
 
 | ID | Decision |
@@ -473,12 +577,13 @@ This separation follows Microsoft's recommended architecture for combining Real-
 | AD-001 | Microsoft Fabric as the Unified Analytics Platform |
 | AD-002 | Event-Driven Architecture |
 | AD-003 | Canonical Event Envelope |
-| AD-004 | Eventhouse as the Streaming Landing Zone |
+| AD-004 | Eventhouse as the Operational Streaming Platform |
 | AD-005 | Medallion Architecture |
 | AD-006 | Kimball Dimensional Modeling |
 | AD-007 | Python-Based IoT Event Simulator |
 | AD-008 | Documentation-First Development |
 | AD-009 | Separation of Streaming and Historical Storage |
+| AD-010 | Dual Analytics Architecture |
 
 ---
 

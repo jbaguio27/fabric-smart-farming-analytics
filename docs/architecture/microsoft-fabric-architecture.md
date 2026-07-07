@@ -20,7 +20,12 @@ This document describes the end-to-end Microsoft Fabric solution architecture fo
 
 The architecture enables HydroGrow Solutions to collect, process, store, analyze, and visualize IoT telemetry generated from multiple smart farming facilities.
 
-The solution combines Microsoft Fabric Real-Time Intelligence with OneLake-based analytics to support both operational monitoring and historical business reporting.
+The solution combines Microsoft Fabric Real-Time Intelligence with OneLake analytics to deliver two complementary analytics workloads:
+
+- Real-time operational monitoring through Eventhouse and KQL.
+- Historical business analytics through the OneLake Medallion Architecture and Fabric Warehouse.
+
+This architecture enables low-latency operational visibility while providing governed historical reporting from a unified Microsoft Fabric platform.
 
 ---
 
@@ -50,46 +55,51 @@ The architecture is designed to achieve the following objectives:
 The platform follows a layered architecture consisting of five logical layers.
 
 ```text
-┌────────────────────────────────────────────┐
-│ IoT Devices                               │
-│ Sensors, Pumps, HVAC, LED Controllers     │
-└────────────────────────────────────────────┘
-                    │
-                    ▼
-┌────────────────────────────────────────────┐
-│ Python Event Generator                    │
-│ Faker-based IoT Simulator                 │
-└────────────────────────────────────────────┘
-                    │
-                    ▼
-┌────────────────────────────────────────────┐
-│ Eventstream                               │
-│ Real-Time Ingestion                       │
-└────────────────────────────────────────────┘
-                    │
-                    ▼
-┌────────────────────────────────────────────┐
-│ Eventhouse                                │
-│ KQL Database                              │
-│ Streaming Analytics                       │
-└────────────────────────────────────────────┘
-          │                     │
-          │                     │
-          ▼                     ▼
-Data Activator         OneLake Lakehouse
-Real-Time Alerts       Bronze Layer
-                                │
-                                ▼
-                       Silver Layer
-                                │
-                                ▼
-                        Gold Layer
-                                │
-                                ▼
-                           Warehouse
-                                │
-                                ▼
-                           Power BI
+IoT Devices
+Sensors, Pumps, HVAC, LED Controllers
+        │
+        ▼
+Python Event Generator
+        │
+        ▼
+Eventstream
+        │
+        ▼
+Eventhouse (KQL Database)
+        │
+ ┌──────┴───────────────┐
+ │                      │
+ ▼                      ▼
+Data Activator      Power BI
+Real-Time Alerts    Real-Time Operations Dashboard
+ │
+ │
+ ▼
+Operations Team
+
+──────────────────────────────────────────────
+
+        │
+        ▼
+OneLake Lakehouse
+Bronze
+        │
+        ▼
+Silver
+        │
+        ▼
+Gold
+        │
+        ▼
+Fabric Data Factory
+Incremental Load
+        │
+        ▼
+Warehouse
+        │
+        ▼
+Power BI
+Historical Dashboards
 ```
 
 ---
@@ -126,8 +136,11 @@ Responsibilities include:
 - Event buffering
 - Streaming delivery
 - Integration with Eventhouse
+- Custom Streaming Connector (REST API)
 
 Eventstream is selected because it provides native integration with Microsoft Fabric Real-Time Intelligence.
+
+Telemetry is published by the Python Event Generator using the Eventstream Custom Streaming Connector over HTTPS. This approach minimizes infrastructure while maintaining an enterprise event-driven ingestion pattern.
 
 ---
 
@@ -139,12 +152,14 @@ Responsibilities include:
 
 - High-speed event ingestion
 - Time-series storage
-- KQL analytics
+- Real-time operational analytics
+- Power BI DirectQuery datasets
 - Operational dashboards
 - Real-time investigation
 - Data Activator integration
 
 Eventhouse is not considered the enterprise system of record.
+Eventhouse serves as the operational analytics platform for near real-time monitoring. Power BI connects directly to Eventhouse using KQL queries to power operational dashboards with minimal latency.
 
 Instead, it supports operational analytics requiring low latency.
 
@@ -160,6 +175,8 @@ Responsibilities include:
 - Rule evaluation
 - Critical event detection
 - Operational notifications
+- Workflow automation
+- Critical incident detection
 
 Example alerts include:
 
@@ -239,16 +256,48 @@ Warehouse consumers include:
 
 ## Power BI
 
-Power BI provides executive dashboards.
+Power BI provides both operational and historical analytics through separate reporting models.
 
-Example dashboards include:
+### Real-Time Operations Dashboard
 
-- Facility Health
-- Equipment Monitoring
-- Environmental Conditions
-- Crop Performance
+Data Source:
+
+- Eventhouse (KQL)
+
+Example visualizations:
+
+- Live sensor telemetry
+- Active alerts
+- Equipment status
+- Environmental conditions
+- Events per second
+
+Primary users:
+
+- Operations Team
+- Farm Managers
+
+---
+
+### Historical Analytics Dashboards
+
+Data Source:
+
+- Fabric Warehouse
+
+Example dashboards:
+
+- Facility Performance
+- Crop Yield Trends
+- Equipment Reliability
 - Maintenance Performance
 - Executive KPI Dashboard
+
+Primary users:
+
+- Executives
+- Business Analysts
+- Operations Managers
 
 ---
 
@@ -259,13 +308,14 @@ The complete data flow consists of the following steps.
 1. Python simulator generates IoT telemetry.
 2. Events are published into Eventstream.
 3. Eventstream delivers telemetry into Eventhouse.
-4. Eventhouse enables real-time querying using KQL.
-5. Data Activator monitors Eventhouse for alert conditions.
-6. Streaming data is persisted into OneLake Bronze.
-7. Spark transformations create Silver datasets.
-8. Business transformations produce Gold datasets.
-9. Gold datasets populate the Warehouse.
-10. Power BI dashboards consume Warehouse models.
+4. Eventhouse stores streaming telemetry.
+5. KQL queries power the Real-Time Operations Dashboard.
+6. Data Activator evaluates streaming events for alert conditions.
+7. Eventhouse persists telemetry into OneLake Bronze.
+8. Spark Notebooks transform Bronze into Silver.
+9. Spark Notebooks transform Silver into Gold.
+10. Fabric Data Factory incrementally loads Gold into the Warehouse.
+11. Historical Power BI dashboards consume Warehouse models.
 
 ---
 
@@ -279,11 +329,12 @@ The complete data flow consists of the following steps.
 | Data Activator | Event-driven alerts |
 | OneLake | Unified enterprise storage |
 | Lakehouse | Historical analytics |
-| Spark | Data transformations |
+| Spark Notebooks | Data transformations |
 | Warehouse | SQL analytics |
 | Power BI | Dashboards and reporting |
 | Deployment Pipelines | Environment promotion |
 | Git Integration | Source control |
+| Fabric Data Factory | Pipeline orchestration and Warehouse loading |
 
 ---
 
@@ -318,6 +369,14 @@ Historical datasets follow Medallion Architecture and Kimball dimensional modeli
 ## Cloud-Native Design
 
 The platform uses managed Microsoft Fabric services instead of self-managed infrastructure.
+
+--
+
+## Dual Analytics Architecture
+
+Operational analytics and historical analytics are intentionally separated.
+
+Eventhouse provides low-latency operational visibility, while the Lakehouse and Warehouse provide curated historical reporting and business intelligence.
 
 ---
 
@@ -384,10 +443,10 @@ Detailed financial analysis is documented in the Cost Considerations document.
 
 # Architecture Summary
 
-The Microsoft Fabric Smart Farming Analytics Platform combines Real-Time Intelligence and OneLake analytics into a unified enterprise solution.
+The Microsoft Fabric Smart Farming Analytics Platform delivers two complementary analytics capabilities.
 
-Operational telemetry is processed through Eventstream and Eventhouse for low-latency monitoring and alerting.
+Operational telemetry is processed through Eventstream and Eventhouse to enable near real-time monitoring, KQL analytics, operational dashboards, and automated alerting.
 
-Historical datasets are curated through the Medallion Architecture before being modeled into a Kimball star schema for business intelligence.
+Historical telemetry is persisted within the OneLake Lakehouse, refined through the Medallion Architecture using Spark Notebooks, and incrementally loaded into the Fabric Warehouse for enterprise reporting.
 
-This architecture provides a scalable, governed, and maintainable foundation for real-time monitoring and historical analytics while remaining aligned with Microsoft Fabric best practices.
+By separating operational and analytical workloads, the platform provides low-latency monitoring while maintaining a governed, scalable, and maintainable analytics foundation aligned with Microsoft Fabric best practices.
