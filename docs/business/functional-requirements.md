@@ -102,20 +102,24 @@ The platform shall validate every incoming telemetry event before downstream sto
 
 ### Description
 
-The platform shall provide near real-time operational analytics using Eventhouse and KQL Database.
+The platform shall provide near real-time operational analytics by querying streaming telemetry stored in Eventhouse using KQL.
+
+The platform shall expose this operational data through a Power BI Real-Time Dashboard for monitoring live farming operations.
 
 ### Operational Views
 
-- Facility Health
+- Live Sensor Telemetry
 - Equipment Health
 - Environmental Conditions
 - Active Alerts
+- Facility Health
 
 ### Acceptance Criteria
 
 - Live dashboards update automatically.
-- KQL queries support operational investigations.
 - Operational metrics are available within the target latency.
+- KQL queries support operational investigations.
+- Dashboard displays current telemetry without requiring data persistence to the Lakehouse.
 
 ---
 
@@ -190,21 +194,25 @@ The platform shall organize historical telemetry using a Kimball dimensional mod
 
 ### Description
 
-The platform shall provide interactive dashboards for operational and executive users.
+The platform shall provide interactive dashboards for operational monitoring and historical business analytics.
+
+Operational dashboards shall consume streaming data from Eventhouse, while historical dashboards shall consume curated analytical datasets from the SQL Warehouse.
 
 ### Dashboards
 
-- Executive Dashboard
-- Facility Operations Dashboard
+- Real-Time Operations Dashboard
+- Executive KPI Dashboard
+- Facility Performance Dashboard
 - Crop Health Dashboard
-- Equipment Health Dashboard
+- Equipment Performance Dashboard
 - Historical Analytics Dashboard
 
 ### Acceptance Criteria
 
 - Interactive filtering is supported.
-- Dashboards display current and historical data.
-- Reports are accessible based on user roles.
+- Real-time dashboards display streaming telemetry from Eventhouse.
+- Historical dashboards display curated data from the SQL Warehouse.
+- Reports are accesible according to assigned user roles.
 
 ---
 

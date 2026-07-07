@@ -65,9 +65,8 @@ Python Smart Farm Simulator
 
 - Eventstream
 - Eventhouse
-- Lakehouse
-- Power BI
 - Data Activator
+- OneLake Lakehouse
 
 ### Frequency
 
@@ -94,7 +93,7 @@ Python Smart Farm Simulator
 - Eventstream
 - Eventhouse
 - Data Activator
-- Power BI
+- OneLake Lakehouse
 
 ### Frequency
 
@@ -118,9 +117,9 @@ Python Smart Farm Simulator
 
 ### Consumers
 
-- Lakehouse
-- Warehouse
-- Power BI
+- Eventstream
+- Eventhouse
+- OneLake Lakehouse
 
 ### Frequency
 
@@ -144,9 +143,9 @@ Python Smart Farm Simulator
 
 ### Consumers
 
+- Eventstream
 - Eventhouse
-- Lakehouse
-- Power BI
+- OneLake Lakehouse
 
 ### Frequency
 
@@ -170,8 +169,9 @@ Python Smart Farm Simulator
 
 ### Consumers
 
+- Eventstream
 - Eventhouse
-- Monitoring Dashboard
+- Platform Monitoring Dashboard
 
 ### Frequency
 
@@ -192,9 +192,11 @@ Represents a critical environmental or equipment condition requiring immediate a
 ### Producer
 
 Microsoft Fabric Data Activator
+(Eventhouse rule evaluation)
 
 ### Consumers
 
+- Real-Time Operations Dashboard
 - Farm Operators
 - Operations Managers
 - Microsoft Teams
@@ -209,27 +211,36 @@ Event-driven.
 # Event Lifecycle
 
 ```text
-Python Simulator
-        │
-        ▼
-Eventstream
-        │
-        ▼
-Eventhouse (KQL)
-        │
-        ├────────► Data Activator
-        │
-        ▼
-OneLake
-        │
-        ▼
-Lakehouse
-        │
-        ▼
-Warehouse
-        │
-        ▼
-Power BI
+Python Smart Farm Simulator
+            │
+            ▼
+      Eventstream
+            │
+            ▼
+     Eventhouse (KQL)
+       │          │
+       │          │
+       ▼          ▼
+Data Activator   Real-Time
+                 Operations Dashboard
+       │
+       ▼
+ OneLake Lakehouse
+       │
+       ▼
+ Spark Notebooks
+       │
+       ▼
+ Gold Layer
+       │
+       ▼
+Fabric Data Factory
+       │
+       ▼
+ Fabric Warehouse
+       │
+       ▼
+Power BI Dashboards
 ```
 
 ---
@@ -253,7 +264,7 @@ Event types follow the convention:
 
 ```
 
-<domain>.<entity>
+<domain>.<entity>[.<action>]
 
 ```
 
@@ -274,10 +285,12 @@ The Event Catalog is the foundation for:
 
 - Eventstream routing
 - Eventhouse ingestion
-- Lakehouse transformations
-- Data validation
-- Monitoring
-- Power BI semantic modeling
+- Data Activator rule evaluation
+- OneLake Lakehouse persistence
+- Spark Notebook transformations
+- Fabric Data Factory pipelines
+- Fabric Warehouse loading
+- Power BI semantic models
 
 Any new event type introduced during future development must first be documented in this catalog before implementation.
 
@@ -293,3 +306,16 @@ Any new event type introduced during future development must first be documented
 | maintenance.activity | Business Event | Low |
 | platform.system | System Event | Low |
 | alert.critical | Alert Event | Low |
+
+# Architecture Alignment
+
+The Smart Farming Analytics Platform processes every event using the following architecture:
+
+1. Python Smart Farm Simulator publishes events.
+2. Eventstream ingests and routes streaming telemetry.
+3. Eventhouse stores streaming data for operational analytics.
+4. Data Activator evaluates streaming events for alert conditions.
+5. Eventhouse continuously persists telemetry into the OneLake Lakehouse Bronze layer.
+6. Spark Notebooks transform historical data through the Bronze, Silver, and Gold layers.
+7. Fabric Data Factory loads Gold datasets into the Fabric Warehouse.
+8. Power BI consumes curated historical datasets for analytical reporting.

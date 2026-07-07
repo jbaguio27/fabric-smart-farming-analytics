@@ -4,7 +4,7 @@
 
 This document defines the Key Performance Indicators (KPIs) used to measure the operational performance, crop health, equipment reliability, and data platform effectiveness of the Microsoft Fabric Smart Farming Analytics Platform.
 
-These KPIs will drive executive reporting, operational dashboards, and continuous improvement initiatives.
+These KPIs drive the Real-Time Operations Dashboard, Farm Performance Dashboard, Executive Dashboard, and Platform Monitoring Dashboard. They provide a consistent business definition for operational monitoring, historical analytics, and strategic decision-making across the Microsoft Fabric platform.
 
 ---
 
@@ -17,7 +17,7 @@ The KPIs are organized into the following categories:
 - Equipment Performance
 - Environmental Stability
 - Data Platform
-- Executive Performance
+- Enterprise Performance
 
 ---
 
@@ -98,6 +98,10 @@ Track unresolved operational incidents.
 - Farm Operator
 - Operations Manager
 
+### Dashboard
+
+- Real-Time Operations Dashboard
+
 ---
 
 ## KPI-005: Average Alert Response Time
@@ -113,6 +117,10 @@ Measure how quickly operational teams respond to alerts.
 ### Primary Users
 
 - Operations Manager
+
+### Dashboard
+
+- Farm Performance Dashboard
 
 ---
 
@@ -138,6 +146,11 @@ Provide an overall operational health score for each facility.
 - Operations Manager
 - Executive Leadership
 
+### Dashboard
+
+- Real-Time Operations Dashboard
+- Executive Dashboard
+
 ---
 
 # Equipment KPIs
@@ -159,6 +172,11 @@ Operating Time / Total Available Time × 100
 ### Primary Users
 
 - Operations Manager
+
+### Dashboard
+
+- Farm Performance Dashboard
+- Executive Dashboard
 
 ---
 
@@ -193,6 +211,11 @@ Measure the percentage of operational IoT sensors.
 - Data Engineer
 - Operations Manager
 
+### Dashboard
+
+- Real-Time Operations Dashboard
+- Platform Monitoring Dashboard
+
 ---
 
 # Environmental KPIs
@@ -220,6 +243,10 @@ Measure how consistently environmental conditions remain within acceptable opera
 
 - Agricultural Director
 
+### Dashboard
+
+- Farm Performance Dashboard
+
 ---
 
 ## KPI-011: Out-of-Range Sensor Events
@@ -237,6 +264,10 @@ Decreasing trend month over month
 - Farm Operator
 - Agricultural Director
 
+### Dashboard
+
+- Real-Time Operations Dashboard
+
 ---
 
 # Data Platform KPIs
@@ -245,7 +276,9 @@ Decreasing trend month over month
 
 ### Business Objective
 
-Measure the time required for telemetry to become visible in dashboards.
+### Description
+
+Measure the elapsed time between event generation and availability in the Real-Time Operations Dashboard.
 
 ### Target
 
@@ -254,6 +287,10 @@ Measure the time required for telemetry to become visible in dashboards.
 ### Primary Users
 
 - Data Engineer
+
+### Dashboard
+
+- Platform Monitoring Dashboard
 
 ---
 
@@ -275,13 +312,17 @@ Valid Records / Total Records × 100
 
 - Data Engineer
 
+### Dashboard
+
+- Platform Monitoring Dashboard
+
 ---
 
 ## KPI-014: Pipeline Success Rate
 
 ### Business Objective
 
-Measure successful pipeline executions.
+Measure successful execution of Spark Notebook transformations and Fabric Data Factory pipelines.
 
 ### Target
 
@@ -290,6 +331,10 @@ Measure successful pipeline executions.
 ### Primary Users
 
 - Data Engineer
+
+### Dashboard
+
+- Platform Monitoring Dashboard
 
 ---
 
@@ -317,32 +362,36 @@ Provide a consolidated operational score across all facilities.
 
 - Executive Leadership
 
+### Dashboard
+
+- Executive Dashboard
+
 ---
 
 ## KPI Summary
 
-| KPI | Category | Target | Primary Persona |
-|-----|----------|--------|-----------------|
-| Crop Health Score | Crop Health | ≥95% | Agricultural Director |
-| Crop Mortality Rate | Crop Health | <5% | Agricultural Director |
-| Growth Cycle Completion Rate | Crop Health | ≥98% | Agricultural Director |
-| Active Critical Alerts | Operations | 0 | Farm Operator |
-| Average Alert Response Time | Operations | <5 min | Operations Manager |
-| Facility Health Score | Operations | ≥95% | Operations Manager |
-| Equipment Availability | Equipment | ≥99% | Operations Manager |
-| Pump Failure Rate | Equipment | <1% | Operations Manager |
-| Sensor Availability | Equipment | ≥99% | Data Engineer |
-| Environmental Stability Score | Environment | ≥98% | Agricultural Director |
-| Out-of-Range Sensor Events | Environment | Downward Trend | Farm Operator |
-| End-to-End Processing Latency | Platform | <15 sec | Data Engineer |
-| Data Quality Score | Platform | ≥99.5% | Data Engineer |
-| Pipeline Success Rate | Platform | ≥99.9% | Data Engineer |
-| Multi-Facility Operational Score | Executive | ≥95% | Executive Leadership |
+| KPI | Category | Target | Primary Dashboard | Primary Persona |
+|-----|----------|--------|-------------------|-----------------|
+| Crop Health Score | Crop Health | ≥95% | Farm Performance Dashboard | Agricultural Director |
+| Crop Mortality Rate | Crop Health | <5% | Farm Performance Dashboard | Agricultural Director |
+| Growth Cycle Completion Rate | Crop Health | ≥98% | Farm Performance Dashboard | Agricultural Director |
+| Active Critical Alerts | Operations | 0 | Real-Time Operations Dashboard | Farm Operator |
+| Average Alert Response Time | Operations | <5 min | Farm Performance Dashboard | Operations Manager |
+| Facility Health Score | Operations | ≥95% | Real-Time Operations Dashboard | Operations Manager |
+| Equipment Availability | Equipment | ≥99% | Farm Performance Dashboard | Operations Manager |
+| Pump Failure Rate | Equipment | <1% | Farm Performance Dashboard | Operations Manager |
+| Sensor Availability | Equipment | ≥99% | Platform Monitoring Dashboard | Data Engineer |
+| Environmental Stability Score | Environment | ≥98% | Farm Performance Dashboard | Agricultural Director |
+| Out-of-Range Sensor Events | Environment | Downward Trend | Real-Time Operations Dashboard | Farm Operator |
+| End-to-End Processing Latency | Platform | <15 sec | Platform Monitoring Dashboard | Data Engineer |
+| Data Quality Score | Platform | ≥99.5% | Platform Monitoring Dashboard | Data Engineer |
+| Pipeline Success Rate | Platform | ≥99.9% | Platform Monitoring Dashboard | Data Engineer |
+| Multi-Facility Operational Score | Executive | ≥95% | Executive Dashboard | Executive Leadership |
 
 ---
 
 # KPI Governance
 
-Business KPIs shall be reviewed periodically to ensure they remain aligned with operational goals and business priorities.
+Business KPIs shall be reviewed periodically to ensure they remain aligned with operational goals, reporting requirements, and business priorities.
 
-Changes to KPI definitions, calculation methods, or target values shall be documented and approved before implementation.
+KPI definitions shall remain consistent across Eventhouse, the Fabric Warehouse, and Power BI semantic models. Any changes to KPI definitions, calculation methods, or target values shall be documented, reviewed, and approved before implementation.

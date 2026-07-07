@@ -52,55 +52,17 @@ The architecture is designed to achieve the following objectives:
 
 # High-Level Architecture
 
-The platform follows a layered architecture consisting of five logical layers.
+The Smart Farming Analytics Platform follows a dual analytics architecture that separates operational and historical workloads while sharing a common streaming ingestion layer.
 
-```text
-IoT Devices
-Sensors, Pumps, HVAC, LED Controllers
-        │
-        ▼
-Python Event Generator
-        │
-        ▼
-Eventstream
-        │
-        ▼
-Eventhouse (KQL Database)
-        │
- ┌──────┴───────────────┐
- │                      │
- ▼                      ▼
-Data Activator      Power BI
-Real-Time Alerts    Real-Time Operations Dashboard
- │
- │
- ▼
-Operations Team
+The platform consists of the following logical layers:
 
-──────────────────────────────────────────────
+1. IoT Event Generation
+2. Real-Time Ingestion
+3. Operational Analytics
+4. Historical Analytics
+5. Business Intelligence
 
-        │
-        ▼
-OneLake Lakehouse
-Bronze
-        │
-        ▼
-Silver
-        │
-        ▼
-Gold
-        │
-        ▼
-Fabric Data Factory
-Incremental Load
-        │
-        ▼
-Warehouse
-        │
-        ▼
-Power BI
-Historical Dashboards
-```
+Figure 1 illustrates the complete end-to-end architecture.
 
 ---
 
@@ -158,10 +120,11 @@ Responsibilities include:
 - Real-time investigation
 - Data Activator integration
 
-Eventhouse is not considered the enterprise system of record.
-Eventhouse serves as the operational analytics platform for near real-time monitoring. Power BI connects directly to Eventhouse using KQL queries to power operational dashboards with minimal latency.
+Eventhouse is the operational analytics platform for near real-time workloads.
 
-Instead, it supports operational analytics requiring low latency.
+It stores streaming telemetry, supports KQL-based investigations, powers operational dashboards, and provides the event source monitored by Data Activator.
+
+Eventhouse is intentionally not the enterprise system of record. Historical data is continuously persisted into the OneLake Lakehouse for long-term storage and analytical processing.
 
 ---
 
@@ -193,6 +156,8 @@ Example alerts include:
 
 OneLake stores historical analytical datasets following the Medallion Architecture.
 
+Historical telemetry is continuously persisted from Eventhouse into the Bronze layer before progressing through Silver and Gold transformations.
+
 ### Bronze
 
 Stores immutable raw telemetry.
@@ -200,6 +165,7 @@ Stores immutable raw telemetry.
 Characteristics:
 
 - Append-only
+- Schema preservation
 - Minimal transformations
 - Historical replay
 - Full audit trail
@@ -215,8 +181,9 @@ Processing includes:
 - Data cleansing
 - Schema validation
 - Deduplication
+- Standardized measurement units
 - Data enrichment
-- Standardized units
+- Business rule validation
 
 ---
 
@@ -229,6 +196,7 @@ Contains:
 - Fact tables
 - Dimension tables
 - Aggregated metrics
+- Power BI semantic model source
 
 The Gold layer follows Kimball dimensional modeling.
 
@@ -242,6 +210,7 @@ Primary responsibilities:
 
 - Business reporting
 - Executive analytics
+- SQL analytics
 - Dimensional querying
 - Power BI semantic models
 
@@ -279,7 +248,7 @@ Primary users:
 
 ---
 
-### Historical Analytics Dashboards
+### Historical Analytics & Executive Dashboards
 
 Data Source:
 
@@ -325,16 +294,16 @@ The complete data flow consists of the following steps.
 |----------|---------|
 | Eventstream | Streaming ingestion |
 | Eventhouse | Operational streaming analytics |
-| KQL Database | Real-time querying |
-| Data Activator | Event-driven alerts |
-| OneLake | Unified enterprise storage |
-| Lakehouse | Historical analytics |
+| KQL Database | Streaming queries |
+| Data Activator | Event-driven alerting |
+| OneLake | Unified storage |
+| Lakehouse | Historical data platform |
 | Spark Notebooks | Data transformations |
-| Warehouse | SQL analytics |
-| Power BI | Dashboards and reporting |
-| Deployment Pipelines | Environment promotion |
+| Fabric Data Factory | Gold to Warehouse orchestration |
+| Fabric Warehouse | Enterprise SQL analytics |
+| Power BI | Operational and historical dashboards |
+| Deployment Pipelines | CI/CD |
 | Git Integration | Source control |
-| Fabric Data Factory | Pipeline orchestration and Warehouse loading |
 
 ---
 
@@ -370,13 +339,17 @@ Historical datasets follow Medallion Architecture and Kimball dimensional modeli
 
 The platform uses managed Microsoft Fabric services instead of self-managed infrastructure.
 
---
+---
 
 ## Dual Analytics Architecture
 
 Operational analytics and historical analytics are intentionally separated.
 
 Eventhouse provides low-latency operational visibility, while the Lakehouse and Warehouse provide curated historical reporting and business intelligence.
+
+## Single Source of Truth
+
+Operational analytics and historical analytics consume data from dedicated platforms, ensuring each workload is optimized while maintaining consistent business definitions across reporting layers.
 
 ---
 
@@ -406,6 +379,7 @@ Platform health is monitored using:
 - Eventstream metrics
 - Eventhouse metrics
 - Data Activator execution logs
+- Power BI refresh monitoring
 
 Detailed operational monitoring is documented in the Monitoring Strategy.
 
@@ -431,6 +405,7 @@ The architecture minimizes operational overhead by using managed Microsoft Fabri
 
 Primary cost drivers include:
 
+- Fabric Capacity (F SKU)
 - Real-Time Intelligence capacity
 - OneLake storage
 - Spark workloads
@@ -449,4 +424,4 @@ Operational telemetry is processed through Eventstream and Eventhouse to enable 
 
 Historical telemetry is persisted within the OneLake Lakehouse, refined through the Medallion Architecture using Spark Notebooks, and incrementally loaded into the Fabric Warehouse for enterprise reporting.
 
-By separating operational and analytical workloads, the platform provides low-latency monitoring while maintaining a governed, scalable, and maintainable analytics foundation aligned with Microsoft Fabric best practices.
+This separation allows operational workloads to prioritize low-latency monitoring while historical workloads focus on governed reporting, trend analysis, and executive business intelligence without competing for the same analytical resources.

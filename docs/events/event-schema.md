@@ -39,7 +39,7 @@ This document supports the implementation of:
 - Eventhouse (KQL Database)
 - OneLake
 - Lakehouse
-- Spark Transformations
+- Spark Notebooks
 - Warehouse
 - Power BI
 - Data Activator
@@ -98,10 +98,11 @@ This document should be read together with the following project documentation:
 - Business KPIs
 - KPI Mapping Matrix
 - Event Catalog
-- Architecture Decisions (Future)
-- Microsoft Fabric Architecture (Future)
-- Medallion Architecture (Future)
-- Security Model (Future)
+- Architecture Decisions
+- Microsoft Fabric Architecture
+- Medallion Architecture
+- Streaming Architecture
+- Security Model
 
 ---
 
@@ -382,9 +383,10 @@ Python Smart Farm Simulator
 - Microsoft Fabric Eventstream
 - Eventhouse (KQL Database)
 - Data Activator
-- Lakehouse Bronze Layer
-- Spark Transformations
-- Warehouse
+- OneLake Lakehouse
+- Spark Notebooks
+- Fabric Data Factory
+- Fabric Warehouse
 - Power BI
 
 ### Expected Frequency
@@ -514,10 +516,10 @@ Python Smart Farm Simulator
 
 - Microsoft Fabric Eventstream
 - Eventhouse (KQL Database)
-- Data Activator
-- Lakehouse Bronze Layer
-- Spark Transformations
-- Warehouse
+- OneLake Lakehouse
+- Spark Notebooks
+- Fabric Data Factory
+- Fabric Warehouse
 - Power BI
 
 ### Expected Frequency
@@ -628,9 +630,10 @@ Python Smart Farm Simulator
 
 - Microsoft Fabric Eventstream
 - Eventhouse (KQL Database)
-- Lakehouse Bronze Layer
-- Spark Transformations
-- Warehouse
+- OneLake Lakehouse
+- Spark Notebooks
+- Fabric Data Factory
+- Fabric Warehouse
 - Power BI
 
 ### Expected Frequency
@@ -739,10 +742,12 @@ Python Smart Farm Simulator
 
 ### Consumers
 
-- Eventstream
-- Eventhouse
-- Lakehouse
-- Warehouse
+- Microsoft Fabric Eventstream
+- Eventhouse (KQL Database)
+- OneLake Lakehouse
+- Spark Notebooks
+- Fabric Data Factory
+- Fabric Warehouse
 - Power BI
 
 ### Expected Frequency
@@ -849,9 +854,9 @@ Python Smart Farm Simulator
 
 ### Consumers
 
-- Eventhouse
-- Platform Monitoring
-- Operations Dashboard
+- Microsoft Fabric Eventstream
+- Eventhouse (KQL Database)
+- Platform Monitoring Dashboard
 
 ### Expected Frequency
 
@@ -952,10 +957,11 @@ Microsoft Fabric Data Activator
 
 ### Consumers
 
-- Operations Team
+- Real-Time Operations Dashboard
+- Farm Operators
+- Operations Managers
 - Microsoft Teams
 - Email Notifications
-- Power BI
 - Eventhouse
 
 ### Expected Frequency
@@ -1126,6 +1132,8 @@ The following tables store streaming events inside Microsoft Fabric Eventhouse.
 | platform.system | platform_system |
 | alert.critical | alert_critical |
 
+Eventhouse serves as the operational streaming store for near real-time analytics and Data Activator rule evaluation. It is not the system of record for historical analytics. Historical persistence is achieved by continuously writing streaming data into the OneLake Lakehouse Bronze layer.
+
 ---
 
 # Lakehouse Bronze Mapping
@@ -1149,6 +1157,7 @@ Characteristics:
 - Append-only.
 - Full lineage preserved.
 - Supports replay and auditing.
+- Data persisted continuously from Eventhouse.
 
 ---
 
@@ -1166,7 +1175,7 @@ The Silver layer applies data cleansing, validation, standardization, and enrich
 | bronze_alert_critical | silver_alert_critical |
 | storage_format | delta_parquet |
 
-Typical Silver transformations include:
+Typical Spark Notebook transformations include:
 
 - Duplicate removal.
 - Null handling.
@@ -1207,6 +1216,8 @@ The Gold layer provides business-ready datasets for:
 - Forecasting
 - SQL analytics
 
+Gold datasets are loaded into the Fabric Warehouse using Fabric Data Factory pipelines for SQL analytics and enterprise reporting.
+
 ---
 
 # End-to-End Event Flow
@@ -1215,56 +1226,70 @@ Every streaming event follows the same processing path through Microsoft Fabric.
 
 ```text
 Python Smart Farm Simulator
-        │
-        ▼
+            │
+            ▼
 Microsoft Fabric Eventstream
-        │
-        ▼
+            │
+            ▼
 Eventhouse (KQL Database)
-        │
-        ├────────► Data Activator
-        │
-        ▼
-OneLake
-        │
-        ▼
-Bronze Delta Tables
-        │
-        ▼
-Silver Delta Tables
-        │
-        ▼
-Gold Star Schema
-        │
-        ▼
-Warehouse
-        │
-        ▼
-Power BI Dashboards
+      │              │
+      │              ▼
+      │      Data Activator
+      │              │
+      │              ▼
+      │      Real-Time Operations Dashboard
+      ▼
+OneLake Lakehouse (Bronze)
+            │
+            ▼
+Spark Notebooks
+            │
+            ▼
+Silver Layer
+            │
+            ▼
+Gold Layer
+            │
+            ▼
+Fabric Data Factory
+            │
+            ▼
+Fabric Warehouse
+            │
+            ▼
+Power BI Executive & Historical Dashboards
 ```
 
 ---
 
 ```mermaid
 flowchart LR
+
 A[Python Smart Farm Simulator]
-B[Fabric Eventstream]
+B[Eventstream]
 C[Eventhouse]
-D[OneLake Bronze]
-E[OneLake Silver]
-F[OneLake Gold]
-G[Warehouse]
-H[Power BI]
-I[Data Activator]
+D[Data Activator]
+E[Real-Time Operations Dashboard]
+F[OneLake Bronze]
+G[Spark Notebooks]
+H[Silver]
+I[Gold]
+J[Fabric Data Factory]
+K[Fabric Warehouse]
+L[Power BI]
 
 A --> B
 B --> C
 C --> D
 D --> E
-E --> F
+
+C --> F
 F --> G
 G --> H
-C --> I
+H --> I
+I --> J
+J --> K
+K --> L
 ```
 
 ---
@@ -1349,6 +1374,8 @@ Potential future enhancements include:
 - Carbon footprint monitoring.
 - Sustainability reporting.
 - Integration with Microsoft Fabric Real-Time Hub.
+- Fabric Event Processing
+- Fabric Mirroring
 
 These enhancements can be incorporated without redesigning the existing event contracts.
 
