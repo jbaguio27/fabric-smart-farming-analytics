@@ -283,7 +283,7 @@ The complete data flow consists of the following steps.
 7. Eventhouse persists telemetry into OneLake Bronze.
 8. Spark Notebooks transform Bronze into Silver.
 9. Spark Notebooks transform Silver into Gold.
-10. Fabric Data Factory incrementally loads Gold into the Warehouse.
+10. Pipeline 2, implemented using Microsoft Fabric Data Factory, incrementally merges curated Gold Delta tables into the Fabric Warehouse after Pipeline 1 completes successfully.
 11. Historical Power BI dashboards consume Warehouse models.
 
 ---

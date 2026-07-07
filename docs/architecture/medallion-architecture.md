@@ -157,6 +157,7 @@ This layer provides trusted data for downstream analytical processing while rema
 - Enriched
 - Standardized
 - Delta format
+- Historical dimension tracking
 
 ---
 
@@ -168,6 +169,7 @@ Transformation activities include:
 
 - Business rule implementation
 - KPI calculation
+- SCD Type 2 dimension processing
 - Fact table creation
 - Dimension table creation
 - Aggregation generation
@@ -188,7 +190,7 @@ This layer implements the Kimball dimensional model adopted throughout the Smart
 ## Responsibilities
 
 - Create enterprise fact tables.
-- Create conformed dimensions.
+- Create conformed dimensions using Slowly Changing Dimension (SCD) Type 2 where historical tracking is required.
 - Produce business KPIs.
 - Support historical reporting.
 - Provide semantic datasets for Power BI.
