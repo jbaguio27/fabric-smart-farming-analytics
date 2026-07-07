@@ -10,7 +10,7 @@
 | Version | 1.0 |
 | Status | Approved |
 | Author | Joseph Baguio |
-| Last Updated | YYYY-MM-DD |
+| Last Updated | 2026-07-07 |
 
 ---
 
@@ -26,7 +26,9 @@ This layered approach improves data quality, simplifies governance, and establis
 
 # Scope
 
-This document focuses exclusively on data processing within the OneLake Lakehouse.
+This document focuses exclusively on the historical analytics pipeline implemented within the Microsoft Fabric OneLake Lakehouse.
+
+It describes how telemetry progresses through the Bronze, Silver, and Gold layers before being published to the Fabric Warehouse for enterprise reporting.
 
 The following components are documented separately:
 
@@ -60,6 +62,8 @@ Each layer has a single responsibility and is transformed using dedicated Spark 
 
 After Gold datasets are produced, Microsoft Fabric Data Factory orchestrates incremental loading into the Fabric Warehouse.
 
+This separation allows historical analytical processing to evolve independently from the real-time operational analytics implemented in Eventhouse.
+
 ---
 
 # Architecture Principles
@@ -91,12 +95,14 @@ No business logic is applied at this stage.
 - Support event replay.
 - Enable auditing.
 - Store raw Delta tables.
+- Capture ingestion metadata.
 
 ## Characteristics
 
 - Append-only
 - Immutable
 - Full event fidelity
+- Schema-on-read
 - Delta format
 
 ## Typical Tables
@@ -122,6 +128,7 @@ Primary transformation activities include:
 - Timestamp normalization
 - Data enrichment
 - Unit standardization
+- Business rule validation
 
 Output is written into Silver Delta tables.
 
@@ -141,6 +148,7 @@ This layer provides trusted data for downstream analytical processing while rema
 - Standardize measurements.
 - Enrich business attributes.
 - Produce reusable operational datasets.
+- Validate operational business rules.
 
 ## Characteristics
 
@@ -183,6 +191,7 @@ This layer implements the Kimball dimensional model adopted throughout the Smart
 - Create conformed dimensions.
 - Produce business KPIs.
 - Support historical reporting.
+- Provide semantic datasets for Power BI.
 
 ## Fact Tables
 
@@ -217,6 +226,7 @@ Pipeline responsibilities include:
 - Retry handling
 - Monitoring
 - Scheduling
+- Failure notification
 
 The Warehouse provides optimized SQL access for Power BI and downstream analytical workloads.
 
@@ -224,11 +234,22 @@ The Warehouse provides optimized SQL access for Power BI and downstream analytic
 
 # Layer Responsibilities
 
-| Layer | Primary Purpose | Processing | Consumers |
-|--------|-----------------|------------|-----------|
+| Layer | Primary Purpose | Transformation | Consumers |
+|--------|-----------------|----------------|-----------|
 | Bronze | Raw telemetry storage | None | Spark Notebooks |
 | Silver | Validated operational data | Cleansing and standardization | Spark Notebooks |
 | Gold | Business-ready analytical data | Business rules and dimensional modeling | Fabric Warehouse |
+
+---
+
+# Data Ownership
+
+| Layer | Owner | Purpose |
+|--------|--------|----------|
+| Bronze | Data Engineering | Raw telemetry preservation |
+| Silver | Data Engineering | Validated operational datasets |
+| Gold | Analytics Engineering | Business-ready analytical datasets |
+| Fabric Warehouse | BI Team | Enterprise reporting and semantic models |
 
 ---
 
@@ -236,7 +257,7 @@ The Warehouse provides optimized SQL access for Power BI and downstream analytic
 
 Telemetry progresses through the Medallion Architecture using the following sequence:
 
-1. Raw telemetry is persisted into Bronze Delta tables.
+1. Streaming telemetry is continuously persisted from Eventhouse into Bronze Delta tables.
 2. Spark Notebooks validate and standardize Bronze datasets into Silver.
 3. Spark Notebooks apply business transformations to produce Gold datasets.
 4. Fabric Data Factory Pipelines incrementally load Gold datasets into the Fabric Warehouse.
@@ -279,7 +300,7 @@ The Medallion Architecture provides the following benefits:
 
 ## Performance
 
-- Delta Lake supports efficient read and write operations.
+- Delta Lake storage in OneLake provides efficient read and write performance for Spark workloads.
 - Incremental processing minimizes resource consumption.
 - Curated Gold datasets reduce reporting latency.
 
@@ -296,6 +317,7 @@ The Smart Farming Analytics Platform follows these Medallion best practices:
 - Implement incremental processing.
 - Keep business logic out of Bronze and Silver.
 - Load only curated Gold datasets into the Warehouse.
+- Avoid direct reporting from Bronze and Silver datasets.
 
 ---
 
@@ -305,4 +327,4 @@ The Medallion Architecture provides a structured data refinement framework withi
 
 By separating raw ingestion, operational validation, and business modeling into dedicated layers, the platform produces trusted analytical datasets while preserving complete historical telemetry.
 
-This architecture establishes a scalable foundation for enterprise reporting, supports reliable data governance, and aligns with modern Lakehouse best practices.
+The Medallion Architecture provides a governed historical analytics pipeline that complements the platform's real-time operational analytics. By progressively refining telemetry into trusted analytical datasets, the platform supports enterprise reporting, long-term trend analysis, and future analytical capabilities while preserving complete historical data lineage.

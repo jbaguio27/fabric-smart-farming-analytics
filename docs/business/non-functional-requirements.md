@@ -18,14 +18,16 @@ The platform shall process and expose streaming telemetry with minimal latency t
 
 ### Requirements
 
-- End-to-end data latency shall not exceed **15 seconds**.
+- End-to-end streaming latency shall not exceed **15 seconds**.
 - Event ingestion shall support continuous streaming without interruption.
-- Operational dashboards shall reflect new telemetry within the target latency.
+- The Real-Time Operations Dashboard shall display newly ingested telemetry within the target latency.
+- Historical analytical datasets shall be refreshed according to scheduled batch processing requirements.
 
 ### Success Metrics
 
-- Average latency < 15 seconds
-- Dashboard refresh within acceptable operational limits
+- Average streaming latency < 15 seconds
+- Real-Time Operations Dashboard refresh latency < 15 seconds
+- Historical analytical datasets refreshed successfully according to schedule
 
 ---
 
@@ -58,7 +60,8 @@ The platform shall remain available for operational monitoring during business h
 
 - Historical analytics services shall target **99.9% availability**.
 - Streaming services shall automatically recover from transient failures where supported.
-- Critical operational dashboards shall remain accessible.
+- Real-Time Operations Dashboard shall remain available during operational hours.
+- Historical analytical dashboards shall remain available for business reporting.
 
 ### Success Metrics
 
@@ -77,7 +80,9 @@ The platform shall reliably process telemetry without data corruption or loss.
 
 - Streaming events shall preserve event timestamps.
 - Failed processing attempts shall be logged.
+- Eventstream shall provide reliable event buffering and delivery.
 - Retry mechanisms shall be implemented where supported.
+- Continuous persistence from Eventhouse to the OneLake Bronze layer shall minimize the risk of data loss.
 - Duplicate processing shall be minimized.
 
 ### Success Metrics
@@ -160,11 +165,14 @@ The platform shall provide sufficient operational visibility for troubleshooting
 
 The platform shall expose:
 
-- Pipeline health
-- Processing latency
+- Eventstream health
+- Eventhouse ingestion metrics
+- Streaming latency
 - Event throughput
+- Data Factory pipeline status
 - Failed events
 - Data quality metrics
+- Spark Notebook execution status
 - Processing logs
 
 ### Success Metrics
@@ -182,12 +190,13 @@ Operational dashboards shall present information in a clear and actionable forma
 
 ### Requirements
 
-Dashboards shall provide:
+Operational and historical dashboards shall provide:
 
 - Interactive filtering
 - Consistent navigation
 - Clearly labeled KPIs
 - Accessible visualizations
+- Near real-time operational visibility where applicable
 
 ### Success Metrics
 
@@ -204,9 +213,10 @@ Historical telemetry shall be retained to support reporting and trend analysis.
 
 ### Requirements
 
-- Streaming data retained according to Eventhouse policies.
-- Curated historical datasets retained within OneLake.
-- Retention policies documented and consistently applied.
+- Streaming telemetry shall be retained within Eventhouse according to operational retention policies.
+- Raw telemetry shall be continuously persisted to the OneLake Bronze layer.
+- Curated historical datasets shall be retained within the OneLake Lakehouse and Fabric Warehouse according to business retention requirements.
+- Retention policies shall be documented and consistently applied.
 
 ### Success Metrics
 
@@ -258,18 +268,18 @@ The platform shall follow organizational governance and documentation standards.
 
 | Requirement | Primary Epic |
 |-------------|--------------|
-| NFR-001 | Streaming Platform |
-| NFR-002 | Streaming Platform |
-| NFR-003 | Eventhouse & KQL Database |
-| NFR-004 | Monitoring & Observability |
-| NFR-005 | Spark Engineering |
-| NFR-006 | Security & Governance |
+| NFR-001 | Streaming Architecture |
+| NFR-002 | Microsoft Fabric Architecture |
+| NFR-003 | Streaming Architecture |
+| NFR-004 | Streaming Architecture |
+| NFR-005 | Medallion Architecture |
+| NFR-006 | Security Model |
 | NFR-007 | Repository & Development Environment |
-| NFR-008 | Monitoring & Observability |
+| NFR-008 | Monitoring Strategy |
 | NFR-009 | Power BI |
-| NFR-010 | Lakehouse |
+| NFR-010 | Data Retention Strategy |
 | NFR-011 | Deployment Pipelines |
-| NFR-012 | Documentation |
+| NFR-012 | Architecture & Governance |
 
 ---
 
@@ -279,6 +289,7 @@ The platform shall follow organizational governance and documentation standards.
 - Network connectivity between simulated devices and Microsoft Fabric is reliable.
 - Business stakeholders define acceptable environmental thresholds.
 - Fabric capacities are appropriately sized for expected workloads.
+- Operational dashboards consume streaming telemetry directly from Eventhouse, while historical dashboards consume curated datasets from the Fabric Warehouse.
 
 ---
 
@@ -288,6 +299,7 @@ The platform shall follow organizational governance and documentation standards.
 - External hardware integrations are outside Version 1.0 scope.
 - Predictive machine learning is excluded from the initial release.
 - Multi-region disaster recovery is outside the scope of this project.
+- Real-time operational dashboards are intended for monitoring and operational awareness rather than historical trend analysis.
 
 ---
 

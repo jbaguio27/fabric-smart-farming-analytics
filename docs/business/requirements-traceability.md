@@ -16,7 +16,7 @@ Maintaining traceability ensures that every business objective is supported by o
 | Reduce operational visibility latency | FR-003, FR-005, FR-010 |
 | Detect environmental anomalies | FR-004, FR-005, FR-010 |
 | Improve equipment monitoring | FR-002, FR-005, FR-010 |
-| Provide enterprise-wide operational dashboards | FR-005, FR-009 |
+| Provide real-time operational monitoring and historical business reporting | FR-005, FR-006, FR-009 |
 | Build a historical analytics platform | FR-006, FR-007, FR-008 |
 | Support future platform expansion | FR-003, FR-006, FR-011, FR-012 |
 
@@ -34,7 +34,7 @@ Maintaining traceability ensures that every business objective is supported by o
 | FR-006 Historical Data Storage | NFR-003, NFR-010 |
 | FR-007 Data Transformation | NFR-005, NFR-007 |
 | FR-008 Dimensional Modeling | NFR-007, NFR-010 |
-| FR-009 Reporting and Dashboards | NFR-003, NFR-009 |
+| FR-009 Reporting and Dashboards | NFR-001, NFR-003, NFR-009 |
 | FR-010 Operational Alerting | NFR-001, NFR-003, NFR-008 |
 | FR-011 Monitoring and Observability | NFR-008, NFR-007 |
 | FR-012 Security and Access Control | NFR-006, NFR-012 |
@@ -53,7 +53,7 @@ Maintaining traceability ensures that every business objective is supported by o
 | FR-006 | Epic 6 – Lakehouse |
 | FR-007 | Epic 7 – Spark Engineering |
 | FR-008 | Epic 8 – Warehouse |
-| FR-009 | Epic 10 – Power BI |
+| FR-009 | Epic 10 – Power BI Dashboards |
 | FR-010 | Epic 11 – Data Activator |
 | FR-011 | Epic 12 – Monitoring & Observability |
 | FR-012 | Epic 13 – Security & Governance |
@@ -81,6 +81,22 @@ This section will be completed as implementation progresses.
 
 ---
 
+# Architecture Traceability
+
+| Architecture Component | Related Functional Requirements |
+|-------------------------|---------------------------------|
+| Eventstream | FR-001, FR-002, FR-003 |
+| Eventhouse | FR-003, FR-005, FR-010 |
+| Data Activator | FR-010 |
+| OneLake Lakehouse | FR-006, FR-007 |
+| Spark Notebooks | FR-007 |
+| Fabric Data Factory | FR-007, FR-008 |
+| Fabric Warehouse | FR-008, FR-009 |
+| Power BI Real-Time Dashboard | FR-005, FR-009 |
+| Power BI Historical Dashboards | FR-009 |
+
+---
+
 # Document Maintenance
 
 This matrix shall be updated whenever:
@@ -88,6 +104,7 @@ This matrix shall be updated whenever:
 - Business goals change.
 - Functional requirements are added or modified.
 - Non-functional requirements are revised.
+- Architecture decisions impact requirement implementation.
 - New implementation epics are introduced.
 - Validation and testing activities are completed.
 

@@ -4,7 +4,9 @@
 
 HydroGrow Solutions is a rapidly growing indoor vertical farming company operating multiple automated facilities across major urban centers. Each facility uses thousands of IoT sensors to continuously monitor environmental conditions, crop health, and equipment performance across vertically stacked growing systems.
 
-To support sustainable operations and maximize crop yield, HydroGrow requires a centralized analytics platform capable of processing high-volume telemetry in near real time while maintaining a historical analytics platform for reporting, trend analysis, and future forecasting.
+To support sustainable operations and maximize crop yield, HydroGrow requires a centralized analytics platform capable of processing high-volume telemetry in near real time while maintaining a trusted historical analytics platform for reporting, trend analysis, executive decision-making, and future forecasting.
+
+The solution combines Microsoft Fabric Real-Time Intelligence for operational monitoring with OneLake and Fabric Warehouse for governed historical analytics within a unified cloud-native platform.
 
 This project demonstrates how Microsoft Fabric can be used to build a production-style Industrial IoT analytics platform that combines streaming data, operational intelligence, and historical analytics within a unified architecture.
 
@@ -50,7 +52,7 @@ The Smart Farming Analytics Platform aims to:
 - Reduce operational visibility latency from hours to seconds.
 - Detect environmental anomalies before crops are affected.
 - Improve equipment monitoring and preventive maintenance.
-- Provide enterprise-wide operational dashboards.
+- Provide real-time operational dashboards for farm monitoring and historical executive dashboards for business reporting.
 - Build a trusted historical analytics platform for reporting and forecasting.
 - Support future expansion without redesigning the analytics platform.
 
@@ -63,12 +65,13 @@ The proposed solution leverages Microsoft Fabric to build an end-to-end Industri
 The platform will:
 
 - Ingest streaming telemetry using Microsoft Fabric Eventstream.
-- Process and analyze streaming events within Eventhouse and KQL Database.
-- Validate incoming telemetry to identify missing, duplicated, or invalid sensor readings.
+- Process streaming telemetry within Eventhouse using KQL for operational analytics.
+- Power a real-time operations dashboard directly from Eventhouse for live facility monitoring.
 - Generate real-time operational alerts using Data Activator.
-- Store historical telemetry in OneLake using a Medallion Architecture.
-- Transform curated datasets into a Kimball star schema for analytical reporting.
-- Deliver executive and operational dashboards through Power BI.
+- Continuously persist streaming telemetry into the OneLake Lakehouse Bronze layer.
+- Transform historical data through the Medallion Architecture using Spark Notebooks.
+- Load curated Gold datasets into the Fabric Warehouse using Fabric Data Factory pipelines.
+- Deliver historical business intelligence and executive reporting through Power BI.
 
 ---
 
@@ -80,7 +83,8 @@ The completed platform is expected to:
 - Detect environmental anomalies before crop damage occurs.
 - Improve operational response through automated alerting.
 - Increase confidence in historical reporting through automated data quality validation.
-- Provide a unified operational view across all farming facilities.
+- Provide real-time operational visibility across all farming facilities.
+- Deliver trusted historical analytics for executive reporting and long-term trend analysis.
 - Support future machine learning and predictive analytics initiatives using trusted historical data.
 
 ---
@@ -90,6 +94,7 @@ The completed platform is expected to:
 | Metric | Target |
 |----------|---------|
 | End-to-End Data Latency | < 15 seconds |
+| Real-Time Dashboard Refresh | < 15 seconds |
 | Crop Loss Reduction | 95% |
 | Alert True Positive Rate | ≥ 99.5% |
 | Data Quality Validation | 100% of incoming events validated |

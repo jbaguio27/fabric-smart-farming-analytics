@@ -25,10 +25,10 @@ Farm Operators are responsible for monitoring the environmental conditions withi
 ## Data Needs
 
 - Live environmental telemetry
-- Equipment status
-- Active alerts
+- Current equipment status
+- Active operational alerts
 - Sensor health
-- Facility-specific dashboards
+- Real-Time Operations Dashboard
 
 ## Success Criteria
 
@@ -54,11 +54,11 @@ Operations Managers oversee multiple farming facilities and ensure consistent op
 
 ## Data Needs
 
-- Multi-facility dashboards
-- Active incidents
-- Equipment utilization
-- Environmental trends
-- Facility performance comparisons
+- Real-Time Operations Dashboard
+- Active operational incidents
+- Multi-facility equipment status
+- Facility performance metrics
+- Historical performance comparisons
 
 ## Success Criteria
 
@@ -84,6 +84,7 @@ The Agricultural Director focuses on crop health, production efficiency, and lon
 
 ## Data Needs
 
+- Farm Performance Dashboard
 - Historical crop telemetry
 - Growth stage analysis
 - Environmental trend reports
@@ -106,21 +107,24 @@ The Data Engineer is responsible for building, monitoring, and maintaining the S
 
 ## Responsibilities
 
-- Monitor data pipelines
-- Maintain Eventstream
-- Develop Spark transformations
-- Monitor Eventhouse ingestion
+- Monitor Eventstream ingestion
+- Monitor Eventhouse streaming health
+- Maintain Spark Notebook transformations
+- Maintain Fabric Data Factory pipelines
 - Resolve data quality issues
-- Maintain Lakehouse and Warehouse assets
+- Maintain OneLake Lakehouse assets
+- Maintain Fabric Warehouse assets
 
 ## Data Needs
 
-- Pipeline health metrics
-- Event ingestion metrics
+- Eventstream health metrics
+- Eventhouse ingestion metrics
+- Spark Notebook execution status
+- Fabric Data Factory pipeline status
 - Data quality reports
 - Processing latency
 - Failed event logs
-- Infrastructure monitoring
+- Platform Monitoring Dashboard
 
 ## Success Criteria
 
@@ -147,11 +151,12 @@ Data Analysts transform historical telemetry into business insights that support
 
 ## Data Needs
 
+- Fabric Warehouse
 - Gold-layer datasets
-- Star-schema warehouse
 - Historical telemetry
 - Business KPIs
-- Trend analysis
+- Farm Performance Dashboard
+- Executive Dashboard
 
 ## Success Criteria
 
@@ -177,11 +182,12 @@ Executives require a high-level operational view of the business to monitor orga
 
 ## Data Needs
 
-- Executive dashboards
-- Production KPIs
-- Facility comparisons
+- Executive Dashboard
+- Enterprise KPIs
+- Multi-facility performance
 - Crop yield metrics
 - Operational summaries
+- Historical business trends
 
 ## Success Criteria
 
@@ -194,14 +200,14 @@ Executives require a high-level operational view of the business to monitor orga
 
 # Persona Summary
 
-| Persona | Primary Focus | Primary Dashboard |
-|----------|---------------|-------------------|
-| Farm Operator | Real-time facility monitoring | Operations Dashboard |
-| Operations Manager | Multi-facility operations | Regional Operations Dashboard |
-| Agricultural Director | Crop health and yield | Crop Analytics Dashboard |
-| Data Engineer | Platform operations | Monitoring Dashboard |
-| Data Analyst | Historical analytics | Business Intelligence Dashboard |
-| Executive Leadership | Business performance | Executive Dashboard |
+| Persona | Primary Focus | Primary Dashboard | Primary Data Source |
+|----------|---------------|-------------------|---------------------|
+| Farm Operator | Real-time facility monitoring | Real-Time Operations Dashboard | Eventhouse |
+| Operations Manager | Multi-facility operations | Real-Time Operations Dashboard | Eventhouse + Fabric Warehouse |
+| Agricultural Director | Crop health and yield | Farm Performance Dashboard | Fabric Warehouse |
+| Data Engineer | Platform operations | Platform Monitoring Dashboard | Fabric Monitoring Hub |
+| Data Analyst | Historical analytics | Farm Performance Dashboard | Fabric Warehouse |
+| Executive Leadership | Business performance | Executive Dashboard | Fabric Warehouse |
 
 ---
 
@@ -210,11 +216,11 @@ Executives require a high-level operational view of the business to monitor orga
 | Persona | Access Level |
 |----------|--------------|
 | Farm Operator | Read access to assigned facility |
-| Operations Manager | Read access to all operational dashboards |
+| Operations Manager | Read access to Real-Time Operations Dashboard and Farm Performance Dashboard |
 | Agricultural Director | Read access to historical analytics |
 | Data Engineer | Administrative access to Fabric engineering resources |
-| Data Analyst | Read access to curated analytical datasets |
-| Executive Leadership | Read access to executive dashboards and KPIs |
+| Data Analyst | Read access to Fabric Warehouse, curated analytical datasets, and historical dashboards |
+| Executive Leadership | Read access to Executive Dashboard and enterprise KPI reports |
 
 ---
 
@@ -222,11 +228,13 @@ Executives require a high-level operational view of the business to monitor orga
 
 The user personas influence the design of several project components:
 
-- Power BI dashboards
+- Real-Time Operations Dashboard
+- Farm Performance Dashboard
+- Executive Dashboard
+- Platform Monitoring Dashboard
 - Microsoft Fabric workspace security
 - Role-Based Access Control (RBAC)
 - Data Activator alert routing
-- Monitoring dashboards
-- Reporting requirements
+- Reporting and semantic models
 
 These personas will be referenced throughout the remaining project epics to ensure the platform is designed around user needs rather than technology alone.
