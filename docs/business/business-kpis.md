@@ -17,6 +17,7 @@ The KPIs are organized into the following categories:
 - Equipment Performance
 - Environmental Stability
 - Data Platform
+- Platform Operations
 - Enterprise Performance
 
 ---
@@ -194,6 +195,10 @@ Track pump failures requiring maintenance.
 
 - Operations Manager
 
+### Dashboard
+
+- Farm Performance Dashboard
+
 ---
 
 ## KPI-009: Sensor Availability
@@ -278,7 +283,7 @@ Decreasing trend month over month
 
 ### Description
 
-Measure the elapsed time between event generation and availability in the Real-Time Operations Dashboard.
+Measure the elapsed time between telemetry generation and availability within Eventhouse and the Real-Time Operations Dashboard.
 
 ### Target
 
@@ -318,23 +323,19 @@ Valid Records / Total Records × 100
 
 ---
 
-## KPI-014: Pipeline Success Rate
+## KPI-014: Batch Processing Success Rate
 
 ### Business Objective
 
-Measure successful execution of Spark Notebook transformations and Fabric Data Factory pipelines.
+Measure the successful execution of both Fabric Data Factory pipelines responsible for Medallion transformations and Warehouse incremental loading.
+
+### Formula
+
+Successful Pipeline Executions / Total Pipeline Executions × 100
 
 ### Target
 
 ≥ 99.9%
-
-### Primary Users
-
-- Data Engineer
-
-### Dashboard
-
-- Platform Monitoring Dashboard
 
 ---
 
@@ -368,6 +369,74 @@ Provide a consolidated operational score across all facilities.
 
 ---
 
+## KPI-016: Warehouse Load Success Rate
+
+### Business Objective
+
+Measure the success rate of incremental Warehouse loading executed by Fabric Data Factory Pipeline 2.
+
+### Formula
+
+Successful MERGE Executions / Total MERGE Executions × 100
+
+### Target
+
+≥ 99.9%
+
+### Primary Users
+
+- Data Engineer
+
+### Dashboard
+
+- Platform Monitoring Dashboard
+
+---
+
+## KPI-017: Quarantine Rate
+
+### Business Objective
+
+Measure the percentage of records routed to the quarantine zone during validation.
+
+### Formula
+
+Quarantined Records / Total Incoming Records × 100
+
+### Target
+
+< 0.5%
+
+### Primary Users
+
+- Data Engineer
+
+### Dashboard
+
+- Platform Monitoring Dashboard
+
+---
+
+## KPI-018: Platform Availability
+
+### Business Objective
+
+Measure the availability of the Microsoft Fabric environment supporting operational and historical analytics.
+
+### Target
+
+≥ 99.9%
+
+### Primary Users
+
+- Data Engineer
+
+### Dashboard
+
+- Platform Monitoring Dashboard
+
+---
+
 ## KPI Summary
 
 | KPI | Category | Target | Primary Dashboard | Primary Persona |
@@ -395,3 +464,5 @@ Provide a consolidated operational score across all facilities.
 Business KPIs shall be reviewed periodically to ensure they remain aligned with operational goals, reporting requirements, and business priorities.
 
 KPI definitions shall remain consistent across Eventhouse, the Fabric Warehouse, and Power BI semantic models. Any changes to KPI definitions, calculation methods, or target values shall be documented, reviewed, and approved before implementation.
+
+Operational platform KPIs shall be sourced from the centralized Monitoring Lakehouse and Microsoft Fabric Monitoring Hub to ensure consistent monitoring across streaming, batch processing, data quality, and reporting workloads.

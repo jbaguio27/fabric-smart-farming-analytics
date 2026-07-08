@@ -24,12 +24,15 @@ The platform separates operational analytics from historical business analytics.
 | Multi-Facility Operational Score | fact_sensor_telemetry, fact_hardware_metrics | dim_crop_batch, dim_facility_structure | Weighted aggregation of operational KPIs across all facilities | Executive Dashboard |
 | Active Critical Alerts | Eventhouse (KQL) | Facility Metadata | Count of unresolved critical alerts | Real-Time Operations Dashboard |
 | Average Alert Response Time | Eventhouse (KQL) | Facility Metadata | Average time between alert generation and acknowledgment | Real-Time Operations Dashboard |
-| Real-Time Sensor Coverage | Eventhouse (KQL) | Facility Metadata | (Active Sensors Reporting ÷ Total Registered Sensors) × 100 | Real-Time Operations Dashboard |
+| Sensor Availability | Eventhouse (KQL) | Facility Metadata | (Active Sensors Reporting ÷ Total Registered Sensors) × 100 | Real-Time Operations Dashboard, Platform Monitoring Dashboard |
 | Current Environmental Status | Eventhouse (KQL) | Facility Metadata | Latest temperature, humidity, pH, EC, and dissolved oxygen readings | Real-Time Operations Dashboard |
 | Out-of-Range Sensor Events | Eventhouse (KQL) | Facility Metadata | Count of telemetry events exceeding configured operational thresholds | Real-Time Operations Dashboard |
 | End-to-End Processing Latency | Eventhouse (KQL) | None | ingestion_timestamp − event_timestamp | Platform Monitoring Dashboard |
 | Data Quality Score | fact_sensor_telemetry | None | (GOOD Records ÷ Total Records) × 100 | Platform Monitoring Dashboard |
 | Pipeline Success Rate | Fabric Data Factory Pipeline Logs | None | (Successful Pipeline Runs ÷ Total Pipeline Runs) × 100 | Platform Monitoring Dashboard |
+| Warehouse Load Success Rate | Fabric Data Factory Pipeline Logs | None | (Successful Warehouse MERGE Executions ÷ Total MERGE Executions) × 100 | Platform Monitoring Dashboard |
+| Quarantine Rate | quarantine_invalid_events | None | (Quarantined Records ÷ Total Incoming Records) × 100 | Platform Monitoring Dashboard |
+| Platform Availability | Fabric Monitoring Hub | None | (Available Service Time ÷ Total Service Time) × 100 | Platform Monitoring Dashboard |
 
 ---
 
@@ -40,7 +43,7 @@ The platform separates operational analytics from historical business analytics.
 | Real-Time Operations Dashboard | Eventhouse (KQL) | Operations Team, Farm Managers |
 | Farm Performance Dashboard | Fabric Warehouse | Operations Managers, Business Analysts |
 | Executive Dashboard | Fabric Warehouse | Executive Leadership |
-| Platform Monitoring Dashboard | Fabric Monitoring Hub, Eventhouse Metrics, Fabric Data Factory Logs | Data Engineering Team |
+| Platform Monitoring Dashboard | Monitoring Lakehouse, Fabric Monitoring Hub, Eventhouse Metrics, Fabric Data Factory Logs | Data Engineering Team |
 
 ---
 
@@ -53,6 +56,7 @@ The platform separates operational analytics from historical business analytics.
 | Equipment | Operations Manager |
 | Environmental | Agricultural Director |
 | Data Platform | Data Engineering Team |
+| Platform Operations | Data Engineering Team |
 | Executive | Executive Leadership |
 
 ---
@@ -66,7 +70,7 @@ The platform separates operational analytics from historical business analytics.
 | Environmental Monitoring | Less than 15 seconds |
 | Historical Analytics | Hourly |
 | Executive Reporting | Hourly |
-| Platform Monitoring | Near Real-Time |
+| Platform Monitoring | Near Real-Time (1 to 5 minutes depending on metric source) |
 
 ---
 
@@ -79,5 +83,7 @@ Implementation details, including KQL queries, SQL queries, Spark Notebook trans
 Operational dashboards consume streaming telemetry directly from Eventhouse using KQL queries to provide low-latency operational visibility.
 
 Historical dashboards consume curated analytical datasets from the Fabric Warehouse after processing through the OneLake Medallion Architecture.
+
+The Platform Monitoring Dashboard consolidates telemetry from Microsoft Fabric Monitoring Hub, Eventhouse, Fabric Data Factory pipeline logs, Spark Notebook execution logs, Warehouse load metrics, and Monitoring Lakehouse tables to provide a unified operational view of platform health.
 
 The Event Catalog and Event Schema documents define the telemetry events that populate the streaming platform and downstream analytical models.
