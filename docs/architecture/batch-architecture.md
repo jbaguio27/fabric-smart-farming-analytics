@@ -240,9 +240,10 @@ The batch workflow executes in the following order.
 4. Invalid records are quarantined.
 5. Silver is transformed into Gold.
 6. Gold datasets are validated.
-7. Pipeline 2 begins after Pipeline 1 succeeds.
-8. Gold datasets are incrementally merged into the Warehouse.
-9. Historical Power BI dashboards are refreshed.
+7. Pipeline 2 is triggered after successful completion of Pipeline 1.
+8. Incremental MERGE operations synchronize Gold fact and dimension tables with the Fabric Warehouse.
+9. Semantic models are refreshed.
+10. Historical Power BI dashboards become available with the latest curated data.
 
 ---
 
