@@ -148,28 +148,64 @@ Monitor the health, reliability, and performance of the Microsoft Fabric data pl
 
 ### Data Source
 
-- Fabric Monitoring Hub
-- Eventhouse
+- Monitoring Lakehouse (Operational Logs)
+- Eventhouse (Streaming Metrics)
+- Microsoft Fabric Monitoring Hub
 
 ### Key Metrics
 
+Platform Health
+
+- Workspace Availability
+- Capacity Utilization
+- OneLake Storage Consumption
+
+Streaming
+
 - Eventstream Throughput
+- Eventstream Latency
 - Eventhouse Ingestion Rate
 - Eventhouse Query Latency
-- Data Factory Pipeline Success Rate
-- Spark Notebook Execution Status
-- Processing Latency
-- Failed Events
+
+Batch Processing
+
+- Pipeline 1 Success Rate
+- Pipeline 2 Success Rate
+- Spark Notebook Duration
+- Warehouse MERGE Duration
+- Rows Inserted
+- Rows Updated
+- Retry Count
+
+Data Quality
+
+- Invalid Records
+- Schema Violations
+- Quarantine Growth
 - Data Quality Score
+
+Warehouse
+
+- Incremental Load Status
+- Table Growth
+- Refresh Duration
+
+Overall
+
+- End-to-End Processing Latency
 
 ### Visualizations
 
-- Fabric Service Health Cards
-- Event Throughput Charts
+- Platform Health Overview
+- Capacity Utilization Gauge
+- Streaming Throughput Chart
+- Eventhouse Ingestion Timeline
 - Pipeline Execution Timeline
-- Latency Trends
-- Failure Summary
-- Data Quality Overview
+- Spark Notebook Performance
+- Warehouse MERGE Statistics
+- Quarantine Growth Trend
+- Data Quality Scorecard
+- Alert Severity Breakdown
 
 ---
 
@@ -199,7 +235,7 @@ Monitor the health, reliability, and performance of the Microsoft Fabric data pl
 
 | Dashboard | Refresh Frequency |
 |------------|-------------------|
-| Real-Time Operations Dashboard | Near Real-Time (<15 seconds) |
+| Real-Time Operations Dashboard | Near Real-Time (1 to 5 minute refresh depending on data source) |
 | Farm Performance Dashboard | Scheduled Batch |
 | Executive Dashboard | Scheduled Batch |
 | Platform Monitoring Dashboard | Near Real-Time |
@@ -239,6 +275,31 @@ The dashboard strategy follows the Microsoft Fabric solution architecture.
 - Real-Time Operations Dashboard consumes streaming telemetry directly from Eventhouse using KQL.
 - Farm Performance Dashboard consumes curated historical datasets from the Fabric Warehouse.
 - Executive Dashboard provides enterprise KPI reporting using the Fabric Warehouse.
-- Platform Monitoring Dashboard combines Microsoft Fabric Monitoring Hub metrics with Eventhouse operational metrics.
+- Platform Monitoring Dashboard combines telemetry from Microsoft Fabric Monitoring Hub, Eventhouse, and the centralized Monitoring Lakehouse.
+
+The dashboard provides unified operational visibility across:
+
+- Microsoft Fabric infrastructure
+- Streaming ingestion
+- Batch processing
+- Data quality
+- Warehouse loading
+- Power BI refresh operations
 
 This separation ensures operational monitoring remains low latency while historical reporting uses governed analytical datasets.
+
+---
+
+# Monitoring Dashboard Dependencies
+
+The Platform Monitoring Dashboard consumes operational telemetry from multiple platform components.
+
+| Component | Metrics |
+|-----------|---------|
+| Fabric Monitoring Hub | Workspace availability, Capacity utilization |
+| Eventhouse | Streaming throughput, Ingestion latency |
+| Pipeline 1 Logs | Notebook execution, Validation metrics |
+| Pipeline 2 Logs | Warehouse MERGE metrics |
+| Quarantine Tables | Invalid records, Schema violations |
+| Warehouse | Table growth, Incremental loads |
+| Power BI | Dataset refresh status, Refresh duration |

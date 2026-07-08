@@ -88,13 +88,15 @@ Its responsibility is to transform raw Delta tables into validated and business-
 
 ## Trigger
 
-Scheduled execution.
+Pipeline 1 executes on a scheduled interval using a Microsoft Fabric Data Factory schedule trigger.
 
 Example:
 
-- Every 15 minutes
+Every 15 minutes
 
-Future implementations may support event-driven execution.
+Pipeline 2 is dependency-based and executes only after Pipeline 1 completes successfully.
+
+Future implementations may replace the schedule with event-driven execution where appropriate.
 
 ---
 

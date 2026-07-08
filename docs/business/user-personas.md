@@ -103,35 +103,46 @@ The Agricultural Director focuses on crop health, production efficiency, and lon
 
 ## Overview
 
-The Data Engineer is responsible for building, monitoring, and maintaining the Smart Farming Analytics Platform.
+The Data Engineer is responsible for building, monitoring, maintaining, and continuously improving the Microsoft Fabric Smart Farming Analytics Platform. This role ensures reliable streaming ingestion, batch processing, data quality, and platform availability while supporting operational and historical analytics.
 
 ## Responsibilities
 
-- Monitor Eventstream ingestion
-- Monitor Eventhouse streaming health
-- Maintain Spark Notebook transformations
-- Maintain Fabric Data Factory pipelines
-- Resolve data quality issues
+- Monitor Eventstream ingestion and streaming performance
+- Monitor Eventhouse ingestion health and KQL database performance
+- Maintain Spark Notebook transformations for Bronze → Silver and Silver → Gold
+- Maintain Fabric Data Factory Pipeline 1 (Medallion orchestration)
+- Maintain Fabric Data Factory Pipeline 2 (Warehouse incremental loading)
+- Monitor data quality validation and quarantine processing
+- Investigate failed pipeline executions and processing errors
 - Maintain OneLake Lakehouse assets
 - Maintain Fabric Warehouse assets
+- Monitor platform health using the Platform Monitoring Dashboard
+- Respond to operational alerts and performance issues
 
 ## Data Needs
 
-- Eventstream health metrics
+- Workspace health metrics
+- Capacity utilization
+- Eventstream throughput and latency
 - Eventhouse ingestion metrics
 - Spark Notebook execution status
 - Fabric Data Factory pipeline status
+- Warehouse MERGE statistics
 - Data quality reports
+- Quarantine table metrics
 - Processing latency
 - Failed event logs
 - Platform Monitoring Dashboard
 
 ## Success Criteria
 
-- Maintain reliable pipelines
-- Ensure high data quality
-- Meet performance targets
-- Minimize processing failures
+- Maintain reliable streaming and batch pipelines
+- Ensure high data quality across all Medallion layers
+- Meet platform performance and latency targets
+- Minimize processing failures and downtime
+- Resolve operational issues within agreed response times
+- Maintain successful Warehouse incremental loads
+- Support secure and governed data delivery
 
 ---
 

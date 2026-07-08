@@ -158,6 +158,8 @@ OneLake stores historical analytical datasets following the Medallion Architectu
 
 Historical telemetry is continuously persisted from Eventhouse into the Bronze layer before progressing through Silver and Gold transformations.
 
+Records that fail schema validation or business rule validation are written to dedicated Quarantine Delta tables along with validation logs. These datasets support investigation, auditing, and controlled reprocessing without affecting analytical datasets.
+
 ### Bronze
 
 Stores immutable raw telemetry.
@@ -194,11 +196,11 @@ Stores business-ready datasets optimized for analytics.
 Contains:
 
 - Fact tables
-- Dimension tables
-- Aggregated metrics
+- Slowly Changing Dimension (SCD Type 2) tables
+- Aggregated business metrics
 - Power BI semantic model source
 
-The Gold layer follows Kimball dimensional modeling.
+The Gold layer follows Kimball dimensional modeling. Dimension tables use SCD Type 2 where historical attribute tracking is required.
 
 ---
 
@@ -281,10 +283,11 @@ The complete data flow consists of the following steps.
 5. KQL queries power the Real-Time Operations Dashboard.
 6. Data Activator evaluates streaming events for alert conditions.
 7. Eventhouse persists telemetry into OneLake Bronze.
-8. Spark Notebooks transform Bronze into Silver.
-9. Spark Notebooks transform Silver into Gold.
-10. Pipeline 2, implemented using Microsoft Fabric Data Factory, incrementally merges curated Gold Delta tables into the Fabric Warehouse after Pipeline 1 completes successfully.
-11. Historical Power BI dashboards consume Warehouse models.
+8. Pipeline 1 orchestrates the Bronze to Silver Spark Notebook.
+9. Pipeline 1 orchestrates the Silver to Gold Spark Notebook, including business rules, KPI calculations, and SCD Type 2 dimension processing.
+10. Valid and curated Gold Delta tables are produced.
+11. Pipeline 2 incrementally merges Gold datasets into the Fabric Warehouse.
+12. Historical Power BI dashboards consume the Warehouse semantic model.
 
 ---
 
@@ -299,7 +302,7 @@ The complete data flow consists of the following steps.
 | OneLake | Unified storage |
 | Lakehouse | Historical data platform |
 | Spark Notebooks | Data transformations |
-| Fabric Data Factory | Gold to Warehouse orchestration |
+| Fabric Data Factory | Pipeline orchestration, Spark Notebook execution, Warehouse loading |
 | Fabric Warehouse | Enterprise SQL analytics |
 | Power BI | Operational and historical dashboards |
 | Deployment Pipelines | CI/CD |
@@ -351,6 +354,10 @@ Eventhouse provides low-latency operational visibility, while the Lakehouse and 
 
 Operational analytics and historical analytics consume data from dedicated platforms, ensuring each workload is optimized while maintaining consistent business definitions across reporting layers.
 
+## Data Quality by Design
+
+Data quality is enforced throughout the Medallion Architecture using schema validation, business rule validation, quarantine tables, and audit logging. Only validated datasets progress to downstream analytical layers.
+
 ---
 
 # Security Overview
@@ -360,11 +367,12 @@ The solution follows the principle of least privilege.
 Key security practices include:
 
 - Microsoft Entra ID authentication
-- Workspace role-based access control
-- OneLake permissions
+- Workspace Role-Based Access Control (RBAC)
+- OneLake Data Access Roles
+- Object-Level Security (OLS)
+- Row-Level Security (RLS)
 - Warehouse SQL permissions
-- Secure GitHub repository
-- Managed identities where applicable
+- Managed identities
 
 Detailed security design is documented in the Security Model.
 
@@ -372,16 +380,18 @@ Detailed security design is documented in the Security Model.
 
 # Monitoring Overview
 
-Platform health is monitored using:
+Platform health is monitored through a unified monitoring strategy combining native Microsoft Fabric capabilities with a custom Platform Monitoring Dashboard.
+
+Monitoring includes:
 
 - Fabric Monitoring Hub
-- Pipeline monitoring
-- Eventstream metrics
-- Eventhouse metrics
-- Data Activator execution logs
-- Power BI refresh monitoring
-
-Detailed operational monitoring is documented in the Monitoring Strategy.
+- Eventstream throughput and latency
+- Eventhouse ingestion health
+- Spark Notebook execution metrics
+- Pipeline 1 and Pipeline 2 execution metrics
+- Data quality and quarantine metrics
+- Warehouse incremental load metrics
+- Power BI dataset refresh monitoring
 
 ---
 
@@ -422,6 +432,6 @@ The Microsoft Fabric Smart Farming Analytics Platform delivers two complementary
 
 Operational telemetry is processed through Eventstream and Eventhouse to enable near real-time monitoring, KQL analytics, operational dashboards, and automated alerting.
 
-Historical telemetry is persisted within the OneLake Lakehouse, refined through the Medallion Architecture using Spark Notebooks, and incrementally loaded into the Fabric Warehouse for enterprise reporting.
+Historical telemetry is persisted within the OneLake Lakehouse, refined through the Medallion Architecture using Spark Notebooks, and incrementally loaded into the Fabric Warehouse for enterprise reporting. Batch processing is orchestrated through two Microsoft Fabric Data Factory pipelines. The first pipeline governs Medallion transformations, while the second manages incremental loading into the Fabric Warehouse. This separation simplifies monitoring, improves recoverability, and supports independent scaling of transformation and loading workloads.
 
 This separation allows operational workloads to prioritize low-latency monitoring while historical workloads focus on governed reporting, trend analysis, and executive business intelligence without competing for the same analytical resources.
