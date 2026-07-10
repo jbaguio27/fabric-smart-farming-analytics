@@ -1,55 +1,41 @@
-# ------------------------------
-# Python
-# ------------------------------
+# Byte-compiled files
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 
-# Virtual Environment
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
 .venv/
 venv/
+ENV/
 env/
+
+# Environment variables
+.env
+.env.*
+
+# IDEs
+.vscode/
+.idea/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.pytype/
+
+# Linting
+.ruff_cache/
 
 # Jupyter
 .ipynb_checkpoints/
 
-# Environment Variables
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-
-# Logs
-logs/
-*.log
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
-
-# Distribution
-build/
-dist/
-*.egg-info/
-
-# Testing
-.pytest_cache/
-.mypy_cache/
-
-# VS Code
-.vscode/settings.json
-
-# Operating System
+# macOS
 .DS_Store
-Thumbs.db
-
-# Temporary Files
-tmp/
-temp/
-
-# Fabric
-.fabric-cache/
-*.pyc
