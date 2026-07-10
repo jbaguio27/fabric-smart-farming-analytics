@@ -20,9 +20,21 @@ def main() -> None:
     logger = get_logger(__name__)
 
     try:
-        logger.info('Starting HydroGrow Smart Farming Simulator')
+        settings = Settings.from_env()
 
-        settings = Settings()
+        logger.info('Starting HydroGrow Smart Farming Simulator')
+        logger.info(
+            "Environment: %s | Log Level: %s",
+            settings.environment,
+            settings.log_level
+        )
+        logger.info(
+            "Facilities: %d | Interval: %ds | Batch Size: %d",
+            settings.total_facilities,
+            settings.simulation_interval_seconds,
+            settings.event_batch_size
+        )
+
         dispatcher = EventDispatcher()
 
         simulator = Simulator(
@@ -35,11 +47,15 @@ def main() -> None:
         logger.info('Simulator execution completed.')
 
     except SmartFarmingError:
-        logger.exception('Application terminated due to a simulator error.')
+        logger.exception(
+            'Application terminated due to a simulator error.'
+        )
         raise
 
     except Exception:
-        logger.exception('An unexpected application error occured.')
+        logger.exception(
+            'An unexpected application error occured.'
+        )
         raise
 
 if __name__ == "__main__":
