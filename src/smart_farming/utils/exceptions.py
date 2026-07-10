@@ -26,7 +26,7 @@ class SimulationError(SmartFarmingError):
 
     pass
 
-class GeneratorError(SmartFarmingError):
+class TelemetryGenerationError(SmartFarmingError):
     """
     Raised when a telemetry generator fails to produce events.
     """
@@ -46,3 +46,25 @@ class DispatchError(SmartFarmingError):
     """
 
     pass
+
+class EventSerializationError(SmartFarmingError):
+    """
+    Raised when an event cannot be serialized.
+    """
+
+    pass
+
+class DataValidationError(ValidationError):
+    """
+    Raised when telemetry data fails validation.
+    """
+
+    pass
+
+class EventRegistrationError(SimulationError):
+    """
+    Raised when registering an event generator fails.
+    """
+
+    pass
+

@@ -38,10 +38,10 @@ def main() -> None:
 
         log_application_shutdown(logger)
 
-    except SmartFarmingError:
+    except SmartFarmingError as exc:
         log_unhandled_exception(
             logger,
-            "Application terminated due to a simulator error."
+            f"Application failed: {exc}",
         )
         raise
 
