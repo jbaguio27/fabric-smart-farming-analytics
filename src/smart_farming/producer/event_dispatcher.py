@@ -1,45 +1,48 @@
 """
 Event dispatcher for the HydroGrow Smart Farming Simulator.
 """
-
+import logging
+from smart_farming.models.base_event import BaseEvent
 from smart_farming.monitoring.logger import get_logger
 from smart_farming.utils.exceptions import DispatchError
 
-logger = get_logger(__name__)
 
 class EventDispatcher:
     """
     Dispatch simulator events to the configured destination.
-
-    During Project Setup, events are only logged. Future implementations
-    will support Microsoft Fabric Eventstream.
     """
 
-    def dispatch(self, event: object) -> None:
+    def __init__(self) -> None:
+        self.logger: logging.Logger = get_logger(__name__)
+
+    def dispatch(
+        self,
+        events: list[BaseEvent],
+    ) -> None:
         """
         Dispatch an event.
 
         Args:
-            event: Event instance to dispatch.
+            events: Events produced during a simulation cycle.
 
         Raises:
             DispatchError: If dispatching fails.
         """
 
-        try:
-            logger.info(
-                "Dispatching %s event.",
-                event.__class__.__name__,
-            )
+        self.logger.info(
+            "Dispatching batch of %d events.",
+            len(events),
+        )
 
-            # Future implementation:
-            # - Serialize event
-            # - Send to Eventstream
-            # - Retry Failures
-            # - Record metrics
-        except Exception as exc:
-            logger.exception('Failed to dispatch event.')
+        # Placeholder for future Evenstream integration.
 
-            raise DispatchError(
-                'Failed to dispatch event.'
-            ) from exc
+        # Future implementation:
+        # - Serialize event
+        # - Send to Eventstream
+        # - Retry Failures
+        # - Record metrics
+
+        self.logger.info(
+            "Successfully dispatched %d events.",
+            len(events)
+        )

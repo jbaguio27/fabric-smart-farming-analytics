@@ -82,7 +82,7 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 def log_application_start(
-    logger: logging.logger,
+    logger: logging.Logger,
     settings: Settings,
 ) -> None:
     """

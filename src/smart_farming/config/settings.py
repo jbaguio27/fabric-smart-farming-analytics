@@ -28,10 +28,10 @@ class Settings:
     # ------------------------------------------------------------
 
     environment: str = field(
-        default_factory=lambda: os.getenv('ENVIRONMENT', 'development')
+        default_factory=lambda: os.getenv("ENVIRONMENT", "development")
     )
     log_level: str = field(
-        default_factory=lambda: os.getenv('LOG_LEVEL', 'INFO')
+        default_factory=lambda: os.getenv("LOG_LEVEL", "INFO")
     )
 
     # ------------------------------------------------------------
@@ -40,23 +40,23 @@ class Settings:
 
     total_facilities: int = field(
         default_factory=lambda: int(
-            os.getenv('TOTAL_FACILITIES', '8')
+            os.getenv("TOTAL_FACILITIES", "8")
         )
     )
     random_seed: int = field(
         default_factory=lambda: int(
-            os.getenv('RANDOM_SEED', '42')
+            os.getenv("RANDOM_SEED", "42")
         )
     )
     simulation_interval_seconds: int = field(
         default_factory=lambda: int(
-            os.getenv('SIMULATION_INTERVAL_SECONDS', '5')
+            os.getenv("SIMULATION_INTERVAL_SECONDS", "5")
         )
     )
 
     event_batch_size: int = field(
         default_factory=lambda: int(
-            os.getenv('EVENT_BATCH_SIZE', '100')
+            os.getenv("EVENT_BATCH_SIZE", "100")
         )
     )
 
@@ -65,35 +65,35 @@ class Settings:
     # ------------------------------------------------------------
 
     fabric_workspace: str = field(
-        default_factory=lambda: os.getenv('FABRIC_WORKSPACE', '')
+        default_factory=lambda: os.getenv("FABRIC_WORKSPACE", "")
     )
 
     eventstream_endpoint: str = field(
-        default_factory=lambda: os.getenv('EVENTSTREAM_ENDPOINT', '')
+        default_factory=lambda: os.getenv("EVENTSTREAM_ENDPOINT", "")
     )
 
     eventstream_name: str = field(
-        default_factory=lambda: os.getenv('EVENTSTREAM_NAME', '')
+        default_factory=lambda: os.getenv("EVENTSTREAM_NAME", "")
     )
 
     eventhouse_name: str = field(
-        default_factory=lambda: os.getenv('EVENTHOUSE_NAME', '')
+        default_factory=lambda: os.getenv("EVENTHOUSE_NAME", "")
     )
 
     kql_database: str = field(
-        default_factory=lambda: os.getenv('KQL_DATABASE', '')
+        default_factory=lambda: os.getenv("KQL_DATABASE", "")
     )
 
     lakehouse_name: str = field(
-        default_factory=lambda: os.getenv('LAKEHOUSE_NAME', '')
+        default_factory=lambda: os.getenv("LAKEHOUSE_NAME", "")
     )
 
     warehouse_name: str = field(
-        default_factory=lambda: os.getenv('WAREHOUSE_NAME', '')
+        default_factory=lambda: os.getenv("WAREHOUSE_NAME", "")
     )
 
     powerbi_workspace: str = field(
-        default_factory=lambda: os.getenv('POWERBI_WORKSPACE', '')
+        default_factory=lambda: os.getenv("POWERBI_WORKSPACE", "")
     )
 
     @classmethod
@@ -137,13 +137,13 @@ class Settings:
 
         if self.environment not in VALID_ENVIRONMENTS:
             errors.append(
-                'ENVIRONMENT must be one of: '
+                "ENVIRONMENT must be one of: "
                 f"{', '.join(sorted(VALID_ENVIRONMENTS))}."
             )
 
         if self.log_level not in VALID_LOG_LEVELS:
             errors.append(
-                'LOG_LEVEL must be one of: '
+                "LOG_LEVEL must be one of: "
                 f"{', '.join(sorted(VALID_LOG_LEVELS))}."
             )
 
@@ -181,6 +181,6 @@ class Settings:
 
         if errors:
             raise ConfigurationError(
-                'Invalid application configuration:\n- '
-                + '\n- '.join(errors)
+                "Invalid application configuration:\n- "
+                + "\n- ".join(errors)
             )
