@@ -323,7 +323,7 @@ Kimball provides:
 
 ## Decision
 
-Simulate enterprise IoT telemetry using Python and Faker.
+Simulate enterprise IoT operations using Python and Faker through persistent business entities that generate realistic streaming events.
 
 ## Business Driver
 
@@ -337,7 +337,9 @@ No production IoT devices are available during development.
 
 ## Rationale
 
-Python allows configurable event generation with realistic timestamps, sensor values, equipment failures, and maintenance events.
+Python allows configurable simulation of persistent business entities and realistic event generation, including environmental telemetry, equipment monitoring, irrigation telemetry, crop lifecycle events, maintenance activities, and facility operations.
+
+The simulator models long-lived business entities while generating lightweight streaming events that closely resemble enterprise Industrial IoT systems.
 
 ## Tradeoffs
 
@@ -466,8 +468,6 @@ This separation follows Microsoft's recommended architecture for combining Real-
 
 ---
 
----
-
 # AD-010: Dual Analytics Architecture
 
 ## Decision
@@ -570,6 +570,81 @@ This separation aligns with Microsoft Fabric best practices by isolating low-lat
 - Separate data sources for operational and historical reporting
 
 ---
+
+# AD-011: Persistent Asset and Entity Modeling
+
+## Decision
+
+Model physical assets and operational objects as persistent business entities that generate streaming telemetry events.
+
+Business entities maintain long-lived business metadata, while streaming events capture the operational state of those entities at a specific point in time.
+
+Telemetry events reference their originating entity through stable identifiers rather than duplicating static business attributes.
+
+An Entity Registry serves as the single source of truth for all persistent business entities within the simulator. Event generators retrieve existing entities from the registry rather than creating new entities during each simulation cycle.
+
+## Business Driver
+
+HydroGrow Solutions requires realistic telemetry generation that supports:
+
+- Equipment lifecycle management
+- Predictive maintenance
+- Historical asset analysis
+- Crop lifecycle tracking
+- Future dimensional modeling
+
+A persistent entity model more accurately reflects how enterprise Industrial IoT systems represent physical assets and operational objects.
+
+## Alternatives Considered
+
+### Self-Contained Telemetry Events
+
+Store both static business attributes and dynamic telemetry measurements within every event.
+
+#### Reason Not Selected
+
+This approach introduces unnecessary duplication of static business data, increases event payload sizes, and complicates schema evolution.
+
+## Rationale
+
+Persistent entities provide a stable representation of business objects, while telemetry events remain lightweight and focused on operational measurements.
+
+This separation supports:
+
+- Lean event contracts
+- Reduced data duplication
+- Historical asset tracking
+- Kimball dimensional modeling
+- Slowly Changing Dimension (SCD Type 2) implementation
+- Future simulator extensibility
+
+Examples include:
+
+| Business Entity | Streaming Event |
+|-----------------|-----------------|
+| Environmental Sensor | Sensor Telemetry Event |
+| Equipment Asset | Hardware Metrics Event |
+| Irrigation Zone | Irrigation Telemetry Event
+| Crop Batch | Crop Batch Event |
+| Maintenance Activity | Maintenance Event |
+| Facility | Platform Event
+
+## Tradeoffs
+
+### Advantages
+
+- Reduced event payload size
+- Clear separation between master data and telemetry
+- Simplified schema evolution
+- Better support for dimensional modeling
+- Improved maintainability
+
+### Disadvantages
+
+- Requires joining telemetry with entity metadata during analytical processing
+- Additional entity management within the simulator
+
+---
 # Summary of Architecture Decisions
 
 | ID | Decision |
@@ -584,6 +659,7 @@ This separation aligns with Microsoft Fabric best practices by isolating low-lat
 | AD-008 | Documentation-First Development |
 | AD-009 | Separation of Streaming and Historical Storage |
 | AD-010 | Dual Analytics Architecture |
+| AD-011 | Persistent Asset and Entity Modeling |
 
 ---
 

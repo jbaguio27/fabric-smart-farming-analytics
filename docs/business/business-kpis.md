@@ -283,7 +283,7 @@ Decreasing trend month over month
 
 ### Description
 
-Measure the elapsed time between telemetry generation and availability within Eventhouse and the Real-Time Operations Dashboard.
+Measure the elapsed time between telemetry generation by the Python simulator and its availability in Eventhouse for operational dashboards.
 
 ### Target
 
@@ -327,7 +327,7 @@ Valid Records / Total Records × 100
 
 ### Business Objective
 
-Measure the successful execution of both Fabric Data Factory pipelines responsible for Medallion transformations and Warehouse incremental loading.
+Measure the successful execution of both Fabric Data Factory pipelines responsible for Medallion transformations and downstream publication to analytical datasets.
 
 ### Formula
 
@@ -373,7 +373,7 @@ Provide a consolidated operational score across all facilities.
 
 ### Business Objective
 
-Measure the success rate of incremental Warehouse loading executed by Fabric Data Factory Pipeline 2.
+Measure the success rate of Pipeline 2 when publishing curated Gold datasets into the Microsoft Fabric Warehouse.
 
 ### Formula
 
@@ -456,6 +456,9 @@ Measure the availability of the Microsoft Fabric environment supporting operatio
 | Data Quality Score | Platform | ≥99.5% | Platform Monitoring Dashboard | Data Engineer |
 | Pipeline Success Rate | Platform | ≥99.9% | Platform Monitoring Dashboard | Data Engineer |
 | Multi-Facility Operational Score | Executive | ≥95% | Executive Dashboard | Executive Leadership |
+| Warehouse Load Success Rate | Platform | ≥99.9% | Platform Monitoring Dashboard | Data Engineer |
+| Quarantine Rate | Platform | <0.5% | Platform Monitoring Dashboard | Data Engineer |
+| Platform Availability | Platform | ≥99.9% | Platform Monitoring Dashboard | Data Engineer |
 
 ---
 
@@ -465,4 +468,4 @@ Business KPIs shall be reviewed periodically to ensure they remain aligned with 
 
 KPI definitions shall remain consistent across Eventhouse, the Fabric Warehouse, and Power BI semantic models. Any changes to KPI definitions, calculation methods, or target values shall be documented, reviewed, and approved before implementation.
 
-Operational platform KPIs shall be sourced from the centralized Monitoring Lakehouse and Microsoft Fabric Monitoring Hub to ensure consistent monitoring across streaming, batch processing, data quality, and reporting workloads.
+Operational platform KPIs shall be sourced from Microsoft Fabric Monitoring Hub, pipeline execution logs, Spark notebook execution history, validation logs, and platform monitoring datasets to ensure consistent monitoring across streaming, batch processing, data quality, and reporting workloads.

@@ -18,7 +18,7 @@ Maintaining traceability ensures that every business objective is supported by o
 | Improve equipment monitoring | FR-002, FR-005, FR-010 |
 | Provide real-time operational monitoring and historical business reporting | FR-005, FR-006, FR-009 |
 | Build a historical analytics platform | FR-006, FR-007, FR-008 |
-| Support future platform expansion | FR-003, FR-006, FR-011, FR-012 |
+| Support future platform expansion | FR-003, FR-006, FR-011, FR-012, NFR-002 |
 
 ---
 
@@ -88,12 +88,26 @@ This section will be completed as implementation progresses.
 | Eventstream | FR-001, FR-002, FR-003 |
 | Eventhouse | FR-003, FR-005, FR-010 |
 | Data Activator | FR-010 |
-| OneLake Lakehouse | FR-006, FR-007 |
-| Spark Notebooks | FR-007 |
-| Fabric Data Factory | FR-007, FR-008 |
+| OneLake Lakehouse | FR-006, FR-007, FR-008 |
+| Spark Notebooks | FR-007, FR-008 |
+| Fabric Data Factory Pipelines | FR-007, FR-008 |
 | Fabric Warehouse | FR-008, FR-009 |
 | Power BI Real-Time Dashboard | FR-005, FR-009 |
 | Power BI Historical Dashboards | FR-009 |
+
+---
+
+# Traceability Coverage
+
+| Category | Count |
+|----------|------:|
+| Business Goals | 7 |
+| Functional Requirements | 12 |
+| Non-Functional Requirements | 12 |
+| Project Epics | 13 |
+| Architecture Components | 9 |
+
+All functional requirements are traced to business objectives, non-functional requirements, implementation epics, and architecture components. Validation activities will be completed during implementation.
 
 ---
 

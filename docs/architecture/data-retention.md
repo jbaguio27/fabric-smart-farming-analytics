@@ -212,6 +212,7 @@ Stores:
 - SCD Type 2 dimensions
 - Business KPIs
 - Aggregated datasets
+- Historical telemetry from all supported event domains
 
 Purpose:
 
@@ -247,9 +248,10 @@ Retention Period:
 Stores:
 
 - Enterprise star schema
-- Historical dimensions
-- Historical facts
+- Historical dimension tables
+- Historical fact tables
 - Semantic model source
+- Curated datasets representing all business entities and telemetry domains
 
 Purpose:
 

@@ -10,7 +10,7 @@
 | Version | 1.0 |
 | Status | Approved |
 | Author | Joseph Baguio |
-| Last Updated | 2026-07-08 |
+| Last Updated | 2026-07-12 |
 
 ---
 
@@ -197,6 +197,7 @@ Internal Microsoft Fabric services communicate using managed identities where su
 
 Examples include:
 
+- Python Smart Farm Simulator to Eventstream (HTTPS)
 - Eventhouse to OneLake persistence
 - Data Factory pipeline execution
 - Spark Notebook execution
@@ -256,7 +257,7 @@ Communication occurs over secure HTTPS connections.
 
 No public database endpoints are exposed.
 
-The Python simulator publishes telemetry through secure HTTPS connections to Eventstream.
+The Python Smart Farm Simulator publishes environmental, irrigation, equipment, crop lifecycle, maintenance, platform, and alert events through secure HTTPS connections to Eventstream using the Fabric Custom Streaming Connector.
 
 ---
 
@@ -278,7 +279,7 @@ The Python simulator publishes telemetry through secure HTTPS connections to Eve
 The platform enforces logical security boundaries.
 
 ```text
-Python Simulator
+Python Smart Farm Simulator
         │
         ▼
 Eventstream
@@ -359,7 +360,7 @@ The Smart Farming Analytics Platform follows these best practices:
 
 # Security Summary
 
-The Smart Farming Analytics Platform applies layered security controls across Microsoft Fabric to protect operational telemetry and analytical datasets.
+The Smart Farming Analytics Platform applies layered security controls across Microsoft Fabric to protect operational telemetry, persistent business entity data, and analytical datasets.
 
 Authentication is managed through Microsoft Entra ID, authorization is enforced using Role-Based Access Control, and access is restricted according to business responsibilities. Raw telemetry remains protected within the Lakehouse, while curated datasets are securely published through the Warehouse and Power BI.
 

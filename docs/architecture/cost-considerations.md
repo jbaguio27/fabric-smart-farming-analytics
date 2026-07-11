@@ -103,6 +103,7 @@ Optimization Strategy
 - Partition by date
 - Automatic retention policies
 - Quarantine cleanup after retention period
+- Separate entity and telemetry datasets to reduce duplicated storage.
 
 ---
 
@@ -171,6 +172,7 @@ Optimization Strategy
 
 - Incremental MERGE
 - SCD Type 2 only where required
+- Separate dimensions from fact tables
 - Partition large fact tables
 - Optimize warehouse statistics
 
@@ -282,6 +284,20 @@ Benefits
 - Reduces storage growth
 - Preserves business history
 - Improves reporting accuracy
+
+---
+
+## Persistent Business Entities
+
+Static business metadata is stored once within dimension tables while telemetry facts reference those entities using surrogate keys.
+
+Benefits
+
+- Reduced telemetry payload size
+- Lower storage consumption
+- Improved compression
+- Simplified schema evolution
+- Reduced data duplication
 
 ---
 

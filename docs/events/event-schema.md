@@ -6,7 +6,7 @@
 
 **Status:** Approved
 
-**Last Updated:** July 2026
+**Last Updated:** 2026-07-12
 
 ---
 
@@ -168,6 +168,7 @@ This design simplifies:
 |-----------|----------|
 | UUID | RFC 4122 |
 | DateTime | ISO 8601 UTC |
+| Date | ISO 8601 (YYYY-MM-DD) |
 | String | UTF-8 |
 | Integer | 64-bit signed integer |
 | Decimal | Double precision |
@@ -253,6 +254,30 @@ This design simplifies:
 | VEGETATIVE | Active plant growth stage. |
 | MATURE | Crop has reached harvest readiness. |
 | HARVESTED | Crop batch harvested. |
+
+---
+
+## Sensor Type
+
+| Value | Description |
+|-------|-------------|
+| PH_PROBE | Measures nutrient solution pH |
+| EC_SENSOR | Measures electrical conductivity |
+| DO_SENSOR | Measures dissolved oxygen |
+| TEMP_SENSOR | Measures air or nutrient solution temperature |
+| HUMIDITY_SENSOR | Measures relative humidity |
+| LIGHT_SENSOR | Measures light intensity |
+
+---
+
+## Maintenance Type
+
+| Value | Description |
+|-------|-------------|
+| PREVENTIVE | Planned maintenance |
+| CORRECTIVE | Repair after failure |
+| INSPECTION | Routine inspection |
+| CALIBRATION | Sensor calibration |
 
 ---
 
@@ -343,6 +368,7 @@ To preserve backward compatibility:
 - Existing field names must not change.
 - Existing data types must remain unchanged.
 - Breaking changes require a new schema_version.
+- Deprecated fields should remain available for at least one schema version before removal.
 
 ---
 
@@ -446,6 +472,7 @@ Configurable (default: every 5 seconds per sensor)
 ---
 
 ## Validation Rules
+
 The following validation rules are applied during ingestion to ensure downstream analytical accuracy.
 | Field | Validation |
 |--------|------------|
@@ -494,7 +521,7 @@ Invalid payloads are assigned the appropriate data_quality_flag and retained for
 
 The Hardware Metrics Event represents the operational health and performance of critical farming equipment, including pumps, motors, valves, and supporting infrastructure.
 
-These events enable proactive equipment monitoring and predictive maintenance.
+These events enable equipment monitoring and provide the historical data required for future predictive maintenance capabilities.
 
 ## Business Purpose
 
@@ -789,7 +816,7 @@ Generated whenever maintenance work is scheduled or completed.
 |--------|------|----------|-------------|
 | maintenance_id | String | Yes | Maintenance activity identifier. |
 | equipment_id | String | Yes | Equipment receiving maintenance. |
-| maintenance_type | String | Yes | Preventive or corrective maintenance. |
+| maintenance_type | Enum | Yes | Preventive or corrective maintenance. |
 | technician | String | Yes | Assigned technician. |
 | maintenance_status | Enum | Yes | Current maintenance status. |
 | notes | String | No | Additional maintenance notes. |
@@ -894,7 +921,7 @@ Generated only when platform events occur.
 | Field | Type | Required | Description |
 |--------|------|----------|-------------|
 | component | String | Yes | Platform component generating the event. |
-| severity | String | Yes | Log severity level. |
+| severity | Enum | Yes | Log severity level. |
 | message | String | Yes | Human-readable event description. |
 | status_code | Integer | Yes | Application status code. |
 
@@ -990,7 +1017,7 @@ Generated only when alert conditions are detected.
     "threshold": 5.0,
     "actual_value": 3.4,
     "recommended_action": "Inspect aeration system immediately.",
-    "notification_channel": "Microsoft Teams"
+    "notification_channel": "TEAMS"
   }
 }
 ```
@@ -1132,7 +1159,7 @@ The following tables store streaming events inside Microsoft Fabric Eventhouse.
 | platform.system | platform_system |
 | alert.critical | alert_critical |
 
-Eventhouse serves as the operational streaming store for near real-time analytics and Data Activator rule evaluation. It is not the system of record for historical analytics. Historical persistence is achieved by continuously writing streaming data into the OneLake Lakehouse Bronze layer.
+Eventhouse provides low-latency operational storage for streaming analytics. Historical persistence is achieved by continuously writing events into the OneLake Lakehouse Bronze layer, which serves as the long-term system of record.
 
 ---
 
@@ -1212,8 +1239,9 @@ The Gold layer provides business-ready datasets for:
 - Power BI
 - Historical analytics
 - Executive dashboards
-- Machine learning
-- Forecasting
+- Historical analytics
+- Business intelligence
+- Future machine learning workloads
 - SQL analytics
 
 Gold datasets are loaded into the Fabric Warehouse using Fabric Data Factory pipelines for SQL analytics and enterprise reporting.
@@ -1376,6 +1404,7 @@ Potential future enhancements include:
 - Integration with Microsoft Fabric Real-Time Hub.
 - Fabric Event Processing
 - Fabric Mirroring
+- Fabric Real-Time Intelligence enhancements
 
 These enhancements can be incorporated without redesigning the existing event contracts.
 
@@ -1383,12 +1412,12 @@ These enhancements can be incorporated without redesigning the existing event co
 
 | Event Type | Bronze | Silver | Gold | Dashboard |
 | :--- | :---: | :---: | :--- | :--- |
-| `sensor.telemetry` | ✅ | ✅ | `fact_sensor_telemetry` | Operations Dashboard |
-| `hardware.metrics` | ✅ | ✅ | `fact_hardware_metrics` | Asset Health Dashboard |
-| `crop.batch.lifecycle` | ✅ | ✅ | `dim_crop_batch` | Crop Performance Dashboard |
-| `maintenance.activity` | ✅ | ✅ | Maintenance Reporting | Operations Dashboard |
-| `platform.system` | ✅ | Optional | Monitoring | Platform Health Dashboard |
-| `alert.critical` | ✅ | Optional | Alert History | Operations Dashboard |
+| `sensor.telemetry` | ✅ | ✅ | `fact_sensor_telemetry` | Real-Time Operations Dashboard, Farm Performance Dashboard |
+| `hardware.metrics` | ✅ | ✅ | `fact_hardware_metrics` | Real-Time Operations Dashboard, Farm Performance Dashboard |
+| `crop.batch.lifecycle` | ✅ | ✅ | `dim_crop_batch` | Farm Performance Dashboard |
+| `maintenance.activity` | ✅ | ✅ | Maintenance Reporting | Farm Performance Dashboard |
+| `platform.system` | ✅ | Optional | Monitoring | Platform Monitoring Dashboard |
+| `alert.critical` | ✅ | Optional | Alert History | Real-Time Operations Dashboard |
 
 ---
 # Conclusion
