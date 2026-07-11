@@ -109,7 +109,7 @@ The Data Engineer is responsible for building, monitoring, maintaining, and cont
 
 - Monitor Eventstream ingestion and streaming performance
 - Monitor Eventhouse ingestion health and KQL database performance
-- Maintain Spark Notebook transformations for Bronze → Silver and Silver → Gold
+- Maintain Bronze → Silver and Silver → Gold Spark Notebook transformations
 - Maintain Fabric Data Factory Pipeline 1 (Medallion orchestration)
 - Maintain Fabric Data Factory Pipeline 2 (Warehouse incremental loading)
 - Monitor data quality validation and quarantine processing
@@ -141,7 +141,7 @@ The Data Engineer is responsible for building, monitoring, maintaining, and cont
 - Meet platform performance and latency targets
 - Minimize processing failures and downtime
 - Resolve operational issues within agreed response times
-- Maintain successful Warehouse incremental loads
+- Maintain successful Warehouse incremental loading
 - Support secure and governed data delivery
 
 ---
@@ -163,7 +163,7 @@ Data Analysts transform historical telemetry into business insights that support
 ## Data Needs
 
 - Fabric Warehouse
-- Gold-layer datasets
+- Curated analytical datasets
 - Historical telemetry
 - Business KPIs
 - Farm Performance Dashboard
@@ -214,9 +214,9 @@ Executives require a high-level operational view of the business to monitor orga
 | Persona | Primary Focus | Primary Dashboard | Primary Data Source |
 |----------|---------------|-------------------|---------------------|
 | Farm Operator | Real-time facility monitoring | Real-Time Operations Dashboard | Eventhouse |
-| Operations Manager | Multi-facility operations | Real-Time Operations Dashboard | Eventhouse + Fabric Warehouse |
+| Operations Manager | Multi-facility operations | Real-Time Operations Dashboard | Eventhouse, Fabric Warehouse |
 | Agricultural Director | Crop health and yield | Farm Performance Dashboard | Fabric Warehouse |
-| Data Engineer | Platform operations | Platform Monitoring Dashboard | Fabric Monitoring Hub |
+| Data Engineer | Platform operations | Platform Monitoring Dashboard | Fabric Monitoring Hub, Eventhouse, Monitoring Lakehouse |
 | Data Analyst | Historical analytics | Farm Performance Dashboard | Fabric Warehouse |
 | Executive Leadership | Business performance | Executive Dashboard | Fabric Warehouse |
 

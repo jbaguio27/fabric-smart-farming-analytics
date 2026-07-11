@@ -10,7 +10,7 @@
 | Version | 1.0 |
 | Status | Approved |
 | Author | Joseph Baguio |
-| Last Updated | 2026-07-07 |
+| Last Updated | 2026-07-12 |
 
 ---
 
@@ -91,6 +91,7 @@ No business logic is applied at this stage.
 ## Responsibilities
 
 - Preserve original event payloads.
+- Preserve entity identifiers for downstream enrichment.
 - Maintain original event schema.
 - Support event replay.
 - Enable auditing.
@@ -109,8 +110,10 @@ No business logic is applied at this stage.
 
 - sensor_telemetry
 - hardware_metrics
+- irrigation_telemetry
 - crop_batch_lifecycle
 - maintenance_activity
+- facility_operations
 - platform_system
 
 ---
@@ -146,7 +149,7 @@ This layer provides trusted data for downstream analytical processing while rema
 
 - Improve data quality.
 - Standardize measurements.
-- Enrich business attributes.
+- Enrich telemetry using persistent entity metadata.
 - Produce reusable operational datasets.
 - Validate operational business rules.
 
@@ -199,12 +202,20 @@ This layer implements the Kimball dimensional model adopted throughout the Smart
 
 - fact_sensor_telemetry
 - fact_hardware_metrics
+- fact_irrigation_telemetry
+- fact_crop_lifecycle
+- fact_maintenance_activity
+- fact_facility_operations
 
 ## Dimension Tables
 
 - dim_sensor
+- dim_equipment
+- dim_irrigation_zone
 - dim_crop_batch
-- dim_facility_structure
+- dim_facility
+- dim_date
+- dim_time
 
 ## Characteristics
 
@@ -275,6 +286,7 @@ The Medallion Architecture provides the following benefits:
 - Simplifies troubleshooting.
 - Supports scalable Spark processing.
 - Enables reusable analytical datasets.
+- Supports telemetry enrichment using persistent business entities.
 - Separates operational and business transformations.
 - Improves governance and lineage.
 

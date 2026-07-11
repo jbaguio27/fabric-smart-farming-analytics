@@ -217,16 +217,22 @@ It contains:
 
 - fact_sensor_telemetry
 - fact_hardware_metrics
+- fact_irrigation_telemetry
+- fact_crop_lifecycle
+- fact_maintenance_activity
+- fact_facility_operations
 
 ## Dimension Tables
 
 - dim_sensor
+- dim_equipment
+- dim_irrigation_zone
 - dim_crop_batch
-- dim_facility_structure
+- dim_facility
 - dim_date
 - dim_time
 
-Dimension tables implement Slowly Changing Dimension (SCD) Type 2 where historical tracking is required.
+Business entities are maintained as persistent dimensions within the Warehouse. Streaming telemetry is loaded into fact tables and references the corresponding dimensions through surrogate keys, supporting historical analysis and conformed dimensional modeling.
 
 ---
 
@@ -316,6 +322,7 @@ The batch architecture supports:
 
 - Additional facilities
 - Larger telemetry volumes
+- New business entities
 - New event types
 - Additional Spark notebooks
 - Additional warehouse tables

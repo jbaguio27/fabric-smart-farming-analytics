@@ -82,7 +82,7 @@ The platform shall reliably process telemetry without data corruption or loss.
 - Failed processing attempts shall be logged.
 - Eventstream shall provide reliable event buffering and delivery.
 - Retry mechanisms shall be implemented where supported.
-- Continuous persistence from Eventhouse to the OneLake Bronze layer shall minimize the risk of data loss.
+- Streaming telemetry shall be continuously persisted from Eventhouse to the OneLake Bronze layer to support historical analytics and minimize the risk of data loss.
 - Duplicate processing shall be minimized.
 
 ### Success Metrics
@@ -100,12 +100,14 @@ The platform shall validate telemetry before downstream consumption.
 
 ### Requirements
 
-Incoming events shall be checked for:
+Incoming events shall be validated for:
 
-- Missing values
-- Invalid schema
+- Required fields
+- Schema validation
 - Duplicate records
+- Missing values
 - Out-of-range sensor values
+- Business rule validation
 
 ### Success Metrics
 
@@ -169,7 +171,8 @@ The platform shall expose:
 - Eventhouse ingestion metrics
 - Streaming latency
 - Event throughput
-- Data Factory pipeline status
+- Pipeline 1 execution status
+- Pipeline 2 execution status
 - Failed events
 - Data quality metrics
 - Spark Notebook execution status
@@ -215,7 +218,7 @@ Historical telemetry shall be retained to support reporting and trend analysis.
 
 - Streaming telemetry shall be retained within Eventhouse according to operational retention policies.
 - Raw telemetry shall be continuously persisted to the OneLake Bronze layer.
-- Curated historical datasets shall be retained within the OneLake Lakehouse and Fabric Warehouse according to business retention requirements.
+- Curated historical datasets shall be retained within the OneLake Lakehouse and Fabric Warehouse according to the documented Data Retention Strategy.
 - Retention policies shall be documented and consistently applied.
 
 ### Success Metrics
@@ -233,7 +236,7 @@ The platform shall support recovery from failures affecting data processing comp
 
 ### Requirements
 
-- Source data retained for replay where supported.
+- Raw telemetry retained in the Bronze layer shall support event replay where required.
 - Infrastructure configuration maintained in version control.
 - Recovery procedures documented.
 
@@ -278,7 +281,7 @@ The platform shall follow organizational governance and documentation standards.
 | NFR-008 | Monitoring Strategy |
 | NFR-009 | Power BI |
 | NFR-010 | Data Retention Strategy |
-| NFR-011 | Deployment Pipelines |
+| NFR-011 | Data Retention Strategy |
 | NFR-012 | Architecture & Governance |
 
 ---
@@ -289,7 +292,7 @@ The platform shall follow organizational governance and documentation standards.
 - Network connectivity between simulated devices and Microsoft Fabric is reliable.
 - Business stakeholders define acceptable environmental thresholds.
 - Fabric capacities are appropriately sized for expected workloads.
-- Operational dashboards consume streaming telemetry directly from Eventhouse, while historical dashboards consume curated datasets from the Fabric Warehouse.
+- Operational dashboards consume streaming telemetry from Eventhouse, while historical dashboards consume curated datasets from the Fabric Warehouse.
 
 ---
 
@@ -300,6 +303,7 @@ The platform shall follow organizational governance and documentation standards.
 - Predictive machine learning is excluded from the initial release.
 - Multi-region disaster recovery is outside the scope of this project.
 - Real-time operational dashboards are intended for monitoring and operational awareness rather than historical trend analysis.
+- Microsoft Fabric Trial capacity is used during development; production sizing is outside the scope of Version 1.0.
 
 ---
 
