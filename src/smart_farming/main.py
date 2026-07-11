@@ -13,25 +13,32 @@ from smart_farming.monitoring.logger import (
 from smart_farming.producer.event_dispatcher import EventDispatcher
 from smart_farming.producer.simulator import Simulator
 from smart_farming.utils.exceptions import SmartFarmingError
+from smart_farming.generators import EnvironmentalTelemetryGenerator
 
 def main() -> None:
     """
     Bootstrap and start the Smart Farming Simulator.
     """
 
-    configure_logging(settings)
     logger = get_logger(__name__)
 
     try:
         settings = Settings.from_env()
 
+        configure_logging(settings)
+
         log_application_start(logger, settings)
 
         dispatcher = EventDispatcher()
 
+        generator = EnvironmentalTelemetryGenerator(
+            settings=settings,
+        )
+
         simulator = Simulator(
             settings=settings,
             dispatcher=dispatcher,
+            generator=generator,
         )
 
         simulator.run()
@@ -48,7 +55,7 @@ def main() -> None:
     except Exception:
         log_unhandled_exception(
             logger,
-            "An unexpected application error occured."
+            "An unexpected application error occurred."
         )
         raise
 
