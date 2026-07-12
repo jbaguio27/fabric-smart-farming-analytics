@@ -11,6 +11,9 @@ from smart_farming.models.equipment import (
     EquipmentOperatingStatus,
     Equipment
 )
+from smart_farming.models.equipment_event import (
+    EquipmentTelemetryEvent,
+)
 
 __all__ = [
     "BaseEvent",
@@ -18,4 +21,5 @@ __all__ = [
     "WeatherState",
     "EquipmentOperatingStatus",
     "Equipment",
+    "EquipmentTelemetryEvent",
 ]
