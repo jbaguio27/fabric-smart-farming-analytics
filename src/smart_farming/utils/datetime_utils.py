@@ -7,7 +7,11 @@ across the application and downstream Microsoft Fabric components.
 
 from datetime import datetime
 
-from smart_farming.config.constants import DEFAULT_TIMEZONE, ISO_8601_FORMAT
+from smart_farming.config import (
+    DEFAULT_TIMEZONE, 
+    ISO_8601_FORMAT,
+)
+
 
 def utc_now() -> datetime:
     """

@@ -5,9 +5,16 @@ This generator is responsible for producing environmental sensor
 telemetry events for indoor farming facilities.
 """
 
-import random
-from smart_farming.monitoring.logger import get_logger
-from smart_farming.config.constants import (
+from smart_farming.utils import (
+    RandomManager,
+    ValidationError,
+)
+from smart_farming.environment import EnvironmentStateManager
+from smart_farming.monitoring import (
+    get_logger,
+)
+from smart_farming.config import (
+    Settings,
     SensorMetadata,
     FacilityId,
     ENVIRONMENTAL_SENSOR_CONFIG, 
@@ -18,36 +25,57 @@ from smart_farming.config.constants import (
     SENSOR_HEALTHY_PROBABILITY,
     SENSOR_WARNING_PROBABILITY,
     SENSOR_FAILED_PROBABILITY,
-    WARNING_SENSOR_OFFSET_PERCENTAGE,
     FACILITY_ID_PREFIX,
+    DAYTIME_SENSOR_ADJUSTMENTS,
+    NIGHTTIME_SENSOR_ADJUSTMENTS,
+    WEATHER_SENSOR_ADJUSTMENTS,
 )
-from smart_farming.config.settings import Settings
-from smart_farming.models.environmental_event import(
+from smart_farming.models import (
     EnvironmentalTelemetryEvent,
+    WeatherState,
 )
 
 
 class EnvironmentalTelemetryGenerator:
     """
-    Generate environmental telemetry for HydroGrow facilities.
+    Generates environmental telemetry for all smart farming facilities.
+
+    This generator simulates realistic environmental sensor readings
+    using the current environmental state, sensor health, facility
+    characteristics, and historical sensor values.
     """
 
     def __init__(
         self,
         settings: Settings,
+        random_manager: RandomManager,
+        environment_manager: EnvironmentStateManager,
     ) -> None:
         """
         Initialize the environmental telemetry generator.
 
         Args:
-            settings: Validated application settings.
+            settings: 
+                Validated application settings.
+            random_manager:
+                Shared random number generator.
+            environment_manager:
+                Provides the current environmental conditions.
         """
 
         self.settings = settings
+        self.random_manager = random_manager
+        self.environment_manager = environment_manager
         self.logger = get_logger(__name__)
-        self.random_generator = random.Random(
-            settings.random_seed
-        )
+        self.sensor_state: dict[
+            FacilityId,
+            dict[str, float | None],
+        ] = {}
+        
+        self.facility_profiles: dict[
+            FacilityId,
+            dict[str, float],
+        ] = self._generate_facility_profiles()
 
         self.logger.info(
             "Environmental telemetry generator initialized."
@@ -59,9 +87,15 @@ class EnvironmentalTelemetryGenerator:
         """
         Generate environmental telemetry events for all configured facilities.
 
+        One event is generated for every supported environmental sensor
+        within each facility using the current shared environmental state.
+
         Returns:
-            Collection of environmental telemetry events.
+            Collection of generated environmental telemetry events.
         """
+        environment = (
+            self.environment_manager.get_current_state()
+        )
 
         facility_ids = self._generate_facility_ids()
 
@@ -69,7 +103,8 @@ class EnvironmentalTelemetryGenerator:
 
         for facility_id in facility_ids:
             facility_events = self._generate_facility_events(
-                facility_id=facility_id
+                facility_id=facility_id,
+                environment=environment,
             )
 
             events.extend(facility_events)
@@ -84,25 +119,29 @@ class EnvironmentalTelemetryGenerator:
 
     def generate_sensor_value(
         self,
+        facility_id: FacilityId,
         sensor_type: str,
         sensor_status: str,
     ) -> float | None:
         """
-        Generate a realistic value for an environmental sensor based on its status.
+        Generate a sensor reading based on its operational status.
 
-        The generated value is constrained by the configured minimum and maximum limits
-        defined in the environmental sensor configuration. The returned value is rounded
-        using the sensor's configured precision.
+        Healthy sensors remain within their operating range, warning
+        sensors gradually drift beyond acceptable limits, and failed
+        sensors either stop reporting or become stuck.
 
         Args:
-            sensor_type: Supported environmental sensor type.
-            sensor_status: The operational status of the sensor (healthy, warning, failed).
-        
+            facility_id:
+                Facility producing the telemetry.
+
+            sensor_type:
+                Environmental sensor type.
+
+            sensor_status:
+                Current simulated sensor health.
+
         Returns:
-            Randomly generated sensor reading, or None if failed.
-        
-        Raises:
-            ValidationError: If the sensor type is unsupported or status is unknown.
+            Generated sensor value or None for failed sensors.
         """
 
         if not self.is_supported_sensor(sensor_type):
@@ -111,13 +150,27 @@ class EnvironmentalTelemetryGenerator:
             )
 
         sensor_metadata = self.get_sensor_metadata(sensor_type)
+
+        previous_value = self._get_sensor_state(
+            facility_id=facility_id,
+            sensor_type=sensor_type
+        )
         
         if sensor_status == SENSOR_STATUS_HEALTHY:
-            return self._generate_healthy_value(sensor_metadata)
+            return self._generate_healthy_value(
+                metadata=sensor_metadata,
+                previous_value=previous_value,
+            )
         elif sensor_status == SENSOR_STATUS_WARNING:
-            return self._generate_warning_value(sensor_metadata)
+            return self._generate_warning_value(
+                metadata=sensor_metadata,
+                previous_value=previous_value,
+            )
         elif sensor_status == SENSOR_STATUS_FAILED:
-            return self._generate_failed_value(sensor_metadata)
+            return self._generate_failed_value(
+                metadata=sensor_metadata,
+                previous_value=previous_value,
+            )
 
         raise ValidationError(
             f"Unknown sensor status: '{sensor_status}'."
@@ -172,13 +225,22 @@ class EnvironmentalTelemetryGenerator:
         self,
         facility_id: FacilityId,
         sensor_type: str,
+        environment: WeatherState,
     ) -> EnvironmentalTelemetryEvent:
         """
-        Create an environmental telemetry event for a single sensor.
+        Create a fully populated environmental telemetry event.
+
+        The generated event incorporates sensor health, environmental
+        conditions, facility-specific adjustments, and the shared
+        simulation timestamp.
 
         Args:
-            facility_id: Facility producing the telemetry.
-            sensor_type: Environmental sensor type.
+            facility_id: 
+                Facility producing the telemetry.
+            sensor_type: 
+                Environmental sensor type.
+            environment:
+                Current simulated environmental state.
 
         Returns:
             A populated environmental telemetry event.
@@ -189,27 +251,60 @@ class EnvironmentalTelemetryGenerator:
         sensor_status = self._determine_sensor_status()
 
         sensor_value = self.generate_sensor_value(
+            facility_id=facility_id,
             sensor_type=sensor_type,
             sensor_status=sensor_status,
         )
 
-        return EnvironmentalTelemetryEvent(
+        sensor_value = self._apply_day_night_adjustment(
+            sensor_type=sensor_type,
+            sensor_value=sensor_value,
+            is_daytime=environment.is_daytime,
+        )
+
+        sensor_value = self._apply_weather_adjustment(
+            sensor_type=sensor_type,
+            sensor_value=sensor_value,
+            weather=environment.weather,
+        )
+
+        sensor_value = self._apply_facility_adjustment(
+            sensor_type=sensor_type,
+            facility_id=facility_id,
+            sensor_value=sensor_value,
+        )
+
+        self._update_sensor_state(
+            facility_id=facility_id,
+            sensor_type=sensor_type,
+            sensor_value=sensor_value,
+        )
+
+        event = EnvironmentalTelemetryEvent(
             event_type=EVENT_TYPE_ENVIRONMENTAL,
             facility_id=facility_id,
             sensor_type=sensor_type,
             sensor_value=sensor_value,
             unit=metadata['unit'],
             sensor_status=sensor_status,
+            weather=environment.weather,
+            is_daytime=environment.is_daytime,
         )
+
+        event.timestamp = environment.timestamp
+
+        return event
     
     def _generate_facility_events(
         self,
         facility_id: FacilityId,
+        environment: WeatherState,
     ) -> list[EnvironmentalTelemetryEvent]:
         """
         Generate environmental telemetry events for a single facility.
 
-        One event is produced for each supported environmental sensor.
+        One event is generated for each supported environmental sensor
+        using the current shared environmental conditions.
 
         Args:
             facility_id: Facility identifier.
@@ -225,6 +320,7 @@ class EnvironmentalTelemetryGenerator:
                 self._create_environmental_event(
                     facility_id=facility_id,
                     sensor_type=sensor_type,
+                    environment=environment,
                 )
             )
         
@@ -249,35 +345,126 @@ class EnvironmentalTelemetryGenerator:
             )
         ]
 
+    def _get_sensor_state(
+        self,
+        facility_id: FacilityId,
+        sensor_type: str
+    ) -> float | None:
+        """
+        Return the previous reading for a sensor.
+
+        The previous value is used to produce continuous telemetry
+        instead of completely random sensor readings.
+
+        Args:
+            facility_id: Facility identifier.
+            sensor_type: Environmental sensor type.
+
+        Returns:
+            Current sensor value or None if this is the first reading.
+        """
+
+        return self.sensor_state.get(
+            (facility_id, sensor_type)
+        )
+
+    def _update_sensor_state(
+        self,
+        facility_id: FacilityId,
+        sensor_type: str,
+        sensor_value: float | None,
+    ) -> None:
+        """
+        Persist the latest successful sensor reading.
+
+        Failed sensor values are intentionally ignored to preserve
+        the last valid measurement for future telemetry generation.
+
+        Args:
+            facility_id: Facility identifier.
+            sensor_type: Environmental sensor type.
+            sensor_value: Newly generated value.
+        """
+
+        if sensor_value is None:
+            return
+
+        self.sensor_state[
+            (facility_id, sensor_type)
+        ] = sensor_value
+
     def _generate_healthy_value(
         self,
         metadata: SensorMetadata,
+        previous_value: float | None,
     ) -> float:
         """
-        Generate a sensor reading within the configured operating range.
+        Generate a healthy sensor reading.
+
+        Healthy readings remain within the configured operating range
+        while drifting gradually from the previous measurement.
 
         Args:
             metadata: Environmental sensor configuration.
+            previous_value: Previous sensor reading used to generate
+            realistic continuous telemetry. None if this is the
+            first reading.
 
         Returns:
             Simulated healthy sensor value.
         """
-        value = self.random_generator.uniform(
-            metadata['min_value'],
-            metadata['max_value'],
+
+        minimum = metadata['min_value']
+        maximum = metadata['max_value']
+        precision = metadata['precision']
+        
+        healthy_drift = metadata[
+            "healthy_drift_percentage"
+        ]
+
+        operating_range = maximum - minimum
+
+        if previous_value is None:
+            value = self.random_manager.uniform(
+                minimum,
+                maximum,
+            )
+        else:
+            drift = self.random_manager.uniform(
+                -operating_range * healthy_drift,
+                operating_range * healthy_drift,
+            )
+
+            value = previous_value + drift
+        
+        value = max(
+            minimum,
+            min(
+                value,
+                maximum,
+            ),
         )
 
-        return round(value, metadata['precision'])
+        return round(value, precision)
 
     def _generate_warning_value(
         self,
         metadata: SensorMetadata,
+        previous_value: float | None,
     ) -> float:
         """
-        Generate a sensor reading within the configured operating range.
+        Generate a warning sensor reading that gradually drifts
+        outside the healthy operating range.
+
+        Warning values remain close to the acceptable range to simulate
+        sensors that are beginning to drift but have not yet completely
+        failed.
 
         Args:
             metadata: Environmental sensor configuration.
+            previous_value: Previous sensor reading used to generate
+            realistic continuous telemetry. None if this is the
+            first reading.
 
         Returns:
             Simulated warning sensor value.
@@ -286,54 +473,276 @@ class EnvironmentalTelemetryGenerator:
         maximum = metadata['max_value']
         precision = metadata['precision']
 
-        operating_range = maximum - minimum
-        warning_offset = operating_range * WARNING_SENSOR_OFFSET_PERCENTAGE
+        healthy_drift = metadata[
+            "healthy_drift_percentage"
+        ]
 
-        generate_below_range = self.random_generator.choice(
-            [True, False]
+        maximum_deviation = metadata[
+            "warning_max_deviation_percentage"
+        ]
+
+        operating_range = maximum - minimum
+        
+        if previous_value is None:
+            previous_value = self.random_manager.uniform(
+                minimum,
+                maximum,
+            )
+
+        direction = (
+            -1
+            if previous_value < (minimum + maximum) / 2
+            else 1
         )
 
-        if generate_below_range:
-            value = self.random_generator.uniform(
-                minimum - warning_offset,
-                minimum,
-            )
-        else:
-            value = self.random_generator.uniform(
-                maximum,
-                maximum + warning_offset,
-            )
-        
+        drift = self.random_manager.uniform(
+            operating_range * healthy_drift,
+            operating_range * (
+                maximum_deviation * 0.5
+            ),
+        )
+
+        value = previous_value + (
+            direction * drift
+        )
+
+        allowed_deviation = (
+            operating_range * maximum_deviation
+        )
+
+        lower_limit = minimum - allowed_deviation
+        upper_limit = maximum + allowed_deviation
+
+        value = max(
+            lower_limit,
+            min(
+                value,
+                upper_limit,
+            ),
+        )
+
         return round(value, precision)
 
     def _generate_failed_value(
         self,
         metadata: SensorMetadata,
+        previous_value: float | None
     ) -> float | None:
         """
-        Generate a sensor reading within the configured operating range.
+        Generate a failed sensor reading.
+
+        Failed sensors either stop transmitting data or repeatedly
+        report their previous measurement to simulate common sensor
+        failure scenarios.
 
         Args:
             metadata: Environmental sensor configuration.
+            previous_value: Previous sensor reading used to generate
+            realistic continuous telemetry. None if this is the
+            first reading.
 
         Returns:
-            Simulated failed sensor value.
+            None if the sensor stops reporting, otherwise the last
+            recorded value.
+        """
+        if previous_value is None:
+            return None
+
+        if self.random_manager.random() < 0.7:
+            return None
+
+        return round(
+            previous_value,
+            metadata["precision"]
+        )
+
+    def _apply_day_night_adjustment(
+        self,
+        sensor_type: str,
+        sensor_value: float | None,
+        is_daytime: bool,
+    ) -> float | None:
+        """
+        Apply the configured day or night influence to a sensor reading.
+
+        The adjustment simulates predictable environmental changes
+        caused by daylight and nighttime operating conditions.
+
+        Args:
+            sensor_type:
+                Environmental sensor type.
+            sensor_value:
+                Generated sensor reading.
+            is_daytime:
+                Indicates whether the current simulation time
+                occurs during daytime.
+        
+        Returns:
+            Adjusted sensor value.
         """
 
-        return None
+        if sensor_value is None:
+            return None
+
+        metadata = self.get_sensor_metadata(sensor_type)
+
+        if is_daytime:
+            adjustment = DAYTIME_SENSOR_ADJUSTMENTS.get(
+                sensor_type,
+                0.0,
+            )
+        else:
+            adjustment = NIGHTTIME_SENSOR_ADJUSTMENTS.get(
+                sensor_type,
+                0.0,
+            )
+
+        return round(
+            sensor_value + adjustment,
+            metadata["precision"],
+        )
+
+    def _apply_weather_adjustment(
+        self,
+        sensor_type: str,
+        sensor_value: float | None,
+        weather: str,
+    ) -> float | None:
+        """
+        Apply the current weather influence to a sensor reading.
+
+        Each sensor responds differently based on its configured
+        weather sensitivity.
+
+        Args:
+            sensor_type:
+                Environmental sensor type.
+            sensor_value:
+                Current sensor reading.
+            weather:
+                Current simulated weather.
+
+        Returns:
+            Weather-adjusted sensor value.
+        """
+
+        if sensor_value is None:
+            return None
+        
+        metadata = self.get_sensor_metadata(sensor_type)
+
+        sensitivity = metadata['weather_sensitivity']
+
+        adjustment = (
+            WEATHER_SENSOR_ADJUSTMENTS
+            .get(weather, {})
+            .get(sensor_type, 0.0)
+        )
+
+        value = sensor_value + (adjustment * sensitivity)
+
+        return round(
+            value,
+            metadata['precision'],
+        )
+
+    def _apply_facility_adjustment(
+        self,
+        sensor_type: str,
+        facility_id: FacilityId,
+        sensor_value: float | None,
+    ) -> float | None:
+        """
+        Apply a permanent facility-specific adjustment.
+
+        Each facility receives a small deterministic offset that
+        creates realistic operational differences between otherwise
+        identical facilities.
+
+        Args:
+            sensor_type:
+                Environmental sensor type.
+            facility_id:
+                Facility identifier.
+            sensor_value:
+                Current sensor reading.
+        Returns:
+            Sensor value adjusted for facility characteristics.
+        """
+
+        if sensor_value is None:
+            return None
+        
+        metadata = self.get_sensor_metadata(sensor_type)
+
+        adjustment = (
+            self.facility_profiles
+            [facility_id]
+            [sensor_type]
+        )
+
+        return round(
+            sensor_value + adjustment,
+            metadata["precision"]
+        )
+
+    def _generate_facility_profiles(
+        self,
+    ) -> dict[FacilityId, dict[str, float]]:
+        """
+        Generate permanent environmental profiles for all facilities.
+
+        Each facility receives a fixed sensor offset during simulator
+        initialization to represent unique operating characteristics.
+
+        Returns:
+            Mapping of facility-specific sensor offsets.
+        """
+
+        profiles: dict[
+            FacilityId,
+            dict[str, float],
+        ] = {}
+
+        for facility_id in self._generate_facility_ids():
+            sensor_offsets: dict[str, float] = {}
+            for sensor_type in self.get_supported_sensors():
+                metadata = self.get_sensor_metadata(sensor_type)
+
+                operating_range = (
+                    metadata["max_value"] -
+                    metadata["min_value"]
+                )
+
+                variation = (
+                    operating_range * metadata[
+                        "facility_variation_percentage"
+                    ]
+                )
+                
+                sensor_offsets[sensor_type] = (
+                    self.random_manager.uniform(
+                        -variation,
+                        variation,
+                    )
+                )
+            profiles[facility_id] = sensor_offsets
+        
+        return profiles
 
     def _determine_sensor_status(self) -> str:
         """
-        Randomly determine the health status of an environmental sensor.
+        Determine the simulated health status of a sensor.
 
-        The returned status is selected according to the configured sensor
-        health probabilities.
+        The returned status is selected using the configured
+        probability distribution and the shared random number
+        generator.
 
         Returns:
             Simulated sensor health status.
         """
 
-        random_value = self.random_generator.random()
+        random_value = self.random_manager.random()
 
         if random_value < SENSOR_HEALTHY_PROBABILITY:
             return SENSOR_STATUS_HEALTHY

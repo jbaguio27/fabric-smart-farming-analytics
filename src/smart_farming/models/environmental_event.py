@@ -7,8 +7,13 @@ environmental telemetry specific attributes.
 """
 
 from dataclasses import dataclass
-from smart_farming.models.base_event import BaseEvent
-from smart_farming.config.constants import SENSOR_STATUS_HEALTHY
+from smart_farming.models import (
+    BaseEvent,
+)
+from smart_farming.config import (
+    SENSOR_STATUS_HEALTHY,
+)
+
 
 @dataclass(slots=True)
 class EnvironmentalTelemetryEvent(BaseEvent):
@@ -23,6 +28,8 @@ class EnvironmentalTelemetryEvent(BaseEvent):
     sensor_value: float | None
     unit: str
     sensor_status: str
+    weather: str
+    is_daytime: bool
 
     def is_alert(self) -> bool:
         """

@@ -4,13 +4,18 @@ Core simulator for the HydroGrow Smart Farming Simulator.
 
 import time
 import logging
-from smart_farming.config.settings import Settings
-from smart_farming.monitoring.logger import get_logger
-from smart_farming.producer.event_dispatcher import EventDispatcher
+from smart_farming.config import Settings
+from smart_farming.monitoring import (
+    get_logger,
+)
+from smart_farming.producer import (
+    EventDispatcher,
+)
 from smart_farming.generators.environmental_generator import EnvironmentalTelemetryGenerator
-from smart_farming.models.environmental_event import (
+from smart_farming.models import (
     EnvironmentalTelemetryEvent,
 )
+from smart_farming.environment import EnvironmentStateManager
 
 
 class Simulator:
@@ -22,11 +27,13 @@ class Simulator:
         self,
         settings: Settings,
         dispatcher: EventDispatcher,
-        generator: EnvironmentalTelemetryGenerator
+        generator: EnvironmentalTelemetryGenerator,
+        environment_manager: EnvironmentStateManager,
     ) -> None:
         self.settings: Settings = settings
         self.dispatcher: EventDispatcher = dispatcher
         self.generator: EnvironmentalTelemetryGenerator = generator
+        self.environment_manager: EnvironmentStateManager = environment_manager
         self.logger: logging.Logger = get_logger(__name__)
         self.is_running: bool = False
         self.completed_cycles: int = 0
@@ -92,6 +99,23 @@ class Simulator:
         A simulation cycle generates telemetry events for all configured
         facilities and dispatches them to the event dispatcher.
         """
+        self.environment_manager.advance_cycle()
+
+        environment = (
+            self.environment_manager.get_current_state()
+        )
+
+        self.logger.info(
+            (
+                "Environment updated | "
+                "Weather=%s | "
+                "Daytime=%s | "
+                "Time=%s"
+            ),
+            environment.weather,
+            environment.is_daytime,
+            environment.timestamp.isoformat(),
+        )
 
         events: list[EnvironmentalTelemetryEvent] = (
             self.generator.generate()
@@ -101,6 +125,19 @@ class Simulator:
             "Generated %d events for dispatch.",
             len(events),
         )
+
+        for event in events:
+            self.logger.info(
+                "Time=%s | Weather=%s | Day=%s | Facility=%s | Sensor=%s | Value=%s %s | Status=%s",
+                event.timestamp,
+                event.weather,
+                event.is_daytime,
+                event.facility_id,
+                event.sensor_type,
+                event.sensor_value,
+                event.unit,
+                event.sensor_status,
+            )
 
         self.dispatcher.dispatch(events)
 

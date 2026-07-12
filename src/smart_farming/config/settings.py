@@ -10,13 +10,13 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from smart_farming.utils.exceptions import ConfigurationError
-from smart_farming.config.constants import (
+from .constants import (
     VALID_ENVIRONMENTS,
     VALID_LOG_LEVELS,
     MIN_SIMULATION_INTERVAL_SECONDS,
     MIN_TOTAL_FACILITIES,
     MIN_EVENT_BATCH_SIZE,
-    MIN_RANDOM_SEED
+    MIN_RANDOM_SEED,
 )
 
 @dataclass(slots=True)
@@ -51,6 +51,14 @@ class Settings:
     simulation_interval_seconds: int = field(
         default_factory=lambda: int(
             os.getenv("SIMULATION_INTERVAL_SECONDS", "5")
+        )
+    )
+    simulation_time_step_minutes: int = field(
+        default_factory=lambda: int(
+            os.getenv(
+                "SIMULATION_TIME_STEP_MINUTES",
+                "5"
+            )
         )
     )
 
@@ -155,6 +163,11 @@ class Settings:
             errors.append(
                 f"SIMULATION_INTERVAL_SECONDS must be at least "
                 f"{MIN_SIMULATION_INTERVAL_SECONDS}."
+            )
+
+        if self.simulation_time_step_minutes <= 0:
+            errors.append(
+                "SIMULATION_TIME_STEP_MINUTES must be greater than 0."
             )
 
         if self.total_facilities < MIN_TOTAL_FACILITIES:
