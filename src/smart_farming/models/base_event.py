@@ -11,6 +11,7 @@ from smart_farming.config import (
 )
 from smart_farming.utils import (
     generate_event_id,
+    utc_now
 )
 
 
@@ -29,7 +30,7 @@ class BaseEvent:
     )
 
     timestamp: datetime = field(
-        default_factory=generate_event_id,
+        default_factory= utc_now(),
         init=False,
     )
 

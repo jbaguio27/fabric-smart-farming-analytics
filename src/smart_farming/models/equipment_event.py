@@ -57,7 +57,6 @@ class EquipmentTelemetryEvent(BaseEvent):
     """
 
     equipment_id: str
-    facility_id: str
     zone_id: str
     equipment_type: str
     operating_status: EquipmentOperatingStatus

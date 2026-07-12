@@ -126,18 +126,18 @@ class Simulator:
             len(events),
         )
 
-        for event in events:
-            self.logger.info(
-                "Time=%s | Weather=%s | Day=%s | Facility=%s | Sensor=%s | Value=%s %s | Status=%s",
-                event.timestamp,
-                event.weather,
-                event.is_daytime,
-                event.facility_id,
-                event.sensor_type,
-                event.sensor_value,
-                event.unit,
-                event.sensor_status,
-            )
+        # for event in events:
+        #     self.logger.info(
+        #         "Time=%s | Weather=%s | Day=%s | Facility=%s | Sensor=%s | Value=%s %s | Status=%s",
+        #         event.timestamp,
+        #         event.weather,
+        #         event.is_daytime,
+        #         event.facility_id,
+        #         event.sensor_type,
+        #         event.sensor_value,
+        #         event.unit,
+        #         event.sensor_status,
+        #     )
 
         self.dispatcher.dispatch(events)
 
