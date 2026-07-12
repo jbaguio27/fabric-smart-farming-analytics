@@ -163,19 +163,15 @@ ENVIRONMENTAL_SENSOR_CONFIG: Final[
 }
 
 # ========================================================================================
-# Equipment Status
+# Equipment Types
 # ========================================================================================
 
-STATUS_ONLINE = "ONLINE"
-STATUS_OFFLINE = "OFFLINE"
-STATUS_WARNING = "WARNING"
-STATUS_ERROR = "ERROR"
-
-EQUIPMENT_STATUSES: Final[tuple[str, ...]] = (
-    STATUS_ONLINE,
-    STATUS_OFFLINE,
-    STATUS_WARNING,
-    STATUS_ERROR
+EQUIPMENT_TYPES: Final[tuple[str, ...]] = (
+    "water_pump",
+    "hvac",
+    "led_panel",
+    "nutrient_pump",
+    "ventilation_fan",
 )
 
 # ========================================================================================
