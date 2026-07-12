@@ -175,6 +175,20 @@ EQUIPMENT_TYPES: Final[tuple[str, ...]] = (
 )
 
 # ========================================================================================
+# Equipment Runtime Configuration
+# ========================================================================================
+
+MAX_EQUIPMENT_HEALTH: Final[float] = 100.0
+MIN_EQUIPMENT_HEALTH: Final[float] = 0.0
+
+MAX_EQUIPMENT_LOAD: Final[float] = 100.0
+MIN_EQUIPMENT_LOAD: Final[float] = 0.0
+
+INITIAL_FAILURE_PROBABILITY: Final[float] = 0.0
+
+HEALTH_DEGRADATION_PER_RUNTIME_HOUR: Final[float] = 0.02
+
+# ========================================================================================
 # Sensor Health
 # ========================================================================================
 

@@ -7,10 +7,14 @@ from smart_farming.environment.equipment_registry import EquipmentRegistry
 from smart_farming.environment.equipment_state import (
     EquipmentState,
 )
+from smart_farming.environment.equipment_state_manager import (
+    EquipmentStateManager,
+)
 
 __all__ = [
     "EnvironmentState",
     "EnvironmentStateManager",
     "EquipmentRegistry",
-    "EquipmentState"
+    "EquipmentState",
+    "EquipmentStateManager",
 ]
