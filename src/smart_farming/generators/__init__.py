@@ -2,7 +2,7 @@
 Telemetry generators for the HydroGrow Smart Farming Simulator.
 """
 
-from smart_farming.generators.environmental_generator import (
+from .environmental_generator import (
     EnvironmentalTelemetryGenerator,
 )
 

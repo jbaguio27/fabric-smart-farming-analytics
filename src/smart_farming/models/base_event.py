@@ -4,14 +4,15 @@ Base event model shared by all Smart Farming simulator events.
 
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-
-from smart_farming.config.constants import (
+from smart_farming.config import (
     APPLICATION_NAME,
     SCHEMA_VERSION,
     FacilityId
 )
-from smart_farming.utils.datetime_utils import utc_now
-from smart_farming.utils.id_generator import generate_event_id
+from smart_farming.utils import (
+    generate_event_id,
+)
+
 
 @dataclass(slots=True)
 class BaseEvent:
@@ -28,7 +29,7 @@ class BaseEvent:
     )
 
     timestamp: datetime = field(
-        default_factory=utc_now,
+        default_factory=generate_event_id,
         init=False,
     )
 

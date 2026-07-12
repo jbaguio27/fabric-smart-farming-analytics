@@ -3,8 +3,7 @@ Logging configuration for the HydroGrow Smart Farming Simulator.
 """
 
 import logging
-
-from smart_farming.config.settings import Settings
+from smart_farming.config import Settings
 
 def create_formatter() -> logging.Formatter:
     """
