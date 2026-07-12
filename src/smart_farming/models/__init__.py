@@ -7,9 +7,15 @@ from smart_farming.models.environmental_event import (
     EnvironmentalTelemetryEvent,
 )
 from smart_farming.models.weather_state import WeatherState
+from smart_farming.models.equipment import (
+    EquipmentOperatingStatus,
+    Equipment
+)
 
 __all__ = [
     "BaseEvent",
     "EnvironmentalTelemetryEvent",
     "WeatherState",
+    "EquipmentOperatingStatus",
+    "Equipment",
 ]
