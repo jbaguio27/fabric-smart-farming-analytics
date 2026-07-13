@@ -31,9 +31,12 @@ from smart_farming.utils import (
 from smart_farming.monitoring import (
     get_logger
 )
+from smart_farming.generators import (
+    BaseTelemetryGenerator,
+)
 
 
-class EquipmentTelemetryGenerator:
+class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
     """
     Generates telemetry events for equipment assets.
 
