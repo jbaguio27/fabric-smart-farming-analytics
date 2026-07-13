@@ -53,7 +53,7 @@ class EquipmentStateManager:
             equipment_registry:
                 Registry containing all persistent equipment assets.
         """
-        self._registry = equipment_registry
+        self._equipment_registry = equipment_registry
         self._random_manager = random_manager
         self._states: dict[str, EquipmentState] = {}
         
@@ -71,7 +71,7 @@ class EquipmentStateManager:
 
         self._states.clear()
 
-        for equipment in self._registry.list_all():
+        for equipment in self._equipment_registry.list_all():
             self._states[equipment.equipment_id] = EquipmentState()
 
     def advance_runtime(
@@ -189,7 +189,7 @@ class EquipmentStateManager:
                 ),
             )
 
-    def update_operating_statues(self) -> None:
+    def update_operating_status(self) -> None:
         """
         Update the operating status for every registered equipment asset.
 
@@ -254,43 +254,3 @@ class EquipmentStateManager:
         Return every equipment runtime state.
         """
         return dict(self._states)
-    
-    def set_operating_status(
-        self,
-        equipment_id: str,
-        status: EquipmentOperatingStatus,
-    ) -> None:
-        """
-        Update the operating status for an equipment asset.
-        """
-        self.get(equipment_id).operating_status = status
-
-    def update_runtime(
-        self,
-        equipment_id: str,
-        hours: float,
-    ) -> None:
-        """
-        Increment accumulated runtime.
-        """
-        self.get(equipment_id).runtime_hours += hours
-
-    def update_load(
-        self,
-        equipment_id: str,
-        load: float,
-    ) -> None:
-        """
-        Update equipment load.
-        """
-        self.get(equipment_id).current_load = load
-    
-    def update_health(
-        self,
-        equipment_id: str,
-        health: float,
-    ) -> None:
-        """
-        Update equipment health.
-        """
-        self.get(equipment_id).health = health
