@@ -16,9 +16,15 @@ from smart_farming.config import (
     HEALTH_DEGRADATION_PER_RUNTIME_HOUR,
     MAX_EQUIPMENT_HEALTH,
     MIN_EQUIPMENT_HEALTH,
+    MAX_EQUIPMENT_LOAD,
+    MIN_EQUIPMENT_LOAD,
 )
 from smart_farming.models import EquipmentOperatingStatus
-from smart_farming.utils import SimulationError
+from smart_farming.utils import (
+    SimulationError,
+    RandomManager,
+)
+
 
 class EquipmentStateManager:
     """
@@ -28,6 +34,7 @@ class EquipmentStateManager:
     def __init__(
         self,
         equipment_registry: EquipmentRegistry,
+        random_manager: RandomManager,
     ) -> None:
         """
         Initialize the equipment runtime state manager.
@@ -42,6 +49,7 @@ class EquipmentStateManager:
                 Registry containing all persistent equipment assets.
         """
         self._registry = equipment_registry
+        self._random_manager = random_manager
         self._states: dict[str, EquipmentState] = {}
         
         self.initialize()
@@ -113,6 +121,31 @@ class EquipmentStateManager:
                     MAX_EQUIPMENT_HEALTH,
                     state.health - degradation,
                 ),
+            )
+
+    def update_load(self) -> None:
+        """
+        Simulate the current operating load for all equipment assets.
+
+        Equipment load represents the percentage of the equipment's
+        operating capacity currently being utilized.
+
+        Load is generated independently for each simulation cycle using the
+        shared random number generator and constrained to the configured
+        minimum and maximum operating limits.
+
+        The generated load is stored as mutable runtime state and will be
+        consumed by future failure probability and operating status
+        calculations.
+        """
+
+        for state in self._states.values():
+            state.current_load = round(
+                self._random_manager.uniform(
+                    MIN_EQUIPMENT_LOAD,
+                    MAX_EQUIPMENT_LOAD,
+                ),
+                2,
             )
 
     def get(
