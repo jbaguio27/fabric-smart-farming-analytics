@@ -27,16 +27,16 @@ class EquipmentStateManager:
         """
         Initialize the equipment runtime state manager.
 
-        Runtime state is created immediately for every registered
-        equipment asset. This guarantees that all equipment has an
-        associated mutable runtime state before telemetry generation
-        begins.
+        Runtime state is automatically created for every registered
+        equipment asset during construction. This guarantees that all
+        registered equipment has mutable runtime state available before
+        telemetry generation begins.
 
         Args:
             equipment_registry:
                 Registry containing all persistent equipment assets.
         """
-        self._registry = registry
+        self._registry = equipment_registry
         self._states: dict[str, EquipmentState] = {}
         
         self.initialize()
@@ -44,6 +44,11 @@ class EquipmentStateManager:
     def initialize(self) -> None:
         """
         Create runtime state for every registered equipment asset.
+
+        Existing runtime state is cleared before rebuilding to ensure
+        the manager remains synchronized with the equipment registry.
+        Each registered equipment asset receives exactly one mutable
+        runtime state object.
         """
 
         self._states.clear()
