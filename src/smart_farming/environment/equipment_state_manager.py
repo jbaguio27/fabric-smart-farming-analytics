@@ -56,6 +56,26 @@ class EquipmentStateManager:
         for equipment in self._registry.list_all():
             self._states[equipment.equipment_id] = EquipmentState()
 
+    def advance_runtime(
+        self,
+        hours: float,
+    ) -> None:
+        """
+        Advance runtime for every registered equipment asset.
+
+        Each simulation cycle contributes operating time to every
+        equipment asset. Runtime accumulation is performed before any
+        health degradation or operating status evaluation.
+
+        Args:
+            hours:
+                Number of operating hours represented by the current
+                simulation cycle.
+        """
+
+        for state in self._states.values():
+            state.runtime_hours += hours
+            
     def get(
         self,
         equipment_id: str,
