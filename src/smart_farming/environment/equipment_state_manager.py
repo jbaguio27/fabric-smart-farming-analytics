@@ -12,6 +12,11 @@ from smart_farming.environment import (
     EquipmentRegistry,
     EquipmentState
 )
+from smart_farming.config import (
+    HEALTH_DEGRADATION_PER_RUNTIME_HOUR,
+    MAX_EQUIPMENT_HEALTH,
+    MIN_EQUIPMENT_HEALTH,
+)
 from smart_farming.models import EquipmentOperatingStatus
 from smart_farming.utils import SimulationError
 
@@ -75,7 +80,41 @@ class EquipmentStateManager:
 
         for state in self._states.values():
             state.runtime_hours += hours
-            
+
+    def update_health(
+        self,
+        hours: float,
+    ) -> None:
+        """
+        Update equipment health based on runtime accumulation.
+
+        Equipment health decreases deterministically as runtime increases.
+        The amount of degradation is controlled through application
+        configuration to provide predictable simulation behavior.
+
+        Health is constrained to the configured minimum and maximum limits
+        to prevent invalid runtime state.
+
+        Args:
+            hours:
+                Number of operating hours represented by the current
+                simulation cycle.
+        """
+
+        degradation = (
+            HEALTH_DEGRADATION_PER_RUNTIME_HOUR
+            * hours
+        )
+
+        for state in self._states.values():
+            state.health = max(
+                MIN_EQUIPMENT_HEALTH,
+                min(
+                    MAX_EQUIPMENT_HEALTH,
+                    state.health - degradation,
+                ),
+            )
+
     def get(
         self,
         equipment_id: str,
