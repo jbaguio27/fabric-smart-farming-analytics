@@ -196,6 +196,14 @@ MIN_FAILURE_PROBABILITY: Final[float] = 0.0
 MAX_FAILURE_PROBABILITY: Final[float] = 1.0
 
 # ========================================================================================
+# Equipment Operating Status Simulation
+# ========================================================================================
+
+ONLINE_FAILURE_THRESHOLD: Final[float] = 0.10
+WARNING_FAILURE_THRESHOLD: Final[float] = 0.35
+ERROR_FAILURE_THRESHOLD: Final[float] = 0.70
+
+# ========================================================================================
 # Sensor Health
 # ========================================================================================
 

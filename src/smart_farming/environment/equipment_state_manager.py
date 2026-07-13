@@ -20,6 +20,9 @@ from smart_farming.config import (
     MIN_EQUIPMENT_LOAD,
     MIN_FAILURE_PROBABILITY,
     MAX_FAILURE_PROBABILITY,
+    ONLINE_FAILURE_THRESHOLD,
+    WARNING_FAILURE_THRESHOLD,
+    ERROR_FAILURE_THRESHOLD,
 )
 from smart_farming.models import EquipmentOperatingStatus
 from smart_farming.utils import (
@@ -185,6 +188,38 @@ class EquipmentStateManager:
                     round(probability, 4),
                 ),
             )
+
+    def update_operating_statues(self) -> None:
+        """
+        Update the operating status for every registered equipment asset.
+
+        Operating status is derived from the calculated failure probability.
+        As the probability increases, equipment progresses through normal,
+        degraded, critical, and offline operating states.
+
+        This method performs no random sampling. Equipment status is a
+        deterministic representation of the current runtime condition.
+        """
+
+        for state in self._states.values():
+            probability = state.failure_probability
+
+            if probability < ONLINE_FAILURE_THRESHOLD:
+                state.operating_status = (
+                    EquipmentOperatingStatus.ONLINE
+                )
+            elif probability < WARNING_FAILURE_THRESHOLD:
+                state.operating_status = (
+                    EquipmentOperatingStatus.WARNING
+                )
+            elif probability < ERROR_FAILURE_THRESHOLD:
+                state.operating_status = (
+                    EquipmentOperatingStatus.ERROR
+                )
+            else:
+                state.operating_status = (
+                    EquipmentOperatingStatus.OFFLINE
+                )
 
     def get(
         self,
