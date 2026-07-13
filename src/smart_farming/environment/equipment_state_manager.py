@@ -18,6 +18,8 @@ from smart_farming.config import (
     MIN_EQUIPMENT_HEALTH,
     MAX_EQUIPMENT_LOAD,
     MIN_EQUIPMENT_LOAD,
+    MIN_FAILURE_PROBABILITY,
+    MAX_FAILURE_PROBABILITY,
 )
 from smart_farming.models import EquipmentOperatingStatus
 from smart_farming.utils import (
@@ -146,6 +148,42 @@ class EquipmentStateManager:
                     MAX_EQUIPMENT_LOAD,
                 ),
                 2,
+            )
+
+    def update_failure_probability(self) -> None:
+        """
+        Update the failure probability for every registered equipment asset.
+
+        Failure probability is calculated from the current runtime state
+        using the equipment's health and operating load. The resulting value
+        represents the relative likelihood that the equipment may transition
+        into a degraded operating state during a future simulation cycle.
+
+        The calculated probability is constrained to the configured minimum
+        and maximum limits to ensure valid runtime values.
+        """
+
+        for state in self._states.values():
+            health_factor = (
+                MAX_EQUIPMENT_HEALTH - state.health
+            ) / MAX_EQUIPMENT_HEALTH
+
+            load_factor = (
+                state.current_load
+                / MAX_EQUIPMENT_LOAD
+            )
+
+            probability = (
+                (health_factor * 0.70)
+                + (load_factor * 0.30)
+            )
+
+            state.failure_probability = max(
+                MIN_FAILURE_PROBABILITY,
+                min(
+                    MAX_FAILURE_PROBABILITY,
+                    round(probability, 4),
+                ),
             )
 
     def get(
