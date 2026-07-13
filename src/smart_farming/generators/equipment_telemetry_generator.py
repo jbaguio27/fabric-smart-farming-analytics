@@ -32,7 +32,7 @@ from smart_farming.utils import (
 from smart_farming.monitoring import (
     get_logger
 )
-from smart_farming.generators import (
+from smart_farming.generators.base_telemetry_generator import (
     BaseTelemetryGenerator,
 )
 

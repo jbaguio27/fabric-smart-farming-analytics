@@ -34,7 +34,7 @@ from smart_farming.models import (
     EnvironmentalTelemetryEvent,
     WeatherState,
 )
-from smart_farming.generators import (
+from smart_farming.generators.base_telemetry_generator import (
     BaseTelemetryGenerator,
 )
 

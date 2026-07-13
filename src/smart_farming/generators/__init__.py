@@ -8,7 +8,7 @@ from .environmental_telemetry_generator import (
 from .equipment_telemetry_generator import(
     EquipmentTelemetryGenerator,
 )
-from .base_generator import (
+from .base_telemetry_generator import (
     BaseTelemetryGenerator,
 )
 
