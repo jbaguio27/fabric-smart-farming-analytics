@@ -53,7 +53,8 @@ class EquipmentTelemetryEvent(BaseEvent):
             Current operating load expressed as a percentage.
 
         failure_probability:
-            Current probability of failure for this simulation cycle.
+            Calculated probability that the equipment will transition into a degraded
+            operating state based on its current runtime condition.
     """
 
     equipment_id: str

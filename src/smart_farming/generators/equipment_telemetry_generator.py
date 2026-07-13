@@ -27,6 +27,7 @@ from smart_farming.models import (
 )
 from smart_farming.utils import (
     TelemetryGenerationError,
+    RandomManager
 )
 from smart_farming.monitoring import (
     get_logger
@@ -56,20 +57,24 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
         equipment_state_manager: EquipmentStateManager,
     ) -> None:
         """
-        Initialize the telemetry generator.
+        Initialize the equipment telemetry generator.
 
         Args:
             settings:
                 Validated application settings.
 
-            registry:
-                Registry containing equipment metadata.
+            random_manager:
+                Shared simulator random number generator.
 
-            state_manager:
-                Manager providing runtime state for equipment assets.
+            equipment_registry:
+                Registry containing persistent equipment metadata.
+
+            equipment_state_manager:
+                Manager containing mutable runtime state.
         """
         self.settings = settings
         self.environment_manager = environment_manager
+
         self.equipment_registry = equipment_registry
         self.equipment_state_manager = equipment_state_manager
 
@@ -78,6 +83,44 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
         self.logger.info(
             "Equipment telemetry generator initialized."
         )
+
+    def _validate_generation_prerequisites(
+        self,
+    ) -> None:
+        """
+        Validate the equipment telemetry generation prerequisites.
+
+        Equipment telemetry generation requires both the equipment registry
+        and runtime state manager to be fully initialized and synchronized.
+        This validation prevents silent generation failures caused by
+        incomplete simulator initialization.
+
+        Raises:
+            TelemetryGenerationError:
+                If the equipment registry is empty or runtime state is not
+                synchronized with the registered equipment assets.
+        """
+
+        equipment = self.equipment_registry.list_all()
+
+        if not equipment:
+            raise TelemetryGenerationError(
+                "Equipment registry contains no registered assets."
+            )
+
+        runtime_states = (
+            self.equipment_state_manager.list_all()
+        )
+
+        if not runtime_states:
+            raise TelemetryGenerationError(
+                "Equipment runtime state manager is not initialized."
+            )
+
+        if len(equipment) != len(runtime_states):
+            raise TelemetryGenerationError(
+                "Equipment registry and runtime state manager are out of sync."
+            )
 
     def generate(self) -> list[EquipmentTelemetryEvent]:
         """
@@ -90,6 +133,9 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
             TelemetryGenerationError:
                 Raised when telemetry generation fails.
         """
+
+        self._validate_generation_prerequisites()
+        
         environment = (
             self.environment_manager.get_current_state()
         )
