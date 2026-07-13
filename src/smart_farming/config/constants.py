@@ -350,3 +350,29 @@ MIN_TOTAL_FACILITIES: Final[int] = 1
 # ========================================================================================
 
 FACILITY_ID_PREFIX: Final[str] = "FAC"
+
+ZONE_ID_PREFIX: Final[str] = "ZONE"
+
+DEFAULT_GROWING_ZONES_PER_FACILITY: Final[int] = 3
+
+EQUIPMENT_ID_PREFIX: Final[str] = "EQ"
+
+EQUIPMENT_MANUFACTURERS: Final[
+    dict[str, str]
+] = {
+    "water_pump": "Grundfos",
+    "hvac": "Daikin",
+    "led_panel": "Philips",
+    "nutrient_pump": "Netafim",
+    "ventilation_fan": "ebm-papst",
+}
+
+EQUIPMENT_MODELS: Final[
+    dict[str, str]
+] = {
+    "water_pump": "CRN10",
+    "hvac": "VRV X",
+    "led_panel": "GreenPower LED",
+    "nutrient_pump": "NMC Pro",
+    "ventilation_fan": "AxiBlade",
+}

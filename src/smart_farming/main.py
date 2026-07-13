@@ -18,16 +18,27 @@ from smart_farming.utils import (
     SmartFarmingError,
 )
 from smart_farming.generators import (
+    BaseTelemetryGenerator,
     EnvironmentalTelemetryGenerator,
+    EquipmentTelemetryGenerator,
 )
 from smart_farming.environment import (
     EnvironmentStateManager,
+    EquipmentRegistry,
+    EquipmentStateManager
 )
 
 
 def main() -> None:
     """
-    Bootstrap and start the Smart Farming Simulator.
+    Bootstrap and start the HydroGrow Smart Farming Simulator.
+
+    The application initializes shared infrastructure, creates the
+    simulation managers, registers all telemetry generators, and starts
+    the simulator.
+
+    This function acts as the application's composition root, where
+    dependencies are assembled before execution begins.
     """
 
     logger = get_logger(__name__)
@@ -50,16 +61,41 @@ def main() -> None:
             random_manager=random_manager,
         )
 
-        generator = EnvironmentalTelemetryGenerator(
-            settings=settings,
+        equipment_registry = EquipmentRegistry()
+
+        equipment_state_manager = EquipmentStateManager(
+            equipment_registry=equipment_registry,
             random_manager=random_manager,
-            environment_manager=environment_manager
         )
+
+        environmental_generator = (
+            EnvironmentalTelemetryGenerator(
+                settings=settings,
+                random_manager=random_manager,
+                environment_manager=environment_manager,
+            )
+        )
+
+        equipment_generator = (
+            EquipmentTelemetryGenerator(
+                settings=settings,
+                environment_manager=environment_manager,
+                equipment_registry=equipment_registry,
+                equipment_state_manager=equipment_state_manager
+            )
+        )
+
+        generators: list[
+            BaseTelemetryGenerator
+        ] = [
+            environmental_generator,
+            equipment_generator,
+        ]
 
         simulator = Simulator(
             settings=settings,
             dispatcher=dispatcher,
-            generator=generator,
+            generators=generators,
             environment_manager=environment_manager,
         )
 

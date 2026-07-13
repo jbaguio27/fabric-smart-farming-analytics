@@ -39,3 +39,6 @@ htmlcov/
 
 # macOS
 .DS_Store
+
+# Local Development Verification
+verify_pipeline.py

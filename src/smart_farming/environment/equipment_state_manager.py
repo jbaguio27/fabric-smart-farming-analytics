@@ -22,10 +22,24 @@ class EquipmentStateManager:
 
     def __init__(
         self,
-        registry: EquipmentRegistry,
+        equipment_registry: EquipmentRegistry,
     ) -> None:
+        """
+        Initialize the equipment runtime state manager.
+
+        Runtime state is created immediately for every registered
+        equipment asset. This guarantees that all equipment has an
+        associated mutable runtime state before telemetry generation
+        begins.
+
+        Args:
+            equipment_registry:
+                Registry containing all persistent equipment assets.
+        """
         self._registry = registry
         self._states: dict[str, EquipmentState] = {}
+        
+        self.initialize()
 
     def initialize(self) -> None:
         """
