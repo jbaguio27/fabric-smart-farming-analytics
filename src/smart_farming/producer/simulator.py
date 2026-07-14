@@ -12,7 +12,10 @@ from smart_farming.producer import (
     EventDispatcher,
 )
 from smart_farming.generators import BaseTelemetryGenerator
-from smart_farming.environment import EnvironmentStateManager
+from smart_farming.environment import (
+    EnvironmentStateManager,
+    EquipmentStateManager,
+)
 
 
 class Simulator:
@@ -34,6 +37,7 @@ class Simulator:
         dispatcher: EventDispatcher,
         generator: list[BaseTelemetryGenerator],
         environment_manager: EnvironmentStateManager,
+        equipment_state_manager: EquipmentStateManager,
     ) -> None:
         self.settings: Settings = settings
         self.dispatcher: EventDispatcher = dispatcher
@@ -41,6 +45,7 @@ class Simulator:
             BaseTelemetryGenerator
         ] = generators
         self.environment_manager: EnvironmentStateManager = environment_manager
+        self.equipment_state_manager: EquipmentStateManager = equipment_state_manager
         self.logger: logging.Logger = get_logger(__name__)
         self.is_running: bool = False
         self.completed_cycles: int = 0
@@ -108,6 +113,18 @@ class Simulator:
         """
         self.environment_manager.advance_cycle()
 
+        self.equipment_state_manager.advance_runtime(
+            hours=self.settings.simulation_cycle_hours,
+        )
+
+        self.equipment_state_manager.update_health(
+            hours=self.settings.simulation_cycle_hours,
+        )
+
+        self.equipment_state_manager.update_load()
+        self.equipment_state_manager.update_failure_probability()
+        self.equipment_state_manager.update_operating_status()
+
         environment = (
             self.environment_manager.get_current_state()
         )
@@ -135,19 +152,6 @@ class Simulator:
             "Generated %d events for dispatch.",
             len(events),
         )
-
-        # for event in events:
-        #     self.logger.info(
-        #         "Time=%s | Weather=%s | Day=%s | Facility=%s | Sensor=%s | Value=%s %s | Status=%s",
-        #         event.timestamp,
-        #         event.weather,
-        #         event.is_daytime,
-        #         event.facility_id,
-        #         event.sensor_type,
-        #         event.sensor_value,
-        #         event.unit,
-        #         event.sensor_status,
-        #     )
 
         self.dispatcher.dispatch(events)
 

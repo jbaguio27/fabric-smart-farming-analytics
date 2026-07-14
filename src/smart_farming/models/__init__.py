@@ -15,6 +15,7 @@ from smart_farming.models.equipment_event import (
     EquipmentTelemetryEvent,
 )
 
+
 __all__ = [
     "BaseEvent",
     "EnvironmentalTelemetryEvent",

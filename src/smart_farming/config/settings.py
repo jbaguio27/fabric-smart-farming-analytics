@@ -17,6 +17,7 @@ from .constants import (
     MIN_TOTAL_FACILITIES,
     MIN_EVENT_BATCH_SIZE,
     MIN_RANDOM_SEED,
+    MIN_SIMULATION_CYCLE_HOURS,
 )
 
 @dataclass(slots=True)
@@ -51,6 +52,11 @@ class Settings:
     simulation_interval_seconds: int = field(
         default_factory=lambda: int(
             os.getenv("SIMULATION_INTERVAL_SECONDS", "5")
+        )
+    )
+    simulation_cycle_hours: float = field(
+        default_factory=lambda: float(
+            os.getenv("SIMULATION_CYCLE_HOURS", "1.0")
         )
     )
     simulation_time_step_minutes: int = field(
@@ -163,6 +169,12 @@ class Settings:
             errors.append(
                 f"SIMULATION_INTERVAL_SECONDS must be at least "
                 f"{MIN_SIMULATION_INTERVAL_SECONDS}."
+            )
+
+        if self.simulation_cycle_hours < MIN_SIMULATION_CYCLE_HOURS:
+            errors.append(
+                f"SIMULATION_CYCLE_HOURS must be at least "
+                f"{MIN_SIMULATION_CYCLE_HOURS}."
             )
 
         if self.simulation_time_step_minutes <= 0:

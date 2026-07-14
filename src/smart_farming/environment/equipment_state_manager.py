@@ -23,11 +23,31 @@ from smart_farming.config import (
     ONLINE_FAILURE_THRESHOLD,
     WARNING_FAILURE_THRESHOLD,
     ERROR_FAILURE_THRESHOLD,
+    MAX_LOAD_FAILURE_ADJUSTMENT,
+    HEALTHY_EQUIPMENT_THRESHOLD,
+    MIN_INITIAL_EQUIPMENT_HEALTH,
+    MAX_INITIAL_EQUIPMENT_HEALTH,
+    MAX_EQUIPMENT_RUNTIME_HOURS,
+    NORMAL_OPERATING_LOAD_THRESHOLD,
+    MAX_LOAD_CHANGE_PER_CYCLE,
+    EQUIPMENT_LOAD_PROFILES,
+    MAX_LOAD_VARIATION_PER_CYCLE,
+    NORMAL_OPERATING_LOAD_THRESHOLD,
+    HIGH_OPERATING_LOAD_THRESHOLD,
+    MODERATE_LOAD_FACTOR_MAX,
+    HIGH_LOAD_FACTOR_MAX,
 )
-from smart_farming.models import EquipmentOperatingStatus
+from smart_farming.models import (
+    EquipmentOperatingStatus,
+)
 from smart_farming.utils import (
     SimulationError,
     RandomManager,
+)
+from smart_farming.services import (
+    FailureModel,
+    MaintenanceManager,
+    WearModel,
 )
 
 
@@ -55,6 +75,9 @@ class EquipmentStateManager:
         """
         self._equipment_registry = equipment_registry
         self._random_manager = random_manager
+        self._wear_model = WearModel()
+        self._failure_model = FailureModel()
+        self._maintenance_manager = MaintenanceManager()
         self._states: dict[str, EquipmentState] = {}
         
         self.initialize()
@@ -63,16 +86,32 @@ class EquipmentStateManager:
         """
         Create runtime state for every registered equipment asset.
 
-        Existing runtime state is cleared before rebuilding to ensure
-        the manager remains synchronized with the equipment registry.
-        Each registered equipment asset receives exactly one mutable
-        runtime state object.
+        Existing runtime state is cleared before rebuilding to ensure the
+        manager remains synchronized with the equipment registry.
+
+        Each equipment asset receives an independent runtime state with a
+        slightly randomized starting health. This avoids identical aging
+        patterns across the simulator while remaining within realistic
+        operating limits.
         """
 
         self._states.clear()
 
         for equipment in self._equipment_registry.list_all():
-            self._states[equipment.equipment_id] = EquipmentState()
+            
+            state = EquipmentState()
+
+            state.health = round(
+                self._random_manager.uniform(
+                    MIN_INITIAL_EQUIPMENT_HEALTH,
+                    MAX_INITIAL_EQUIPMENT_HEALTH,
+                ),
+                2,
+            )
+
+            self._states[
+                equipment.equipment_id
+            ] = state
 
     def advance_runtime(
         self,
@@ -92,21 +131,32 @@ class EquipmentStateManager:
         """
 
         for state in self._states.values():
-            state.runtime_hours += hours
+            state.runtime_hours = round(
+                state.runtime_hours + hours,
+                2,
+            )
 
     def update_health(
         self,
         hours: float,
     ) -> None:
         """
-        Update equipment health based on runtime accumulation.
+        Update equipment health based on accumulated runtime and the
+        operating load from the previous simulation cycle.
 
-        Equipment health decreases deterministically as runtime increases.
-        The amount of degradation is controlled through application
-        configuration to provide predictable simulation behavior.
+        Equipment operating under heavier utilization experiences faster
+        degradation than lightly loaded equipment. This produces more
+        realistic long-term wear patterns and naturally diversifies
+        equipment condition across the simulator.
 
-        Health is constrained to the configured minimum and maximum limits
-        to prevent invalid runtime state.
+        The degradation factor is calculated as:
+
+            effective_degradation =
+                base_degradation × (0.5 + load / 100)
+
+        A minimum multiplier of 0.5 ensures that idle equipment continues
+        to experience slow aging while highly utilized equipment degrades
+        more rapidly.
 
         Args:
             hours:
@@ -114,41 +164,97 @@ class EquipmentStateManager:
                 simulation cycle.
         """
 
-        degradation = (
-            HEALTH_DEGRADATION_PER_RUNTIME_HOUR
-            * hours
-        )
-
         for state in self._states.values():
-            state.health = max(
-                MIN_EQUIPMENT_HEALTH,
-                min(
-                    MAX_EQUIPMENT_HEALTH,
-                    state.health - degradation,
-                ),
+
+            load_multiplier = (
+                0.5
+                + (
+                    state.current_load
+                    / MAX_EQUIPMENT_LOAD
+                )
+            )
+
+            degradation = (
+                HEALTH_DEGRADATION_PER_RUNTIME_HOUR
+                * hours
+                * load_multiplier
+            )
+
+            state.health = round(
+                self._wear_model.calculate_health(
+                    state=state,
+                    degradation=degradation,
+                )
             )
 
     def update_load(self) -> None:
         """
-        Simulate the current operating load for all equipment assets.
+        Update the operating load for every registered equipment asset.
 
-        Equipment load represents the percentage of the equipment's
-        operating capacity currently being utilized.
+        Equipment load evolves gradually around a preferred operating target
+        specific to each equipment type. This produces smoother utilization
+        trends while preserving realistic operating behavior for pumps,
+        HVAC systems, lighting, and ventilation equipment.
 
-        Load is generated independently for each simulation cycle using the
-        shared random number generator and constrained to the configured
-        minimum and maximum operating limits.
-
-        The generated load is stored as mutable runtime state and will be
-        consumed by future failure probability and operating status
-        calculations.
+        Newly initialized equipment begins within its expected operating
+        range. Subsequent simulation cycles apply bounded adjustments toward
+        the preferred target load while allowing natural variation.
         """
 
-        for state in self._states.values():
+        for equipment in self._equipment_registry.list_all():
+
+            state = self._states[equipment.equipment_id]
+
+            profile = EQUIPMENT_LOAD_PROFILES[
+                equipment.equipment_type
+            ]
+
+            minimum = profile.minimum
+            maximum = profile.maximum
+            target = profile.target      
+
+            if state.current_load == 0.0:
+
+                state.current_load = round(
+                    self._random_manager.uniform(
+                        minimum,
+                        maximum,
+                    ),
+                    2,
+                )
+
+                continue
+
+            if state.current_load < target:
+                drift = self._random_manager.uniform(
+                    0.0,
+                    MAX_LOAD_CHANGE_PER_CYCLE,
+                )
+
+            else:
+                drift = self._random_manager.uniform(
+                    -MAX_LOAD_CHANGE_PER_CYCLE,
+                    0.0,
+                )
+
+            variation = self._random_manager.uniform(
+                -MAX_LOAD_VARIATION_PER_CYCLE,
+                MAX_LOAD_VARIATION_PER_CYCLE,
+            )
+
+            new_load = (
+                state.current_load
+                + drift
+                + variation
+            )
+
             state.current_load = round(
-                self._random_manager.uniform(
-                    MIN_EQUIPMENT_LOAD,
-                    MAX_EQUIPMENT_LOAD,
+                max(
+                    minimum,
+                    min(
+                        maximum,
+                        new_load,
+                    ),
                 ),
                 2,
             )
@@ -157,65 +263,111 @@ class EquipmentStateManager:
         """
         Update the failure probability for every registered equipment asset.
 
-        Failure probability is calculated from the current runtime state
-        using the equipment's health and operating load. The resulting value
-        represents the relative likelihood that the equipment may transition
-        into a degraded operating state during a future simulation cycle.
+        Failure probability is derived from three weighted contributors.
 
-        The calculated probability is constrained to the configured minimum
-        and maximum limits to ensure valid runtime values.
+        1. Equipment health (65%)
+        2. Current operating load (30%)
+        3. Accumulated runtime (5%)
+
+        Equipment health is the primary indicator because it already reflects
+        long-term wear accumulated over the asset's lifetime. Current load
+        captures short-term operational stress, while runtime provides a small
+        baseline adjustment so that older equipment naturally becomes more
+        failure-prone than newly commissioned equipment operating under the
+        same conditions.
         """
 
         for state in self._states.values():
+
             health_factor = (
-                MAX_EQUIPMENT_HEALTH - state.health
+                MAX_EQUIPMENT_HEALTH
+                - state.health
             ) / MAX_EQUIPMENT_HEALTH
 
-            load_factor = (
-                state.current_load
-                / MAX_EQUIPMENT_LOAD
+            load = state.current_load
+
+            if load < NORMAL_OPERATING_LOAD_THRESHOLD:
+                load_factor = 0.0
+
+            elif load < HIGH_OPERATING_LOAD_THRESHOLD:
+                load_factor = (
+                    (load - NORMAL_OPERATING_LOAD_THRESHOLD)
+                    / 
+                    (
+                        HIGH_OPERATING_LOAD_THRESHOLD
+                        - NORMAL_OPERATING_LOAD_THRESHOLD
+                    )
+                ) * MODERATE_LOAD_FACTOR_MAX
+
+            else:
+                normalized = (
+                    (load - HIGH_OPERATING_LOAD_THRESHOLD)
+                    / 
+                    (
+                        MAX_EQUIPMENT_LOAD
+                        - HIGH_OPERATING_LOAD_THRESHOLD
+                    )
+                )
+
+                load_factor = min(
+                    HIGH_LOAD_FACTOR_MAX,
+                    MODERATE_LOAD_FACTOR_MAX
+                    + (
+                        normalized ** 2
+                    ) * (
+                        HIGH_LOAD_FACTOR_MAX
+                        - MODERATE_LOAD_FACTOR_MAX
+                    )
+                )
+
+            runtime_factor = min(
+                state.runtime_hours
+                / MAX_EQUIPMENT_RUNTIME_HOURS,
+                HIGH_LOAD_FACTOR_MAX,
             )
 
             probability = (
-                (health_factor * 0.70)
+                (health_factor * 0.65)
                 + (load_factor * 0.30)
+                + (runtime_factor * 0.05)
             )
 
-            state.failure_probability = max(
-                MIN_FAILURE_PROBABILITY,
-                min(
-                    MAX_FAILURE_PROBABILITY,
-                    round(probability, 4),
-                ),
+            state.failure_probability = (
+                self._failure_model.calculate_probability(
+                    state=state,
+                    probability=probability,
+                )
             )
 
     def update_operating_status(self) -> None:
         """
-        Update the operating status for every registered equipment asset.
+        Update operating status for every registered equipment asset.
 
-        Operating status is derived from the calculated failure probability.
-        As the probability increases, equipment progresses through normal,
-        degraded, critical, and offline operating states.
-
-        This method performs no random sampling. Equipment status is a
-        deterministic representation of the current runtime condition.
+        Operating status represents long-term equipment condition rather
+        than temporary utilization. Status transitions are therefore driven
+        by the calculated failure probability, which already incorporates a
+        bounded operating load adjustment.
         """
 
         for state in self._states.values():
+            
             probability = state.failure_probability
 
             if probability < ONLINE_FAILURE_THRESHOLD:
                 state.operating_status = (
                     EquipmentOperatingStatus.ONLINE
                 )
+
             elif probability < WARNING_FAILURE_THRESHOLD:
                 state.operating_status = (
                     EquipmentOperatingStatus.WARNING
                 )
+
             elif probability < ERROR_FAILURE_THRESHOLD:
                 state.operating_status = (
                     EquipmentOperatingStatus.ERROR
                 )
+
             else:
                 state.operating_status = (
                     EquipmentOperatingStatus.OFFLINE
@@ -249,8 +401,11 @@ class EquipmentStateManager:
         """
         return equipment_id in self._states
 
-    def list_all(self) -> dict[str, EquipmentState]:
+    def list_all(self) -> list[EquipmentState]:
         """
-        Return every equipment runtime state.
+        Return all runtime equipment states.
+
+        Returns:
+            Collection of runtime equipment states.
         """
-        return dict(self._states)
+        return list(self._states.values())

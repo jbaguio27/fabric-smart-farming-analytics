@@ -97,6 +97,7 @@ def main() -> None:
             dispatcher=dispatcher,
             generators=generators,
             environment_manager=environment_manager,
+            equipment_state_manager=equipment_state_manager,
         )
 
         simulator.run()

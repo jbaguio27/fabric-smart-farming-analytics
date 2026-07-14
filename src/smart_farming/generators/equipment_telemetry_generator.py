@@ -122,6 +122,11 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
                 "Equipment registry and runtime state manager are out of sync."
             )
 
+        if self.environment_manager.get_current_state() is None:
+            raise TelemetryGenerationError(
+                "Environment state manager has not been initialized."
+            )
+
     def generate(self) -> list[EquipmentTelemetryEvent]:
         """
         Generate telemetry events for every registered equipment asset.

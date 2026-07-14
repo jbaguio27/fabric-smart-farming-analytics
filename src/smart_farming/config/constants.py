@@ -7,6 +7,9 @@ Runtime configuration belongs in settings.py
 
 from zoneinfo import ZoneInfo
 from typing import Final, TypeAlias
+from smart_farming.config.load_profile import (
+    EquipmentLoadProfile,
+)
 
 # ========================================================================================
 # Application Metadata
@@ -174,12 +177,52 @@ EQUIPMENT_TYPES: Final[tuple[str, ...]] = (
     "ventilation_fan",
 )
 
+EQUIPMENT_LOAD_PROFILES = {
+    "water_pump": EquipmentLoadProfile(
+        minimum=60.0,
+        maximum=95.0,
+        target=80.0,
+    ),
+    "nutrient_pump": EquipmentLoadProfile(
+        minimum=45.0,
+        maximum=85.0,
+        target=65.0,
+    ),
+    "hvac": EquipmentLoadProfile(
+        minimum=35.0,
+        maximum=90.0,
+        target=60.0,
+    ),
+    "ventilation_fan": EquipmentLoadProfile(
+        minimum=25.0,
+        maximum=75.0,
+        target=45.0,
+    ),
+    "led_panel": EquipmentLoadProfile(
+        minimum=80.0,
+        maximum=100.0,
+        target=90.0,
+    ),
+}
+
 # ========================================================================================
 # Equipment Runtime Configuration
 # ========================================================================================
 
 MAX_EQUIPMENT_HEALTH: Final[float] = 100.0
 MIN_EQUIPMENT_HEALTH: Final[float] = 0.0
+
+MAX_LOAD_CHANGE_PER_CYCLE: Final[float] = 10.0
+MAX_LOAD_VARIATION_PER_CYCLE: Final[float] = 2.0
+
+NORMAL_OPERATING_LOAD_THRESHOLD: Final[float] = 70.0
+HIGH_OPERATING_LOAD_THRESHOLD: Final[float] = 90.0
+
+MODERATE_LOAD_FACTOR_MAX: Final[float] = 0.40
+HIGH_LOAD_FACTOR_MAX: Final[float] = 1.00
+
+MIN_INITIAL_EQUIPMENT_HEALTH: Final[float] = 96.0
+MAX_INITIAL_EQUIPMENT_HEALTH: Final[float] = 100.0
 
 MAX_EQUIPMENT_LOAD: Final[float] = 100.0
 MIN_EQUIPMENT_LOAD: Final[float] = 0.0
@@ -194,6 +237,21 @@ HEALTH_DEGRADATION_PER_RUNTIME_HOUR: Final[float] = 0.02
 
 MIN_FAILURE_PROBABILITY: Final[float] = 0.0
 MAX_FAILURE_PROBABILITY: Final[float] = 1.0
+
+# ========================================================================================
+# Equipment Runtime
+# ========================================================================================
+
+MAX_EQUIPMENT_RUNTIME_HOURS: Final[float] = 50_000.0
+
+# ========================================================================================
+# Failure Probability Model
+# ========================================================================================
+
+MAX_LOAD_FAILURE_ADJUSTMENT: Final[float] = 0.15
+HEALTHY_EQUIPMENT_THRESHOLD: Final[float] = 90.0
+
+NORMAL_OPERATING_LOAD_THRESHOLD: Final[float] = 60.0
 
 # ========================================================================================
 # Equipment Operating Status Simulation
@@ -352,13 +410,15 @@ VALID_LOG_LEVELS: Final[frozenset[str]] = frozenset({
 })
 
 # ========================================================================================
-# Validation Limits
+# Simulation Configurations
 # ========================================================================================
 
 MIN_EVENT_BATCH_SIZE: Final[int] = 1
 MIN_RANDOM_SEED: Final[int] = 0
 MIN_SIMULATION_INTERVAL_SECONDS: Final[int] = 1
+MIN_SIMULATION_CYCLE_HOURS = 1.0
 MIN_TOTAL_FACILITIES: Final[int] = 1
+
 
 # ========================================================================================
 # Facility Configuration
