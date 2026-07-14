@@ -275,6 +275,9 @@ MAX_EQUIPMENT_RUNTIME_HOURS: Final[float] = 100_000.0
 MAINTENANCE_INTERVAL_HOURS: Final[float] = 720.0
 MAINTENANCE_HEALTH_THRESHOLD: Final[float] = 80.0
 
+MAINTENANCE_RESTORE_HEALTH: Final[float] = 100.0
+MAINTENANCE_RESET_FAILURE_PROBABILITY: Final[float] = 0.0
+
 # ========================================================================================
 # Failure Probability Model
 # ========================================================================================

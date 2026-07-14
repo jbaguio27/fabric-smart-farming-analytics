@@ -430,15 +430,11 @@ class EquipmentStateManager:
         self,
     ) -> None:
         """
-        Evaluate maintenance eligibility for all
-        registered equipment assets.
+        Execute maintenance processing.
 
-        This method currently performs only
-        eligibility checks and establishes the
-        maintenance execution point for future
-        simulator enhancements.
-
-        No runtime state is modified.
+        Preventive maintenance restores
+        equipment condition when health
+        or runtime thresholds are exceeded.
         """
 
         for state in self._states.values():
@@ -474,6 +470,24 @@ class EquipmentStateManager:
         Return whether runtime state exists.
         """
         return equipment_id in self._states
+
+    def maintenance_count(
+        self,
+    ) -> int:
+        """
+        Return total maintenance executions.
+
+        Returns
+        -------
+        int
+            Number of maintenance events
+            executed by the simulator.
+        """
+
+        return (
+            self._maintenance_manager
+            .maintenance_count()
+        )
 
     def list_all(self) -> list[EquipmentState]:
         """

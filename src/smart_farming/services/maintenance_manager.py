@@ -1,27 +1,30 @@
 """
 Maintenance service.
 
-This service centralizes maintenance-related
-decision logic for equipment assets.
-
-The initial implementation introduces only
-maintenance eligibility evaluation.
-
-No simulator behavior changes occur during
-this phase.
+This service manages maintenance eligibility
+and maintenance execution for equipment assets.
 """
-
+from datetime import datetime
 from smart_farming.environment.equipment_state import EquipmentState
 from smart_farming.config import (
     MAINTENANCE_INTERVAL_HOURS,
     MAINTENANCE_HEALTH_THRESHOLD,
+    MAINTENANCE_RESTORE_HEALTH,
+    MAINTENANCE_RESET_FAILURE_PROBABILITY,
 )
 
 
 class MaintenanceManager:
     """
-    Evaluates maintenance requirements.
+    Executes preventive maintenance logic.
     """
+
+    def __init__(self) -> None:
+        """
+        Initialize maintenance statistics.
+        """
+
+        self._maintenance_count = 0
 
     def requires_maintenance(
         self,
@@ -62,13 +65,42 @@ class MaintenanceManager:
         state: EquipmentState,
     ) -> None:
         """
-        Placeholder maintenance hook.
-
-        Future maintenance behavior will be
-        implemented here.
-
-        Current implementation intentionally
-        performs no state changes.
+        Apply maintenance to an asset when
+        maintenance criteria are satisfied.
         """
 
-        _ = state
+        if not self.requires_maintenance(
+            state,
+        ):
+            return
+
+        self._maintenance_count += 1
+
+        state.health = (
+            MAINTENANCE_RESTORE_HEALTH
+        )
+
+        state.failure_probability = (
+            MAINTENANCE_RESET_FAILURE_PROBABILITY
+        )
+
+        state.last_maintenance_at = (
+            datetime.utcnow()
+        )
+
+        state.runtime_hours = 0.0
+
+    def maintenance_count(
+        self,
+    ) -> int:
+        """
+        Return the number of maintenance
+        executions performed.
+
+        Returns
+        -------
+        int
+            Total maintenance executions.
+        """
+
+        return self._maintenance_count
