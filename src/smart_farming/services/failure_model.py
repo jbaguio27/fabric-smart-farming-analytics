@@ -1,36 +1,87 @@
 """
 Failure model for equipment simulation.
 
-This service will eventually contain all probability and
-operating-state calculations.
+This service centralizes operating-status decisions and future
+failure-state behavior.
 
-During the structural refactor it simply mirrors the current
-EquipmentStateManager implementation.
+The initial implementation reproduces the existing simulator
+behavior without changing thresholds or probabilities.
 """
 
-from smart_farming.environment.equipment_state import EquipmentState
+from smart_farming.environment.equipment_state import (
+    EquipmentState,
+)
+
+from smart_farming.models.equipment import (
+    EquipmentOperatingStatus,
+)
+
+from smart_farming.config.constants import (
+    ONLINE_FAILURE_THRESHOLD,
+    WARNING_FAILURE_THRESHOLD,
+    MAX_FAILURE_PROBABILITY,
+    MIN_FAILURE_PROBABILITY,
+)
 
 
 class FailureModel:
     """
-    Applies failure probability calculations.
+    Determines equipment operating status.
     """
 
-    def apply(
+    def determine_operating_status(
         self,
         state: EquipmentState,
-        probability: float,
-    ) -> None:
+    ) -> EquipmentOperatingStatus:
         """
-        Update failure probability.
+        Determine operating status from failure probability.
 
         Parameters
         ----------
         state:
             Runtime equipment state.
 
-        probability:
-            Newly calculated probability.
+        Returns
+        -------
+        EquipmentOperatingStatus
+            Calculated operating condition.
         """
 
-        state.failure_probability = probability
+        if (
+            state.failure_probability
+            < ONLINE_FAILURE_THRESHOLD
+        ):
+            return (
+                EquipmentOperatingStatus.ONLINE
+            )
+
+        if (
+            state.failure_probability
+            < WARNING_FAILURE_THRESHOLD
+        ):
+            return (
+                EquipmentOperatingStatus.WARNING
+            )
+
+        return (
+            EquipmentOperatingStatus.ERROR
+        )
+    
+    def calculate_probability(
+    self,
+    probability: float,
+    ) -> float:
+        """
+        Normalize and constrain failure probability.
+        """
+
+        return round(
+            max(
+                MIN_FAILURE_PROBABILITY,
+                min(
+                    MAX_FAILURE_PROBABILITY,
+                    probability,
+                ),
+            ),
+            4,
+        )

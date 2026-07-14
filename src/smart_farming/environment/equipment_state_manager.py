@@ -20,8 +20,6 @@ from smart_farming.config import (
     MIN_EQUIPMENT_LOAD,
     MIN_FAILURE_PROBABILITY,
     MAX_FAILURE_PROBABILITY,
-    ONLINE_FAILURE_THRESHOLD,
-    WARNING_FAILURE_THRESHOLD,
     ERROR_FAILURE_THRESHOLD,
     MAX_LOAD_FAILURE_ADJUSTMENT,
     HEALTHY_EQUIPMENT_THRESHOLD,
@@ -32,13 +30,6 @@ from smart_farming.config import (
     MAX_LOAD_CHANGE_PER_CYCLE,
     EQUIPMENT_LOAD_PROFILES,
     MAX_LOAD_VARIATION_PER_CYCLE,
-    NORMAL_OPERATING_LOAD_THRESHOLD,
-    HIGH_OPERATING_LOAD_THRESHOLD,
-    MODERATE_LOAD_FACTOR_MAX,
-    HIGH_LOAD_FACTOR_MAX,
-)
-from smart_farming.models import (
-    EquipmentOperatingStatus,
 )
 from smart_farming.utils import (
     SimulationError,
@@ -163,8 +154,16 @@ class EquipmentStateManager:
                 Number of operating hours represented by the current
                 simulation cycle.
         """
+        for equipment in self._equipment_registry.list_all():
 
-        for state in self._states.values():
+            state = self._states[
+                equipment.equipment_id
+            ]
+
+            profile = EQUIPMENT_LOAD_PROFILES[
+                equipment.equipment_type
+            ]
+
 
             load_multiplier = (
                 0.5
@@ -184,7 +183,9 @@ class EquipmentStateManager:
                 self._wear_model.calculate_health(
                     state=state,
                     degradation=degradation,
-                )
+                    wear_multiplier=profile.wear_multiplier,
+                ),
+                2,
             )
 
     def update_load(self) -> None:
@@ -277,53 +278,74 @@ class EquipmentStateManager:
         same conditions.
         """
 
-        for state in self._states.values():
+        for equipment in self._equipment_registry.list_all():
+
+            state = self._states[
+                equipment.equipment_id
+            ]
 
             health_factor = (
                 MAX_EQUIPMENT_HEALTH
                 - state.health
             ) / MAX_EQUIPMENT_HEALTH
 
+            profile = EQUIPMENT_LOAD_PROFILES[
+                equipment.equipment_type
+            ]
+
             load = state.current_load
 
-            if load < NORMAL_OPERATING_LOAD_THRESHOLD:
-                load_factor = 0.0
+            if load <= profile.normal_threshold:
 
-            elif load < HIGH_OPERATING_LOAD_THRESHOLD:
                 load_factor = (
-                    (load - NORMAL_OPERATING_LOAD_THRESHOLD)
-                    / 
-                    (
-                        HIGH_OPERATING_LOAD_THRESHOLD
-                        - NORMAL_OPERATING_LOAD_THRESHOLD
-                    )
-                ) * MODERATE_LOAD_FACTOR_MAX
+                    load
+                    / profile.normal_threshold
+                ) * 0.05
 
-            else:
-                normalized = (
-                    (load - HIGH_OPERATING_LOAD_THRESHOLD)
-                    / 
-                    (
-                        MAX_EQUIPMENT_LOAD
-                        - HIGH_OPERATING_LOAD_THRESHOLD
+            elif load <= profile.warning_threshold:
+
+                load_factor = (
+                    0.05
+                    + (
+                        (
+                            load
+                            - profile.normal_threshold
+                        )
+                        /
+                        (
+                            profile.warning_threshold
+                            - profile.normal_threshold
+                        )
                     )
+                    * profile.moderate_factor_max
                 )
 
-                load_factor = min(
-                    HIGH_LOAD_FACTOR_MAX,
-                    MODERATE_LOAD_FACTOR_MAX
+            else:
+
+                critical_progress = (
+                    load
+                    - profile.warning_threshold
+                ) / (
+                    MAX_EQUIPMENT_LOAD
+                    - profile.warning_threshold
+                )
+
+                load_factor = (
+                    0.05
+                    + profile.moderate_factor_max
                     + (
-                        normalized ** 2
-                    ) * (
-                        HIGH_LOAD_FACTOR_MAX
-                        - MODERATE_LOAD_FACTOR_MAX
+                        critical_progress ** 2
+                    )
+                    * (
+                        profile.critical_factor_max
+                        - profile.moderate_factor_max
                     )
                 )
 
             runtime_factor = min(
                 state.runtime_hours
                 / MAX_EQUIPMENT_RUNTIME_HOURS,
-                HIGH_LOAD_FACTOR_MAX,
+                profile.critical_factor_max,
             )
 
             probability = (
@@ -334,7 +356,6 @@ class EquipmentStateManager:
 
             state.failure_probability = (
                 self._failure_model.calculate_probability(
-                    state=state,
                     probability=probability,
                 )
             )
@@ -350,28 +371,13 @@ class EquipmentStateManager:
         """
 
         for state in self._states.values():
-            
-            probability = state.failure_probability
 
-            if probability < ONLINE_FAILURE_THRESHOLD:
-                state.operating_status = (
-                    EquipmentOperatingStatus.ONLINE
+            state.operating_status = (
+                self._failure_model
+                .determine_operating_status(
+                    state,
                 )
-
-            elif probability < WARNING_FAILURE_THRESHOLD:
-                state.operating_status = (
-                    EquipmentOperatingStatus.WARNING
-                )
-
-            elif probability < ERROR_FAILURE_THRESHOLD:
-                state.operating_status = (
-                    EquipmentOperatingStatus.ERROR
-                )
-
-            else:
-                state.operating_status = (
-                    EquipmentOperatingStatus.OFFLINE
-                )
+            )
 
     def get(
         self,

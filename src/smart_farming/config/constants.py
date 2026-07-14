@@ -6,7 +6,7 @@ Runtime configuration belongs in settings.py
 """
 
 from zoneinfo import ZoneInfo
-from typing import Final, TypeAlias
+from typing import Final, TypeAlias, Mapping
 from smart_farming.config.load_profile import (
     EquipmentLoadProfile,
 )
@@ -177,31 +177,58 @@ EQUIPMENT_TYPES: Final[tuple[str, ...]] = (
     "ventilation_fan",
 )
 
-EQUIPMENT_LOAD_PROFILES = {
+EQUIPMENT_LOAD_PROFILES: Final[
+    Mapping[str, EquipmentLoadProfile]
+] = {
     "water_pump": EquipmentLoadProfile(
         minimum=60.0,
         maximum=95.0,
         target=80.0,
+        wear_multiplier=1.35,
+        normal_threshold=70.0,
+        warning_threshold=90.0,
+        moderate_factor_max=0.35,
+        critical_factor_max=1.00,
     ),
     "nutrient_pump": EquipmentLoadProfile(
         minimum=45.0,
         maximum=85.0,
         target=65.0,
+        wear_multiplier=1.15,
+        normal_threshold=70.0,
+        warning_threshold=90.0,
+        moderate_factor_max=0.35,
+        critical_factor_max=1.00,
     ),
     "hvac": EquipmentLoadProfile(
         minimum=35.0,
         maximum=90.0,
         target=60.0,
+        wear_multiplier=1.00,
+        normal_threshold=70.0,
+        warning_threshold=90.0,
+        moderate_factor_max=0.35,
+        critical_factor_max=1.00,
     ),
     "ventilation_fan": EquipmentLoadProfile(
         minimum=25.0,
         maximum=75.0,
         target=45.0,
+        wear_multiplier=0.80,
+        normal_threshold=75.0,
+        warning_threshold=95.0,
+        moderate_factor_max=0.25,
+        critical_factor_max=0.80,
     ),
     "led_panel": EquipmentLoadProfile(
         minimum=80.0,
         maximum=100.0,
         target=90.0,
+        wear_multiplier=0.45,
+        normal_threshold=80.0,
+        warning_threshold=95.0,
+        moderate_factor_max=0.20,
+        critical_factor_max=0.60,
     ),
 }
 
@@ -214,12 +241,6 @@ MIN_EQUIPMENT_HEALTH: Final[float] = 0.0
 
 MAX_LOAD_CHANGE_PER_CYCLE: Final[float] = 10.0
 MAX_LOAD_VARIATION_PER_CYCLE: Final[float] = 2.0
-
-NORMAL_OPERATING_LOAD_THRESHOLD: Final[float] = 70.0
-HIGH_OPERATING_LOAD_THRESHOLD: Final[float] = 90.0
-
-MODERATE_LOAD_FACTOR_MAX: Final[float] = 0.40
-HIGH_LOAD_FACTOR_MAX: Final[float] = 1.00
 
 MIN_INITIAL_EQUIPMENT_HEALTH: Final[float] = 96.0
 MAX_INITIAL_EQUIPMENT_HEALTH: Final[float] = 100.0

@@ -1,38 +1,49 @@
 """
 Wear model for equipment simulation.
-
-Currently this class reproduces the existing wear calculation
-performed inside EquipmentStateManager.
-
-No behavior changes are introduced in this refactor.
 """
 
-from smart_farming.environment.equipment_state import EquipmentState
+from smart_farming.environment.equipment_state import (
+    EquipmentState,
+)
 
 
 class WearModel:
     """
-    Calculates health degradation for equipment.
+    Calculates equipment health degradation.
     """
 
-    def apply(
+    def calculate_health(
         self,
         state: EquipmentState,
         degradation: float,
-    ) -> None:
+        wear_multiplier: float = 1.0,
+    ) -> float:
         """
-        Apply health degradation.
+        Calculate the next health value.
 
         Parameters
         ----------
         state:
-            Equipment runtime state.
+            Runtime equipment state.
 
         degradation:
-            Amount of health to remove.
+            Base degradation amount.
+
+        wear_multiplier:
+            Equipment-type wear multiplier.
+
+        Returns
+        -------
+        float
+            Updated health value.
         """
 
-        state.health = max(
+        effective_degradation = (
+            degradation
+            * wear_multiplier
+        )
+
+        return max(
             0.0,
-            state.health - degradation,
+            state.health - effective_degradation,
         )

@@ -26,8 +26,31 @@ class EquipmentLoadProfile:
 
         target:
             Preferred steady-state operating load percentage.
+
+        wear_multiplier:
+        Relative wear rate compared to a baseline asset.
+
+        normal_threshold:
+            Load percentage below which stress has minimal impact.
+
+        warning_threshold:
+            Load percentage above which stress begins accelerating.
+
+        moderate_factor_max:
+            Maximum stress contribution while operating inside the
+            moderate load band.
+
+        critical_factor_max:
+            Maximum stress contribution while operating inside the
+            critical load band.
     """
 
     minimum: Final[float]
     maximum: Final[float]
     target: Final[float]
+
+    wear_multiplier: Final[float]
+    normal_threshold: Final[float]
+    warning_threshold: Final[float]
+    moderate_factor_max: Final[float]
+    critical_factor_max: Final[float]
