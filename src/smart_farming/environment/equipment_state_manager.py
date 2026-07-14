@@ -426,6 +426,27 @@ class EquipmentStateManager:
                 )
             )
 
+    def evaluate_maintenance(
+        self,
+    ) -> None:
+        """
+        Evaluate maintenance eligibility for all
+        registered equipment assets.
+
+        This method currently performs only
+        eligibility checks and establishes the
+        maintenance execution point for future
+        simulator enhancements.
+
+        No runtime state is modified.
+        """
+
+        for state in self._states.values():
+
+            self._maintenance_manager.apply(
+                state,
+            )
+
     def get(
         self,
         equipment_id: str,

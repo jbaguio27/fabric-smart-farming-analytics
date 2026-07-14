@@ -271,7 +271,9 @@ MAX_FAILURE_PROBABILITY: Final[float] = 1.0
 # Equipment Runtime
 # ========================================================================================
 
-MAX_EQUIPMENT_RUNTIME_HOURS: Final[float] = 50_000.0
+MAX_EQUIPMENT_RUNTIME_HOURS: Final[float] = 100_000.0
+MAINTENANCE_INTERVAL_HOURS: Final[float] = 720.0
+MAINTENANCE_HEALTH_THRESHOLD: Final[float] = 80.0
 
 # ========================================================================================
 # Failure Probability Model
