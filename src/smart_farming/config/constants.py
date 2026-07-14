@@ -245,7 +245,10 @@ MAX_EQUIPMENT_HEALTH: Final[float] = 100.0
 MIN_EQUIPMENT_HEALTH: Final[float] = 0.0
 
 MAX_LOAD_CHANGE_PER_CYCLE: Final[float] = 10.0
-MAX_LOAD_VARIATION_PER_CYCLE: Final[float] = 2.0
+MAX_LOAD_VARIATION_PER_CYCLE: Final[float] = 3.0
+
+DAYTIME_DEMAND_MULTIPLIER: Final[float] = 1.05
+NIGHTTIME_DEMAND_MULTIPLIER: Final[float] = 0.95
 
 MIN_INITIAL_EQUIPMENT_HEALTH: Final[float] = 96.0
 MAX_INITIAL_EQUIPMENT_HEALTH: Final[float] = 100.0
@@ -325,7 +328,8 @@ if abs(SENSOR_STATUS_PROBABILITY_SUM - 1.0) > 1e-9:
 # ========================================================================================
 
 DAY_START_HOUR: Final[int] = 6
-DAY_END_HOUR: Final[int] = 18
+NIGHT_START_HOUR: Final[int] = 18
+HOURS_PER_DAY: Final[int] = 24
 
 ENVIRONMENTAL_VARIATION_PERCENTAGE: Final[float] = 0.20
 

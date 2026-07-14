@@ -217,7 +217,9 @@ class EquipmentStateManager:
 
             demand_multiplier = (
                 self._facility_demand_model
-                .get_multiplier()
+                .get_multiplier(
+                    runtime_hours=state.runtime_hours,
+                )
             )
 
             minimum = profile.minimum

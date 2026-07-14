@@ -63,13 +63,9 @@ class FailureModel:
                 EquipmentOperatingStatus.WARNING
             )
 
-        if (
-            state.failure_probability
-            < ERROR_FAILURE_THRESHOLD
-        ):
-            return (
-                EquipmentOperatingStatus.ERROR
-            )
+        return (
+            EquipmentOperatingStatus.ERROR
+        )
     
     def calculate_probability(
     self,
