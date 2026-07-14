@@ -63,9 +63,13 @@ class FailureModel:
                 EquipmentOperatingStatus.WARNING
             )
 
-        return (
-            EquipmentOperatingStatus.ERROR
-        )
+        if (
+            state.failure_probability
+            < ERROR_FAILURE_THRESHOLD
+        ):
+            return (
+                EquipmentOperatingStatus.ERROR
+            )
     
     def calculate_probability(
     self,
@@ -84,4 +88,34 @@ class FailureModel:
                 ),
             ),
             4,
+        )
+
+    def is_terminal_failure(
+    self,
+    state: EquipmentState,
+    ) -> bool:
+        """
+        Determine whether equipment has entered a terminal
+        failure condition.
+
+        A terminal failure occurs when failure probability
+        exceeds the ERROR threshold.
+
+        Once an asset reaches ERROR state it remains in that
+        state until a maintenance event restores operation.
+
+        Parameters
+        ----------
+        state:
+            Runtime equipment state.
+
+        Returns
+        -------
+        bool
+            True if terminal failure occurred.
+        """
+
+        return (
+            state.failure_probability
+            >= WARNING_FAILURE_THRESHOLD
         )

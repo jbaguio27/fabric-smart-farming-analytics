@@ -31,6 +31,9 @@ from smart_farming.config import (
     EQUIPMENT_LOAD_PROFILES,
     MAX_LOAD_VARIATION_PER_CYCLE,
 )
+from smart_farming.models import (
+    EquipmentOperatingStatus,
+)
 from smart_farming.utils import (
     SimulationError,
     RandomManager,
@@ -39,6 +42,7 @@ from smart_farming.services import (
     FailureModel,
     MaintenanceManager,
     WearModel,
+    FacilityDemandModel,
 )
 
 
@@ -69,6 +73,7 @@ class EquipmentStateManager:
         self._wear_model = WearModel()
         self._failure_model = FailureModel()
         self._maintenance_manager = MaintenanceManager()
+        self._facility_demand_model = FacilityDemandModel()
         self._states: dict[str, EquipmentState] = {}
         
         self.initialize()
@@ -210,9 +215,24 @@ class EquipmentStateManager:
                 equipment.equipment_type
             ]
 
+            demand_multiplier = (
+                self._facility_demand_model
+                .get_multiplier()
+            )
+
             minimum = profile.minimum
-            maximum = profile.maximum
-            target = profile.target      
+
+            maximum = min(
+                MAX_EQUIPMENT_LOAD,
+                profile.maximum
+                * demand_multiplier,
+            )
+
+            target = min(
+                MAX_EQUIPMENT_LOAD,
+                profile.target
+                * demand_multiplier,
+            )
 
             if state.current_load == 0.0:
 
@@ -354,6 +374,8 @@ class EquipmentStateManager:
                 + (runtime_factor * 0.05)
             )
 
+            probability *= profile.failure_multiplier
+
             state.failure_probability = (
                 self._failure_model.calculate_probability(
                     probability=probability,
@@ -364,13 +386,36 @@ class EquipmentStateManager:
         """
         Update operating status for every registered equipment asset.
 
-        Operating status represents long-term equipment condition rather
-        than temporary utilization. Status transitions are therefore driven
-        by the calculated failure probability, which already incorporates a
-        bounded operating load adjustment.
+        Equipment entering ERROR state remains in ERROR until
+        maintenance intervention occurs.
+
+        WARNING and ONLINE states continue to be recalculated
+        each simulation cycle.
         """
 
         for state in self._states.values():
+
+            if (
+                state.operating_status
+                == EquipmentOperatingStatus.ERROR
+            ):
+                continue
+
+            if (
+                self._failure_model
+                .is_terminal_failure(
+                    state,
+                )
+            ):
+
+                state.operating_status = (
+                    self._failure_model
+                    .determine_operating_status(
+                        state,
+                    )
+                )
+
+                continue
 
             state.operating_status = (
                 self._failure_model

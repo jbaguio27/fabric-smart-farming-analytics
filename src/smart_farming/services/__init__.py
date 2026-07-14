@@ -19,9 +19,11 @@ maintenance_manager
 from .failure_model import FailureModel
 from .maintenance_manager import MaintenanceManager
 from .wear_model import WearModel
+from .facility_demand_model import FacilityDemandModel
 
 __all__ = [
     "FailureModel",
     "MaintenanceManager",
     "WearModel",
+    "FacilityDemandModel",
 ]

@@ -50,6 +50,7 @@ class EquipmentLoadProfile:
     target: Final[float]
 
     wear_multiplier: Final[float]
+    failure_multiplier: Final[float]
     normal_threshold: Final[float]
     warning_threshold: Final[float]
     moderate_factor_max: Final[float]
