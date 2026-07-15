@@ -1543,6 +1543,241 @@ existing schema contract.
 
 ---
 
+# Lakehouse Bronze Schema
+
+## Purpose
+
+This section defines the canonical Bronze layer schema for equipment
+telemetry within OneLake Lakehouse.
+
+The Bronze layer serves as the system of record for raw equipment
+telemetry received from Microsoft Fabric Eventhouse.
+
+The schema intentionally mirrors the operational Eventhouse structure to
+preserve complete event fidelity and lineage.
+
+No business transformations, enrichment, filtering, or aggregation are
+performed within the Bronze layer.
+
+---
+
+## Target Table
+
+```text
+bronze_equipment_telemetry
+```
+
+---
+
+## Storage Purpose
+
+The Bronze table provides:
+
+- Long-term raw telemetry retention
+- Historical replay capability
+- Data lineage preservation
+- Audit support
+- Recovery from downstream processing failures
+- Source data for Silver transformations
+
+The Bronze layer is considered append-only and immutable.
+
+---
+
+## Canonical Schema
+
+| Column | Type | Description |
+|----------|----------|----------|
+| event_id | string | Unique event identifier |
+| event_type | string | Event classification |
+| timestamp | timestamp | Event generation timestamp |
+| facility_id | string | Facility identifier |
+| equipment_id | string | Equipment identifier |
+| zone_id | string | Growing zone identifier |
+| equipment_type | string | Equipment category |
+| operating_status | string | Current operating condition |
+| health | double | Equipment health percentage |
+| runtime_hours | double | Accumulated runtime |
+| current_load | double | Utilization percentage |
+| failure_probability | double | Failure probability |
+| power_consumption_kw | double | Simulated power draw |
+| temperature_celsius | double | Simulated operating temperature |
+| vibration_mm_s | double | Simulated vibration velocity |
+| bronze_ingested_at | timestamp | Bronze ingestion timestamp |
+
+---
+
+## Ingestion Rules
+
+Equipment telemetry arriving from Eventhouse is written to Bronze
+without modification.
+
+The following principles apply:
+
+### No Business Logic
+
+Bronze must not perform:
+
+- Threshold evaluation
+- Status recalculation
+- Health recalculation
+- Failure probability recalculation
+- Sensor recalculation
+
+---
+
+### No Aggregation
+
+Bronze must not:
+
+- Average values
+- Group records
+- Summarize telemetry
+- Remove valid events
+
+Every telemetry event is preserved exactly as received.
+
+---
+
+### No Data Cleansing
+
+Bronze retains:
+
+- Raw event values
+- Original precision
+- Original operating status
+- Original telemetry measurements
+
+Data quality remediation occurs in Silver.
+
+---
+
+## Lineage Requirements
+
+Every Bronze record must preserve:
+
+```text
+event_id
+timestamp
+equipment_id
+facility_id
+```
+
+These identifiers support:
+
+- End-to-end traceability
+- Audit investigations
+- Historical replay
+- Root cause analysis
+
+---
+
+## Relationship to Eventhouse
+
+The Bronze schema is intentionally aligned with:
+
+```text
+equipment_telemetry
+```
+
+stored in Eventhouse.
+
+This alignment minimizes ingestion complexity and simplifies downstream
+processing.
+
+Relationship:
+
+```text
+Eventhouse
+equipment_telemetry
+        │
+        ▼
+Lakehouse Bronze
+bronze_equipment_telemetry
+```
+
+---
+
+## Relationship to Silver
+
+Bronze acts as the source dataset for future Silver transformations.
+
+Future Silver responsibilities include:
+
+- Data quality enforcement
+- Standardization
+- Validation enrichment
+- Dimensional enrichment
+- Analytical preparation
+
+Bronze itself remains unchanged.
+
+---
+
+## Example Bronze Record
+
+```json
+{
+  "event_id": "4c3e5f3d-b7d4-4fd3-92c5-2a6c95eaa701",
+  "event_type": "equipment.telemetry",
+  "timestamp": "2026-07-12T10:30:00Z",
+  "facility_id": "FACILITY-001",
+  "equipment_id": "EQ-00001",
+  "zone_id": "ZONE-01",
+  "equipment_type": "WATER_PUMP",
+  "operating_status": "ONLINE",
+  "health": 96.25,
+  "runtime_hours": 1234.50,
+  "current_load": 68.42,
+  "failure_probability": 0.0431,
+  "power_consumption_kw": 4.142,
+  "temperature_celsius": 65.16,
+  "vibration_mm_s": 5.040,
+  "bronze_ingested_at": "2026-07-12T10:30:01Z"
+}
+```
+
+---
+
+## Design Principles
+
+### Append Only
+
+Records are never updated after ingestion.
+
+### Immutable
+
+Bronze preserves the original telemetry record.
+
+### Replayable
+
+Historical events can be replayed into downstream layers if required.
+
+### Auditable
+
+Every event remains traceable back to the simulator source event.
+
+### Fabric-Aligned
+
+Schema structure mirrors Eventhouse to simplify ingestion and
+maintenance.
+
+---
+
+## Future Enhancements
+
+Future versions may introduce additional metadata columns such as:
+
+- source_system
+- ingestion_batch_id
+- processing_version
+- eventhouse_partition
+
+These additions should remain backward compatible and must not alter the
+original telemetry payload.
+
+---
+
 # Hardware Metrics Event
 
 ## Description
