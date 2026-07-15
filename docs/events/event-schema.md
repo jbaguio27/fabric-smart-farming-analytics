@@ -1128,6 +1128,208 @@ enhancements while preserving the current simulator behavior.
 
 ---
 
+# Eventstream Ingestion Contract
+
+## Purpose
+
+This section defines the ingestion contract between the Python Smart
+Farm Simulator and Microsoft Fabric Eventstream.
+
+The contract establishes the minimum requirements that equipment
+telemetry events must satisfy before entering the Fabric streaming
+pipeline.
+
+This contract serves as the authoritative interface between the
+simulator and Microsoft Fabric Real-Time Intelligence services.
+
+---
+
+## Ingestion Architecture
+
+Equipment telemetry follows the ingestion path below.
+
+```text
+EquipmentTelemetryGenerator
+            │
+            ▼
+EquipmentTelemetryEvent
+            │
+            ▼
+TelemetryValidator
+            │
+            ▼
+Microsoft Fabric Eventstream
+            │
+            ▼
+Eventhouse
+            │
+            ▼
+OneLake Lakehouse
+```
+
+Only validated telemetry events are eligible for ingestion.
+
+---
+
+## Event Type
+
+```text
+equipment.telemetry
+```
+
+Every equipment telemetry event entering Eventstream must use this
+event type value.
+
+---
+
+## Producer
+
+```text
+Python Smart Farm Simulator
+```
+
+The simulator is the sole producer of equipment telemetry events.
+
+---
+
+## Serialization Format
+
+Equipment telemetry must be serialized as JSON.
+
+Example:
+
+```json
+{
+  "event_type": "equipment.telemetry",
+  "equipment_id": "EQ-00001",
+  "facility_id": "FACILITY-001",
+  "zone_id": "ZONE-01",
+  "equipment_type": "WATER_PUMP",
+  "operating_status": "ONLINE",
+  "health": 96.25,
+  "runtime_hours": 1234.50,
+  "current_load": 68.42,
+  "failure_probability": 0.0431,
+  "power_consumption_kw": 4.142,
+  "temperature_celsius": 65.16,
+  "vibration_mm_s": 5.040
+}
+```
+
+---
+
+## Required Fields
+
+The following fields are mandatory for Eventstream ingestion.
+
+| Field |
+|---------|
+| event_id |
+| event_type |
+| timestamp |
+| facility_id |
+| equipment_id |
+| zone_id |
+| equipment_type |
+| operating_status |
+| health |
+| runtime_hours |
+| current_load |
+| failure_probability |
+| power_consumption_kw |
+| temperature_celsius |
+| vibration_mm_s |
+
+Events missing any required field are considered invalid.
+
+---
+
+## Data Quality Requirements
+
+Prior to ingestion, every event must satisfy:
+
+### Contract Validation
+
+- Required fields populated.
+- Valid event type.
+- Valid equipment identifiers.
+- Valid timestamp.
+
+### Runtime Consistency Validation
+
+- Runtime state matches emitted event values.
+
+### Physical Plausibility Validation
+
+- Health between 0 and 100.
+- Load between 0 and 100.
+- Failure probability between 0.0 and 1.0.
+- Positive sensor values.
+
+### Sensor Profile Validation
+
+- Power within profile boundaries.
+- Temperature within profile boundaries.
+- Vibration within profile boundaries.
+
+---
+
+## Eventstream Expectations
+
+Microsoft Fabric Eventstream should treat equipment telemetry as:
+
+- Append-only
+- Immutable
+- Time-series telemetry
+- Near real-time operational data
+
+Events must never be updated after publication.
+
+Corrections should be emitted as new events.
+
+---
+
+## Eventhouse Mapping
+
+Recommended Eventhouse destination:
+
+```text
+equipment_telemetry
+```
+
+Each ingested event becomes a single Eventhouse record.
+
+---
+
+## Lakehouse Mapping
+
+Recommended Bronze destination:
+
+```text
+bronze_equipment_telemetry
+```
+
+The Bronze layer stores telemetry exactly as received from Eventstream.
+
+No business transformations should occur in Bronze.
+
+---
+
+## Future Fabric Enhancements
+
+Future Fabric implementations may introduce:
+
+- Eventstream routing rules
+- Event Processing transformations
+- Real-Time Hub integration
+- Data Activator triggers
+- Predictive maintenance event generation
+
+These enhancements must preserve the ingestion contract defined in this
+section.
+
+---
+
 # Hardware Metrics Event
 
 ## Description
