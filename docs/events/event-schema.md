@@ -3261,6 +3261,183 @@ Schema drift between these components is not permitted.
 
 ---
 
+# Equipment Telemetry Bronze Lakehouse Mapping
+
+## Purpose
+
+This section defines the canonical Bronze-layer storage contract for
+Equipment Telemetry Events.
+
+The Bronze layer serves as the immutable system of record for raw
+equipment telemetry and preserves the original event payload exactly as
+received from Eventhouse.
+
+No business transformations occur within the Bronze layer.
+
+---
+
+## Bronze Table Name
+
+```text
+bronze_equipment_telemetry
+```
+
+---
+
+## Source
+
+```text
+equipment_telemetry
+(Eventhouse)
+```
+
+---
+
+## Destination
+
+```text
+bronze_equipment_telemetry
+(OneLake Lakehouse)
+```
+
+---
+
+## Storage Format
+
+```text
+Delta Parquet
+```
+
+---
+
+## Bronze Schema
+
+| Column | Type | Description |
+|----------|----------|-------------|
+| event_id | STRING | Unique event identifier. |
+| event_type | STRING | Event classification. |
+| timestamp | TIMESTAMP | Event generation timestamp. |
+| facility_id | STRING | Facility identifier. |
+| zone_id | STRING | Zone identifier. |
+| equipment_id | STRING | Equipment identifier. |
+| equipment_type | STRING | Equipment category. |
+| operating_status | STRING | Current operating status. |
+| health | DOUBLE | Equipment health percentage. |
+| runtime_hours | DOUBLE | Total accumulated runtime. |
+| current_load | DOUBLE | Current equipment load. |
+| failure_probability | DOUBLE | Failure probability. |
+| power_consumption_kw | DOUBLE | Equipment power draw. |
+| temperature_celsius | DOUBLE | Operating temperature. |
+| vibration_mm_s | DOUBLE | Vibration velocity. |
+| bronze_ingested_at | TIMESTAMP | Bronze ingestion timestamp. |
+
+---
+
+## Bronze Layer Characteristics
+
+The Bronze layer preserves raw telemetry exactly as received.
+
+Characteristics:
+
+- Append-only
+- Immutable
+- No cleansing
+- No enrichment
+- No deduplication
+- Full lineage preservation
+- Replay capable
+
+---
+
+## Partitioning Strategy
+
+Recommended partition key:
+
+```text
+facility_id
+```
+
+Secondary optimization candidate:
+
+```text
+date(timestamp)
+```
+
+Example structure:
+
+```text
+bronze_equipment_telemetry/
+
+facility_id=FACILITY-001/
+facility_id=FACILITY-002/
+facility_id=FACILITY-003/
+```
+
+---
+
+## Data Retention Strategy
+
+Bronze telemetry should be retained as the long-term historical source
+of truth.
+
+Recommended retention:
+
+```text
+Indefinite
+```
+
+This dataset supports:
+
+- Historical replay
+- Root cause analysis
+- Audit investigations
+- Future ML workloads
+- Predictive maintenance training datasets
+
+---
+
+## Data Lineage
+
+Lineage into Bronze is preserved through:
+
+- event_id
+- equipment_id
+- facility_id
+- timestamp
+
+These fields enable traceability from simulator generation through
+Eventstream, Eventhouse, Bronze, Silver, Gold, Warehouse, and Power BI.
+
+---
+
+## Bronze-to-Silver Responsibilities
+
+The following activities are intentionally deferred to Silver:
+
+- Validation enforcement
+- Duplicate detection
+- Quality scoring
+- Standardization
+- Enrichment
+- Business rule application
+
+Bronze remains a faithful copy of the original telemetry event.
+
+---
+
+## Ownership
+
+The Bronze schema must remain synchronized with:
+
+- EquipmentTelemetryEvent
+- Eventstream Contract
+- Eventhouse Schema
+- Silver Transformation Logic
+
+Schema drift between these artifacts is not permitted.
+
+---
+
 # Schema Versioning
 
 ## Version History
