@@ -2906,6 +2906,172 @@ READY FOR FABRIC INTEGRATION
 
 ---
 
+# Equipment Telemetry Eventstream Contract
+
+## Purpose
+
+This section defines the canonical payload contract transmitted from the
+Python Smart Farm Simulator into Microsoft Fabric Eventstream.
+
+The contract represents the first Fabric integration boundary and
+establishes the exact structure expected by downstream Fabric services.
+
+---
+
+## Eventstream Producer
+
+```text
+Python Smart Farm Simulator
+```
+
+---
+
+## Eventstream Consumer
+
+```text
+Microsoft Fabric Eventstream
+```
+
+---
+
+## Transmission Model
+
+Equipment telemetry events are emitted as individual JSON documents.
+
+Each event represents a point-in-time snapshot of a single equipment
+asset.
+
+Events are independent, immutable, and append-only.
+
+---
+
+## Eventstream Payload
+
+```json
+{
+  "event_id": "4b42dd47-3a40-46b6-8f1f-4eb95a4abfb2",
+  "event_type": "equipment.telemetry",
+  "timestamp": "2026-07-15T10:00:00Z",
+
+  "facility_id": "FACILITY-001",
+  "zone_id": "ZONE-001",
+
+  "equipment_id": "EQ-00001",
+  "equipment_type": "WATER_PUMP",
+
+  "operating_status": "ONLINE",
+
+  "health": 96.42,
+  "runtime_hours": 128.75,
+  "current_load": 71.33,
+  "failure_probability": 0.0821,
+
+  "power_consumption_kw": 4.142,
+  "temperature_celsius": 65.16,
+  "vibration_mm_s": 5.040
+}
+```
+
+---
+
+## Eventstream Required Fields
+
+The following fields must be present in every emitted equipment
+telemetry event.
+
+| Field |
+|---------|
+| event_id |
+| event_type |
+| timestamp |
+| facility_id |
+| zone_id |
+| equipment_id |
+| equipment_type |
+| operating_status |
+| health |
+| runtime_hours |
+| current_load |
+| failure_probability |
+| power_consumption_kw |
+| temperature_celsius |
+| vibration_mm_s |
+
+---
+
+## Eventstream Data Types
+
+| Field | Type |
+|---------|------|
+| event_id | String |
+| event_type | String |
+| timestamp | DateTime |
+| facility_id | String |
+| zone_id | String |
+| equipment_id | String |
+| equipment_type | String |
+| operating_status | String |
+| health | Decimal |
+| runtime_hours | Decimal |
+| current_load | Decimal |
+| failure_probability | Decimal |
+| power_consumption_kw | Decimal |
+| temperature_celsius | Decimal |
+| vibration_mm_s | Decimal |
+
+---
+
+## Eventstream Delivery Guarantees
+
+The simulator guarantees:
+
+- Every event contains a unique event_id.
+- Events are immutable after creation.
+- Events are emitted only after validation succeeds.
+- Events contain normalized telemetry values.
+- Events are traceable to runtime state.
+- Events are safe for Eventhouse ingestion.
+
+---
+
+## Eventstream Partitioning Strategy
+
+Initial Fabric implementation should partition telemetry using:
+
+```text
+facility_id
+```
+
+This supports:
+
+- Multi-facility scaling
+- Even workload distribution
+- Simplified operational filtering
+- Future regional expansion
+
+---
+
+## Eventstream Schema Ownership
+
+The EquipmentTelemetryEvent model is the authoritative source for this
+contract.
+
+Any future schema modifications must originate from:
+
+```text
+EquipmentTelemetryEvent
+```
+
+and be reflected in:
+
+- Eventstream configuration
+- Eventhouse mappings
+- Lakehouse mappings
+- Warehouse models
+- Power BI semantic models
+
+---
+
 # Schema Versioning
 
 ## Version History
