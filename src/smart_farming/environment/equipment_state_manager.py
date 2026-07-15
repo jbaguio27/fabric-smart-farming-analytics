@@ -29,6 +29,14 @@ from smart_farming.config import (
     NORMAL_OPERATING_LOAD_THRESHOLD,
     MAX_LOAD_CHANGE_PER_CYCLE,
     EQUIPMENT_LOAD_PROFILES,
+    EQUIPMENT_SENSOR_PROFILES,
+    SENSOR_POWER_HEALTH_STRESS_MULTIPLIER,
+    SENSOR_TEMPERATURE_HEALTH_STRESS_CELSIUS,
+    SENSOR_TEMPERATURE_FAILURE_STRESS_CELSIUS,
+    SENSOR_TEMPERATURE_VARIATION_CELSIUS,
+    SENSOR_VIBRATION_HEALTH_STRESS_MM_S,
+    SENSOR_VIBRATION_FAILURE_STRESS_MM_S,
+    SENSOR_VIBRATION_VARIATION_MM_S,
     MAX_LOAD_VARIATION_PER_CYCLE,
 )
 from smart_farming.models import (
@@ -382,6 +390,138 @@ class EquipmentStateManager:
                 self._failure_model.calculate_probability(
                     probability=probability,
                 )
+            )
+
+    def update_sensor_metrics(self) -> None:
+        """
+        Update baseline equipment sensor metrics for every asset.
+
+        Sensor metrics are derived from the current runtime state:
+
+        1. Current load drives the normal operating baseline.
+        2. Lower health adds mild stress to power, temperature, and
+        vibration.
+        3. Failure probability adds additional thermal and vibration
+        stress.
+
+        This method intentionally models only baseline telemetry. It does
+        not generate explicit anomalies, drop readings, or override
+        operating status. Those behaviors are separate roadmap items so
+        baseline sensor generation can be validated independently.
+        """
+
+        for equipment in self._equipment_registry.list_all():
+            state = self._states[
+                equipment.equipment_id
+            ]
+
+            profile = EQUIPMENT_SENSOR_PROFILES[
+                equipment.equipment_type
+            ]
+
+            load_ratio = (
+                state.current_load
+                / MAX_EQUIPMENT_LOAD
+            )
+
+            health_stress_ratio = (
+                MAX_EQUIPMENT_HEALTH
+                - state.health
+            ) / MAX_EQUIPMENT_HEALTH
+
+            power_range = (
+                profile.max_power_kw
+                - profile.idle_power_kw
+            )
+            
+            power = (
+                profile.idle_power_kw
+                + (power_range * load_ratio)
+            )
+
+            power *= (
+                1.0
+                + (
+                    health_stress_ratio
+                    * SENSOR_POWER_HEALTH_STRESS_MULTIPLIER
+                )
+            )
+
+            temperature_range = (
+                profile.max_temperature_celsius
+                - profile.base_temperature_celsius
+            )
+
+            temperature = (
+                profile.base_temperature_celsius
+                + (temperature_range * load_ratio)
+                + (
+                    health_stress_ratio
+                    * SENSOR_TEMPERATURE_HEALTH_STRESS_CELSIUS
+                )
+                + (
+                    state.failure_probability
+                    * SENSOR_TEMPERATURE_FAILURE_STRESS_CELSIUS
+                )
+                + self._random_manager.uniform(
+                    -SENSOR_TEMPERATURE_VARIATION_CELSIUS,
+                    SENSOR_TEMPERATURE_VARIATION_CELSIUS,
+                )
+            )
+
+            vibration_range = (
+                profile.max_vibration_mm_s
+                - profile.base_vibration_mm_s
+            )
+
+            vibration = (
+                profile.base_vibration_mm_s
+                + (vibration_range * load_ratio)
+                + (
+                    health_stress_ratio
+                    * SENSOR_VIBRATION_HEALTH_STRESS_MM_S
+                )
+                + (
+                    state.failure_probability
+                    * SENSOR_VIBRATION_FAILURE_STRESS_MM_S
+                )
+                + self._random_manager.uniform(
+                    -SENSOR_VIBRATION_VARIATION_MM_S,
+                    SENSOR_VIBRATION_VARIATION_MM_S,
+                )
+            )
+
+            state.power_consumption_kw = round(
+                min(
+                    profile.max_power_kw,
+                    max(
+                        profile.idle_power_kw,
+                        power,
+                    ),
+                ),
+                3,
+            )
+
+            state.temperature_celsius = round(
+                min(
+                    profile.max_temperature_celsius,
+                    max(
+                        profile.base_temperature_celsius,
+                        temperature,
+                    ),
+                ),
+                2,
+            )
+
+            state.vibration_mm_s = round(
+                min(
+                    profile.max_vibration_mm_s,
+                    max(
+                        profile.base_vibration_mm_s,
+                        vibration,
+                    ),
+                ),
+                3,
             )
 
     def update_operating_status(self) -> None:

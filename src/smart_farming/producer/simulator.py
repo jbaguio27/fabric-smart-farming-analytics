@@ -124,6 +124,7 @@ class Simulator:
         self.equipment_state_manager.update_load()
         self.equipment_state_manager.update_failure_probability()
         self.equipment_state_manager.update_operating_status()
+        self.equipment_state_manager.update_sensor_metrics()
         self.equipment_state_manager.evaluate_maintenance()
 
         environment = (

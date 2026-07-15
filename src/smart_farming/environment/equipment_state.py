@@ -68,7 +68,7 @@ class EquipmentState:
 
     power_consumption_kw: float = 0.0
 
-    temperatur_celsius: float = 0.0
+    temperature_celsius: float = 0.0
 
     vibration_mm_s: float = 0.0
 
