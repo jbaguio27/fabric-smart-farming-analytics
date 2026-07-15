@@ -13,7 +13,8 @@ Initial validation focuses on equipment telemetry events and verifies:
 2. Runtime metrics remain within expected ranges.
 3. Sensor metrics are populated.
 4. Sensor metrics remain physically plausible.
-5. Invalid telemetry is detected before downstream ingestion.
+5. Event normalization rules are enforced.
+6. Invalid telemetry is detected before downstream ingestion.
 
 Future roadmap items may extend this validator with:
 
@@ -84,3 +85,29 @@ class TelemetryValidator:
         assert event.vibration_mm_s <= 20.0
 
         assert event.power_consumption_kw <= 100.0
+
+        # Event normalization validation
+
+        assert event.health == round(event.health, 2)
+
+        assert event.runtime_hours == round(event.runtime_hours, 2)
+
+        assert event.current_load == round(event.current_load, 2)
+
+        assert event.failure_probability == round(event.failure_probability, 4)
+
+        assert (
+            event.temperature_celsius
+            == round(
+                event.temperature_celsius,
+                2,
+            )
+        )
+
+        assert (
+            event.vibration_mm_s
+            == round(
+                event.vibration_mm_s,
+                3,
+            )
+        )
