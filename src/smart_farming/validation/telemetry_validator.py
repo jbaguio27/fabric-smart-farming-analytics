@@ -105,6 +105,50 @@ class TelemetryValidator:
             == state.vibration_mm_s
         )
 
+    def validate_sensor_profile_compliance(
+        self,
+        event: EquipmentTelemetryEvent,
+        profile,
+    ) -> None:
+        """
+        Validate that emitted sensor telemetry remains within the
+        boundaries defined by the equipment type's sensor profile.
+
+        This validation ensures that telemetry generation continues to
+        respect the calibration contract established by
+        EquipmentSensorProfile.
+
+        Args:
+            event:
+                Generated equipment telemetry event.
+
+            profile:
+                Sensor profile associated with the equipment type.
+
+        Raises:
+            AssertionError:
+                Raised when emitted telemetry falls outside the profile
+                boundaries.
+        """
+
+        assert (
+            profile.idle_power_kw
+            <= event.power_consumption_kw
+            <= profile.max_power_kw
+        )
+
+        assert (
+            profile.base_temperature_celsius
+            <= event.temperature_celsius
+            <= profile.max_temperature_celsius
+        )
+
+        assert (
+            profile.base_vibration_mm_s
+            <= event.vibration_mm_s
+            <= profile.max_vibration_mm_s
+        )
+
     def validate_equipment_event(
         self,
         event: EquipmentTelemetryEvent,
