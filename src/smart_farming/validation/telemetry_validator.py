@@ -12,7 +12,8 @@ Initial validation focuses on equipment telemetry events and verifies:
 1. Required identifiers exist.
 2. Runtime metrics remain within expected ranges.
 3. Sensor metrics are populated.
-4. Sensor metrics remain physically valid.
+4. Sensor metrics remain physically plausible.
+5. Invalid telemetry is detected before downstream ingestion.
 
 Future roadmap items may extend this validator with:
 
@@ -66,8 +67,20 @@ class TelemetryValidator:
 
         assert 0.0 <= event.failure_probability <= 1.0
 
+        # Sensor telemetry validation
+
         assert event.power_consumption_kw > 0.0
 
         assert event.temperature_celsius > 0.0
 
         assert event.vibration_mm_s > 0.0
+
+        # Physical plausibility validation
+
+        assert event.temperature_celsius >= 0.0
+
+        assert event.temperature_celsius <= 100.0
+
+        assert event.vibration_mm_s <= 20.0
+
+        assert event.power_consumption_kw <= 100.0
