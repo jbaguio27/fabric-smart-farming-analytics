@@ -23,7 +23,7 @@ Future roadmap items may extend this validator with:
 - schema compliance checks
 - Fabric ingestion readiness checks
 """
-
+from dataclasses import dataclass
 from smart_farming.models import (
     EquipmentTelemetryEvent,
 )
@@ -37,7 +37,33 @@ from smart_farming.config import (
 )
 
 
-class TelemetryValidator:
+@dataclass(slots=True)
+class ValidationStatistics:
+    """
+    Aggregated validation statistics produced during a verification run.
+
+    The validator updates these counters whenever a validation rule
+    successfully executes. The statistics are intended purely for
+    observability and verification reporting.
+
+    Attributes:
+        validated_events:
+            Number of equipment telemetry events validated.
+
+        runtime_consistency_checks:
+            Number of runtime-to-event consistency validations executed.
+
+        profile_compliance_checks:
+            Number of equipment sensor profile validations executed.
+    """
+
+    validated_events: int = 0
+
+    runtime_consistency_checks: int = 0
+
+    profile_compliance_checks: int = 0
+
+class TelemetryValidator():
     """
     Validates generated telemetry events.
 
@@ -45,6 +71,18 @@ class TelemetryValidator:
     telemetry records. It does not mutate events and raises assertions
     when invalid telemetry is detected during verification.
     """
+
+    def __init__(
+        self,
+    ) -> None:
+        """
+        Initialize validation statistics.
+
+        Statistics are collected solely for verification reporting and
+        have no impact on simulator behavior.
+        """
+
+        self.statistics = ValidationStatistics()
 
     def validate_runtime_consistency(
         self,
@@ -145,6 +183,8 @@ class TelemetryValidator:
             f"({event.vibration_mm_s})"
         )
 
+        self.statistics.runtime_consistency_checks += 1
+
     def validate_sensor_profile_compliance(
         self,
         event: EquipmentTelemetryEvent,
@@ -200,6 +240,8 @@ class TelemetryValidator:
             f"vibration mm/s outside profile range "
             f"({event.vibration_mm_s})"
         )
+
+        self.statistics.profile_compliance_checks += 1
 
     def validate_equipment_event(
         self,
@@ -401,3 +443,5 @@ class TelemetryValidator:
             f"vibration precision violation "
             f"({event.vibration_mm_s})"
         )
+
+        self.statistics.validated_events += 1
