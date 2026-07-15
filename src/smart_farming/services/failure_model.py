@@ -19,6 +19,7 @@ from smart_farming.models.equipment import (
 from smart_farming.config.constants import (
     ONLINE_FAILURE_THRESHOLD,
     WARNING_FAILURE_THRESHOLD,
+    ERROR_FAILURE_THRESHOLD,
     MAX_FAILURE_PROBABILITY,
     MIN_FAILURE_PROBABILITY,
 )
@@ -48,24 +49,24 @@ class FailureModel:
         """
 
         if (
-            state.failure_probability
-            < ONLINE_FAILURE_THRESHOLD
+            state.operating_status
+            == EquipmentOperatingStatus.ERROR
         ):
-            return (
-                EquipmentOperatingStatus.ONLINE
-            )
+            return EquipmentOperatingStatus.ERROR
 
         if (
             state.failure_probability
-            < WARNING_FAILURE_THRESHOLD
+            >= WARNING_FAILURE_THRESHOLD
         ):
-            return (
-                EquipmentOperatingStatus.WARNING
-            )
+            return EquipmentOperatingStatus.ERROR
 
-        return (
-            EquipmentOperatingStatus.ERROR
-        )
+        if (
+            state.failure_probability
+            >= ONLINE_FAILURE_THRESHOLD
+        ):
+            return EquipmentOperatingStatus.WARNING
+
+        return EquipmentOperatingStatus.ONLINE
     
     def calculate_probability(
     self,
@@ -113,5 +114,5 @@ class FailureModel:
 
         return (
             state.failure_probability
-            >= WARNING_FAILURE_THRESHOLD
+            >= ERROR_FAILURE_THRESHOLD
         )

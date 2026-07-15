@@ -55,6 +55,16 @@ class EquipmentTelemetryEvent(BaseEvent):
         failure_probability:
             Calculated probability that the equipment will transition into a degraded
             operating state based on its current runtime condition.
+        
+        power_consumption_kw:
+            Simulated equipment power draw in kilowatts.
+
+        temperature_celsius:
+            Simulated equipment operating temperature in degrees Celsius.
+
+        vibration_mm_s:
+            Simulated equipment vibration velocity in millimeters per
+            second.
     """
 
     equipment_id: str
@@ -65,3 +75,6 @@ class EquipmentTelemetryEvent(BaseEvent):
     runtime_hours: float
     current_load: float
     failure_probability: float
+    power_consumption_kw: float
+    temperature_celsius: float
+    vibration_mm_s: float

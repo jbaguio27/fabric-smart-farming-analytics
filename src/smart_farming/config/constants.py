@@ -7,8 +7,9 @@ Runtime configuration belongs in settings.py
 
 from zoneinfo import ZoneInfo
 from typing import Final, TypeAlias, Mapping
-from smart_farming.config.load_profile import (
+from .load_profile import (
     EquipmentLoadProfile,
+    EquipmentSensorProfile,
 )
 
 # ========================================================================================
@@ -236,6 +237,56 @@ EQUIPMENT_LOAD_PROFILES: Final[
         critical_factor_max=0.60,
     ),
 }
+
+EQUIPMENT_SENSOR_PROFILES: Final[
+    Mapping[str, EquipmentSensorProfile]
+] = {
+    "water_pump": EquipmentSensorProfile(
+        idle_power_kw=1.20,
+        max_power_kw=4.80,
+        base_temperature_celsius=32.0,
+        max_temperature_celsius=72.0,
+        base_vibration_mm_s=1.20,
+        max_vibration_mm_s=5.80,
+    ),
+    "nutrient_pump": EquipmentSensorProfile(
+        idle_power_kw=0.80,
+        max_power_kw=3.20,
+        base_temperature_celsius=30.0,
+        max_temperature_celsius=66.0,
+        base_vibration_mm_s=0.90,
+        max_vibration_mm_s=4.80,
+    ),
+    "hvac": EquipmentSensorProfile(
+        idle_power_kw=3.50,
+        max_power_kw=18.0,
+        base_temperature_celsius=36.0,
+        max_temperature_celsius=82.0,
+        base_vibration_mm_s=1.50,
+        max_vibration_mm_s=6.50,
+    ),
+    "ventilation_fan": EquipmentSensorProfile(
+        idle_power_kw=0.40,
+        max_power_kw=2.20,
+        base_temperature_celsius=28.0,
+        max_temperature_celsius=58.0,
+        base_vibration_mm_s=0.70,
+        max_vibration_mm_s=4.20,
+    ),
+    "led_panel": EquipmentSensorProfile(
+        idle_power_kw=0.60,
+        max_power_kw=2.80,
+        base_temperature_celsius=34.0,
+        max_temperature_celsius=76.0,
+        base_vibration_mm_s=0.05,
+        max_vibration_mm_s=0.35,
+    ),
+}
+
+if set(EQUIPMENT_SENSOR_PROFILES) != set(EQUIPMENT_TYPES):
+    raise ValueError(
+        "Equipment sensor profiles must cover every equipment type."
+    )
 
 # ========================================================================================
 # Equipment Runtime Configuration

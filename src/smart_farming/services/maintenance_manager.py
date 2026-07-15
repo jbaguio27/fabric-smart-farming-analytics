@@ -4,13 +4,21 @@ Maintenance service.
 This service manages maintenance eligibility
 and maintenance execution for equipment assets.
 """
-from datetime import datetime
+from datetime import (
+    datetime,
+    UTC,
+)
 from smart_farming.environment.equipment_state import EquipmentState
 from smart_farming.config import (
     MAINTENANCE_INTERVAL_HOURS,
     MAINTENANCE_HEALTH_THRESHOLD,
     MAINTENANCE_RESTORE_HEALTH,
     MAINTENANCE_RESET_FAILURE_PROBABILITY,
+    MAX_EQUIPMENT_HEALTH,
+    MIN_EQUIPMENT_HEALTH,
+)
+from smart_farming.models import (
+    EquipmentOperatingStatus,
 )
 
 
@@ -65,30 +73,32 @@ class MaintenanceManager:
         state: EquipmentState,
     ) -> None:
         """
-        Apply maintenance to an asset when
-        maintenance criteria are satisfied.
+        Execute maintenance when equipment health falls below
+        the maintenance threshold.
+
+        Maintenance restores equipment condition and clears
+        persistent failure states.
         """
 
-        if not self.requires_maintenance(
-            state,
+        if (
+            state.health
+            > MAINTENANCE_HEALTH_THRESHOLD
         ):
             return
 
-        self._maintenance_count += 1
+        state.health = MAX_EQUIPMENT_HEALTH
 
-        state.health = (
-            MAINTENANCE_RESTORE_HEALTH
-        )
+        state.failure_probability = MIN_EQUIPMENT_HEALTH
 
-        state.failure_probability = (
-            MAINTENANCE_RESET_FAILURE_PROBABILITY
+        state.operating_status = (
+            EquipmentOperatingStatus.ONLINE
         )
 
         state.last_maintenance_at = (
-            datetime.utcnow()
+            datetime.now(UTC)
         )
 
-        state.runtime_hours = 0.0
+        self._maintenance_count += 1
 
     def maintenance_count(
         self,

@@ -397,28 +397,6 @@ class EquipmentStateManager:
 
         for state in self._states.values():
 
-            if (
-                state.operating_status
-                == EquipmentOperatingStatus.ERROR
-            ):
-                continue
-
-            if (
-                self._failure_model
-                .is_terminal_failure(
-                    state,
-                )
-            ):
-
-                state.operating_status = (
-                    self._failure_model
-                    .determine_operating_status(
-                        state,
-                    )
-                )
-
-                continue
-
             state.operating_status = (
                 self._failure_model
                 .determine_operating_status(

@@ -55,3 +55,46 @@ class EquipmentLoadProfile:
     warning_threshold: Final[float]
     moderate_factor_max: Final[float]
     critical_factor_max: Final[float]
+
+@dataclass(frozen=True, slots=True)
+class EquipmentSensorProfile:
+    """
+    Immutable sensor profile for an equipment type.
+
+    This profile defines realistic baseline telemetry ranges for
+    equipment-mounted sensors. The simulator uses these ranges to derive
+    power consumption, operating temperature, and vibration from runtime
+    state without embedding equipment-specific constants in business
+    logic.
+
+    Attributes:
+        idle_power_kw:
+            Expected power draw when equipment is running near minimum
+            operating load.
+
+        max_power_kw:
+            Expected power draw when equipment is running near maximum
+            operating load.
+
+        base_temperature_celsius:
+            Expected operating temperature under low stress.
+
+        max_temperature_celsius:
+            Maximum expected operating temperature under normal simulated
+            operating conditions.
+
+        base_vibration_mm_s:
+            Expected vibration velocity under low stress.
+
+        max_vibration_mm_s:
+            Maximum expected vibration velocity under normal simulated
+            operating conditions.
+    """
+
+    idle_power_kw: Final[float]
+    max_power_kw: Final[float]
+    base_temperature_celsius: Final[float]
+    max_temperature_celsius: Final[float]
+    base_vibration_mm_s: Final[float]
+    max_vibration_mm_s: Final[float]
+

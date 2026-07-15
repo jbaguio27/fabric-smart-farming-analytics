@@ -40,6 +40,16 @@ class EquipmentState:
         failure_probability:
             Probability of failure during the current simulation cycle.
 
+        power_consumption_kw:
+            Simulated equipment power draw in kilowatts.
+
+        temperature_celsius:
+            Simulated equipment operating temperature in degrees Celsius.
+
+        vibration_mm_s:
+            Simulated equipment vibration velocity in millimeters per
+            second.
+
         last_maintenance_at:
             Timestamp of the most recent maintenance event.
     """
@@ -55,5 +65,11 @@ class EquipmentState:
     current_load: float = 0.0
 
     failure_probability: float = 0.0
+
+    power_consumption_kw: float = 0.0
+
+    temperatur_celsius: float = 0.0
+
+    vibration_mm_s: float = 0.0
 
     last_maintenance_at: datetime | None = None

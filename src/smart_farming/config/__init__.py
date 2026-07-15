@@ -65,6 +65,7 @@ from .constants import (
     NORMAL_OPERATING_LOAD_THRESHOLD,
     MAX_LOAD_CHANGE_PER_CYCLE,
     EQUIPMENT_LOAD_PROFILES,
+    EQUIPMENT_SENSOR_PROFILES,
     MAX_LOAD_VARIATION_PER_CYCLE,
     DAYTIME_DEMAND_MULTIPLIER,
     NIGHTTIME_DEMAND_MULTIPLIER,
@@ -79,11 +80,15 @@ from .constants import (
 )
 
 from .settings import Settings
-from .load_profile import EquipmentLoadProfile
+from .load_profile import (
+    EquipmentLoadProfile,
+    EquipmentSensorProfile,
+)
 
 __all__ = [
     "Settings",
-    "EquipmentLoadProfile"
+    "EquipmentLoadProfile",
+    "EquipmentSensorProfile",
     "APPLICATION_NAME",
     "APPLICATION_VERSION",
     "APPLICATION_OWNER",
@@ -145,6 +150,7 @@ __all__ = [
     "MAX_EQUIPMENT_RUNTIME_HOURS",
     "MAX_LOAD_CHANGE_PER_CYCLE",
     "EQUIPMENT_LOAD_PROFILES",
+    "EQUIPMENT_SENSOR_PROFILES",
     "MAX_LOAD_VARIATION_PER_CYCLE",
     "DAYTIME_DEMAND_MULTIPLIER",
     "NIGHTTIME_DEMAND_MULTIPLIER",
