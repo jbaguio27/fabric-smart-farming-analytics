@@ -38,6 +38,73 @@ class TelemetryValidator:
     when invalid telemetry is detected during verification.
     """
 
+    def validate_runtime_consistency(
+        self,
+        event: EquipmentTelemetryEvent,
+        state,
+    ) -> None:
+        """
+        Validate that a telemetry event accurately reflects the
+        runtime state from which it was generated.
+
+        This validation protects the event contract by ensuring that
+        telemetry generation remains a read-only projection of runtime
+        state. Any mismatch indicates that the event generator is no
+        longer faithfully emitting simulator state.
+
+        Args:
+            event:
+                Generated equipment telemetry event.
+
+            state:
+                Runtime EquipmentState associated with the same
+                equipment asset.
+
+        Raises:
+            AssertionError:
+                Raised when event values diverge from runtime state.
+        """
+
+        assert (
+            event.health
+            == state.health
+        )
+
+        assert (
+            event.runtime_hours
+            == state.runtime_hours
+        )
+
+        assert (
+            event.current_load
+            == state.current_load
+        )
+
+        assert (
+            event.failure_probability
+            == state.failure_probability
+        )
+
+        assert (
+            event.operating_status
+            == state.operating_status
+        )
+
+        assert (
+            event.power_consumption_kw
+            == state.power_consumption_kw
+        )
+
+        assert (
+            event.temperature_celsius
+            == state.temperature_celsius
+        )
+
+        assert (
+            event.vibration_mm_s
+            == state.vibration_mm_s
+        )
+
     def validate_equipment_event(
         self,
         event: EquipmentTelemetryEvent,
