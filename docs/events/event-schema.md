@@ -6,7 +6,7 @@
 
 **Status:** Approved
 
-**Last Updated:** 2026-07-12
+**Last Updated:** 2026-07-16
 
 ---
 
@@ -209,6 +209,17 @@ This design simplifies:
 | RUNNING | Pump is operating normally. |
 | IDLE | Pump is powered but inactive. |
 | FAULTY | Pump failure detected. |
+
+---
+
+## Equipment Operating Status
+
+| Value | Description |
+|-------|-------------|
+| ONLINE | Equipment is operating normally. |
+| WARNING | Equipment is operating but showing degraded health or elevated failure risk. |
+| ERROR | Equipment requires maintenance or has entered a fault condition. |
+| OFFLINE | Equipment is unavailable for operation. |
 
 ---
 
@@ -529,6 +540,14 @@ Hardware Metrics Events monitor the operational performance and health of critic
 
 The data enables predictive maintenance, rapid fault detection, equipment utilization analysis, and operational efficiency reporting. It also supports automated alerts that help prevent equipment failures from impacting crop production.
 
+## Notes
+
+- Hardware metrics are used for predictive maintenance and operational monitoring.
+- Equipment failures can trigger immediate Data Activator alerts.
+- These events contribute to Equipment Availability, Pump Failure Rate, and Facility Health Score KPIs.
+
+---
+
 ### Event Type
 
 ```text
@@ -578,6 +597,144 @@ Every 10 to 30 seconds per monitored asset.
   }
 }
 ```
+
+---
+
+# Equipment Telemetry Event
+
+## Description
+
+The Equipment Telemetry Event represents the simulated runtime condition of operational farming equipment managed by the Equipment State Manager.
+
+These events combine immutable equipment metadata with mutable runtime state and baseline sensor telemetry to provide a complete operational snapshot of every managed equipment asset.
+
+## Business Purpose
+
+Equipment Telemetry Events provide operational visibility into equipment health, utilization, runtime accumulation, failure risk, and simulated sensor behavior.
+
+The event serves as the foundation for equipment monitoring, reliability analytics, maintenance reporting, equipment utilization analysis, and future predictive maintenance workloads.
+
+These events are generated directly from the equipment simulation engine and represent the authoritative runtime state of each equipment asset.
+
+### Event Type
+
+```text
+equipment.telemetry
+```
+
+### Producer
+
+Python Smart Farm Simulator
+
+### Consumers
+
+- Microsoft Fabric Eventstream
+- Eventhouse (KQL Database)
+- Data Activator
+- OneLake Lakehouse
+- Spark Notebooks
+- Fabric Data Factory
+- Fabric Warehouse
+- Power BI
+
+### Expected Frequency
+
+Generated once per simulation cycle for every registered equipment asset.
+
+---
+
+## JSON Example
+
+```json
+{
+  "event_id": "71fbeab8-b9a3-41b2-9b31-f95c6f3b60f1",
+  "event_type": "equipment.telemetry",
+  "event_timestamp": "2026-07-15T10:30:00Z",
+  "ingestion_timestamp": null,
+  "schema_version": "1.0",
+  "facility_id": "FACILITY-NY-01",
+  "zone_id": "ZONE-A",
+  "correlation_id": "1bcab22f-bfd0-4db5-98e5-9d2cf2d94f0c",
+  "producer_id": "smart-farm-simulator",
+  "environment": "DEV",
+  "payload": {
+    "equipment_id": "EQ-00001",
+    "equipment_type": "WATER_PUMP",
+    "operating_status": "ONLINE",
+    "health": 96.35,
+    "runtime_hours": 125.50,
+    "current_load": 72.40,
+    "failure_probability": 0.0835,
+    "power_consumption_kw": 8.452,
+    "temperature_celsius": 58.42,
+    "vibration_mm_s": 2.816
+  }
+}
+```
+
+---
+
+## Payload Field Dictionary
+
+| Field | Type | Required | Description |
+|--------|------|----------|-------------|
+| equipment_id | String | Yes | Unique equipment identifier. |
+| equipment_type | String | Yes | Equipment category. |
+| operating_status | Enum | Yes | Current operating status. |
+| health | Decimal | Yes | Current equipment health percentage. |
+| runtime_hours | Decimal | Yes | Accumulated operating hours. |
+| current_load | Decimal | Yes | Current equipment utilization percentage. |
+| failure_probability | Decimal | Yes | Simulated probability of failure. |
+| power_consumption_kw | Decimal | Yes | Simulated power draw. |
+| temperature_celsius | Decimal | Yes | Simulated operating temperature. |
+| vibration_mm_s | Decimal | Yes | Simulated vibration level. |
+
+---
+
+## Validation Rules
+
+The following validation rules are applied during ingestion to ensure downstream analytical accuracy.
+
+| Field | Validation |
+|--------|------------|
+| operating_status | ONLINE, WARNING, ERROR, OFFLINE |
+| health | Between 0 and 100 |
+| runtime_hours | Greater than or equal to 0 |
+| current_load | Between 0 and 100 |
+| failure_probability | Between 0 and 1 |
+| power_consumption_kw | Greater than or equal to 0 |
+| temperature_celsius | Greater than or equal to 0 |
+| vibration_mm_s | Greater than or equal to 0 |
+
+---
+
+## Invalid Payload Example
+
+Invalid payloads are assigned the appropriate data_quality_flag and retained for operational investigation rather than immediately discarded.
+
+```json
+{
+  "health": 145,
+  "current_load": 120,
+  "failure_probability": 1.8
+}
+```
+
+### Validation Errors
+
+- health exceeds 100%.
+- current_load exceeds maximum utilization.
+- failure_probability exceeds valid probability range.
+
+---
+
+## Notes
+
+- Generated for every registered equipment asset.
+- Runtime state originates from EquipmentStateManager.
+- Sensor metrics originate from baseline sensor calculations.
+- Supports future predictive maintenance initiatives.
+- Serves as the primary operational equipment event within the platform.
 
 ---
 
@@ -1154,6 +1311,7 @@ The following tables store streaming events inside Microsoft Fabric Eventhouse.
 |------------|------------------|
 | sensor.telemetry | sensor_telemetry |
 | hardware.metrics | hardware_metrics |
+| equipment.telemetry | equipment_telemetry |
 | crop.batch.lifecycle | crop_batch_lifecycle |
 | maintenance.activity | maintenance_activity |
 | platform.system | platform_system |
@@ -1171,6 +1329,7 @@ The Bronze layer stores raw append-only streaming data exactly as received from 
 |------------|--------------------|
 | sensor.telemetry | bronze_sensor_telemetry |
 | hardware.metrics | bronze_hardware_metrics |
+| equipment.telemetry | bronze_equipment_telemetry |
 | crop.batch.lifecycle | bronze_crop_batch_lifecycle |
 | maintenance.activity | bronze_maintenance_activity |
 | platform.system | bronze_platform_system |
@@ -1196,6 +1355,7 @@ The Silver layer applies data cleansing, validation, standardization, and enrich
 |--------------|--------------|
 | bronze_sensor_telemetry | silver_sensor_telemetry |
 | bronze_hardware_metrics | silver_hardware_metrics |
+| bronze_equipment_telemetry | silver_equipment_telemetry |
 | bronze_crop_batch_lifecycle | silver_crop_batch_lifecycle |
 | bronze_maintenance_activity | silver_maintenance_activity |
 | bronze_platform_system | silver_platform_system |
@@ -1223,6 +1383,7 @@ The Gold layer contains curated analytical datasets modeled using a Kimball star
 |--------------|-----------------|
 | silver_sensor_telemetry | fact_sensor_telemetry |
 | silver_hardware_metrics | fact_hardware_metrics |
+| silver_equipment_telemetry | fact_equipment_telemetry |
 
 ---
 
@@ -1414,6 +1575,7 @@ These enhancements can be incorporated without redesigning the existing event co
 | :--- | :---: | :---: | :--- | :--- |
 | `sensor.telemetry` | ✅ | ✅ | `fact_sensor_telemetry` | Real-Time Operations Dashboard, Farm Performance Dashboard |
 | `hardware.metrics` | ✅ | ✅ | `fact_hardware_metrics` | Real-Time Operations Dashboard, Farm Performance Dashboard |
+| `equipment.telemetry` | ✅ | ✅ | `fact_equipment_telemetry` | Real-Time Operations Dashboard, Equipment Reliability Dashboard |
 | `crop.batch.lifecycle` | ✅ | ✅ | `dim_crop_batch` | Farm Performance Dashboard |
 | `maintenance.activity` | ✅ | ✅ | Maintenance Reporting | Farm Performance Dashboard |
 | `platform.system` | ✅ | Optional | Monitoring | Platform Monitoring Dashboard |
