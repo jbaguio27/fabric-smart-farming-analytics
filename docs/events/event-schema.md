@@ -666,80 +666,6 @@ Invalid payloads are assigned the appropriate data_quality_flag and retained for
 
 ---
 
-# Hardware Metrics Event
-
-## Description
-
-The Hardware Metrics Event represents the operational health and performance of critical farming equipment, including pumps, motors, valves, and supporting infrastructure.
-
-These events enable equipment monitoring and provide the historical data required for future predictive maintenance capabilities.
-
-## Business Purpose
-
-Hardware Metrics Events monitor the operational performance and health of critical farming equipment, including pumps and other infrastructure supporting crop production. These events provide continuous insight into asset status, mechanical performance, and energy consumption.
-
-The data enables predictive maintenance, rapid fault detection, equipment utilization analysis, and operational efficiency reporting. It also supports automated alerts that help prevent equipment failures from impacting crop production.
-
-## Notes
-
-- Hardware metrics are used for predictive maintenance and operational monitoring.
-- Equipment failures can trigger immediate Data Activator alerts.
-- These events contribute to Equipment Availability, Pump Failure Rate, and Facility Health Score KPIs.
-
----
-
-### Event Type
-
-```text
-hardware.metrics
-```
-
-### Producer
-
-Python Smart Farm Simulator
-
-### Consumers
-
-- Microsoft Fabric Eventstream
-- Eventhouse (KQL Database)
-- OneLake Lakehouse
-- Spark Notebooks
-- Fabric Data Factory
-- Fabric Warehouse
-- Power BI
-
-### Expected Frequency
-
-Every 10 to 30 seconds per monitored asset.
-
----
-
-## JSON Example
-
-```json
-{
-  "event_id": "f70d86f4-4438-4dc0-8a59-145dff6dbb34",
-  "event_type": "hardware.metrics",
-  "event_timestamp": "2026-07-01T10:30:20Z",
-  "ingestion_timestamp": null,
-  "schema_version": "1.0",
-  "facility_id": "FACILITY-NY-01",
-  "zone_id": "ZONE-A",
-  "correlation_id": "5b2b81db-dc56-44bc-9b54-778ad5d3a0f1",
-  "producer_id": "smart-farm-simulator",
-  "environment": "DEV",
-  "payload": {
-    "sensor_serial_number": "PUMP-1203",
-    "pump_status": "RUNNING",
-    "pump_pressure_psi": 31.8,
-    "pump_rpm": 1745,
-    "energy_consumption_kwh": 1.81
-  }
-}
-```
-
----
-
 # Telemetry Validation Guarantees
 
 ## Purpose
@@ -926,26 +852,308 @@ existing event contract.
 
 ---
 
-# Equipment Telemetry Event
+# Equipment Telemetry Generation Workflow
+
+## Purpose
+
+This section documents how equipment telemetry is generated within the
+Smart Farm Simulator before events enter Microsoft Fabric.
+
+The workflow describes the relationship between equipment metadata,
+runtime state management, sensor simulation, telemetry generation, and
+validation.
+
+This process represents the authoritative equipment telemetry pipeline
+implemented by the simulator.
+
+---
+
+## High-Level Workflow
+
+Equipment telemetry generation follows a deterministic sequence during
+each simulation cycle.
+
+```text
+Equipment Registry
+        │
+        ▼
+EquipmentStateManager
+        │
+        ├── Advance Runtime
+        ├── Update Health
+        ├── Update Load
+        ├── Update Failure Probability
+        ├── Update Operating Status
+        └── Update Sensor Metrics
+        │
+        ▼
+EquipmentTelemetryGenerator
+        │
+        ▼
+EquipmentTelemetryEvent
+        │
+        ▼
+TelemetryValidator
+        │
+        ▼
+Verified Equipment Telemetry
+```
+
+---
+
+## Step 1: Equipment Registry
+
+The Equipment Registry contains immutable metadata describing each
+equipment asset.
+
+Examples include:
+
+- Equipment identifier
+- Facility identifier
+- Zone identifier
+- Equipment type
+
+Equipment metadata remains unchanged throughout the simulation.
+
+---
+
+## Step 2: Runtime State Updates
+
+The EquipmentStateManager owns all mutable operational state.
+
+During each simulation cycle the manager updates:
+
+### Runtime
+
+```text
+runtime_hours
+```
+
+Accumulated operating hours are increased based on the configured
+simulation cycle duration.
+
+### Health
+
+```text
+health
+```
+
+Equipment health gradually degrades over time according to lifecycle
+rules.
+
+### Load
+
+```text
+current_load
+```
+
+Equipment utilization is recalculated for the current cycle.
+
+### Failure Probability
+
+```text
+failure_probability
+```
+
+Failure risk is recalculated using runtime state and health
+characteristics.
+
+### Operating Status
+
+```text
+operating_status
+```
+
+The equipment status transitions between:
+
+- ONLINE
+- WARNING
+- ERROR
+- OFFLINE
+
+based on current operating conditions.
+
+---
+
+## Step 3: Sensor Metric Generation
+
+After runtime state updates are complete, baseline equipment sensor
+metrics are generated.
+
+The following telemetry values are calculated:
+
+### Power Consumption
+
+```text
+power_consumption_kw
+```
+
+Derived from:
+
+- Equipment load
+- Equipment health
+- Equipment sensor profile
+
+### Temperature
+
+```text
+temperature_celsius
+```
+
+Derived from:
+
+- Equipment load
+- Equipment health
+- Failure probability
+- Controlled random variation
+- Equipment sensor profile
+
+### Vibration
+
+```text
+vibration_mm_s
+```
+
+Derived from:
+
+- Equipment load
+- Equipment health
+- Failure probability
+- Controlled random variation
+- Equipment sensor profile
+
+Generated values are constrained to the limits defined by the
+equipment's sensor profile.
+
+---
+
+## Step 4: Event Generation
+
+EquipmentTelemetryGenerator performs a read-only transformation.
+
+For every registered equipment asset it combines:
+
+### Immutable Metadata
+
+From:
+
+```text
+Equipment Registry
+```
+
+Including:
+
+- facility_id
+- zone_id
+- equipment_id
+- equipment_type
+
+### Mutable Runtime State
+
+From:
+
+```text
+EquipmentStateManager
+```
+
+Including:
+
+- operating_status
+- health
+- runtime_hours
+- current_load
+- failure_probability
+- power_consumption_kw
+- temperature_celsius
+- vibration_mm_s
+
+The generator does not modify simulator state.
+
+---
+
+## Step 5: Validation
+
+Generated events are validated before being considered valid simulator
+output.
+
+Validation includes:
+
+- Event contract validation
+- Runtime consistency validation
+- Physical plausibility validation
+- Sensor profile compliance validation
+- Numeric normalization validation
+
+Any validation failure indicates a simulator defect requiring
+investigation.
+
+---
+
+## Step 6: Downstream Consumption
+
+Validated telemetry becomes the canonical equipment operational dataset
+used by downstream Microsoft Fabric services.
+
+Consumers include:
+
+- Eventstream
+- Eventhouse
+- Lakehouse
+- Spark Notebooks
+- Warehouse
+- Power BI
+
+Future consumers may include:
+
+- Predictive maintenance models
+- Asset health forecasting
+- Equipment anomaly detection
+
+---
+
+## Engineering Notes
+
+The workflow intentionally separates responsibilities.
+
+| Component | Responsibility |
+|------------|------------|
+| Equipment Registry | Immutable equipment metadata |
+| EquipmentStateManager | Runtime state management |
+| Sensor Simulation | Baseline sensor generation |
+| EquipmentTelemetryGenerator | Event creation |
+| TelemetryValidator | Quality assurance |
+
+This separation simplifies testing, maintenance, validation, and future
+enhancements while preserving the current simulator behavior.
+
+---
+
+# Hardware Metrics Event
 
 ## Description
 
-The Equipment Telemetry Event represents the simulated runtime condition of operational farming equipment managed by the Equipment State Manager.
+The Hardware Metrics Event represents the operational health and performance of critical farming equipment, including pumps, motors, valves, and supporting infrastructure.
 
-These events combine immutable equipment metadata with mutable runtime state and baseline sensor telemetry to provide a complete operational snapshot of every managed equipment asset.
+These events enable equipment monitoring and provide the historical data required for future predictive maintenance capabilities.
 
 ## Business Purpose
 
-Equipment Telemetry Events provide operational visibility into equipment health, utilization, runtime accumulation, failure risk, and simulated sensor behavior.
+Hardware Metrics Events monitor the operational performance and health of critical farming equipment, including pumps and other infrastructure supporting crop production. These events provide continuous insight into asset status, mechanical performance, and energy consumption.
 
-The event serves as the foundation for equipment monitoring, reliability analytics, maintenance reporting, equipment utilization analysis, and future predictive maintenance workloads.
+The data enables predictive maintenance, rapid fault detection, equipment utilization analysis, and operational efficiency reporting. It also supports automated alerts that help prevent equipment failures from impacting crop production.
 
-These events are generated directly from the equipment simulation engine and represent the authoritative runtime state of each equipment asset.
+## Notes
+
+- Hardware metrics are used for predictive maintenance and operational monitoring.
+- Equipment failures can trigger immediate Data Activator alerts.
+- These events contribute to Equipment Availability, Pump Failure Rate, and Facility Health Score KPIs.
+
+---
 
 ### Event Type
 
 ```text
-equipment.telemetry
+hardware.metrics
 ```
 
 ### Producer
@@ -956,7 +1164,6 @@ Python Smart Farm Simulator
 
 - Microsoft Fabric Eventstream
 - Eventhouse (KQL Database)
-- Data Activator
 - OneLake Lakehouse
 - Spark Notebooks
 - Fabric Data Factory
@@ -965,7 +1172,7 @@ Python Smart Farm Simulator
 
 ### Expected Frequency
 
-Generated once per simulation cycle for every registered equipment asset.
+Every 10 to 30 seconds per monitored asset.
 
 ---
 
@@ -973,27 +1180,22 @@ Generated once per simulation cycle for every registered equipment asset.
 
 ```json
 {
-  "event_id": "71fbeab8-b9a3-41b2-9b31-f95c6f3b60f1",
-  "event_type": "equipment.telemetry",
-  "event_timestamp": "2026-07-15T10:30:00Z",
+  "event_id": "f70d86f4-4438-4dc0-8a59-145dff6dbb34",
+  "event_type": "hardware.metrics",
+  "event_timestamp": "2026-07-01T10:30:20Z",
   "ingestion_timestamp": null,
   "schema_version": "1.0",
   "facility_id": "FACILITY-NY-01",
   "zone_id": "ZONE-A",
-  "correlation_id": "1bcab22f-bfd0-4db5-98e5-9d2cf2d94f0c",
+  "correlation_id": "5b2b81db-dc56-44bc-9b54-778ad5d3a0f1",
   "producer_id": "smart-farm-simulator",
   "environment": "DEV",
   "payload": {
-    "equipment_id": "EQ-00001",
-    "equipment_type": "WATER_PUMP",
-    "operating_status": "ONLINE",
-    "health": 96.35,
-    "runtime_hours": 125.50,
-    "current_load": 72.40,
-    "failure_probability": 0.0835,
-    "power_consumption_kw": 8.452,
-    "temperature_celsius": 58.42,
-    "vibration_mm_s": 2.816
+    "sensor_serial_number": "PUMP-1203",
+    "pump_status": "RUNNING",
+    "pump_pressure_psi": 31.8,
+    "pump_rpm": 1745,
+    "energy_consumption_kwh": 1.81
   }
 }
 ```
