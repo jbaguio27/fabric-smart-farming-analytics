@@ -1330,6 +1330,219 @@ section.
 
 ---
 
+# Eventhouse Table Schema
+
+## Purpose
+
+This section defines the canonical Eventhouse schema for storing
+equipment telemetry events within Microsoft Fabric Real-Time
+Intelligence.
+
+The schema represents the authoritative operational storage model for
+equipment telemetry after Eventstream ingestion.
+
+This specification is intended to guide future Eventhouse table
+creation and KQL development activities.
+
+---
+
+## Target Table
+
+```text
+equipment_telemetry
+```
+
+---
+
+## Storage Purpose
+
+The Eventhouse table provides:
+
+- Low-latency operational analytics
+- Real-time dashboard support
+- Data Activator integration
+- Operational monitoring
+- Equipment health tracking
+- Failure risk analysis
+- Historical replay prior to Lakehouse persistence
+
+---
+
+## Recommended Schema
+
+| Column | Type | Description |
+|----------|----------|----------|
+| event_id | string | Unique event identifier |
+| event_type | string | Event classification |
+| timestamp | datetime | Event generation timestamp |
+| facility_id | string | Facility identifier |
+| equipment_id | string | Equipment identifier |
+| zone_id | string | Growing zone identifier |
+| equipment_type | string | Equipment category |
+| operating_status | string | Current operating condition |
+| health | real | Equipment health percentage |
+| runtime_hours | real | Accumulated runtime |
+| current_load | real | Utilization percentage |
+| failure_probability | real | Failure probability |
+| power_consumption_kw | real | Simulated power draw |
+| temperature_celsius | real | Simulated operating temperature |
+| vibration_mm_s | real | Simulated vibration velocity |
+
+---
+
+## Column Requirements
+
+### Identity Columns
+
+```text
+event_id
+equipment_id
+facility_id
+zone_id
+```
+
+These columns support lineage, filtering, and operational
+investigation.
+
+---
+
+### Time-Series Column
+
+```text
+timestamp
+```
+
+The timestamp column serves as the primary event time reference for:
+
+- Real-time dashboards
+- Event ordering
+- Time-window aggregations
+- Trend analysis
+
+---
+
+### Operational Health Columns
+
+```text
+health
+runtime_hours
+current_load
+failure_probability
+operating_status
+```
+
+These fields describe the current condition of the equipment asset.
+
+---
+
+### Sensor Telemetry Columns
+
+```text
+power_consumption_kw
+temperature_celsius
+vibration_mm_s
+```
+
+These fields represent baseline operational sensor telemetry generated
+by the simulator.
+
+---
+
+## Eventhouse Query Scenarios
+
+The schema is designed to support common operational queries.
+
+Examples include:
+
+### Equipment Health Monitoring
+
+```kusto
+equipment_telemetry
+| summarize avg(health)
+    by equipment_type
+```
+
+### Failure Risk Analysis
+
+```kusto
+equipment_telemetry
+| where failure_probability >= 0.35
+```
+
+### Temperature Monitoring
+
+```kusto
+equipment_telemetry
+| summarize
+    avg(temperature_celsius)
+    by equipment_id
+```
+
+### Equipment Status Distribution
+
+```kusto
+equipment_telemetry
+| summarize count()
+    by operating_status
+```
+
+---
+
+## Relationship to Lakehouse
+
+Eventhouse serves as the operational serving layer.
+
+Equipment telemetry is subsequently persisted into:
+
+```text
+bronze_equipment_telemetry
+```
+
+within OneLake Lakehouse.
+
+The Eventhouse schema and Bronze schema should remain structurally
+aligned to simplify downstream processing.
+
+---
+
+## Design Principles
+
+The Eventhouse schema follows the principles below.
+
+### Append Only
+
+Events are never updated after ingestion.
+
+### Immutable Records
+
+Each record represents a historical point-in-time observation.
+
+### Time-Series First
+
+The schema is optimized for chronological analytics.
+
+### Analytics Ready
+
+The schema supports real-time KQL analytics without requiring
+additional transformations.
+
+---
+
+## Future Enhancements
+
+Future versions may introduce additional telemetry columns for:
+
+- Maintenance indicators
+- Sensor drift metrics
+- Equipment efficiency scores
+- Predictive maintenance features
+- Anomaly detection outputs
+
+New columns should be additive and remain backward compatible with the
+existing schema contract.
+
+---
+
 # Hardware Metrics Event
 
 ## Description
