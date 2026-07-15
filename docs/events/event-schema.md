@@ -666,6 +666,117 @@ Invalid payloads are assigned the appropriate data_quality_flag and retained for
 
 ---
 
+## Telemetry Validation and Quality Guarantees
+
+Equipment telemetry events are validated before being accepted as
+canonical simulator output.
+
+Validation occurs inside the Equipment Telemetry Quality layer and
+ensures that generated telemetry remains physically plausible,
+internally consistent, and compliant with equipment-specific sensor
+profiles.
+
+### Validation Categories
+
+The following validation categories are applied.
+
+| Category | Description |
+|-----------|-------------|
+| Schema Validation | Confirms required fields are present and correctly typed. |
+| Physical Plausibility Validation | Ensures sensor values remain within realistic operating limits. |
+| Runtime Consistency Validation | Confirms emitted event values match EquipmentState runtime values. |
+| Sensor Profile Compliance Validation | Confirms sensor values remain within the configured profile boundaries for the equipment type. |
+| Normalization Validation | Confirms telemetry precision follows documented rounding standards. |
+
+---
+
+### Physical Plausibility Rules
+
+The simulator rejects telemetry that violates the following baseline
+physical constraints.
+
+| Field | Validation Rule |
+|---------|----------------|
+| health | 0.00 to 100.00 |
+| current_load | 0.00 to 100.00 |
+| failure_probability | 0.0000 to 1.0000 |
+| power_consumption_kw | Greater than 0 |
+| temperature_celsius | Greater than 0 |
+| vibration_mm_s | Greater than 0 |
+
+---
+
+### Runtime Consistency Rules
+
+Equipment telemetry events are generated from runtime state managed by
+EquipmentStateManager.
+
+The following values must exactly match the associated runtime state at
+generation time:
+
+- operating_status
+- health
+- runtime_hours
+- current_load
+- failure_probability
+- power_consumption_kw
+- temperature_celsius
+- vibration_mm_s
+
+Any mismatch indicates a generator defect and is treated as a validation
+failure.
+
+---
+
+### Sensor Profile Compliance Rules
+
+Each equipment type defines a dedicated sensor profile that establishes
+valid operating boundaries.
+
+Validation confirms that:
+
+- power consumption remains within the configured idle-to-maximum range
+- operating temperature remains within configured temperature limits
+- vibration remains within configured vibration limits
+
+Profile compliance is validated for every generated telemetry event.
+
+---
+
+### Telemetry Normalization Standards
+
+To maintain consistent analytical behavior across downstream Fabric
+components, telemetry values use fixed precision.
+
+| Field | Precision |
+|---------|-----------|
+| health | 2 decimal places |
+| runtime_hours | 2 decimal places |
+| current_load | 2 decimal places |
+| failure_probability | 4 decimal places |
+| power_consumption_kw | 3 decimal places |
+| temperature_celsius | 2 decimal places |
+| vibration_mm_s | 3 decimal places |
+
+---
+
+### Validation Coverage Reporting
+
+The verification pipeline produces validation coverage metrics for every
+equipment telemetry generation run.
+
+Reported metrics include:
+
+- Total validated events
+- Runtime consistency checks performed
+- Sensor profile compliance checks performed
+- Validation failures detected
+
+Successful verification requires all generated telemetry events to pass
+every validation category without error.
+
+---
+
 # Telemetry Validation Guarantees
 
 ## Purpose
