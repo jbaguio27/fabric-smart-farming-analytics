@@ -854,6 +854,171 @@ consistent downstream analytical behavior.
 
 ---
 
+## Equipment Telemetry Data Lineage
+
+Equipment Telemetry Events follow a deterministic processing path from
+generation inside the simulator through Microsoft Fabric analytical
+layers.
+
+The telemetry payload emitted by EquipmentTelemetryGenerator serves as
+the authoritative source for equipment operational analytics.
+
+---
+
+### Source Systems
+
+| Component | Responsibility |
+|------------|---------------|
+| Equipment Registry | Stores immutable equipment metadata. |
+| Equipment State Manager | Maintains mutable runtime state. |
+| Equipment Telemetry Generator | Produces canonical telemetry events. |
+| Telemetry Validator | Enforces telemetry quality standards. |
+
+---
+
+### Equipment Telemetry Lineage Flow
+
+```text
+Equipment Registry
+        +
+Equipment State Manager
+        │
+        ▼
+Equipment Telemetry Generator
+        │
+        ▼
+EquipmentTelemetryEvent
+        │
+        ▼
+Telemetry Validator
+        │
+        ▼
+Microsoft Fabric Eventstream
+        │
+        ▼
+Eventhouse
+        │
+        ▼
+Lakehouse Bronze
+        │
+        ▼
+Lakehouse Silver
+        │
+        ▼
+Lakehouse Gold
+        │
+        ▼
+Fabric Warehouse
+        │
+        ▼
+Power BI
+```
+
+---
+
+### Lineage Keys
+
+The following fields support end-to-end traceability.
+
+| Field | Purpose |
+|---------|----------|
+| event_id | Unique event trace identifier. |
+| equipment_id | Equipment asset identifier. |
+| facility_id | Facility trace key. |
+| zone_id | Operational location key. |
+| timestamp | Event creation timestamp. |
+| event_type | Event classification. |
+
+---
+
+### Auditability Guarantees
+
+Equipment telemetry events are:
+
+- Append-only
+- Immutable after generation
+- Fully traceable through Fabric layers
+- Reproducible using deterministic simulator seeds
+- Validated before downstream consumption
+
+These guarantees support operational troubleshooting,
+historical replay, and future predictive maintenance initiatives.
+
+---
+
+## Equipment Telemetry Fabric Mapping
+
+The Equipment Telemetry Event is mapped into Microsoft Fabric services
+using the following logical flow.
+
+### Eventhouse Mapping
+
+| Event Type | Eventhouse Table |
+|------------|------------------|
+| equipment.telemetry | equipment_telemetry |
+
+---
+
+### Bronze Layer Mapping
+
+| Event Type | Bronze Table |
+|------------|--------------|
+| equipment.telemetry | bronze_equipment_telemetry |
+
+Characteristics:
+
+- Raw ingestion
+- Append-only storage
+- Full fidelity telemetry
+- No business transformations
+
+---
+
+### Silver Layer Mapping
+
+| Bronze Table | Silver Table |
+|--------------|--------------|
+| bronze_equipment_telemetry | silver_equipment_telemetry |
+
+Transformations include:
+
+- Validation enforcement
+- Data quality standardization
+- Timestamp normalization
+- Metadata enrichment
+
+---
+
+### Gold Layer Mapping
+
+| Silver Table | Gold Fact Table |
+|--------------|-----------------|
+| silver_equipment_telemetry | fact_equipment_telemetry |
+
+Primary analytical use cases:
+
+- Equipment utilization reporting
+- Asset health monitoring
+- Failure risk trending
+- Power consumption analysis
+- Predictive maintenance readiness
+
+---
+
+### Power BI Consumption
+
+Equipment telemetry contributes to:
+
+- Real-Time Operations Dashboard
+- Equipment Health Dashboard
+- Maintenance Dashboard
+- Facility Performance Dashboard
+
+These datasets represent the canonical equipment operational history
+for the Smart Farming Analytics Platform.
+
+---
+
 # Telemetry Validation Guarantees
 
 ## Purpose
