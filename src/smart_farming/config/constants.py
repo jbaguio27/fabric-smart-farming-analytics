@@ -6,7 +6,11 @@ Runtime configuration belongs in settings.py
 """
 
 from zoneinfo import ZoneInfo
-from typing import Final, TypeAlias
+from typing import Final, TypeAlias, Mapping
+from .load_profile import (
+    EquipmentLoadProfile,
+    EquipmentSensorProfile,
+)
 
 # ========================================================================================
 # Application Metadata
@@ -163,20 +167,194 @@ ENVIRONMENTAL_SENSOR_CONFIG: Final[
 }
 
 # ========================================================================================
-# Equipment Status
+# Equipment Types
 # ========================================================================================
 
-STATUS_ONLINE = "ONLINE"
-STATUS_OFFLINE = "OFFLINE"
-STATUS_WARNING = "WARNING"
-STATUS_ERROR = "ERROR"
-
-EQUIPMENT_STATUSES: Final[tuple[str, ...]] = (
-    STATUS_ONLINE,
-    STATUS_OFFLINE,
-    STATUS_WARNING,
-    STATUS_ERROR
+EQUIPMENT_TYPES: Final[tuple[str, ...]] = (
+    "water_pump",
+    "hvac",
+    "led_panel",
+    "nutrient_pump",
+    "ventilation_fan",
 )
+
+EQUIPMENT_LOAD_PROFILES: Final[
+    Mapping[str, EquipmentLoadProfile]
+] = {
+    "water_pump": EquipmentLoadProfile(
+        minimum=60.0,
+        maximum=95.0,
+        target=80.0,
+        wear_multiplier=1.35,
+        failure_multiplier=1.30,
+        normal_threshold=70.0,
+        warning_threshold=90.0,
+        moderate_factor_max=0.35,
+        critical_factor_max=1.00,
+    ),
+    "nutrient_pump": EquipmentLoadProfile(
+        minimum=45.0,
+        maximum=85.0,
+        target=65.0,
+        wear_multiplier=1.15,
+        failure_multiplier=1.15,
+        normal_threshold=70.0,
+        warning_threshold=90.0,
+        moderate_factor_max=0.35,
+        critical_factor_max=1.00,
+    ),
+    "hvac": EquipmentLoadProfile(
+        minimum=35.0,
+        maximum=90.0,
+        target=60.0,
+        wear_multiplier=1.00,
+        failure_multiplier=1.00,
+        normal_threshold=70.0,
+        warning_threshold=90.0,
+        moderate_factor_max=0.35,
+        critical_factor_max=1.00,
+    ),
+    "ventilation_fan": EquipmentLoadProfile(
+        minimum=25.0,
+        maximum=75.0,
+        target=45.0,
+        wear_multiplier=0.80,
+        failure_multiplier=0.80,
+        normal_threshold=75.0,
+        warning_threshold=95.0,
+        moderate_factor_max=0.25,
+        critical_factor_max=0.80,
+    ),
+    "led_panel": EquipmentLoadProfile(
+        minimum=80.0,
+        maximum=100.0,
+        target=90.0,
+        wear_multiplier=0.45,
+        failure_multiplier=0.60,
+        normal_threshold=80.0,
+        warning_threshold=95.0,
+        moderate_factor_max=0.20,
+        critical_factor_max=0.60,
+    ),
+}
+
+EQUIPMENT_SENSOR_PROFILES: Final[
+    Mapping[str, EquipmentSensorProfile]
+] = {
+    "water_pump": EquipmentSensorProfile(
+        idle_power_kw=1.20,
+        max_power_kw=4.80,
+        base_temperature_celsius=32.0,
+        max_temperature_celsius=72.0,
+        base_vibration_mm_s=1.20,
+        max_vibration_mm_s=5.80,
+    ),
+    "nutrient_pump": EquipmentSensorProfile(
+        idle_power_kw=0.80,
+        max_power_kw=3.20,
+        base_temperature_celsius=30.0,
+        max_temperature_celsius=66.0,
+        base_vibration_mm_s=0.90,
+        max_vibration_mm_s=4.80,
+    ),
+    "hvac": EquipmentSensorProfile(
+        idle_power_kw=3.50,
+        max_power_kw=18.0,
+        base_temperature_celsius=36.0,
+        max_temperature_celsius=82.0,
+        base_vibration_mm_s=1.50,
+        max_vibration_mm_s=6.50,
+    ),
+    "ventilation_fan": EquipmentSensorProfile(
+        idle_power_kw=0.40,
+        max_power_kw=2.20,
+        base_temperature_celsius=28.0,
+        max_temperature_celsius=58.0,
+        base_vibration_mm_s=0.70,
+        max_vibration_mm_s=4.20,
+    ),
+    "led_panel": EquipmentSensorProfile(
+        idle_power_kw=0.60,
+        max_power_kw=2.80,
+        base_temperature_celsius=34.0,
+        max_temperature_celsius=76.0,
+        base_vibration_mm_s=0.05,
+        max_vibration_mm_s=0.35,
+    ),
+}
+
+if set(EQUIPMENT_SENSOR_PROFILES) != set(EQUIPMENT_TYPES):
+    raise ValueError(
+        "Equipment sensor profiles must cover every equipment type."
+    )
+
+# ========================================================================================
+# Equipment Runtime Configuration
+# ========================================================================================
+
+MAX_EQUIPMENT_HEALTH: Final[float] = 100.0
+MIN_EQUIPMENT_HEALTH: Final[float] = 0.0
+
+MAX_LOAD_CHANGE_PER_CYCLE: Final[float] = 10.0
+MAX_LOAD_VARIATION_PER_CYCLE: Final[float] = 3.0
+
+DAYTIME_DEMAND_MULTIPLIER: Final[float] = 1.05
+NIGHTTIME_DEMAND_MULTIPLIER: Final[float] = 0.95
+
+MIN_INITIAL_EQUIPMENT_HEALTH: Final[float] = 96.0
+MAX_INITIAL_EQUIPMENT_HEALTH: Final[float] = 100.0
+
+MAX_EQUIPMENT_LOAD: Final[float] = 100.0
+MIN_EQUIPMENT_LOAD: Final[float] = 0.0
+
+SENSOR_POWER_HEALTH_STRESS_MULTIPLIER: Final[float] = 0.08
+
+SENSOR_TEMPERATURE_HEALTH_STRESS_CELSIUS: Final[float] = 5.0
+SENSOR_TEMPERATURE_FAILURE_STRESS_CELSIUS: Final[float] = 3.0
+SENSOR_TEMPERATURE_VARIATION_CELSIUS: Final[float] = 0.4
+
+SENSOR_VIBRATION_HEALTH_STRESS_MM_S: Final[float] = 1.0
+SENSOR_VIBRATION_FAILURE_STRESS_MM_S: Final[float] = 0.5
+SENSOR_VIBRATION_VARIATION_MM_S: Final[float] = 0.03
+
+INITIAL_FAILURE_PROBABILITY: Final[float] = 0.0
+
+HEALTH_DEGRADATION_PER_RUNTIME_HOUR: Final[float] = 0.02
+
+# ========================================================================================
+# Equipment Failure Simulation
+# ========================================================================================
+
+MIN_FAILURE_PROBABILITY: Final[float] = 0.0
+MAX_FAILURE_PROBABILITY: Final[float] = 1.0
+
+# ========================================================================================
+# Equipment Runtime
+# ========================================================================================
+
+MAX_EQUIPMENT_RUNTIME_HOURS: Final[float] = 100_000.0
+MAINTENANCE_INTERVAL_HOURS: Final[float] = 720.0
+MAINTENANCE_HEALTH_THRESHOLD: Final[float] = 80.0
+
+MAINTENANCE_RESTORE_HEALTH: Final[float] = 100.0
+MAINTENANCE_RESET_FAILURE_PROBABILITY: Final[float] = 0.0
+
+# ========================================================================================
+# Failure Probability Model
+# ========================================================================================
+
+MAX_LOAD_FAILURE_ADJUSTMENT: Final[float] = 0.15
+HEALTHY_EQUIPMENT_THRESHOLD: Final[float] = 90.0
+
+NORMAL_OPERATING_LOAD_THRESHOLD: Final[float] = 60.0
+
+# ========================================================================================
+# Equipment Operating Status Simulation
+# ========================================================================================
+
+ONLINE_FAILURE_THRESHOLD: Final[float] = 0.10
+WARNING_FAILURE_THRESHOLD: Final[float] = 0.35
+ERROR_FAILURE_THRESHOLD: Final[float] = 0.70
 
 # ========================================================================================
 # Sensor Health
@@ -216,7 +394,8 @@ if abs(SENSOR_STATUS_PROBABILITY_SUM - 1.0) > 1e-9:
 # ========================================================================================
 
 DAY_START_HOUR: Final[int] = 6
-DAY_END_HOUR: Final[int] = 18
+NIGHT_START_HOUR: Final[int] = 18
+HOURS_PER_DAY: Final[int] = 24
 
 ENVIRONMENTAL_VARIATION_PERCENTAGE: Final[float] = 0.20
 
@@ -327,16 +506,44 @@ VALID_LOG_LEVELS: Final[frozenset[str]] = frozenset({
 })
 
 # ========================================================================================
-# Validation Limits
+# Simulation Configurations
 # ========================================================================================
 
 MIN_EVENT_BATCH_SIZE: Final[int] = 1
 MIN_RANDOM_SEED: Final[int] = 0
 MIN_SIMULATION_INTERVAL_SECONDS: Final[int] = 1
+MIN_SIMULATION_CYCLE_HOURS = 1.0
 MIN_TOTAL_FACILITIES: Final[int] = 1
+
 
 # ========================================================================================
 # Facility Configuration
 # ========================================================================================
 
 FACILITY_ID_PREFIX: Final[str] = "FAC"
+
+ZONE_ID_PREFIX: Final[str] = "ZONE"
+
+DEFAULT_GROWING_ZONES_PER_FACILITY: Final[int] = 3
+
+EQUIPMENT_ID_PREFIX: Final[str] = "EQ"
+
+EQUIPMENT_MANUFACTURERS: Final[
+    dict[str, str]
+] = {
+    "water_pump": "Grundfos",
+    "hvac": "Daikin",
+    "led_panel": "Philips",
+    "nutrient_pump": "Netafim",
+    "ventilation_fan": "ebm-papst",
+}
+
+EQUIPMENT_MODELS: Final[
+    dict[str, str]
+] = {
+    "water_pump": "CRN10",
+    "hvac": "VRV X",
+    "led_panel": "GreenPower LED",
+    "nutrient_pump": "NMC Pro",
+    "ventilation_fan": "AxiBlade",
+}

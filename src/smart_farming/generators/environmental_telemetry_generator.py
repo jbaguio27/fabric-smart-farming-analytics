@@ -34,9 +34,12 @@ from smart_farming.models import (
     EnvironmentalTelemetryEvent,
     WeatherState,
 )
+from smart_farming.generators.base_telemetry_generator import (
+    BaseTelemetryGenerator,
+)
 
 
-class EnvironmentalTelemetryGenerator:
+class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
     """
     Generates environmental telemetry for all smart farming facilities.
 

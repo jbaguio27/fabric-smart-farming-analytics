@@ -13,7 +13,7 @@ from smart_farming.config import (
     Settings,
     WeatherType,
     DAY_START_HOUR,
-    DAY_END_HOUR,
+    NIGHT_START_HOUR,
     WEATHER_TYPES,
     WEATHER_PROBABILITIES,
     WEATHER_MIN_DURATION_CYCLES,
@@ -155,7 +155,7 @@ class EnvironmentStateManager:
         return (
             DAY_START_HOUR
             <= timestamp.hour
-            < DAY_END_HOUR
+            < NIGHT_START_HOUR
         )
 
     def _select_weather(self) -> str:

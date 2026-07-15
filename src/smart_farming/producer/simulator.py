@@ -11,29 +11,41 @@ from smart_farming.monitoring import (
 from smart_farming.producer import (
     EventDispatcher,
 )
-from smart_farming.generators.environmental_generator import EnvironmentalTelemetryGenerator
-from smart_farming.models import (
-    EnvironmentalTelemetryEvent,
+from smart_farming.generators import BaseTelemetryGenerator
+from smart_farming.environment import (
+    EnvironmentStateManager,
+    EquipmentStateManager,
 )
-from smart_farming.environment import EnvironmentStateManager
 
 
 class Simulator:
     """
-    Coordinates the execution of the Smart Farming Simulator.
+    Coordinates execution of the Smart Farming Simulator.
+
+    The simulator advances the shared simulation state, executes every
+    registered telemetry generator, and dispatches the resulting events.
+
+    Telemetry generators are executed through the shared
+    BaseTelemetryGenerator interface, allowing additional generators to
+    be introduced without modifying simulator orchestration.
+
     """
 
     def __init__(
         self,
         settings: Settings,
         dispatcher: EventDispatcher,
-        generator: EnvironmentalTelemetryGenerator,
+        generator: list[BaseTelemetryGenerator],
         environment_manager: EnvironmentStateManager,
+        equipment_state_manager: EquipmentStateManager,
     ) -> None:
         self.settings: Settings = settings
         self.dispatcher: EventDispatcher = dispatcher
-        self.generator: EnvironmentalTelemetryGenerator = generator
+        self.generator: list[
+            BaseTelemetryGenerator
+        ] = generators
         self.environment_manager: EnvironmentStateManager = environment_manager
+        self.equipment_state_manager: EquipmentStateManager = equipment_state_manager
         self.logger: logging.Logger = get_logger(__name__)
         self.is_running: bool = False
         self.completed_cycles: int = 0
@@ -101,6 +113,20 @@ class Simulator:
         """
         self.environment_manager.advance_cycle()
 
+        self.equipment_state_manager.advance_runtime(
+            hours=self.settings.simulation_cycle_hours,
+        )
+
+        self.equipment_state_manager.update_health(
+            hours=self.settings.simulation_cycle_hours,
+        )
+
+        self.equipment_state_manager.update_load()
+        self.equipment_state_manager.update_failure_probability()
+        self.equipment_state_manager.update_operating_status()
+        self.equipment_state_manager.update_sensor_metrics()
+        self.equipment_state_manager.evaluate_maintenance()
+
         environment = (
             self.environment_manager.get_current_state()
         )
@@ -117,27 +143,17 @@ class Simulator:
             environment.timestamp.isoformat(),
         )
 
-        events: list[EnvironmentalTelemetryEvent] = (
-            self.generator.generate()
-        )
+        events = []
+
+        for generator in self.generators:
+            generated_events = generator.generate()
+
+            events.extend(generated_events)
 
         self.logger.info(
             "Generated %d events for dispatch.",
             len(events),
         )
-
-        for event in events:
-            self.logger.info(
-                "Time=%s | Weather=%s | Day=%s | Facility=%s | Sensor=%s | Value=%s %s | Status=%s",
-                event.timestamp,
-                event.weather,
-                event.is_daytime,
-                event.facility_id,
-                event.sensor_type,
-                event.sensor_value,
-                event.unit,
-                event.sensor_status,
-            )
 
         self.dispatcher.dispatch(events)
 

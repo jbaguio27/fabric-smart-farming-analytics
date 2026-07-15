@@ -7,7 +7,7 @@ throughout the application instead of using generic exceptions.
 
 class SmartFarmingError(Exception):
     """
-    Base exception for all Smart Farming simulator erros.
+    Base exception for all Smart Farming simulator errors.
     """
 
     pass

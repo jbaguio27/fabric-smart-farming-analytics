@@ -1,0 +1,234 @@
+"""
+Equipment registry.
+
+This module manages the collection of persistent equipment assets used by
+the Smart Farming simulator.
+
+The registry acts as the central repository for equipment metadata and
+provides lookup operations for generators and state managers.
+
+Runtime characteristics such as equipment health, operating status,
+runtime hours, and telemetry values are intentionally excluded. Those
+responsibilities belong to the EquipmentStateManager.
+"""
+
+from collections import defaultdict
+from smart_farming.config import (
+    Settings,
+    FACILITY_ID_PREFIX,
+    ZONE_ID_PREFIX,
+    DEFAULT_GROWING_ZONES_PER_FACILITY,
+    EQUIPMENT_TYPES,
+    EQUIPMENT_ID_PREFIX,
+    EQUIPMENT_MANUFACTURERS,
+    EQUIPMENT_MODELS,
+)
+from smart_farming.models import Equipment
+from smart_farming.utils import SimulationError
+
+class EquipmentRegistry:
+    """
+    Stores and manages persistent equipment assets.
+
+    Equipment objects are registered once during simulator
+    initialization and reused throughout the simulation lifecycle.
+
+    The registry is read-only after initialization unless equipment
+    assets are intentionally added or removed.
+    """
+
+    def __init__(
+        self,
+        settings: Settings,
+    ) -> None:
+        """
+        Initialize the equipment registry.
+
+        The registry automatically builds the simulator's initial
+        equipment inventory based on the configured facilities and
+        standard equipment layout.
+
+        Args:
+            settings:
+                Application settings.
+        """
+        self._settings = settings
+        self._equipment: dict[str, Equipment] = {}
+
+        self._initialize_equipment()
+
+    def register(
+        self,
+        equipment: Equipment,
+    ) -> None:
+        """
+        Register an equipment asset.
+
+        Raises:
+            SimulationError:
+                If an equipment asset with the same ID is already
+                registered.
+        """
+
+        if equipment.equipment_id in self._equipment:
+            raise SimulationError(
+                f"Equipment '{equipment.equipment_id}' is already registered."
+            )
+        
+        self._equipment[equipment.equipment_id] = equipment
+
+    def get(
+        self,
+        equipment_id: str,
+    ) -> Equipment:
+        """
+        Retrieve an equipment asset.
+
+        Args:
+            equipment_id:
+                Equipment_identifier.
+        Returns:
+            Registered equipment.
+        Raises:
+            SimulationError:
+                If the equipment does not exist.
+        """
+
+        try:
+            return self._equipment[equipment_id]
+        except KeyError as exc:
+            raise SimulationError(
+                f"Equipment '{equipment_id}' is not registered."
+            ) from exc
+    
+    def exists(
+        self,
+        equipment_id: str,
+    ) -> bool:
+        """
+        Return whether an equipment asset is registered.
+        """
+
+        return equipment_id in self._equipment
+
+    def list_all(self) -> list[Equipment]:
+        """
+        Return every registered equipment asset.
+        """
+
+        return list(self._equipment.values())
+
+    def list_by_facility(
+        self,
+        facility_id: str,
+    ) -> list[Equipment]:
+        """
+        Return every equipment asset installed within a facility.
+
+        Args:
+            facility_id:
+                Facility identifier.
+
+        Returns:
+            Equipment installed within the facility.
+        """
+
+        return [
+            equipment
+            for equipment in self._equipment.values()
+            if equipment.facility_id == facility_id
+        ]
+
+    def list_by_zone(
+        self,
+        zone_id: str,
+    ) -> list[Equipment]:
+        """
+        Return all equipment within a growing zone.
+        """
+        return [
+            equipment
+            for equipment in self._equipment.values()
+            if equipment.zone_id == zone_id
+        ]
+    
+    def group_by_facility(self) -> dict[str, list[Equipment]]:
+        """
+        Group equipment by facility.
+        """
+
+        grouped: defaultdict[str, list[Equipment]] = defaultdict(list)
+
+        for equipment in self._equipment.values():
+            grouped[equipment.facility_id].append(equipment)
+
+        return dict(grouped)
+
+    def group_by_zone(self) -> dict[str, list[Equipment]]:
+        """
+        Group equipment by growing zone.
+        """
+
+        grouped: defaultdict[str, list[Equipment]] = defaultdict(list)
+
+        for equipment in self._equipment.values():
+            grouped[equipment.zone_id].append(equipment)
+
+        return dict(grouped)
+
+    def _initialize_equipment(self) -> None:
+        """
+        Build the default equipment inventory.
+
+        Every configured facility receives the same baseline
+        equipment layout. This inventory forms the persistent
+        asset catalog used throughout the simulation.
+        """
+
+        equipment_counter = 1
+
+        for facility_number in range(
+            1,
+            self._settings.total_facilities + 1,
+        ):
+            facility_id = (
+                f"{FACILITY_ID_PREFIX}-{facility_number:03d}"
+            )
+
+            for zone_number in range(
+                1,
+                DEFAULT_GROWING_ZONES_PER_FACILITY + 1,
+            ):
+                zone_id = (
+                    f"{ZONE_ID_PREFIX}-{zone_number:03d}"
+                )
+
+                for equipment_type in EQUIPMENT_TYPES:
+                    equipment = Equipment(
+                        equipment_id=(
+                            f"{EQUIPMENT_ID_PREFIX}-{equipment_counter:05d}"
+                        ),
+                        facility_id=facility_id,
+                        zone_id=zone_id,
+                        equipment_type=equipment_type,
+                        manufacturer=EQUIPMENT_MANUFACTURERS[
+                            equipment_type
+                        ],
+                        model=EQUIPMENT_MODELS[
+                            equipment_type
+                        ],
+                        serial_number=(
+                            f"SN-{equipment_counter:08d}"
+                        ),
+                    )
+
+                    self.register(equipment)
+
+                    equipment_counter += 1
+
+    def __len__(self) -> int:
+        """
+        Return the number of registered equipment assets.
+        """
+
+        return len(self._equipment)
