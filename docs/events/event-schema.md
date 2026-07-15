@@ -3072,6 +3072,195 @@ and be reflected in:
 
 ---
 
+# Equipment Telemetry Eventhouse Mapping
+
+## Purpose
+
+This section defines the canonical Eventhouse schema for Equipment
+Telemetry Events.
+
+The schema represents the first persistent storage layer within
+Microsoft Fabric Real-Time Intelligence and serves as the operational
+store for equipment monitoring, troubleshooting, and real-time
+analytics.
+
+---
+
+## Eventhouse Table Name
+
+```text
+equipment_telemetry
+```
+
+---
+
+## Source
+
+```text
+Microsoft Fabric Eventstream
+```
+
+---
+
+## Destination
+
+```text
+Microsoft Fabric Eventhouse
+```
+
+---
+
+## Table Schema
+
+| Column | Type | Description |
+|----------|----------|-------------|
+| event_id | string | Unique event identifier. |
+| event_type | string | Event classification. |
+| timestamp | datetime | Event generation timestamp. |
+| facility_id | string | Facility identifier. |
+| zone_id | string | Zone identifier. |
+| equipment_id | string | Equipment identifier. |
+| equipment_type | string | Equipment category. |
+| operating_status | string | Current operating status. |
+| health | real | Equipment health percentage. |
+| runtime_hours | real | Accumulated runtime. |
+| current_load | real | Current operating load. |
+| failure_probability | real | Calculated failure probability. |
+| power_consumption_kw | real | Equipment power draw. |
+| temperature_celsius | real | Equipment temperature. |
+| vibration_mm_s | real | Equipment vibration. |
+
+---
+
+## Example KQL Table Definition
+
+```kusto
+.create table equipment_telemetry
+(
+    event_id:string,
+    event_type:string,
+    timestamp:datetime,
+
+    facility_id:string,
+    zone_id:string,
+
+    equipment_id:string,
+    equipment_type:string,
+
+    operating_status:string,
+
+    health:real,
+    runtime_hours:real,
+    current_load:real,
+    failure_probability:real,
+
+    power_consumption_kw:real,
+    temperature_celsius:real,
+    vibration_mm_s:real
+)
+```
+
+---
+
+## Ingestion Mapping
+
+Eventstream should map incoming JSON properties directly into Eventhouse
+columns without transformation.
+
+| JSON Field | Eventhouse Column |
+|------------|------------------|
+| event_id | event_id |
+| event_type | event_type |
+| timestamp | timestamp |
+| facility_id | facility_id |
+| zone_id | zone_id |
+| equipment_id | equipment_id |
+| equipment_type | equipment_type |
+| operating_status | operating_status |
+| health | health |
+| runtime_hours | runtime_hours |
+| current_load | current_load |
+| failure_probability | failure_probability |
+| power_consumption_kw | power_consumption_kw |
+| temperature_celsius | temperature_celsius |
+| vibration_mm_s | vibration_mm_s |
+
+---
+
+## Real-Time Analytics Use Cases
+
+The Eventhouse table supports:
+
+- Current equipment health monitoring
+- Failure risk monitoring
+- Equipment utilization analysis
+- Real-time operational dashboards
+- Equipment troubleshooting
+- Alert generation
+- Operational investigations
+
+---
+
+## Example KQL Queries
+
+### Current High-Risk Equipment
+
+```kusto
+equipment_telemetry
+| where failure_probability >= 0.35
+| order by failure_probability desc
+```
+
+---
+
+### Equipment Health Distribution
+
+```kusto
+equipment_telemetry
+| summarize
+    avg_health = avg(health)
+by equipment_type
+```
+
+---
+
+### Equipment Temperature Monitoring
+
+```kusto
+equipment_telemetry
+| summarize
+    avg_temperature = avg(temperature_celsius)
+by equipment_type
+```
+
+---
+
+## Retention Strategy
+
+Recommended operational retention:
+
+```text
+30 Days
+```
+
+Long-term historical retention should occur within the OneLake Bronze
+layer rather than Eventhouse.
+
+---
+
+## Ownership
+
+The Eventhouse schema must remain synchronized with:
+
+- EquipmentTelemetryEvent
+- Equipment Telemetry Eventstream Contract
+- Telemetry Validator
+- Lakehouse Bronze schema
+
+Schema drift between these components is not permitted.
+
+---
+
 # Schema Versioning
 
 ## Version History
