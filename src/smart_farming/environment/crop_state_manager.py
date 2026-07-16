@@ -73,3 +73,40 @@ class CropStateManager:
                 healt_score=100.0,
                 is_active=True,
             )
+    
+    def get_state(
+        self,
+        crop_batch_id: str,
+    ) -> CropState:
+        """
+        Return the runtime state for a registered crop batch.
+
+        Args:
+            crop_batch_id:
+                Unique identifier of the crop batch.
+
+        Returns:
+            The mutable runtime state associated with the crop batch.
+
+        Raises:
+            KeyError:
+                If the crop batch is not managed by this state manager.
+        """
+
+        return self._states[crop_batch_id]
+
+    def get_all_states(self) -> dict[str, CropState]:
+        """
+        Return all managed crop runtime states.
+
+        Returns:
+            Dictionary keyed by crop batch identifier containing all
+            runtime CropState instances.
+
+        Notes:
+            The returned dictionary contains the manager's live runtime
+            state. Consumers should treat it as read-only and avoid
+            modifying its structure directly.
+        """
+
+        return self._states
