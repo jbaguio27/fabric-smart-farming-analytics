@@ -1,14 +1,18 @@
 """
 Environment simulation components.
 """
-from smart_farming.environment.environment_state import EnvironmentState
-from smart_farming.environment.environment_state_manager import EnvironmentStateManager
-from smart_farming.environment.equipment_registry import EquipmentRegistry
-from smart_farming.environment.equipment_state import (
+from .environment_state import EnvironmentState
+from .environment_state_manager import EnvironmentStateManager
+from .equipment_registry import EquipmentRegistry
+from .equipment_state import (
     EquipmentState,
 )
-from smart_farming.environment.equipment_state_manager import (
+from .equipment_state_manager import (
     EquipmentStateManager,
+)
+from .crop_registry import (
+    CropDefinition,
+    CropRegistry
 )
 
 __all__ = [
@@ -17,4 +21,6 @@ __all__ = [
     "EquipmentRegistry",
     "EquipmentState",
     "EquipmentStateManager",
+    "CropDefinition",
+    "CropRegistry",
 ]
