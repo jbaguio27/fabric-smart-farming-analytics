@@ -50,12 +50,26 @@ class CropStateManager:
         """
         Initialize runtime crop state.
 
-        This method currently prepares the manager for future crop
-        registration. Runtime crop batches will be created during a
-        subsequent implementation step.
+        A runtime CropState is created for every crop batch registered
+        in the CropRegistry. This establishes the mutable simulation
+        state without introducing lifecycle progression.
 
-        The method exists to establish a consistent lifecycle pattern
-        with the other simulator state managers.
+        Runtime values are initialized directly from the immutable crop
+        definitions. Future roadmap steps will evolve these values as
+        the simulation advances.
         """
 
         self._states.clear()
+
+        for crop in self._crop_registry._crop_batches.values():
+            self._states[crop.crop_batch_id] = CropState(
+                crop_batch_id=crop.crop_batch_id,
+                field_id=crop.field_id,
+                crop_type=crop.crop_type,
+                lifecycle_stage="PLANTED",
+                planting_timestamp=None,
+                expected_harvest_timestamp=None,
+                age_days=0,
+                healt_score=100.0,
+                is_active=True,
+            )
