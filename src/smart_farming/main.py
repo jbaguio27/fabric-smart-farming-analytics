@@ -14,6 +14,12 @@ from smart_farming.producer import (
     EventDispatcher,
     Simulator,
 )
+from smart_farming.services import (
+    WearModel,
+    FailureModel,
+    MaintenanceManager,
+    FacilityDemandModel,
+)
 from smart_farming.utils import (
     SmartFarmingError,
 )
@@ -63,9 +69,18 @@ def main() -> None:
 
         equipment_registry = EquipmentRegistry()
 
+        wear_model = WearModel()
+        failure_model = FailureModel()
+        maintenance_manager = MaintenanceManager()
+        facility_demand_model = FacilityDemandModel()
+
         equipment_state_manager = EquipmentStateManager(
             equipment_registry=equipment_registry,
             random_manager=random_manager,
+            wear_model=wear_model,
+            failure_model=failure_model,
+            maintenance_manager=maintenance_manager,
+            facility_demand_model=facility_demand_model,
         )
 
         environmental_generator = (

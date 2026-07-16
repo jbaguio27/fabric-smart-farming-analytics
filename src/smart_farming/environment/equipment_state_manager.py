@@ -63,25 +63,51 @@ class EquipmentStateManager:
         self,
         equipment_registry: EquipmentRegistry,
         random_manager: RandomManager,
+        wear_model: WearModel,
+        failure_model: FailureModel,
+        maintenance_manager: MaintenanceManager,
+        facility_demand_model: FacilityDemandModel,
     ) -> None:
         """
         Initialize the equipment runtime state manager.
 
-        Runtime state is automatically created for every registered
-        equipment asset during construction. This guarantees that all
-        registered equipment has mutable runtime state available before
-        telemetry generation begins.
+        The runtime collaborators used by the manager are supplied
+        by the application through dependency injection rather than
+        being instantiated internally. This separates dependency
+        construction from runtime orchestration while preserving
+        identical simulation behavior.
 
         Args:
             equipment_registry:
                 Registry containing all persistent equipment assets.
+
+            random_manager:
+                Random number provider used for deterministic
+                simulation behavior.
+
+            wear_model:
+                Service responsible for calculating equipment
+                health degradation.
+
+            failure_model:
+                Service responsible for calculating equipment
+                failure probability and operating status.
+
+            maintenance_manager:
+                Service responsible for applying maintenance
+                operations to runtime equipment state.
+
+            facility_demand_model:
+                Service responsible for determining facility-wide
+                demand multipliers used during equipment load
+                simulation.
         """
         self._equipment_registry = equipment_registry
         self._random_manager = random_manager
-        self._wear_model = WearModel()
-        self._failure_model = FailureModel()
-        self._maintenance_manager = MaintenanceManager()
-        self._facility_demand_model = FacilityDemandModel()
+        self._wear_model: WearModel = wear_model
+        self._failure_model: FailureModel = failure_model
+        self._maintenance_manager: MaintenanceManager = maintenance_manager
+        self._facility_demand_model: FacilityDemandModel = facility_demand_model
         self._states: dict[str, EquipmentState] = {}
         
         self.initialize()
