@@ -104,10 +104,10 @@ class EquipmentStateManager:
         """
         self._equipment_registry = equipment_registry
         self._random_manager = random_manager
-        self._wear_model = wear_model
-        self._failure_model = failure_model
-        self._maintenance_manager = maintenance_manager
-        self._facility_demand_model = facility_demand_model
+        self._wear_model: WearModel = wear_model
+        self._failure_model: FailureModel = failure_model
+        self._maintenance_manager: MaintenanceManager = maintenance_manager
+        self._facility_demand_model: FacilityDemandModel = facility_demand_model
         self._states: dict[str, EquipmentState] = {}
         
         self.initialize()
