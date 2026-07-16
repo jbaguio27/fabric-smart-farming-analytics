@@ -175,6 +175,13 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
         """
         Create a telemetry event for a single equipment asset.
 
+        Combines immutable equipment metadata with the equipment's
+        current runtime state, including the baseline sensor metrics
+        (power consumption, temperature, and vibration) maintained by
+        EquipmentStateManager.update_sensor_metrics(). Sensor metrics
+        are read directly off runtime state rather than recalculated
+        here, preserving the generator's read-only contract.
+
         Args:
             equipment:
                 Equipment metadata.
@@ -183,7 +190,8 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
                 Shared simulation timestamp.
 
         Returns:
-            Fully populated equipment telemetry event.
+            Fully populated equipment telemetry event, including
+            baseline sensor telemetry.
         """
 
         state = self.equipment_state_manager.get(
@@ -201,6 +209,9 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
             runtime_hours=state.runtime_hours,
             current_load=state.current_load,
             failure_probability=state.failure_probability,
+            power_consumption_kw=state.power_consumption_kw,
+            temperature_celsius=state.temperature_celsius,
+            vibration_mm_s=state.vibration_mm_s,
         )
 
         event.timestamp = timestamp
