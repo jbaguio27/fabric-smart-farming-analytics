@@ -17,6 +17,7 @@ from smart_farming.environment import (
 )
 from .base_telemetry_generator import BaseTelemetryGenerator
 from smart_farming.utils import RandomManager
+from smart_farming.models import CropState
 
 class CropLifecycleGenerator(BaseTelemetryGenerator):
     """
@@ -88,3 +89,33 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
             _ = crop_state
 
         return events
+
+    def _build_event_payload(
+        self,
+        crop_state: CropState,
+    ) -> dict[str, object]:
+        """
+        Build the payload for a Crop Batch Lifecycle event.
+
+        This helper translates the mutable CropState into a structure
+        aligned with the documented Crop Batch Lifecycle Event contract.
+        Event object construction and serialization remain the
+        responsibility of later implementation steps.
+
+        Args:
+            crop_state:
+                Runtime state of the crop batch.
+
+        Returns:
+            Dictionary representing the event payload.
+        """
+
+        return {
+            "crop_batch_id": crop_state.crop_batch_id,
+            "field_id": crop_state.field_id,
+            "crop_type": crop_state.crop_type,
+            "lifecycle_stage": crop_state.lifecycle_stage,
+            "age_days": crop_state.age_days,
+            "health_score": crop_state.health_score,
+            "is_active": crop_state.is_active,
+        }

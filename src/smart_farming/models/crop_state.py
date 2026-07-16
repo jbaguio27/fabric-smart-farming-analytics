@@ -39,5 +39,5 @@ class CropState:
     expected_harvest_timestamp: Optional[datetime]
 
     age_days: int
-    healt_score: float
+    health_score: float
     is_active: bool
