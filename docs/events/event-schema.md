@@ -215,6 +215,17 @@ This design simplifies:
 ## Equipment Operating Status
 
 | Value | Description |
+|---------|-------------|
+| ONLINE | Equipment operating normally. |
+| WARNING | Equipment operating with elevated failure risk. |
+| ERROR | Equipment has entered a degraded operating condition. |
+| OFFLINE | Equipment intentionally unavailable or shut down. |
+
+---
+
+## Equipment Operating Status
+
+| Value | Description |
 |-------|-------------|
 | ONLINE | Equipment is operating normally. |
 | WARNING | Equipment is operating but showing degraded health or elevated failure risk. |
@@ -281,6 +292,17 @@ This design simplifies:
 
 ---
 
+## Equipment Operating Status
+
+| Value | Description |
+|---------|-------------|
+| ONLINE | Equipment operating normally. |
+| WARNING | Equipment operating with elevated failure risk. |
+| ERROR | Equipment operating in a degraded or failure state. |
+| OFFLINE | Equipment unavailable for operation. |
+
+---
+
 ## Maintenance Type
 
 | Value | Description |
@@ -289,6 +311,17 @@ This design simplifies:
 | CORRECTIVE | Repair after failure |
 | INSPECTION | Routine inspection |
 | CALIBRATION | Sensor calibration |
+
+---
+
+## Equipment Operating Status
+
+| Value | Description |
+|-------|-------------|
+| ONLINE | Equipment is operating normally within expected conditions. |
+| WARNING | Equipment is operating but showing signs of degradation or elevated risk. |
+| ERROR | Equipment is experiencing a critical condition requiring immediate attention. |
+| OFFLINE | Equipment is unavailable, shut down, or removed from service. |
 
 ---
 
@@ -438,8 +471,8 @@ Configurable (default: every 5 seconds per sensor)
 {
   "event_id": "6b7902e3-fd42-47bd-94bc-c6489d774ee1",
   "event_type": "sensor.telemetry",
-  "event_timestamp": "2026-07-01T10:30:15Z",
-  "ingestion_timestamp": null,
+  "timestamp": "2026-07-01T10:30:15Z",
+  "ingestion_event_timestamp": null,
   "schema_version": "1.0",
   "facility_id": "FACILITY-NY-01",
   "zone_id": "ZONE-A",
@@ -468,36 +501,30 @@ Configurable (default: every 5 seconds per sensor)
 
 ## Description
 
-The Equipment Telemetry Event represents the current operational
-condition of an equipment asset managed by the Smart Farm Simulator.
+The Equipment Telemetry Event represents the current operational state
+of a registered smart farming asset.
 
-Each event combines immutable equipment metadata with mutable runtime
-state maintained by the EquipmentStateManager. The event provides a
-point-in-time view of equipment health, utilization, failure risk, and
-baseline operational sensor metrics.
+These events combine immutable equipment metadata with mutable runtime
+state maintained by the EquipmentStateManager.
 
-These events serve as the primary operational dataset for equipment
-monitoring, asset health analysis, predictive maintenance initiatives,
-and equipment performance reporting.
+Equipment telemetry serves as the primary source for equipment health,
+utilization, reliability monitoring, and future predictive maintenance
+analytics.
 
 ## Business Purpose
 
-Equipment Telemetry Events provide continuous visibility into the
-condition and utilization of critical farming infrastructure.
+Equipment Telemetry Events provide continuous visibility into equipment
+health, runtime accumulation, operating load, failure risk, power
+consumption, operating temperature, and vibration characteristics.
 
-The events support:
+The data supports:
 
 - Equipment health monitoring
-- Failure risk assessment
-- Maintenance planning
-- Equipment utilization analysis
-- Asset performance reporting
-- Operational dashboarding
-- Future predictive maintenance models
-
-The event is generated directly from the simulator runtime state and
-represents the authoritative equipment operational record within the
-platform.
+- Reliability analysis
+- Asset utilization reporting
+- Preventive maintenance planning
+- Predictive maintenance initiatives
+- Equipment performance dashboards
 
 ### Event Type
 
@@ -515,14 +542,13 @@ Python Smart Farm Simulator
 - Eventhouse (KQL Database)
 - OneLake Lakehouse
 - Spark Notebooks
+- Fabric Data Factory
 - Fabric Warehouse
 - Power BI
-- Future Predictive Maintenance Models
 
 ### Expected Frequency
 
-Generated once per simulation cycle for every registered equipment
-asset.
+Generated every simulation cycle for each registered equipment asset.
 
 ---
 
@@ -530,21 +556,28 @@ asset.
 
 ```json
 {
-  "event_id": "b0f6c12d-6f9a-4b20-8d3f-7b77e8a6f9d4",
+  "event_id": "8f1e54dc-57f7-43d4-8e3e-90f6e8f64f1a",
   "event_type": "equipment.telemetry",
-  "event_timestamp": "2026-07-12T10:30:00Z",
-  "facility_id": "FACILITY-001",
-  "zone_id": "ZONE-01",
-  "equipment_id": "EQ-00001",
-  "equipment_type": "WATER_PUMP",
-  "operating_status": "ONLINE",
-  "health": 96.25,
-  "runtime_hours": 1234.50,
-  "current_load": 68.42,
-  "failure_probability": 0.0431,
-  "power_consumption_kw": 4.142,
-  "temperature_celsius": 65.16,
-  "vibration_mm_s": 5.040
+  "timestamp": "2026-07-16T10:30:15Z",
+  "ingestion_timestamp": null,
+  "schema_version": "1.0",
+  "facility_id": "FACILITY-01",
+  "zone_id": "ZONE-A",
+  "correlation_id": "7dc8c58a-6d40-4f72-9e35-8d53b22d2d12",
+  "producer_id": "smart-farm-simulator",
+  "environment": "DEV",
+  "payload": {
+    "equipment_id": "EQ-00001",
+    "equipment_type": "IRRIGATION_PUMP",
+    "operating_status": "ONLINE",
+    "health": 96.50,
+    "runtime_hours": 742.25,
+    "current_load": 68.10,
+    "failure_probability": 0.0835,
+    "power_consumption_kw": 5.214,
+    "temperature_celsius": 62.18,
+    "vibration_mm_s": 3.427
+  }
 }
 ```
 
@@ -553,15 +586,15 @@ asset.
 ## Payload Field Dictionary
 
 | Field | Type | Required | Description |
-|---------|---------|---------|---------|
+|---------|---------|---------|-------------|
 | equipment_id | String | Yes | Unique equipment identifier. |
-| equipment_type | String | Yes | Equipment classification. |
-| operating_status | Enum | Yes | Current equipment operating condition. |
-| health | Decimal | Yes | Current health percentage. |
-| runtime_hours | Decimal | Yes | Total accumulated runtime. |
-| current_load | Decimal | Yes | Current utilization percentage. |
-| failure_probability | Decimal | Yes | Current failure probability. |
-| power_consumption_kw | Decimal | Yes | Simulated equipment power draw. |
+| equipment_type | String | Yes | Equipment category. |
+| operating_status | Enum | Yes | Current operating state. |
+| health | Decimal | Yes | Equipment health percentage. |
+| runtime_hours | Decimal | Yes | Accumulated runtime. |
+| current_load | Decimal | Yes | Current operating load percentage. |
+| failure_probability | Decimal | Yes | Calculated failure probability. |
+| power_consumption_kw | Decimal | Yes | Simulated power consumption. |
 | temperature_celsius | Decimal | Yes | Simulated operating temperature. |
 | vibration_mm_s | Decimal | Yes | Simulated vibration velocity. |
 
@@ -570,186 +603,82 @@ asset.
 ## Validation Rules
 
 | Field | Validation |
-|---------|---------|
+|---------|-------------|
+| operating_status | ONLINE, WARNING, ERROR, OFFLINE |
 | health | Between 0 and 100 |
 | runtime_hours | Greater than or equal to 0 |
 | current_load | Between 0 and 100 |
 | failure_probability | Between 0.0 and 1.0 |
-| power_consumption_kw | Must be greater than 0 |
-| temperature_celsius | Must be greater than 0 |
-| vibration_mm_s | Must be greater than 0 |
+| power_consumption_kw | Must remain within the configured equipment sensor profile range. |
+| temperature_celsius | Must remain within the configured equipment sensor profile range. |
+| vibration_mm_s | Must remain within the configured equipment sensor profile range. |
+
+**Profile-Based Validation**
+
+The minimum validation rules above are platform-wide safety checks.
+
+Equipment telemetry is additionally validated against the configured
+sensor profile for the associated equipment type.
+
+Profile validation enforces:
+
+- Equipment-specific power consumption boundaries
+- Equipment-specific operating temperature boundaries
+- Equipment-specific vibration boundaries
+
+Profile ranges are maintained within the simulator configuration and may
+vary by equipment category.
 
 ---
 
-## Equipment Operating Status
+### Runtime Consistency Validation
 
-| Value | Description |
+Equipment telemetry events are validated against the corresponding runtime state maintained by the EquipmentStateManager.
+
+The verification pipeline confirms:
+
+- Health values match runtime state.
+- Runtime hours match runtime state.
+- Current load values match runtime state.
+- Failure probability values match runtime state.
+- Operating status values match runtime state.
+
+This validation ensures that generated telemetry events accurately represent simulator runtime conditions.
+
+---
+
+### Equipment-Type Profile Validation
+
+Equipment telemetry is validated against the sensor profile assigned to each equipment category.
+
+Validation confirms:
+
+- Power consumption remains within the configured profile range.
+- Operating temperature remains within the configured profile range.
+- Vibration remains within the configured profile range.
+
+This prevents physically impossible telemetry values from being emitted into downstream Fabric components.
+
+---
+
+## Data Quality Controls
+
+The Equipment Telemetry Generator applies multiple validation layers before telemetry is accepted as valid.
+
+### Physical Plausibility Checks
+
+Validation ensures:
+
+- Power consumption is greater than zero.
+- Temperature remains within expected operating boundaries.
+- Vibration remains within expected operating boundaries.
+
+### Telemetry Normalization Checks 
+
+Generated telemetry values are normalized before publication.
+
+| Field | Precision |
 |---------|---------|
-| ONLINE | Equipment operating normally. |
-| WARNING | Equipment exhibiting degraded conditions. |
-| ERROR | Equipment requires maintenance attention. |
-| OFFLINE | Equipment unavailable for operation. |
-
----
-
-## Notes
-
-- Generated directly from EquipmentTelemetryGenerator.
-- Runtime state is managed by EquipmentStateManager.
-- Sensor metrics are derived from equipment load, health, and failure probability.
-- Events are validated by TelemetryValidator before downstream processing.
-- Supports future predictive maintenance initiatives.
-- Intended to represent equipment operational truth at the time of event generation.
-
----
-
-
-## Payload Field Dictionary
-
-| Field | Type | Required | Description |
-|--------|------|----------|-------------|
-| sensor_serial_number | String | Yes | Physical identifier of the sensor. |
-| sensor_type | Enum | Yes | Category of environmental sensor. |
-| crop_batch_id | String | Yes | Crop batch associated with the reading. |
-| water_ph | Decimal | Yes | Measured pH level of the nutrient solution. |
-| electrical_conductivity | Decimal | Yes | Electrical conductivity of the nutrient solution. |
-| dissolved_oxygen_ppm | Decimal | Yes | Dissolved oxygen concentration in ppm. |
-| nutrient_solution_temperature_celsius | Decimal | Yes | Reservoir temperature. |
-| ambient_temp_celsius | Decimal | Yes | Air temperature surrounding the crop. |
-| humidity_percentage | Decimal | Yes | Relative humidity percentage. |
-| light_intensity_lux | Decimal | Yes | Light intensity reaching the crop canopy. |
-| data_quality_flag | Enum | Yes | Result of ingestion validation. |
-
----
-
-## Validation Rules
-
-The following validation rules are applied during ingestion to ensure downstream analytical accuracy.
-| Field | Validation |
-|--------|------------|
-| water_ph | Between 0.0 and 14.0 |
-| electrical_conductivity | Greater than or equal to 0 |
-| dissolved_oxygen_ppm | Greater than or equal to 0 |
-| nutrient_solution_temperature_celsius | Between -10 and 60 |
-| ambient_temp_celsius | Between -20 and 60 |
-| humidity_percentage | Between 0 and 100 |
-| light_intensity_lux | Greater than or equal to 0 |
-| data_quality_flag | GOOD, MISSING_VALUE, OUT_OF_BOUNDS, FAULTY |
-
----
-
-## Invalid Payload Example
-Invalid payloads are assigned the appropriate data_quality_flag and retained for operational investigation rather than immediately discarded.
-
-```json
-{
-  "water_ph": 18.9,
-  "humidity_percentage": 140,
-  "light_intensity_lux": -200
-}
-```
-
-### Validation Errors
-
-- water_ph exceeds the valid range.
-- humidity_percentage cannot exceed 100%.
-- light_intensity_lux cannot be negative.
-
----
-
-## Notes
-
-- This is the highest-volume event produced by the platform.
-- Events are append-only.
-- Records are never updated after ingestion.
-- Data quality is assessed during ingestion before downstream processing.
-
----
-
-## Telemetry Validation and Quality Guarantees
-
-Equipment telemetry events are validated before being accepted as
-canonical simulator output.
-
-Validation occurs inside the Equipment Telemetry Quality layer and
-ensures that generated telemetry remains physically plausible,
-internally consistent, and compliant with equipment-specific sensor
-profiles.
-
-### Validation Categories
-
-The following validation categories are applied.
-
-| Category | Description |
-|-----------|-------------|
-| Schema Validation | Confirms required fields are present and correctly typed. |
-| Physical Plausibility Validation | Ensures sensor values remain within realistic operating limits. |
-| Runtime Consistency Validation | Confirms emitted event values match EquipmentState runtime values. |
-| Sensor Profile Compliance Validation | Confirms sensor values remain within the configured profile boundaries for the equipment type. |
-| Normalization Validation | Confirms telemetry precision follows documented rounding standards. |
-
----
-
-### Physical Plausibility Rules
-
-The simulator rejects telemetry that violates the following baseline
-physical constraints.
-
-| Field | Validation Rule |
-|---------|----------------|
-| health | 0.00 to 100.00 |
-| current_load | 0.00 to 100.00 |
-| failure_probability | 0.0000 to 1.0000 |
-| power_consumption_kw | Greater than 0 |
-| temperature_celsius | Greater than 0 |
-| vibration_mm_s | Greater than 0 |
-
----
-
-### Runtime Consistency Rules
-
-Equipment telemetry events are generated from runtime state managed by
-EquipmentStateManager.
-
-The following values must exactly match the associated runtime state at
-generation time:
-
-- operating_status
-- health
-- runtime_hours
-- current_load
-- failure_probability
-- power_consumption_kw
-- temperature_celsius
-- vibration_mm_s
-
-Any mismatch indicates a generator defect and is treated as a validation
-failure.
-
----
-
-### Sensor Profile Compliance Rules
-
-Each equipment type defines a dedicated sensor profile that establishes
-valid operating boundaries.
-
-Validation confirms that:
-
-- power consumption remains within the configured idle-to-maximum range
-- operating temperature remains within configured temperature limits
-- vibration remains within configured vibration limits
-
-Profile compliance is validated for every generated telemetry event.
-
----
-
-### Telemetry Normalization Standards
-
-To maintain consistent analytical behavior across downstream Fabric
-components, telemetry values use fixed precision.
-
-| Field | Precision |
-|---------|-----------|
 | health | 2 decimal places |
 | runtime_hours | 2 decimal places |
 | current_load | 2 decimal places |
@@ -758,264 +687,127 @@ components, telemetry values use fixed precision.
 | temperature_celsius | 2 decimal places |
 | vibration_mm_s | 3 decimal places |
 
----
+### Verification Coverage
 
-### Validation Coverage Reporting
+The verification pipeline validates:
 
-The verification pipeline produces validation coverage metrics for every
-equipment telemetry generation run.
+- Event generation coverage
+- Runtime-to-event consistency
+- Sensor profile compliance
+- Physical plausibility
+- Telemetry normalization
 
-Reported metrics include:
-
-- Total validated events
-- Runtime consistency checks performed
-- Sensor profile compliance checks performed
-- Validation failures detected
-
-Successful verification requires all generated telemetry events to pass
-every validation category without error.
-
----
-
-## Equipment Telemetry Field Definitions
-
-The Equipment Telemetry Event exposes the current operational condition
-of every registered equipment asset within the smart farming platform.
-
-The event combines immutable equipment metadata with mutable runtime
-state and baseline sensor telemetry generated by the simulator.
-
-### Equipment Identity Fields
-
-| Field | Type | Description |
-|---------|------|-------------|
-| equipment_id | String | Unique equipment identifier. |
-| facility_id | String | Facility where the equipment is installed. |
-| zone_id | String | Growing zone where the equipment operates. |
-| equipment_type | String | Registered equipment category. |
-
----
-
-### Operational State Fields
-
-| Field | Type | Description |
-|---------|------|-------------|
-| operating_status | Enum | Current equipment operating condition. |
-| health | Decimal | Overall equipment health percentage. |
-| runtime_hours | Decimal | Total accumulated runtime hours. |
-| current_load | Decimal | Current utilization percentage. |
-| failure_probability | Decimal | Calculated probability of degradation or failure. |
-
----
-
-### Sensor Telemetry Fields
-
-| Field | Type | Unit | Description |
-|---------|------|------|-------------|
-| power_consumption_kw | Decimal | kW | Simulated equipment power draw. |
-| temperature_celsius | Decimal | °C | Simulated operating temperature. |
-| vibration_mm_s | Decimal | mm/s | Simulated vibration velocity. |
-
----
-
-## Telemetry Precision Standards
-
-Equipment telemetry values are normalized before emission to ensure
-consistent downstream analytical behavior.
-
-### Precision Requirements
-
-| Field | Precision |
-|---------|-----------|
-| health | 2 decimal places |
-| runtime_hours | 2 decimal places |
-| current_load | 2 decimal places |
-| failure_probability | 4 decimal places |
-| power_consumption_kw | 3 decimal places |
-| temperature_celsius | 2 decimal places |
-| vibration_mm_s | 3 decimal places |
-
----
-
-### Example Normalized Payload
-
-```json
-{
-  "equipment_id": "EQ-00001",
-  "operating_status": "ONLINE",
-  "health": 96.42,
-  "runtime_hours": 128.75,
-  "current_load": 71.33,
-  "failure_probability": 0.0821,
-  "power_consumption_kw": 4.142,
-  "temperature_celsius": 65.16,
-  "vibration_mm_s": 5.040
-}
+All generated equipment telemetry events must pass validation before implementation changes are accepted.
 
 ---
 
 ## Equipment Telemetry Data Lineage
 
-Equipment Telemetry Events follow a deterministic processing path from
-generation inside the simulator through Microsoft Fabric analytical
-layers.
+Equipment telemetry events must support complete end-to-end traceability
+throughout the Microsoft Fabric analytics platform.
 
-The telemetry payload emitted by EquipmentTelemetryGenerator serves as
-the authoritative source for equipment operational analytics.
-
----
-
-### Source Systems
-
-| Component | Responsibility |
-|------------|---------------|
-| Equipment Registry | Stores immutable equipment metadata. |
-| Equipment State Manager | Maintains mutable runtime state. |
-| Equipment Telemetry Generator | Produces canonical telemetry events. |
-| Telemetry Validator | Enforces telemetry quality standards. |
-
----
-
-### Equipment Telemetry Lineage Flow
+The following fields collectively provide operational lineage and audit
+capability:
 
 ```text
-Equipment Registry
-        +
-Equipment State Manager
-        │
-        ▼
-Equipment Telemetry Generator
-        │
-        ▼
+event_id
+event_timestamp
+facility_id
+equipment_id
+zone_id
+```
+
+These identifiers allow engineers to trace a telemetry event across:
+
+1. Python Smart Farm Simulator generation
+2. Microsoft Fabric Eventstream ingestion
+3. Eventhouse operational storage
+4. OneLake Bronze persistence
+5. Silver validation and enrichment
+6. Gold analytical modeling
+7. Fabric Warehouse consumption
+8. Power BI reporting
+
+### Lineage Objectives
+
+The telemetry lineage strategy supports:
+
+- Operational troubleshooting
+- Historical replay
+- Root cause analysis
+- Data quality investigations
+- Equipment health auditing
+- Regulatory compliance
+- End-to-end observability
+
+### Fabric Traceability Path
+
+```text
 EquipmentTelemetryEvent
-        │
-        ▼
-Telemetry Validator
-        │
-        ▼
-Microsoft Fabric Eventstream
-        │
-        ▼
+          │
+          ▼
+Eventstream
+          │
+          ▼
 Eventhouse
-        │
-        ▼
-Lakehouse Bronze
-        │
-        ▼
-Lakehouse Silver
-        │
-        ▼
-Lakehouse Gold
-        │
-        ▼
+equipment_telemetry
+          │
+          ▼
+bronze_equipment_telemetry
+          │
+          ▼
+silver_equipment_telemetry
+          │
+          ▼
+fact_equipment_telemetry
+          │
+          ▼
 Fabric Warehouse
-        │
-        ▼
+          │
+          ▼
 Power BI
 ```
 
----
-
-### Lineage Keys
-
-The following fields support end-to-end traceability.
-
-| Field | Purpose |
-|---------|----------|
-| event_id | Unique event trace identifier. |
-| equipment_id | Equipment asset identifier. |
-| facility_id | Facility trace key. |
-| zone_id | Operational location key. |
-| timestamp | Event creation timestamp. |
-| event_type | Event classification. |
+All downstream datasets must preserve event_id as the primary lineage
+identifier.
 
 ---
 
-### Auditability Guarantees
+## Notes
 
-Equipment telemetry events are:
-
-- Append-only
-- Immutable after generation
-- Fully traceable through Fabric layers
-- Reproducible using deterministic simulator seeds
-- Validated before downstream consumption
-
-These guarantees support operational troubleshooting,
-historical replay, and future predictive maintenance initiatives.
+- Generated by EquipmentTelemetryGenerator.
+- Runtime values originate from EquipmentStateManager.
+- Sensor metrics are baseline simulated telemetry.
+- No anomaly injection is currently performed.
+- Supports future predictive maintenance analytics.
 
 ---
 
-## Equipment Telemetry Fabric Mapping
+# Eventhouse Equipment Telemetry Schema
 
-The Equipment Telemetry Event is mapped into Microsoft Fabric services
-using the following logical flow.
+## Target Table
 
-### Eventhouse Mapping
+```text
+equipment_telemetry
+```
 
-| Event Type | Eventhouse Table |
-|------------|------------------|
-| equipment.telemetry | equipment_telemetry |
-
----
-
-### Bronze Layer Mapping
-
-| Event Type | Bronze Table |
-|------------|--------------|
-| equipment.telemetry | bronze_equipment_telemetry |
-
-Characteristics:
-
-- Raw ingestion
-- Append-only storage
-- Full fidelity telemetry
-- No business transformations
-
----
-
-### Silver Layer Mapping
-
-| Bronze Table | Silver Table |
-|--------------|--------------|
-| bronze_equipment_telemetry | silver_equipment_telemetry |
-
-Transformations include:
-
-- Validation enforcement
-- Data quality standardization
-- Timestamp normalization
-- Metadata enrichment
-
----
-
-### Gold Layer Mapping
-
-| Silver Table | Gold Fact Table |
-|--------------|-----------------|
-| silver_equipment_telemetry | fact_equipment_telemetry |
-
-Primary analytical use cases:
-
-- Equipment utilization reporting
-- Asset health monitoring
-- Failure risk trending
-- Power consumption analysis
-- Predictive maintenance readiness
-
----
-
-### Power BI Consumption
-
-Equipment telemetry contributes to:
-
-- Real-Time Operations Dashboard
-- Equipment Health Dashboard
-- Maintenance Dashboard
-- Facility Performance Dashboard
-
-These datasets represent the canonical equipment operational history
-for the Smart Farming Analytics Platform.
+| Column | Type |
+|----------|----------|
+| event_id | string |
+| event_type | string |
+| timestamp | datetime |
+| facility_id | string |
+| equipment_id | string |
+| zone_id | string |
+| equipment_type | string |
+| operating_status | string |
+| health | real |
+| runtime_hours | real |
+| current_load | real |
+| failure_probability | real |
+| power_consumption_kw | real |
+| temperature_celsius | real |
+| vibration_mm_s | real |
 
 ---
 
@@ -1138,6 +930,26 @@ The following checks are enforced:
 
 These rules prevent impossible simulator output from propagating
 downstream.
+
+### Baseline Sensor Range Validation
+
+Equipment telemetry sensor values must remain within the calibrated
+equipment-profile ranges defined by the simulator.
+
+The Telemetry Validator verifies that emitted values remain within the
+appropriate profile boundaries.
+
+| Metric | Validation Requirement |
+|----------|-----------------------|
+| power_consumption_kw | Must be positive and within profile limits |
+| temperature_celsius | Must remain within profile operating range |
+| vibration_mm_s | Must remain within profile vibration range |
+
+Values outside calibrated profile limits are treated as invalid
+telemetry and fail validation.
+
+These checks ensure simulated telemetry remains physically plausible and
+consistent with the equipment category being modeled.
 
 ---
 
@@ -1481,6 +1293,56 @@ enhancements while preserving the current simulator behavior.
 
 ---
 
+## Sensor Calibration Rules
+
+Equipment sensor telemetry is generated using baseline simulation logic.
+
+Sensor values are derived from:
+
+- Current equipment load
+- Equipment health
+- Failure probability
+- Equipment-specific sensor profiles
+- Controlled random variation
+
+### Power Consumption
+
+Power consumption is calculated using:
+
+- Current load
+- Equipment power profile
+- Health degradation multiplier
+
+Power values are constrained to the configured equipment sensor profile boundaries.
+
+### Temperature
+
+Temperature is calculated using:
+
+- Current load
+- Health stress adjustments
+- Failure probability stress adjustments
+- Controlled random variation
+
+Temperature values are constrained to the configured equipment sensor profile boundaries.
+
+### Vibration
+
+Vibration is calculated using:
+
+- Current load
+- Health stress adjustments
+- Failure probability stress adjustments
+- Controlled random variation
+
+Vibration values are constrained to the configured equipment sensor profile boundaries.
+
+This implementation intentionally produces baseline telemetry only.
+
+Explicit anomaly simulation, sensor failures, missing readings, and advanced degradation patterns are planned for future simulator phases.
+
+---
+
 # Eventstream Ingestion Contract
 
 ## Purpose
@@ -1579,7 +1441,7 @@ The following fields are mandatory for Eventstream ingestion.
 |---------|
 | event_id |
 | event_type |
-| timestamp |
+| event_timestamp |
 | facility_id |
 | equipment_id |
 | zone_id |
@@ -1696,6 +1558,24 @@ equipment telemetry after Eventstream ingestion.
 
 This specification is intended to guide future Eventhouse table
 creation and KQL development activities.
+
+---
+
+### Timestamp Mapping Note
+
+The canonical event contract uses:
+
+```text
+event_timestamp
+```
+
+During Eventhouse ingestion the value is stored as:
+
+```text
+timestamp
+```
+
+This naming convention aligns with KQL querying standards while preserving the original event generation timestamp.
 
 ---
 
@@ -1922,6 +1802,24 @@ bronze_equipment_telemetry
 
 ---
 
+### Timestamp Mapping Note
+
+The canonical event contract uses:
+
+```text
+timestamp
+```
+
+During Eventhouse ingestion and Bronze persistence, this field is stored as:
+
+```text
+timestamp
+```
+
+This naming convention aligns with KQL and downstream analytical workloads while preserving the original event generation timestamp.
+
+---
+
 ## Storage Purpose
 
 The Bronze table provides:
@@ -2007,21 +1905,47 @@ Data quality remediation occurs in Silver.
 
 ## Lineage Requirements
 
-Every Bronze record must preserve:
+Every Bronze record must preserve the following identifiers:
 
 ```text
 event_id
-timestamp
-equipment_id
 facility_id
+zone_id
+equipment_id
+equipment_type
+timestamp
 ```
 
 These identifiers support:
 
 - End-to-end traceability
-- Audit investigations
 - Historical replay
 - Root cause analysis
+- Equipment lifecycle analysis
+- Asset-level trend analysis
+- Audit investigations
+- Bronze-to-Silver lineage tracking
+- Warehouse dimensional modeling
+
+Lineage is preserved from:
+
+```text
+EquipmentTelemetryGenerator
+        ↓
+Microsoft Fabric Eventstream
+        ↓
+Eventhouse
+        ↓
+Bronze Lakehouse
+        ↓
+Silver Lakehouse
+        ↓
+Gold Layer
+        ↓
+Warehouse
+        ↓
+Power BI
+```
 
 ---
 
@@ -2139,6 +2063,12 @@ The Hardware Metrics Event represents the operational health and performance of 
 
 These events enable equipment monitoring and provide the historical data required for future predictive maintenance capabilities.
 
+> **Implementation Note**
+>
+> The Smart Farm Simulator currently emits equipment telemetry using the canonical `equipment.telemetry` event contract.
+>
+> The Hardware Metrics Event remains documented for historical reference and future compatibility planning but is not currently generated by the simulator.
+
 ## Business Purpose
 
 Hardware Metrics Events monitor the operational performance and health of critical farming equipment, including pumps and other infrastructure supporting crop production. These events provide continuous insight into asset status, mechanical performance, and energy consumption.
@@ -2233,9 +2163,9 @@ The following validation rules are applied during ingestion to ensure downstream
 | runtime_hours | Greater than or equal to 0 |
 | current_load | Between 0 and 100 |
 | failure_probability | Between 0 and 1 |
-| power_consumption_kw | Greater than or equal to 0 |
-| temperature_celsius | Greater than or equal to 0 |
-| vibration_mm_s | Greater than or equal to 0 |
+| power_consumption_kw | Must remain within the configured equipment sensor profile range. |
+| temperature_celsius | Must remain within the configured equipment sensor profile range. |
+| vibration_mm_s | Must remain within the configured equipment sensor profile range. |
 
 ---
 
@@ -2319,6 +2249,53 @@ Invalid payloads are assigned the appropriate data_quality_flag and retained for
 
 ---
 
+# Hardware Metrics Event (Deprecated)
+
+## Description
+
+This event definition is retained for historical architecture reference only.
+
+The Smart Farming Simulator no longer emits `hardware.metrics` events.
+
+Equipment operational telemetry is now represented by the canonical:
+
+```text
+equipment.telemetry
+```
+
+event contract documented in the Equipment Telemetry Event section.
+
+## Migration Notes
+
+The original hardware metrics contract modeled pump-specific telemetry such as:
+
+- pump_status
+- pump_pressure_psi
+- pump_rpm
+- energy_consumption_kwh
+
+These fields have been superseded by a generalized equipment telemetry model that supports multiple equipment categories.
+
+Consumers should migrate to:
+
+```text
+equipment.telemetry
+```
+
+for all equipment health, utilization, power consumption, temperature, vibration, and failure-risk analytics.
+
+> ⚠️ Historical Reference Only
+>
+> The Smart Farming Simulator no longer emits `hardware.metrics`
+> events.
+>
+> All equipment operational telemetry is now emitted through the
+> canonical `equipment.telemetry` event contract.
+>
+> New development must use the Equipment Telemetry Event specification.
+
+---
+
 # Crop Batch Lifecycle Event
 
 ## Description
@@ -2363,8 +2340,8 @@ Generated only when a crop batch changes lifecycle stage.
 {
   "event_id": "b2c7a54e-29ef-46fd-9d48-9bcd7a56e0e5",
   "event_type": "crop.batch.lifecycle",
-  "event_timestamp": "2026-07-10T08:15:00Z",
-  "ingestion_timestamp": null,
+  "timestamp": "2026-07-10T08:15:00Z",
+  "ingestion_event_timestamp": null,
   "schema_version": "1.0",
   "facility_id": "FACILITY-NY-01",
   "zone_id": "ZONE-A",
@@ -2812,6 +2789,25 @@ Status:
 COMPLETE
 ```
 
+### Sensor Calibration Rules
+
+Equipment sensor metrics are generated from equipment-specific
+sensor profiles.
+
+Generated values are bounded by profile-defined calibration limits.
+
+Examples:
+
+- idle_power_kw
+- max_power_kw
+- base_temperature_celsius
+- max_temperature_celsius
+- base_vibration_mm_s
+- max_vibration_mm_s
+
+The simulator guarantees emitted telemetry remains within these
+boundaries before validation occurs.
+
 ---
 
 ### Equipment Telemetry Event Generation
@@ -2951,21 +2947,16 @@ Events are independent, immutable, and append-only.
 {
   "event_id": "4b42dd47-3a40-46b6-8f1f-4eb95a4abfb2",
   "event_type": "equipment.telemetry",
-  "timestamp": "2026-07-15T10:00:00Z",
-
+  "event_timestamp": "2026-07-15T10:00:00Z",
   "facility_id": "FACILITY-001",
   "zone_id": "ZONE-001",
-
   "equipment_id": "EQ-00001",
   "equipment_type": "WATER_PUMP",
-
   "operating_status": "ONLINE",
-
   "health": 96.42,
   "runtime_hours": 128.75,
   "current_load": 71.33,
   "failure_probability": 0.0821,
-
   "power_consumption_kw": 4.142,
   "temperature_celsius": 65.16,
   "vibration_mm_s": 5.040
@@ -3069,6 +3060,22 @@ and be reflected in:
 - Lakehouse mappings
 - Warehouse models
 - Power BI semantic models
+
+### Timestamp Mapping
+
+The simulator emits:
+
+```text
+event_timestamp
+```
+
+During Eventstream ingestion and Eventhouse persistence, the field is stored as:
+
+```text
+timestamp
+```
+
+This preserves the original event generation time while aligning with KQL and downstream analytical workloads.
 
 ---
 
@@ -3375,6 +3382,24 @@ facility_id=FACILITY-003/
 
 ---
 
+## Validation Dependency
+
+Only telemetry events that successfully pass Equipment Telemetry
+validation are eligible for persistence into Bronze storage.
+
+Validation includes:
+
+- Schema validation
+- Runtime consistency validation
+- Sensor profile compliance validation
+- Physical plausibility validation
+- Telemetry normalization validation
+
+This guarantees that Bronze remains the authoritative historical record
+for validated equipment telemetry.
+
+---
+
 ## Data Retention Strategy
 
 Bronze telemetry should be retained as the long-term historical source
@@ -3445,6 +3470,7 @@ Schema drift between these artifacts is not permitted.
 | Version | Date | Description |
 |---------|------|-------------|
 | 1.0 | 2026-07-01 | Initial event schema specification for the Smart Farming Analytics Platform. |
+| 1.1 | 2026-07-16 | Added canonical Equipment Telemetry Event contract, sensor profile validation rules, telemetry normalization requirements, runtime consistency validation, and baseline sensor simulation documentation. |
 
 ---
 
@@ -3518,7 +3544,7 @@ The following tables store streaming events inside Microsoft Fabric Eventhouse.
 | Event Type | Eventhouse Table |
 |------------|------------------|
 | sensor.telemetry | sensor_telemetry |
-| hardware.metrics | hardware_metrics |
+| hardware.metrics (deprecated) | hardware_metrics |
 | equipment.telemetry | equipment_telemetry |
 | crop.batch.lifecycle | crop_batch_lifecycle |
 | maintenance.activity | maintenance_activity |
@@ -3536,7 +3562,7 @@ The Bronze layer stores raw append-only streaming data exactly as received from 
 | Event Type | Bronze Delta Table |
 |------------|--------------------|
 | sensor.telemetry | bronze_sensor_telemetry |
-| hardware.metrics | bronze_hardware_metrics |
+| hardware.metrics (deprecated) | bronze_hardware_metrics |
 | equipment.telemetry | bronze_equipment_telemetry |
 | crop.batch.lifecycle | bronze_crop_batch_lifecycle |
 | maintenance.activity | bronze_maintenance_activity |
@@ -3782,8 +3808,8 @@ These enhancements can be incorporated without redesigning the existing event co
 | Event Type | Bronze | Silver | Gold | Dashboard |
 | :--- | :---: | :---: | :--- | :--- |
 | `sensor.telemetry` | ✅ | ✅ | `fact_sensor_telemetry` | Real-Time Operations Dashboard, Farm Performance Dashboard |
-| `hardware.metrics` | ✅ | ✅ | `fact_hardware_metrics` | Real-Time Operations Dashboard, Farm Performance Dashboard |
-| `equipment.telemetry` | ✅ | ✅ | `fact_equipment_telemetry` | Real-Time Operations Dashboard, Equipment Reliability Dashboard |
+| `hardware.metrics (deprecated)` | ✅ | ✅ | `fact_hardware_metrics` | Real-Time Operations Dashboard, Farm Performance Dashboard |
+| `equipment.telemetry` | ✅ | ✅ | `fact_equipment_telemetry` | Equipment Performance Dashboard |
 | `crop.batch.lifecycle` | ✅ | ✅ | `dim_crop_batch` | Farm Performance Dashboard |
 | `maintenance.activity` | ✅ | ✅ | Maintenance Reporting | Farm Performance Dashboard |
 | `platform.system` | ✅ | Optional | Monitoring | Platform Monitoring Dashboard |
