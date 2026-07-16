@@ -2,17 +2,20 @@
 Shared data models used throughout the HydroGrow Smart Farming Simulator.
 """
 
-from smart_farming.models.base_event import BaseEvent
-from smart_farming.models.environmental_event import (
+from .base_event import BaseEvent
+from .environmental_event import (
     EnvironmentalTelemetryEvent,
 )
-from smart_farming.models.weather_state import WeatherState
-from smart_farming.models.equipment import (
+from .weather_state import WeatherState
+from .equipment import (
     EquipmentOperatingStatus,
     Equipment
 )
-from smart_farming.models.equipment_event import (
+from .equipment_event import (
     EquipmentTelemetryEvent,
+)
+from .crop_state import (
+    CropState,
 )
 
 
@@ -23,4 +26,5 @@ __all__ = [
     "EquipmentOperatingStatus",
     "Equipment",
     "EquipmentTelemetryEvent",
+    "CropState",
 ]
