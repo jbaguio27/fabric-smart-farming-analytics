@@ -11,9 +11,13 @@ from .equipment_telemetry_generator import(
 from .base_telemetry_generator import (
     BaseTelemetryGenerator,
 )
+from .crop_lifecycle_generator import (
+    CropLifecycleGenerator,
+)
 
 __all__ = [
     "EnvironmentalTelemetryGenerator",
     "EquipmentTelemetryGenerator",
     "BaseTelemetryGenerator",
+    "CropLifecycleGenerator",
 ]
