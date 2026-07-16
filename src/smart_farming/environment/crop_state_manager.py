@@ -12,6 +12,7 @@ generation will be introduced in subsequent roadmap steps.
 
 from smart_farming.models import CropState
 from smart_farming.utils import RandomManager
+from smart_farming.environment import CropRegistry
 
 class CropStateManager:
     """
@@ -26,6 +27,7 @@ class CropStateManager:
 
     def __init__(
         self,
+        crop_registry: CropRegistry,
         random_manager: RandomManager,
     ) -> None:
         """
@@ -37,6 +39,7 @@ class CropStateManager:
                 simulator.
         """
 
+        self._crop_registry = crop_registry
         self._random_manager = random_manager
 
         self._states: dict[str, CropState] = {}
