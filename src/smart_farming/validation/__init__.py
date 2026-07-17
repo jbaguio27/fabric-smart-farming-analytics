@@ -2,10 +2,10 @@
 Telemetry validation package.
 """
 
-from smart_farming.validation.telemetry_validator import (
-    TelemetryValidator,
-)
+from .telemetry_validator import TelemetryValidator
+from .crop_lifecycle_validator import CropLifecycleValidator
 
 __all__ = [
     "TelemetryValidator",
+    "CropLifecycleValidator",
 ]
