@@ -14,6 +14,7 @@ The model intentionally contains no business logic.
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 
 @dataclass(frozen=True, slots=True)
 class CropLifecycleEvent:
@@ -59,7 +60,7 @@ class CropLifecycleEvent:
         Nutrient solution electrical conductivity.
     """
 
-    event_timestamp: datetime
+    event_timestamp: Optional[datetime]
 
     crop_batch_id: str
     zone_id: str

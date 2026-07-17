@@ -18,11 +18,11 @@ from smart_farming.config import Settings
 from smart_farming.environment import (
     CropRegistry,
     CropStateManager,
+    GrowingEnvironmentStateManager,
 )
 from smart_farming.models import (
     CropState,
     CropLifecycleEvent,
-    GrowingEnvironmentState,
 )
 from .base_telemetry_generator import BaseTelemetryGenerator
 from smart_farming.utils import RandomManager
@@ -42,7 +42,7 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         self,
         settings: Settings,
         random_manager: RandomManager,
-        growing_environment_manager: GrowingEnvironmentState,
+        environment_manager: GrowingEnvironmentStateManager,
         crop_registry: CropRegistry,
         crop_state_manager: CropStateManager,
     ) -> None:
@@ -69,7 +69,7 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
 
         self._settings = settings
         self._random_manager = random_manager
-        self._growing_environment_manager = growing_environment_manager
+        self._environment_manager = environment_manager
         self._crop_registry = crop_registry
         self._crop_state_manager = crop_state_manager
 
@@ -99,14 +99,14 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
                 continue
 
             environment = (
-                self._growing_environment_manager.get_zone_state(
+                self._environment_manager.get_zone_state(
                     crop_state.zone_id,
                 )
             )
 
             events.append(
                 CropLifecycleEvent(
-                    event_timestamp=datetime.utcnow(),
+                    event_timestamp=None,
                     crop_batch_id=crop_state.crop_batch_id,
                     zone_id=crop_state.zone_id,
                     crop_type=crop_state.crop_type,
@@ -131,8 +131,8 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         Convert an immutable CropLifecycleEvent into a serializable
         payload.
 
-        Serialization remains separate from event generation so future
-        telemetry sinks can reuse the same immutable event model.
+        Serialization is intentionally separated from event generation so
+        downstream telemetry sinks remain independent of simulator logic.
 
         Args
         ----
@@ -146,7 +146,7 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         """
 
         return {
-            "event_timestamp": event.event_timestamp.isoformat(),
+            "event_timestamp": event.event_timestamp,
             "crop_batch_id": event.crop_batch_id,
             "zone_id": event.zone_id,
             "crop_type": event.crop_type,
