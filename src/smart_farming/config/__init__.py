@@ -92,7 +92,14 @@ from .load_profile import (
     EquipmentSensorProfile,
 )
 from .crop import (
-    CROP_PROFILES,
+    CROP_GROWTH_PROFILES,
+    CROP_STAGE_GERMINATION,
+    CROP_STAGE_SEEDLING,
+    CROP_STAGE_VEGETATIVE,
+    CROP_STAGE_MATURE,
+    CROP_STAGE_HARVESTED,
+    CROP_LIFECYCLE_STAGES,
+    NEXT_CROP_STAGE,
 )
 
 __all__ = [
@@ -180,9 +187,17 @@ __all__ = [
     "MAINTENANCE_HEALTH_THRESHOLD",
     "MAINTENANCE_RESTORE_HEALTH",
     "MAINTENANCE_RESET_FAILURE_PROBABILITY",
-    
+
     # Crop variables
-    "CROP_PROFILES",
+    "CROP_GROWTH_PROFILES",
+    "CROP_STAGE_GERMINATION",
+    "CROP_STAGE_SEEDLING",
+    "CROP_STAGE_VEGETATIVE",
+    "CROP_STAGE_MATURE",
+    "CROP_STAGE_HARVESTED",
+    "CROP_LIFECYCLE_STAGES",
+    "NEXT_CROP_STAGE",
+    
     # Environmental Variables
     "SensorMetadata",
     "FacilityId",

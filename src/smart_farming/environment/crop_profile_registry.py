@@ -11,7 +11,7 @@ simulation remains the responsibility of CropStateManager.
 """
 
 from smart_farming.config import (
-    CROP_PROFILES
+    CROP_GROWTH_PROFILES
 )
 
 class CropProfileRegistry:
@@ -35,7 +35,7 @@ class CropProfileRegistry:
         modifying lifecycle simulation code.
         """
 
-        self._profiles = CROP_PROFILES
+        self._profiles = CROP_GROWTH_PROFILES
 
     def get_profile(
         self,

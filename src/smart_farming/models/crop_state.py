@@ -38,6 +38,6 @@ class CropState:
     planting_timestamp: Optional[datetime]
     expected_harvest_timestamp: Optional[datetime]
 
-    age_days: int
+    age_days: float
     health_score: float
     is_active: bool

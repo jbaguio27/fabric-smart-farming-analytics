@@ -12,8 +12,18 @@ generation will be introduced in subsequent roadmap steps.
 
 from smart_farming.models import CropState
 from smart_farming.utils import RandomManager
-from smart_farming.environment import CropRegistry
-from smart_farming.config import Settings
+from smart_farming.environment import (
+    CropRegistry,
+    CropProfileRegistry,
+)
+from smart_farming.config import (
+    Settings,
+    CROP_STAGE_GERMINATION,
+    CROP_STAGE_SEEDLING,
+    CROP_STAGE_VEGETATIVE,
+    CROP_STAGE_MATURE,
+    CROP_STAGE_HARVESTED
+)
 
 class CropStateManager:
     """
@@ -30,19 +40,29 @@ class CropStateManager:
         self,
         settings: Settings,
         crop_registry: CropRegistry,
+        crop_profile_registry: CropProfileRegistry,
         random_manager: RandomManager,
     ) -> None:
         """
         Initialize the crop runtime state manager.
 
         Args:
+            settings:
+                Application runtime configuration.
+
+            crop_registry:
+                Registry containing the configured crop batches.
+
+            crop_profile_registry:
+                Registry containing immutable crop growth profiles.
+
             random_manager:
-                Shared random number provider used throughout the
-                simulator.
+                Shared deterministic random number provider.
         """
 
         self._settings = settings
         self._crop_registry = crop_registry
+        self._crop_profile_registry = crop_profile_registry
         self._random_manager = random_manager
 
         self._states: dict[str, CropState] = {}
@@ -51,52 +71,77 @@ class CropStateManager:
 
     def initialize(self) -> None:
         """
-        Initialize runtime crop state.
+        Create runtime state for every registered crop batch.
 
-        A runtime CropState is created for every crop batch registered
-        in the CropRegistry. This establishes the mutable simulation
-        state without introducing lifecycle progression.
+        This method is executed once during simulator startup. It 
+        creates one runtime CropState instance for each
+        registered crop batch.
 
-        Runtime values are initialized directly from the immutable crop
-        definitions. Future roadmap steps will evolve these values as
-        the simulation advances.
+        The initialized runtime state represents newly planted crop batches.
+        Lifecycle progression is intentionally not performed here and will be
+        implemented in a later roadmap step.
+
+        Repeated calls reset the internal runtime state.
         """
 
         self._states.clear()
 
-        for crop in self._crop_registry._crop_batches.values():
-            self._states[crop.crop_batch_id] = CropState(
-                crop_batch_id=crop.crop_batch_id,
-                field_id=crop.field_id,
-                crop_type=crop.crop_type,
-                lifecycle_stage="PLANTED",
+        for index, profile in enumerate(
+            self._crop_registry.get_all_profiles(),
+            start=1,
+        ):
+            crop_batch_id = f"BATCH-{index:05d}"
+
+            self._states[crop_batch_id] = CropState(
+                crop_batch_id=crop_batch_id,
+                zone_id=f"ZONE-{index}",
+                crop_type=profile.crop_type,
+                lifecycle_stage=CROP_STAGE_GERMINATION,
                 planting_timestamp=None,
                 expected_harvest_timestamp=None,
                 age_days=0,
-                healt_score=100.0,
+                health_score=100.0,
                 is_active=True,
             )
     
+    def get_all_states(self) -> list[CropState]:
+        """
+        Return every managed crop runtime state.
+
+        Returns:
+            A list containing the mutable runtime state for every active
+            crop batch.
+        """
+
+        return list(self._states.values())
+
     def get_state(
         self,
         crop_batch_id: str,
     ) -> CropState:
         """
-        Return the runtime state for a registered crop batch.
+        Retrieve the runtime state for a crop batch.
 
         Args:
             crop_batch_id:
-                Unique identifier of the crop batch.
+                Unique crop batch identifier.
 
         Returns:
-            The mutable runtime state associated with the crop batch.
-
-        Raises:
-            KeyError:
-                If the crop batch is not managed by this state manager.
+            The mutable CropState associated with the supplied batch.
         """
 
         return self._states[crop_batch_id]
+
+    @property
+    def crop_profile_registry(self) -> CropProfileRegistry:
+        """
+        Return the registry supplying immutable crop definitions.
+
+        Returns:
+            The injected CropProfileRegistry instance.
+        """
+
+        return self._crop_profile_registry
 
     @property
     def states(self) -> dict[str, CropState]:
@@ -174,7 +219,16 @@ class CropStateManager:
         """
 
         for state in self._states.values():
+
+            if not state.is_active:
+                continue
+
             self._advance_crop_age(state)
+
+            self.evaluate_lifecycle_transition(state)
+
+            if state.lifecycle_stage == CROP_STAGE_HARVESTED:
+                state.is_active = False
 
     def _advance_crop_age(
         self,
@@ -195,7 +249,7 @@ class CropStateManager:
 
         minutes_per_day = 24 * 60
 
-        stage.age_days += (
+        state.age_days += (
             self._settings.simulation_time_step_minutes
             / minutes_per_day
         )
@@ -205,19 +259,58 @@ class CropStateManager:
         state: CropState,
     ) -> str | None:
         """
-        Determine the next lifecycle stage for a crop batch.
+        Determine the next biological lifecycle stage for a crop batch.
 
-        During the current implementation phase, lifecycle transitions are
-        intentionally disabled. The method exists to establish the future
-        extension point for biological progression.
+        Stage progression is based entirely on the elapsed biological age
+        defined by the crop's immutable growth profile. No environmental
+        influence, equipment influence, or health adjustments are considered
+        during this implementation phase.
 
         Args:
             state:
                 Runtime crop state.
 
         Returns:
-            None, indicating that no lifecycle transition should occur.
+            The next lifecycle stage if a transition should occur;
+            otherwise None.
         """
+
+        profile = self._crop_profile_registry.get_profile(
+            state.crop_type
+        )
+
+        age = state.age_days
+
+        if (
+            state.lifecycle_stage == CROP_STAGE_GERMINATION
+            and age >= profile.germination_days
+        ):
+            return CROP_STAGE_SEEDLING
+
+        if (
+            state.lifecycle_stage == CROP_STAGE_SEEDLING
+            and age >= (
+                profile.germination_days
+                + profile.seedling_days
+            )
+        ):
+            return CROP_STAGE_VEGETATIVE
+
+        if (
+            state.lifecycle_stage == CROP_STAGE_VEGETATIVE
+            and age >= (
+                profile.germination_days
+                + profile.seedling_days
+                + profile.vegetative_days
+            )
+        ):
+            return CROP_STAGE_MATURE
+        
+        if (
+            state.lifecycle_stage == CROP_STAGE_MATURE
+            and age >= profile.maturity_days
+        ):
+            return CROP_STAGE_HARVESTED
 
         return None
 # ------------------------------------------------------------------

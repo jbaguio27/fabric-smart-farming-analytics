@@ -12,10 +12,9 @@ Simulation logic must never be implemented here.
 """
 
 from typing import Final
-
 from smart_farming.models import CropGrowthProfile
 
-CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
+CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
     "butterhead_lettuce": CropGrowthProfile(
         crop_type="Butterhead Lettuce",
         germination_days=4,
@@ -27,7 +26,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.0,
         optimal_ec=1.8,
     ),
-    "batavia_lettuce": CropProfile(
+    "batavia_lettuce": CropGrowthProfile(
         crop_type="Batavia Lettuce",
         germination_days=4,
         seedling_days=7,
@@ -38,7 +37,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.0,
         optimal_ec=1.9,
     ),
-    "kale": CropProfile(
+    "kale": CropGrowthProfile(
         crop_type="Kale",
         germination_days=5,
         seedling_days=8,
@@ -49,7 +48,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.2,
         optimal_ec=2.2,
     ),
-    "spinach": CropProfile(
+    "spinach": CropGrowthProfile(
         crop_type="Spinach",
         germination_days=5,
         seedling_days=7,
@@ -60,7 +59,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.3,
         optimal_ec=1.8,
     ),
-    "arugula": CropProfile(
+    "arugula": CropGrowthProfile(
         crop_type="Arugula",
         germination_days=4,
         seedling_days=6,
@@ -71,7 +70,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.1,
         optimal_ec=1.7,
     ),
-    "basil": CropProfile(
+    "basil": CropGrowthProfile(
         crop_type="Genovese Basil",
         germination_days=5,
         seedling_days=8,
@@ -82,7 +81,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.0,
         optimal_ec=2.0,
     ),
-    "cilantro": CropProfile(
+    "cilantro": CropGrowthProfile(
         crop_type="Cilantro",
         germination_days=7,
         seedling_days=8,
@@ -93,7 +92,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.3,
         optimal_ec=1.8,
     ),
-    "parsley": CropProfile(
+    "parsley": CropGrowthProfile(
         crop_type="Parsley",
         germination_days=10,
         seedling_days=10,
@@ -104,7 +103,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.2,
         optimal_ec=1.9,
     ),
-    "microgreens": CropProfile(
+    "microgreens": CropGrowthProfile(
         crop_type="Microgreens",
         germination_days=2,
         seedling_days=3,
@@ -115,7 +114,7 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=6.0,
         optimal_ec=1.2,
     ),
-    "strawberry": CropProfile(
+    "strawberry": CropGrowthProfile(
         crop_type="Strawberry",
         germination_days=8,
         seedling_days=14,
@@ -126,4 +125,40 @@ CROP_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_ph=5.8,
         optimal_ec=2.2,
     ),
+}
+
+# ============================================================================
+# Crop Lifecycle Stages
+# ============================================================================
+
+CROP_STAGE_GERMINATION: Final[str] = "GERMINATION"
+
+CROP_STAGE_SEEDLING: Final[str] = "SEEDLING"
+
+CROP_STAGE_VEGETATIVE: Final[str] = "VEGETATIVE"
+
+CROP_STAGE_MATURE: Final[str] = "MATURE"
+
+CROP_STAGE_HARVESTED: Final[str] = "HARVESTED"
+
+
+CROP_LIFECYCLE_STAGES: Final[tuple[str, ...]] = (
+    CROP_STAGE_GERMINATION,
+    CROP_STAGE_SEEDLING,
+    CROP_STAGE_VEGETATIVE,
+    CROP_STAGE_MATURE,
+    CROP_STAGE_HARVESTED,
+)
+
+
+# ============================================================================
+# Lifecycle Progression
+# ============================================================================
+
+NEXT_CROP_STAGE: Final[dict[str, str | None]] = {
+    CROP_STAGE_GERMINATION: CROP_STAGE_SEEDLING,
+    CROP_STAGE_SEEDLING: CROP_STAGE_VEGETATIVE,
+    CROP_STAGE_VEGETATIVE: CROP_STAGE_MATURE,
+    CROP_STAGE_MATURE: CROP_STAGE_HARVESTED,
+    CROP_STAGE_HARVESTED: None,
 }

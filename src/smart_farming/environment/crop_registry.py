@@ -19,7 +19,7 @@ class CropDefinition:
     """
 
     crop_batch_id: str
-    field_id: str
+    zone_id: str
     crop_type: str
 
 class CropRegistry:
