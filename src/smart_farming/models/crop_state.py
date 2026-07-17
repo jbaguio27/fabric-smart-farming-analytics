@@ -34,8 +34,6 @@ class CropState:
     crop_type: str
 
     lifecycle_stage: str
-
-    event_timestamp: Optional[datetime]
     expected_harvest_timestamp: Optional[datetime]
 
     age_days: float

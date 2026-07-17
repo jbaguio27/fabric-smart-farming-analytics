@@ -13,7 +13,8 @@ structure required for future event generation while intentionally
 producing no events. This minimizes regression risk and allows the
 generator to be integrated incrementally.
 """
-from datetime import datetime
+import uuid
+from datetime import datetime, UTC
 from smart_farming.config import Settings
 from smart_farming.environment import (
     CropRegistry,
@@ -26,6 +27,7 @@ from smart_farming.models import (
 )
 from .base_telemetry_generator import BaseTelemetryGenerator
 from smart_farming.utils import RandomManager
+
 
 class CropLifecycleGenerator(BaseTelemetryGenerator):
     """
@@ -127,17 +129,23 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         )
 
         return CropLifecycleEvent(
-            event_timestamp=crop_state.event_timestamp,
             crop_batch_id=definition.crop_batch_id,
             facility_id=definition.facility_id,
             zone_id=definition.zone_id,
             crop_type=definition.crop_type,
+
             lifecycle_stage=crop_state.lifecycle_stage,
             age_days=crop_state.age_days,
             health_score=crop_state.health_score,
             is_active=crop_state.is_active,
+
             air_temperature_celsius=environment.air_temperature_celsius,
             humidity_percent=environment.humidity_percent,
             water_ph=environment.water_ph,
             electrical_conductivity=environment.electrical_conductivity,
+
+            event_timestamp=datetime.now(UTC),
+            simulation_cycle=self._crop_state_manager.simulation_cycle,
+            event_type="CropLifecycleEvent",
+            event_id=str(uuid.uuid4())
         )

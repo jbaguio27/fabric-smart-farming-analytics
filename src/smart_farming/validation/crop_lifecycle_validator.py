@@ -69,3 +69,11 @@ class CropLifecycleValidator:
             event.electrical_conductivity
             >= 0.0
         )
+
+        assert event.event_type == "CropLifecycleEvent"
+
+        assert event.simulation_cycle >= 0
+
+        assert event.event_id
+
+        assert event.event_timestamp is not None

@@ -76,7 +76,21 @@ class CropStateManager:
 
         self._states: dict[str, CropState] = {}
 
+        self._simulation_cycle = 0
+
         self.initialize()
+
+    @property
+    def simulation_cycle(self) -> int:
+        """
+        Current biological simulation cycle.
+
+        Returns:
+            int:
+                Number of completed lifecycle updates.
+        """
+
+        return self._simulation_cycle
 
     def initialize(self) -> None:
         """
@@ -107,7 +121,6 @@ class CropStateManager:
                 zone_id=definition.zone_id,
                 crop_type=definition.crop_type,
                 lifecycle_stage=CROP_STAGE_GERMINATION,
-                event_timestamp=None,
                 expected_harvest_timestamp=None,
                 age_days=0.0,
                 health_score=profile.optimal_health,
@@ -241,6 +254,9 @@ class CropStateManager:
 
             if state.lifecycle_stage == CROP_STAGE_HARVESTED:
                 state.is_active = False
+        
+        self._simulation_cycle += 1
+
 
     def _advance_crop_age(
         self,

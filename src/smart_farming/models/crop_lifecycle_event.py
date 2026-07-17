@@ -63,8 +63,6 @@ class CropLifecycleEvent:
         Nutrient solution electrical conductivity.
     """
 
-    event_timestamp: Optional[datetime]
-
     crop_batch_id: str
     zone_id: str
     crop_type: str
@@ -80,3 +78,10 @@ class CropLifecycleEvent:
     humidity_percent: float
     water_ph: float
     electrical_conductivity: float
+
+    # Event metadata
+
+    event_timestamp: datetime
+    simulation_cycle: int
+    event_type: str
+    event_id: str
