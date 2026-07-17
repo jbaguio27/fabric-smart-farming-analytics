@@ -21,8 +21,11 @@ class GrowingEnvironmentStateManager:
     Owns the runtime environmental conditions for all growing zones.
 
     One GrowingEnvironmentState instance exists for each simulated zone.
-    CropStateManager consumes these runtime values during health
-    evaluation.
+
+    Runtime environmental data is consumed by:
+
+    - CropStateManager for biological health evaluation.
+    - CropLifecycleGenerator for environmental telemetry generation.
     """
 
     def __init__(

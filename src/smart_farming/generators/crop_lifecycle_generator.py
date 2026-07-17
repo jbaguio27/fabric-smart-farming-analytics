@@ -13,6 +13,7 @@ structure required for future event generation while intentionally
 producing no events. This minimizes regression risk and allows the
 generator to be integrated incrementally.
 """
+from datetime import datetime
 from smart_farming.config import Settings
 from smart_farming.environment import (
     CropRegistry,
@@ -20,6 +21,7 @@ from smart_farming.environment import (
 )
 from smart_farming.models import (
     CropState,
+    CropLifecycleEvent,
     GrowingEnvironmentState,
 )
 from .base_telemetry_generator import BaseTelemetryGenerator
@@ -71,55 +73,89 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         self._crop_registry = crop_registry
         self._crop_state_manager = crop_state_manager
 
-    def generate(self) -> list:
+    def generate(
+        self,
+    ) -> list[CropLifecycleEvent]:
         """
-        Generate crop lifecycle events.
+        Generate immutable crop lifecycle telemetry events.
 
-        Returns:
-            An empty list during this implementation phase.
+        One CropLifecycleEvent is emitted for every active crop batch.
+        The generator combines runtime crop state with the current
+        growing environment state while remaining completely free of
+        simulation logic.
 
-        Notes:
-            Future roadmap phases will construct one Crop Lifecycle Event
-            per active crop batch.
+        Returns
+        -------
+        list[CropLifecycleEvent]
+            Immutable telemetry events representing the current
+            simulation state.
         """
 
-        events: list = []
+        events: list[CropLifecycleEvent] = []
 
         for crop_state in self._crop_state_manager.states.values():
 
             if not crop_state.is_active:
                 continue
 
-            _ = crop_state
+            environment = (
+                self._growing_environment_manager.get_zone_state(
+                    crop_state.zone_id,
+                )
+            )
+
+            events.append(
+                CropLifecycleEvent(
+                    event_timestamp=datetime.utcnow(),
+                    crop_batch_id=crop_state.crop_batch_id,
+                    zone_id=crop_state.zone_id,
+                    crop_type=crop_state.crop_type,
+                    lifecycle_stage=crop_state.lifecycle_stage,
+                    age_days=crop_state.age_days,
+                    health_score=crop_state.health_score,
+                    is_active=crop_state.is_active,
+                    air_temperature_celsius=environment.air_temperature_celsius,
+                    humidity_percent=environment.humidity_percent,
+                    water_ph=environment.water_ph,
+                    electrical_conductivity=environment.electrical_conductivity
+                )
+            )
 
         return events
 
     def _build_event_payload(
         self,
-        crop_state: CropState,
+        event: CropLifecycleEvent
     ) -> dict[str, object]:
         """
-        Build the payload for a Crop Batch Lifecycle event.
+        Convert an immutable CropLifecycleEvent into a serializable
+        payload.
 
-        This helper translates the mutable CropState into a structure
-        aligned with the documented Crop Batch Lifecycle Event contract.
-        Event object construction and serialization remain the
-        responsibility of later implementation steps.
+        Serialization remains separate from event generation so future
+        telemetry sinks can reuse the same immutable event model.
 
-        Args:
-            crop_state:
-                Runtime state of the crop batch.
+        Args
+        ----
+        event:
+            Immutable crop lifecycle event.
 
-        Returns:
-            Dictionary representing the event payload.
+        Returns
+        -------
+        dict[str, object]
+            Serializable event payload.
         """
 
         return {
-            "crop_batch_id": crop_state.crop_batch_id,
-            "zone_id": crop_state.zone_id,
-            "crop_type": crop_state.crop_type,
-            "lifecycle_stage": crop_state.lifecycle_stage,
-            "age_days": crop_state.age_days,
-            "health_score": crop_state.health_score,
-            "is_active": crop_state.is_active,
+            "event_timestamp": event.event_timestamp.isoformat(),
+            "crop_batch_id": event.crop_batch_id,
+            "zone_id": event.zone_id,
+            "crop_type": event.crop_type,
+            "lifecycle_stage": event.lifecycle_stage,
+            "age_days": event.age_days,
+            "health_score": event.health_score,
+            "is_active": event.is_active,
+            "air_temperature_celsius": event.air_temperature_celsius,
+            "humidity_percent": event.humidity_percent,
+            "water_ph": event.water_ph,
+            "electrical_conductivity": event.electrical_conductivity,
         }
