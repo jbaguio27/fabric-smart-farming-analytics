@@ -230,9 +230,9 @@ class CropStateManager:
             if not state.is_active:
                 continue
 
-            self._advance_crop_age(state)
-
             self._update_health(state)
+
+            self._advance_crop_age(state)
 
             self.evaluate_lifecycle_transition(state)
 
@@ -244,24 +244,57 @@ class CropStateManager:
         state: CropState,
     ) -> None:
         """
-        Advance the age of a crop batch by one simulation cycle.
+        Advance the biological age of a crop batch.
+
+        Crop development is influenced by its current biological health.
+        Healthy crops progress at the normal simulation rate, while crops
+        experiencing environmental stress develop more slowly. Extremely
+        unhealthy crops cease development entirely.
+
+        This implementation introduces biological realism without altering
+        lifecycle transition rules. Stage progression continues to be
+        determined solely by accumulated biological age.
 
         Args:
             state:
                 Runtime crop state to update.
 
         Notes:
-            Crop age is stored in days. The configured simulation time step
-            is converted into a fractional day to support deterministic
-            progression regardless of simulator cadence.
+        Biological age is expressed in days. The configured simulation
+        time step is converted into fractional days and then scaled by
+        the crop's current health. This allows environmental stress to
+        naturally delay development without changing lifecycle
+        thresholds.
         """
 
         minutes_per_day = 24 * 60
 
-        state.age_days += (
+        age_increment = (
             self._settings.simulation_time_step_minutes
             / minutes_per_day
         )
+
+        health = state.health_score
+
+        if health >= 90.0:
+            growth_factor = 1.0
+
+        elif health >= 75.0:
+            growth_factor = 0.90
+        
+        elif health >= 60.0:
+            growth_factor = 0.75
+        
+        elif health >= 40.0:
+            growth_factor = 0.50
+
+        elif health >= 20.0:
+            growth_factor = 0.25
+
+        else:
+            growth_factor = 0.00
+        
+        state.age_days += age_increment * growth_factor
 
     def _update_health(
         self,
