@@ -15,6 +15,7 @@ from smart_farming.utils import RandomManager
 from smart_farming.environment import (
     CropRegistry,
     CropProfileRegistry,
+    EnvironmentStateManager,
 )
 from smart_farming.config import (
     Settings,
@@ -41,6 +42,7 @@ class CropStateManager:
         settings: Settings,
         crop_registry: CropRegistry,
         crop_profile_registry: CropProfileRegistry,
+        environment_manager: EnvironmentStateManager,
         random_manager: RandomManager,
     ) -> None:
         """
@@ -48,21 +50,26 @@ class CropStateManager:
 
         Args:
             settings:
-                Application runtime configuration.
+                Runtime simulator configuration.
 
             crop_registry:
-                Registry containing the configured crop batches.
+                Registry containing all simulated crop batches.
 
             crop_profile_registry:
-                Registry containing immutable crop growth profiles.
+                Registry providing immutable biological growth profiles.
+
+            environment_manager:
+                Manager supplying the current environmental conditions for each
+                growing zone.
 
             random_manager:
-                Shared deterministic random number provider.
+                Shared random number provider used throughout the simulator.
         """
 
         self._settings = settings
         self._crop_registry = crop_registry
         self._crop_profile_registry = crop_profile_registry
+        self._environment_manager = environment_manager
         self._random_manager = random_manager
 
         self._states: dict[str, CropState] = {}
@@ -225,6 +232,8 @@ class CropStateManager:
 
             self._advance_crop_age(state)
 
+            self._update_health(state)
+
             self.evaluate_lifecycle_transition(state)
 
             if state.lifecycle_stage == CROP_STAGE_HARVESTED:
@@ -252,6 +261,77 @@ class CropStateManager:
         state.age_days += (
             self._settings.simulation_time_step_minutes
             / minutes_per_day
+        )
+
+    def _update_health(
+        self,
+        state: CropState
+    ) -> None:
+        """
+        Update the biological health of a crop batch.
+
+        Health is evaluated by comparing the current environmental
+        conditions with the optimal growing conditions defined by the crop's
+        immutable growth profile.
+
+        During this implementation phase, the health model is intentionally
+        deterministic and applies only small adjustments each simulation
+        cycle. Equipment influence, disease simulation, and nutrient
+        depletion will be introduced in later roadmap phases.
+
+        Args:
+            state:
+                Runtime crop state to evaluate.
+        """
+
+        profile = self._crop_profile_registry.get_profile(
+            state.crop_type
+        )
+
+        environment = self._environment_manager.get_zone_state(
+            state.zone_id,
+        )
+
+        health_delta = 0.0
+
+        health_delta -= (
+            abs(
+                environment.air_temperature_celcius
+                - profile.optimal_temperature_celsius
+            )
+            * 0.15
+        )
+
+        health_delta -= (
+            abs(
+                environment.humidity_percent
+                - profile.optimal_humidity_percent
+            )
+            * 0.05
+        )
+
+        health_delta -= (
+            abs(
+                environment.water_ph
+                - profile.optimal_ph
+            )
+            * 8.0
+        )
+
+        health_delta -= (
+            abs(
+                environment.electrical_conductivity
+                - profile.optimal_ec
+            )
+            * 3.0
+        )
+
+        state.health_score = max(
+            0.0,
+            min(
+                100.0,
+                state.health_score + health_delta,
+            ),
         )
 
     def _determine_next_stage(
