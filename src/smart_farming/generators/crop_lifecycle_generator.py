@@ -82,7 +82,7 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         events: list = []
 
         for crop_state in (
-            self._crop_state_manager.get_all_states().values()
+            self._crop_state_manager.states().values()
         ):
             # Placeholder for future event generation. 
 

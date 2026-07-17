@@ -95,18 +95,43 @@ class CropStateManager:
 
         return self._states[crop_batch_id]
 
-    def get_all_states(self) -> dict[str, CropState]:
+    @property
+    def states(self) -> dict[str, CropState]:
         """
-        Return all managed crop runtime states.
+        Return all runtime crop states.
 
         Returns:
-            Dictionary keyed by crop batch identifier containing all
-            runtime CropState instances.
+            Dictionary mapping crop batch identifiers to runtime state
+            objects.
 
         Notes:
-            The returned dictionary contains the manager's live runtime
-            state. Consumers should treat it as read-only and avoid
-            modifying its structure directly.
+            The returned mapping is intended for iteration and reporting.
+            Individual runtime state updates should continue to occur
+            through the manager.
         """
 
         return self._states
+
+    @property
+    def crop_registry(self) -> CropRegistry:
+        """
+        Return the crop registry managed by this state manager.
+
+        Returns:
+            Registry containing all configured crop batches.
+        """
+
+# ------------------------------------------------------------------
+# Lifecycle simulation methods will be introduced in the next phase.
+#
+# Upcoming responsibilities include:
+#
+#   • Lifecycle stage transitions
+#   • Crop aging
+#   • Environmental influence
+#   • Equipment influence
+#   • Harvest readiness evaluation
+#
+# This phase intentionally introduces no simulation behavior to
+# minimize regression risk.
+# ------------------------------------------------------------------
