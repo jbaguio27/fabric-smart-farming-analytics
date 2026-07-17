@@ -15,6 +15,7 @@ from .crop_registry import (
     CropRegistry
 )
 from .crop_state_manager import CropStateManager
+from .crop_profile_registry import CropProfileRegistry
 
 __all__ = [
     "EnvironmentState",
@@ -25,4 +26,5 @@ __all__ = [
     "CropDefinition",
     "CropRegistry",
     "CropStateManager",
+    "CropProfileRegistry",
 ]

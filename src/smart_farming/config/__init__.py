@@ -91,11 +91,16 @@ from .load_profile import (
     EquipmentLoadProfile,
     EquipmentSensorProfile,
 )
+from .crop import (
+    CROP_PROFILES,
+)
 
 __all__ = [
     "Settings",
     "EquipmentLoadProfile",
     "EquipmentSensorProfile",
+
+    # Environment Variables
     "APPLICATION_NAME",
     "APPLICATION_VERSION",
     "APPLICATION_OWNER",
@@ -129,6 +134,8 @@ __all__ = [
     "DAYTIME_SENSOR_ADJUSTMENTS",
     "NIGHTTIME_SENSOR_ADJUSTMENTS",
     "WEATHER_SENSOR_ADJUSTMENTS",
+
+    # Equipment Variables
     "SIMULATION_START_HOUR",
     "SIMULATION_START_MINUTE",
     "EVENT_TYPE_ENVIRONMENTAL",
@@ -173,6 +180,10 @@ __all__ = [
     "MAINTENANCE_HEALTH_THRESHOLD",
     "MAINTENANCE_RESTORE_HEALTH",
     "MAINTENANCE_RESET_FAILURE_PROBABILITY",
+    
+    # Crop variables
+    "CROP_PROFILES",
+    # Environmental Variables
     "SensorMetadata",
     "FacilityId",
     "WeatherType",
