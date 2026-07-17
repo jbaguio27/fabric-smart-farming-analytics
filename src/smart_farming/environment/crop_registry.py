@@ -17,18 +17,23 @@ class CropDefinition:
     """
     Immutable definition of a simulated crop batch.
 
-    Attributes:
-        crop_batch_id:
-            Unique identifier assigned to the crop batch.
+    Attributes
+    ----------
+    crop_batch_id:
+        Unique crop batch identifier.
 
-        zone_id:
-            Identifier of the growing zone containing the crop.
+    facility_id:
+        Facility containing the crop batch.
 
-        crop_type:
-            Human-readable crop variety.
+    zone_id:
+        Growing zone.
+
+    crop_type:
+        Crop variety.
     """
 
     crop_batch_id: str
+    facility_id: str
     zone_id: str
     crop_type: str
 
@@ -81,16 +86,6 @@ class CropRegistry:
         return self._crop_batches[crop_batch_id]
 
     def get_all(self) -> list[CropDefinition]:
-        """
-        Return every registered crop batch.
-
-        Returns:
-            List of immutable crop batch definitions.
-        """
-
-        return list(self._crop_batches.values())
-
-    def get_all_batches(self) -> list[CropDefinition]:
         """
         Return every registered crop batch.
 

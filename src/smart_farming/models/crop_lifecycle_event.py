@@ -35,6 +35,9 @@ class CropLifecycleEvent:
     crop_type:
         Human-readable crop variety.
 
+    facility_id:
+        Facility containing the crop batch.
+
     lifecycle_stage:
         Current biological lifecycle stage.
 
@@ -65,6 +68,7 @@ class CropLifecycleEvent:
     crop_batch_id: str
     zone_id: str
     crop_type: str
+    facility_id: str
 
     lifecycle_stage: str
 

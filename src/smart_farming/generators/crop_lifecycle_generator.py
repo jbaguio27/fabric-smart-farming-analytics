@@ -79,83 +79,65 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         """
         Generate immutable crop lifecycle telemetry events.
 
-        One CropLifecycleEvent is emitted for every active crop batch.
-        The generator combines runtime crop state with the current
-        growing environment state while remaining completely free of
-        simulation logic.
-
         Returns
         -------
         list[CropLifecycleEvent]
-            Immutable telemetry events representing the current
-            simulation state.
+            One event for every active crop.
         """
 
         events: list[CropLifecycleEvent] = []
 
-        for crop_state in self._crop_state_manager.states.values():
+        for crop_state in self._crop_state_manager.get_all_states():
 
             if not crop_state.is_active:
                 continue
 
-            environment = (
-                self._environment_manager.get_zone_state(
-                    crop_state.zone_id,
-                )
-            )
-
             events.append(
-                CropLifecycleEvent(
-                    event_timestamp=None,
-                    crop_batch_id=crop_state.crop_batch_id,
-                    zone_id=crop_state.zone_id,
-                    crop_type=crop_state.crop_type,
-                    lifecycle_stage=crop_state.lifecycle_stage,
-                    age_days=crop_state.age_days,
-                    health_score=crop_state.health_score,
-                    is_active=crop_state.is_active,
-                    air_temperature_celsius=environment.air_temperature_celsius,
-                    humidity_percent=environment.humidity_percent,
-                    water_ph=environment.water_ph,
-                    electrical_conductivity=environment.electrical_conductivity
-                )
+                self._build_event(crop_state)
             )
 
         return events
 
-    def _build_event_payload(
+    def _build_event(
         self,
-        event: CropLifecycleEvent
-    ) -> dict[str, object]:
+        crop_state: CropState
+    ) -> CropLifecycleEvent:
         """
-        Convert an immutable CropLifecycleEvent into a serializable
-        payload.
+        Build an immutable CropLifecycleEvent.
 
-        Serialization is intentionally separated from event generation so
-        downstream telemetry sinks remain independent of simulator logic.
+        This helper converts mutable runtime state into an immutable event
+        suitable for downstream telemetry pipelines.
 
         Args
         ----
-        event:
-            Immutable crop lifecycle event.
+        crop_state:
+            Runtime crop state.
 
         Returns
         -------
-        dict[str, object]
-            Serializable event payload.
+        CropLifecycleEvent
+            Immutable lifecycle telemetry event.
         """
+        environment = self._environment_manager.get_zone_state(
+            crop_state.zone_id,
+        )
 
-        return {
-            "event_timestamp": event.event_timestamp,
-            "crop_batch_id": event.crop_batch_id,
-            "zone_id": event.zone_id,
-            "crop_type": event.crop_type,
-            "lifecycle_stage": event.lifecycle_stage,
-            "age_days": event.age_days,
-            "health_score": event.health_score,
-            "is_active": event.is_active,
-            "air_temperature_celsius": event.air_temperature_celsius,
-            "humidity_percent": event.humidity_percent,
-            "water_ph": event.water_ph,
-            "electrical_conductivity": event.electrical_conductivity,
-        }
+        definition = self._crop_registry.get(
+            crop_state.crop_batch_id
+        )
+
+        return CropLifecycleEvent(
+            event_timestamp=crop_state.event_timestamp,
+            crop_batch_id=definition.crop_batch_id,
+            facility_id=definition.facility_id,
+            zone_id=definition.zone_id,
+            crop_type=definition.crop_type,
+            lifecycle_stage=crop_state.lifecycle_stage,
+            age_days=crop_state.age_days,
+            health_score=crop_state.health_score,
+            is_active=crop_state.is_active,
+            air_temperature_celsius=environment.air_temperature_celsius,
+            humidity_percent=environment.humidity_percent,
+            water_ph=environment.water_ph,
+            electrical_conductivity=environment.electrical_conductivity,
+        )
