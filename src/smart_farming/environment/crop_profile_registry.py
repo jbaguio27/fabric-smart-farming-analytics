@@ -13,6 +13,7 @@ simulation remains the responsibility of CropStateManager.
 from smart_farming.config import (
     CROP_GROWTH_PROFILES
 )
+from smart_farming.models import CropGrowthProfile
 
 class CropProfileRegistry:
     """
@@ -30,12 +31,14 @@ class CropProfileRegistry:
         """
         Initialize the registry.
 
-        A single immutable profile is registered initially. Additional
-        crop varieties can be introduced in future iterations without
-        modifying lifecycle simulation code.
+        Growth profiles are indexed by their human-readable crop type to
+        provide consistent lookup throughout the simulator.
         """
 
-        self._profiles = CROP_GROWTH_PROFILES
+        self._profiles: dict[str, CropGrowthProfile] = {
+            profile.crop_type: profile
+            for profile in CROP_GROWTH_PROFILES.values()
+        }
 
     def get_profile(
         self,
@@ -58,6 +61,16 @@ class CropProfileRegistry:
         """
 
         return self._profiles[crop_type]
+
+    def get_all_profiles(self) -> list[CropGrowthProfile]:
+        """
+        Return every registered crop growth profile.
+
+        Returns:
+            List containing all immutable crop growth profiles.
+        """
+
+        return list(self._profiles.values())
 
     @property
     def profiles(self) -> dict[str, CropGrowthProfile]:

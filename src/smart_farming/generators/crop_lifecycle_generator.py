@@ -1,23 +1,29 @@
 """
-Crop lifecycle telemetry generator.
+Crop Lifecycle Generator.
 
-Generates Crop Batch Lifecycle events for the HydroGrow Smart Farming
-Simulator.
+This module converts the mutable runtime state maintained by the
+CropStateManager into immutable Crop Lifecycle events.
 
-This initial implementation establishes the generator's dependency
-structure only. Event generation logic will be introduced in subsequent
-roadmap steps once the crop runtime model has been finalized.
+The generator serves as the boundary between simulation state and event
+production. It contains no lifecycle simulation logic. All biological
+progression remains the responsibility of CropStateManager.
+
+During this initial implementation phase, the generator exposes the
+structure required for future event generation while intentionally
+producing no events. This minimizes regression risk and allows the
+generator to be integrated incrementally.
 """
-
 from smart_farming.config import Settings
 from smart_farming.environment import (
     CropRegistry,
     CropStateManager,
-    EnvironmentStateManager,
+)
+from smart_farming.models import (
+    CropState,
+    GrowingEnvironmentState,
 )
 from .base_telemetry_generator import BaseTelemetryGenerator
 from smart_farming.utils import RandomManager
-from smart_farming.models import CropState
 
 class CropLifecycleGenerator(BaseTelemetryGenerator):
     """
@@ -34,7 +40,7 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         self,
         settings: Settings,
         random_manager: RandomManager,
-        environment_manager: EnvironmentStateManager,
+        growing_environment_manager: GrowingEnvironmentState,
         crop_registry: CropRegistry,
         crop_state_manager: CropStateManager,
     ) -> None:
@@ -48,43 +54,41 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
             random_manager:
                 Shared random number provider.
 
-            environment_manager:
-                Shared environmental state.
+            growing_enviroment_manager:
+                Manager supplying the current environmental conditions for each
+                growing zone.
 
-            crop_registry:
+            crop_registr:
                 Registry containing immutable crop definitions.
 
             crop_state_manager:
-                Manager containing mutable crop runtime state.
+                Manager supplying the authoritative runtime crop state.
         """
 
         self._settings = settings
         self._random_manager = random_manager
-        self._environment_manager = environment_manager
+        self._growing_environment_manager = growing_environment_manager
         self._crop_registry = crop_registry
         self._crop_state_manager = crop_state_manager
 
     def generate(self) -> list:
         """
-        Generate crop lifecycle telemetry events.
-
-        This initial implementation establishes the generator execution
-        flow by iterating over all managed crop runtime states.
-
-        Event construction will be introduced in a subsequent roadmap
-        step. For now, the method returns an empty collection while
-        exercising the runtime architecture.
+        Generate crop lifecycle events.
 
         Returns:
-            Empty list of lifecycle events.
+            An empty list during this implementation phase.
+
+        Notes:
+            Future roadmap phases will construct one Crop Lifecycle Event
+            per active crop batch.
         """
 
         events: list = []
 
-        for crop_state in (
-            self._crop_state_manager.states().values()
-        ):
-            # Placeholder for future event generation. 
+        for crop_state in self._crop_state_manager.states.values():
+
+            if not crop_state.is_active:
+                continue
 
             _ = crop_state
 
@@ -112,7 +116,7 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
 
         return {
             "crop_batch_id": crop_state.crop_batch_id,
-            "field_id": crop_state.field_id,
+            "zone_id": crop_state.zone_id,
             "crop_type": crop_state.crop_type,
             "lifecycle_stage": crop_state.lifecycle_stage,
             "age_days": crop_state.age_days,

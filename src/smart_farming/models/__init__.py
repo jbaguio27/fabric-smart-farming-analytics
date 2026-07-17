@@ -20,6 +20,9 @@ from .crop_state import (
 from .crop_growth_profile import (
     CropGrowthProfile,
 )
+from .growing_environment_state import (
+    GrowingEnvironmentState,
+)
 
 
 __all__ = [
@@ -31,4 +34,5 @@ __all__ = [
     "EquipmentTelemetryEvent",
     "CropState",
     "CropGrowthProfile",
+    "GrowingEnvironmentState",
 ]

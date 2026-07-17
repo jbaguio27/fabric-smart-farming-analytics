@@ -12,10 +12,12 @@ generation will be introduced in subsequent roadmap steps.
 
 from smart_farming.models import CropState
 from smart_farming.utils import RandomManager
-from smart_farming.environment import (
-    CropRegistry,
+from .crop_registry import CropRegistry
+from .crop_profile_registry import (
     CropProfileRegistry,
-    EnvironmentStateManager,
+)
+from .growing_environment_state_manager import (
+    GrowingEnvironmentStateManager,
 )
 from smart_farming.config import (
     Settings,
@@ -42,7 +44,7 @@ class CropStateManager:
         settings: Settings,
         crop_registry: CropRegistry,
         crop_profile_registry: CropProfileRegistry,
-        environment_manager: EnvironmentStateManager,
+        growing_environment_manager: GrowingEnvironmentStateManager,
         random_manager: RandomManager,
     ) -> None:
         """
@@ -58,7 +60,7 @@ class CropStateManager:
             crop_profile_registry:
                 Registry providing immutable biological growth profiles.
 
-            environment_manager:
+            growing_environment_manager:
                 Manager supplying the current environmental conditions for each
                 growing zone.
 
@@ -69,7 +71,7 @@ class CropStateManager:
         self._settings = settings
         self._crop_registry = crop_registry
         self._crop_profile_registry = crop_profile_registry
-        self._environment_manager = environment_manager
+        self._growing_environment_manager = growing_environment_manager
         self._random_manager = random_manager
 
         self._states: dict[str, CropState] = {}
@@ -80,34 +82,35 @@ class CropStateManager:
         """
         Create runtime state for every registered crop batch.
 
-        This method is executed once during simulator startup. It 
-        creates one runtime CropState instance for each
-        registered crop batch.
+        This method is executed once during simulator startup. One mutable
+        CropState instance is created for every immutable CropDefinition
+        stored in the CropRegistry.
 
-        The initialized runtime state represents newly planted crop batches.
-        Lifecycle progression is intentionally not performed here and will be
-        implemented in a later roadmap step.
+        Runtime state is initialized to represent newly planted crops.
+        Lifecycle progression is intentionally not performed during
+        initialization.
 
-        Repeated calls reset the internal runtime state.
+        Repeated calls completely rebuild the runtime state from the
+        registered crop definitions.
         """
 
         self._states.clear()
 
-        for index, profile in enumerate(
-            self._crop_registry.get_all_profiles(),
-            start=1,
-        ):
-            crop_batch_id = f"BATCH-{index:05d}"
+        for definition in self._crop_registry.get_all():
 
-            self._states[crop_batch_id] = CropState(
-                crop_batch_id=crop_batch_id,
-                zone_id=f"ZONE-{index}",
-                crop_type=profile.crop_type,
+            profile = self._crop_profile_registry.get_profile(
+                definition.crop_type,
+            )
+
+            self._states[definition.crop_batch_id] = CropState(
+                crop_batch_id=definition.crop_batch_id,
+                zone_id=definition.zone_id,
+                crop_type=definition.crop_type,
                 lifecycle_stage=CROP_STAGE_GERMINATION,
                 planting_timestamp=None,
                 expected_harvest_timestamp=None,
-                age_days=0,
-                health_score=100.0,
+                age_days=0.0,
+                health_score=profile.optimal_health,
                 is_active=True,
             )
     
@@ -303,68 +306,95 @@ class CropStateManager:
         """
         Update the biological health of a crop batch.
 
-        Health is evaluated by comparing the current environmental
-        conditions with the optimal growing conditions defined by the crop's
-        immutable growth profile.
+        Health changes gradually based on how closely the current growing
+        environment matches the crop's optimal biological profile.
 
-        During this implementation phase, the health model is intentionally
-        deterministic and applies only small adjustments each simulation
-        cycle. Equipment influence, disease simulation, and nutrient
-        depletion will be introduced in later roadmap phases.
+        Rather than applying large cumulative penalties every simulation
+        cycle, this implementation evaluates an overall environmental
+        suitability score and adjusts crop health slowly toward or away
+        from optimal conditions.
+
+        This approach produces realistic long-running simulations where
+        healthy crops remain stable while sustained environmental stress
+        gradually reduces biological health.
+
+        Future roadmap phases will extend this model with additional
+        influences including:
+
+        * disease pressure
+        * nutrient depletion
+        * irrigation failures
+        * equipment degradation
+        * pest outbreaks
 
         Args:
             state:
-                Runtime crop state to evaluate.
+                Runtime crop state to update.
         """
 
         profile = self._crop_profile_registry.get_profile(
             state.crop_type
         )
 
-        environment = self._environment_manager.get_zone_state(
-            state.zone_id,
-        )
-
-        health_delta = 0.0
-
-        health_delta -= (
-            abs(
-                environment.air_temperature_celcius
-                - profile.optimal_temperature_celsius
+        environment = (
+            self._growing_environment_manager
+            .get_zone_state(
+                state.zone_id,
             )
-            * 0.15
         )
 
-        health_delta -= (
-            abs(
-                environment.humidity_percent
-                - profile.optimal_humidity_percent
-            )
-            * 0.05
+        # Individual Environmental deviations
+
+        temperature_error = abs(
+            environment.air_temperature_celsius
+            - profile.optimal_temperature_celsius
         )
 
-        health_delta -= (
-            abs(
-                environment.water_ph
-                - profile.optimal_ph
-            )
-            * 8.0
+        humidity_error = abs(
+            environment.humidity_percent
+            - profile.optimal_humidity_percent
         )
 
-        health_delta -= (
-            abs(
-                environment.electrical_conductivity
-                - profile.optimal_ec
-            )
-            * 3.0
+        ph_error = abs(
+            environment.water_ph
+            - profile.optimal_ph
         )
+
+        ec_error = abs(
+            environment.electrical_conductivity
+            - profile.optimal_ec
+        )
+
+        # Convert deviations into a normalized environmental stress score. 
+        # Smaller values indicate healthier growing conditions.
+
+        stress = (
+            temperature_error * 0.20
+            + humidity_error * 0.05
+            + ph_error * 4.00
+            + ec_error * 1.50
+        )
+
+        # Gradual health adjustment.
+
+        if stress <= 1.0:
+            health_delta = +0.05
+
+        elif stress <= 3.0:
+            health_delta = -0.01
+        
+        elif stress <= 6.0:
+            health_delta = -0.05
+
+        else:
+            health_delta = -0.10
 
         state.health_score = max(
             0.0,
             min(
                 100.0,
                 state.health_score + health_delta,
-            ),
+            )
         )
 
     def _determine_next_stage(
@@ -372,20 +402,25 @@ class CropStateManager:
         state: CropState,
     ) -> str | None:
         """
-        Determine the next biological lifecycle stage for a crop batch.
+        Determine whether a crop batch should advance to its next lifecycle
+        stage.
 
-        Stage progression is based entirely on the elapsed biological age
-        defined by the crop's immutable growth profile. No environmental
-        influence, equipment influence, or health adjustments are considered
-        during this implementation phase.
+        Lifecycle progression during this phase is deterministic and depends
+        solely on accumulated crop age compared with the configured growth
+        profile.
+
+        Environmental conditions, equipment health, irrigation, disease,
+        stress, and harvest scheduling are intentionally excluded from this
+        implementation to minimize regression risk. Those influences will be
+        introduced in later roadmap phases.
 
         Args:
             state:
                 Runtime crop state.
 
         Returns:
-            The next lifecycle stage if a transition should occur;
-            otherwise None.
+            The next lifecycle stage if the crop has reached the required
+            biological age; otherwise None.
         """
 
         profile = self._crop_profile_registry.get_profile(
@@ -421,7 +456,12 @@ class CropStateManager:
         
         if (
             state.lifecycle_stage == CROP_STAGE_MATURE
-            and age >= profile.maturity_days
+            and age >= (
+                profile.germination_days
+                + profile.seedling_days
+                + profile.vegetative_days
+                + profile.maturity_days
+            )
         ):
             return CROP_STAGE_HARVESTED
 

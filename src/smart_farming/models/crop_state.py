@@ -30,7 +30,7 @@ class CropState:
     """
     
     crop_batch_id: str
-    field_id: str
+    zone_id: str
     crop_type: str
 
     lifecycle_stage: str

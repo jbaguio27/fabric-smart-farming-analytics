@@ -16,6 +16,7 @@ from .crop_registry import (
 )
 from .crop_state_manager import CropStateManager
 from .crop_profile_registry import CropProfileRegistry
+from .growing_environment_state_manager import GrowingEnvironmentStateManager
 
 __all__ = [
     "EnvironmentState",
