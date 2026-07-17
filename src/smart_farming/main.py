@@ -27,11 +27,15 @@ from smart_farming.generators import (
     BaseTelemetryGenerator,
     EnvironmentalTelemetryGenerator,
     EquipmentTelemetryGenerator,
+    CropLifecycleGenerator,
 )
 from smart_farming.environment import (
     EnvironmentStateManager,
     EquipmentRegistry,
-    EquipmentStateManager
+    EquipmentStateManager,
+    GrowingEnvironmentStateManager,
+    CropRegistry,
+    CropStateManager
 )
 
 
@@ -83,6 +87,23 @@ def main() -> None:
             facility_demand_model=facility_demand_model,
         )
 
+        crop_registry = CropRegistry()
+
+        growing_enviroment_manager = (
+            GrowingEnvironmentStateManager(
+                settings=settings,
+                random_manager=random_manager,
+                zone_count=settings.zone_count,
+            )
+        )
+
+        crop_state_manager = CropStateManager(
+            settings=settings,
+            random_manager=random_manager,
+            crop_registry=crop_registry,
+            growing_environment_manager=growing_enviroment_manager,
+        )
+
         environmental_generator = (
             EnvironmentalTelemetryGenerator(
                 settings=settings,
@@ -100,11 +121,22 @@ def main() -> None:
             )
         )
 
+        crop_lifecycle_generator = (
+            CropLifecycleGenerator(
+                settings=settings,
+                random_manager=random_manager,
+                environment_manager=growing_enviroment_manager,
+                crop_registry=crop_registry,
+                crop_state_manager=crop_state_manager,
+            )
+        )
+
         generators: list[
             BaseTelemetryGenerator
         ] = [
             environmental_generator,
             equipment_generator,
+            crop_lifecycle_generator,
         ]
 
         simulator = Simulator(
@@ -113,6 +145,7 @@ def main() -> None:
             generators=generators,
             environment_manager=environment_manager,
             equipment_state_manager=equipment_state_manager,
+            crop_state_manager=crop_state_manager,
         )
 
         simulator.run()
