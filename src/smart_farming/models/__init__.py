@@ -11,18 +11,12 @@ from .equipment import (
     EquipmentOperatingStatus,
     Equipment
 )
-from .equipment_event import (
-    EquipmentTelemetryEvent,
-)
-from .crop_state import (
-    CropState,
-)
-from .crop_growth_profile import (
-    CropGrowthProfile,
-)
-from .growing_environment_state import (
-    GrowingEnvironmentState,
-)
+from .equipment_event import EquipmentTelemetryEvent
+from .crop_state import CropState
+from .crop_lifecycle_event import CropLifecycleEvent
+from .crop_growth_profile import CropGrowthProfile
+from .growing_environment_state import GrowingEnvironmentState
+
 
 
 __all__ = [
@@ -35,4 +29,5 @@ __all__ = [
     "CropState",
     "CropGrowthProfile",
     "GrowingEnvironmentState",
+    "CropLifecycleEvent",
 ]
