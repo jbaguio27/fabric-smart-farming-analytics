@@ -2374,6 +2374,147 @@ Generated only when a crop batch changes lifecycle stage.
 
 ---
 
+## Lifecycle Stage Definitions
+
+The Crop Lifecycle Generator models indoor vertical farming crops using
+a fixed sequence of biological lifecycle stages. These stages represent
+major production milestones and provide the business context for
+historical analysis, yield forecasting, and operational reporting.
+
+| Stage | Description |
+|--------|-------------|
+| GERMINATION | Seeds have been planted and begin sprouting under controlled environmental conditions. |
+| SEEDLING | Initial leaf and root development occurs following germination. Plants establish themselves before rapid vegetative growth. |
+| VEGETATIVE | Active foliage growth where biomass accumulates rapidly under suitable environmental conditions. |
+| MATURE | The crop has reached commercial maturity and is ready for harvest planning. |
+| HARVESTED | The crop batch has been harvested and is no longer actively cultivated. |
+
+The lifecycle stages are business milestones rather than continuous
+physiological measurements.
+
+---
+
+## Lifecycle Transition Rules
+
+Crop batches progress through the following lifecycle:
+
+```text
+GERMINATION
+      ↓
+SEEDLING
+      ↓
+VEGETATIVE
+      ↓
+MATURE
+      ↓
+HARVESTED
+```
+
+The Crop Lifecycle Generator shall enforce the following rules:
+
+- Lifecycle progression is strictly monotonic.
+- Crop batches cannot transition to an earlier stage.
+- Each stage transition may generate at most one Crop Batch Lifecycle Event.
+- Transition timing is determined by the simulator's biological growth model.
+
+---
+
+## Event Emission Rules
+
+Crop Batch Lifecycle Events are generated only when a crop batch enters
+a new lifecycle stage.
+
+Events SHALL be emitted when a crop batch transitions into:
+
+- GERMINATION
+- SEEDLING
+- VEGETATIVE
+- MATURE
+- HARVESTED
+
+No lifecycle event shall be emitted while a crop remains within the same
+stage.
+
+This event is intentionally modeled as a low-frequency business event
+rather than continuous operational telemetry.
+
+---
+
+## Environmental Influence
+
+The Crop Lifecycle Generator consumes environmental state produced by
+the Environmental Telemetry Generator.
+
+Lifecycle progression is influenced by:
+
+- Ambient temperature
+- Relative humidity
+- Day/night cycle
+
+The simulator models an indoor controlled-environment agriculture (CEA)
+facility. Consequently, outdoor weather does not directly determine crop
+growth. Instead, external weather conditions influence crop development
+indirectly through the indoor environmental control systems.
+
+---
+
+## Equipment Influence
+
+Equipment performance indirectly affects crop development through its
+impact on the indoor growing environment.
+
+Examples include:
+
+- Irrigation performance influencing water availability.
+- Lighting performance influencing photosynthetic efficiency.
+- HVAC performance influencing temperature regulation.
+- Ventilation performance influencing humidity control.
+
+Equipment telemetry influences environmental quality rather than
+directly changing crop lifecycle stages.
+
+---
+
+## Simulation Assumptions
+
+This simulator models an indoor vertical farming facility operating in
+the Philippines.
+
+The production environment is actively controlled using:
+
+- Hydroponic irrigation
+- Artificial LED lighting
+- HVAC systems
+- Environmental monitoring
+- Automated equipment control
+
+Outdoor Philippine climate is treated as a secondary influence.
+Seasonal weather variations primarily affect the workload placed upon
+environmental control systems rather than directly impacting crop
+development.
+
+---
+
+## Biological Model
+
+The Crop Lifecycle Generator models commercially cultivated leafy greens
+and culinary herbs commonly produced in indoor vertical farming systems.
+
+The simulation emphasizes operational realism rather than detailed plant
+physiology.
+
+Lifecycle progression is determined using a combination of:
+
+- Crop age
+- Environmental suitability
+- Equipment availability
+
+The simulator intentionally abstracts detailed cellular processes while
+preserving realistic production behavior suitable for analytics,
+forecasting, and operational reporting.
+
+---
+
 ## Validation Rules
 The following validation rules are applied during ingestion to ensure downstream analytical accuracy.
 | Field | Validation |
@@ -2382,6 +2523,11 @@ The following validation rules are applied during ingestion to ensure downstream
 | planting_date | Must not be in the future |
 | expected_harvest_date | Must be after planting_date |
 | actual_harvest_date | Null until harvested |
+| lifecycle_stage | Lifecycle stages must progress monotonically and cannot regress. |
+| lifecycle_stage | Transition sequence must follow the documented lifecycle order. |
+| actual_harvest_date | Required when lifecycle_stage is HARVESTED. |
+| actual_harvest_date | Must not occur before planting_date. |
+| crop_batch_id | Must uniquely identify a crop batch within the facility. |
 
 ---
 
