@@ -13,6 +13,7 @@ generation will be introduced in subsequent roadmap steps.
 from smart_farming.models import CropState
 from smart_farming.utils import RandomManager
 from smart_farming.environment import CropRegistry
+from smart_farming.config import Settings
 
 class CropStateManager:
     """
@@ -27,6 +28,7 @@ class CropStateManager:
 
     def __init__(
         self,
+        settings: Settings,
         crop_registry: CropRegistry,
         random_manager: RandomManager,
     ) -> None:
@@ -39,6 +41,7 @@ class CropStateManager:
                 simulator.
         """
 
+        self._settings = settings
         self._crop_registry = crop_registry
         self._random_manager = random_manager
 
@@ -121,6 +124,102 @@ class CropStateManager:
             Registry containing all configured crop batches.
         """
 
+        return self._crop_registry
+
+    def evaluate_lifecycle_transition(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Evaluate whether a crop batch should transition to a new
+        lifecycle stage.
+
+        This method acts as the single orchestration point for all future
+        lifecycle transition logic. During this implementation phase, no
+        biological transitions are performed in order to preserve existing
+        simulator behavior.
+
+        Future phases will extend this method to evaluate:
+
+        - crop age
+        - environmental suitability
+        - equipment availability
+        - harvest readiness
+        - biological progression
+
+        Args:
+            state:
+                Runtime state of the crop batch to evaluate.
+        """
+
+        next_stage = self._determine_next_stage(state)
+
+        if next_stage is None:
+            return
+
+        state.lifecycle_stage = next_stage
+
+    def advance_cycle(self) -> None:
+        """
+        Advance the runtime state of every managed crop batch by one
+        simulation cycle.
+
+        This phase of the Crop Lifecycle Generator is intentionally limited
+        to deterministic time progression. Biological lifecycle transitions,
+        environmental effects, equipment effects, and health calculations
+        are introduced in subsequent implementation phases.
+
+        Each simulation cycle increases the accumulated crop age based on
+        the configured simulation time step.
+        """
+
+        for state in self._states.values():
+            self._advance_crop_age(state)
+
+    def _advance_crop_age(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Advance the age of a crop batch by one simulation cycle.
+
+        Args:
+            state:
+                Runtime crop state to update.
+
+        Notes:
+            Crop age is stored in days. The configured simulation time step
+            is converted into a fractional day to support deterministic
+            progression regardless of simulator cadence.
+        """
+
+        minutes_per_day = 24 * 60
+
+        stage.age_days += (
+            self._settings.simulation_time_step_minutes
+            / minutes_per_day
+        )
+
+    def _determine_next_stage(
+        self,
+        state: CropState,
+    ) -> str | None:
+        """
+        Determine the next lifecycle stage for a crop batch.
+
+        During the current implementation phase, lifecycle transitions are
+        intentionally disabled. The method exists to establish the future
+        extension point for biological progression.
+
+        Args:
+            state:
+                Runtime crop state.
+
+        Returns:
+            None, indicating that no lifecycle transition should occur.
+        """
+
+        return None
 # ------------------------------------------------------------------
 # Lifecycle simulation methods will be introduced in the next phase.
 #

@@ -17,6 +17,9 @@ from .equipment_event import (
 from .crop_state import (
     CropState,
 )
+from .crop_growth_profile import (
+    CropGrowthProfile,
+)
 
 
 __all__ = [
@@ -27,4 +30,5 @@ __all__ = [
     "Equipment",
     "EquipmentTelemetryEvent",
     "CropState",
+    "CropGrowthProfile",
 ]
