@@ -121,6 +121,7 @@ class CropStateManager:
                 zone_id=definition.zone_id,
                 crop_type=definition.crop_type,
                 lifecycle_stage=CROP_STAGE_GERMINATION,
+                planting_timestamp=None,
                 expected_harvest_timestamp=None,
                 age_days=0.0,
                 health_score=profile.optimal_health,
@@ -251,7 +252,7 @@ class CropStateManager:
             self._advance_crop_age(state)
 
             self.evaluate_lifecycle_transition(state)
-
+            
             if state.lifecycle_stage == CROP_STAGE_HARVESTED:
                 state.is_active = False
         

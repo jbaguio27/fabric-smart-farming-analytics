@@ -34,7 +34,8 @@ class CropState:
     crop_type: str
 
     lifecycle_stage: str
-    expected_harvest_timestamp: Optional[datetime]
+    planting_timestamp: datetime
+    expected_harvest_timestamp: datetime
 
     age_days: float
     health_score: float

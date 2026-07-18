@@ -83,10 +83,17 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         """
         Generate immutable crop lifecycle telemetry events.
 
+        One lifecycle event is produced for every active crop during each
+        simulation cycle.
+
+        The generator intentionally performs no lifecycle transition
+        detection. Detecting historical changes belongs to downstream
+        analytics rather than the telemetry producer.
+
         Returns
         -------
         list[CropLifecycleEvent]
-            One event for every active crop.
+            Immutable lifecycle events for all active crop batches.
         """
 
         events: list[CropLifecycleEvent] = []
@@ -96,20 +103,9 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
             if not crop_state.is_active:
                 continue
             
-            previous_stage = self._last_stage_emitted.get(
-                crop_state.crop_batch_id,
-            )
-
-            if previous_stage == crop_state.lifecycle_stage:
-                continue
-
             events.append(
                 self._build_event(crop_state)
             )
-
-            self._last_stage_emitted[
-                crop_state.crop_batch_id
-            ] = crop_state.lifecycle_stage
 
         return events
 
