@@ -20,6 +20,10 @@ from smart_farming.environment import (
 )
 from smart_farming.generators import BaseTelemetryGenerator
 from smart_farming.utils import RandomManager
+from smart_farming.models import (
+    CropState,
+    CropTelemetryEvent,
+)
 
 
 class CropTelemetryGenerator(BaseTelemetryGenerator):
@@ -72,11 +76,77 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
         """
         Generate crop telemetry events.
 
+        One immutable telemetry event is produced for every active crop.
+
         Returns
         -------
-        list
-            No telemetry events are generated during this implementation
-            step.
+        list[CropTelemetryEvent]
+            Continuous crop telemetry.
         """
 
-        return []
+        events: list[CropTelemetryEvent] = []
+
+        for crop_state in self._crop_state_manager.get_all_states():
+
+            if not crop_state.is_active:
+                continue
+
+            events.append(
+                self._build_event(
+                    crop_state,
+                )
+            )
+
+        return events
+
+    def _build_event(
+        self,
+        crop_state: CropState,
+    ) -> CropTelemetryEvent:
+        """
+        Convert mutable runtime state into an immutable telemetry event.
+
+        Parameters
+        ----------
+        crop_state:
+            Runtime crop state.
+
+        Returns
+        -------
+        CropTelemetryEvent
+            Immutable telemetry snapshot.
+        """
+
+        definition = self._crop_registry.get(
+            crop_state.crop_batch_id,
+        )
+
+        environment = (
+            self._environment_manager.get_zone_state(
+                crop_state.zone_id,
+            )
+        )
+
+        return CropTelemetryEvent(
+            event_timestamp=crop_state.event_timestamp,
+            simulation_cycle=(
+                self._crop_state_manager.simulation_cycle
+            ),
+            crop_batch_id=definition.crop_batch_id,
+            facility_id=definition.facility_id,
+            zone_id=definition.zone_id,
+            crop_type=definition.crop_type,
+            lifecycle_stage=crop_state.lifecycle_stage,
+            age_days=crop_state.age_days,
+            health_score=crop_state.health_score,
+            air_temperature_celsius=(
+                environment.air_temperature_celsius
+            ),
+            humidity_percent=(
+                environment.humidity_percent
+            ),
+            water_ph=environment.water_ph,
+            electrical_conductivity=(
+                environment.electrical_conductivity
+            ),
+        )
