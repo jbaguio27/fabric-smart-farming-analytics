@@ -75,6 +75,8 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         self._crop_registry = crop_registry
         self._crop_state_manager = crop_state_manager
 
+        self._last_stage_emitted: dict[str, str] = {}
+
     def generate(
         self,
     ) -> list[CropLifecycleEvent]:
@@ -93,10 +95,21 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
 
             if not crop_state.is_active:
                 continue
+            
+            previous_stage = self._last_stage_emitted.get(
+                crop_state.crop_batch_id,
+            )
+
+            if previous_stage == crop_state.lifecycle_stage:
+                continue
 
             events.append(
                 self._build_event(crop_state)
             )
+
+            self._last_stage_emitted[
+                crop_state.crop_batch_id
+            ] = crop_state.lifecycle_stage
 
         return events
 

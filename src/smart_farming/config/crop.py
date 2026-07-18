@@ -14,6 +14,8 @@ Simulation logic must never be implemented here.
 from typing import Final
 from smart_farming.models import CropGrowthProfile
 
+
+EVENT_TYPE_CROP_LIFECYCLE: Final[str] = "CropLifecycleEvent"
 CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
     "butterhead_lettuce": CropGrowthProfile(
         crop_type="Butterhead Lettuce",

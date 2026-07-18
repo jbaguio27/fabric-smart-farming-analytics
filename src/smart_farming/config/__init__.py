@@ -100,6 +100,7 @@ from .crop import (
     CROP_STAGE_HARVESTED,
     CROP_LIFECYCLE_STAGES,
     NEXT_CROP_STAGE,
+    EVENT_TYPE_CROP_LIFECYCLE,
 )
 
 __all__ = [
@@ -197,6 +198,7 @@ __all__ = [
     "CROP_STAGE_HARVESTED",
     "CROP_LIFECYCLE_STAGES",
     "NEXT_CROP_STAGE",
+    "EVENT_TYPE_CROP_LIFECYCLE",
     
     # Environmental Variables
     "SensorMetadata",
