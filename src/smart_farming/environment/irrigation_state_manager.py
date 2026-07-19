@@ -30,6 +30,7 @@ from smart_farming.config import (
     DEFAULT_IRRIGATION_DURATION_CYCLES,
     DEFAULT_IRRIGATION_FLOW_RATE_LPM,
     DEFAULT_IRRIGATION_PRESSURE_BAR,
+    DEFAULT_WATER_APPLICATION_LITERS,
 )
 
 
@@ -166,6 +167,10 @@ class IrrigationStateManager:
                 state=state,
             )
 
+            self._update_water_delivery(
+                state=state,
+            )
+
     def _update_schedule(
         self,
         state: IrrigationState,
@@ -260,8 +265,9 @@ class IrrigationStateManager:
         flow rate and operating pressure are applied. When irrigation is
         inactive both values return immediately to zero.
 
-        Water application is intentionally excluded from this method and
-        will be implemented during the next milestone.
+        Water delivery is handled by a dedicated controller stage,
+        allowing hydraulic simulation and delivered irrigation volume
+        to evolve independently as the simulator becomes more realistic.
 
         Args:
             state:
@@ -283,3 +289,38 @@ class IrrigationStateManager:
         state.flow_rate_lpm = 0.0
 
         state.pressure_bar = 0.0
+
+    def _update_water_delivery(
+        self,
+        state: IrrigationState,
+    ) -> None:
+        """
+        Update irrigation water delivery.
+
+        Water delivery represents the volume of nutrient solution applied
+        during the current simulation cycle.
+
+        This responsibility is intentionally isolated from hydraulic
+        simulation. Hydraulic simulation determines whether irrigation is
+        physically operating, while water delivery determines how much
+        solution is delivered during that operating period.
+
+        During this implementation phase a deterministic delivery volume is
+        used whenever irrigation is active. Future milestones will derive
+        delivered volume from hydraulic characteristics, irrigation
+        duration, valve performance, and crop-specific demand.
+
+        Args:
+            state:
+                Mutable irrigation runtime state.
+        """
+
+        if state.is_irrigation_active:
+
+            state.water_delivered_liters = (
+                DEFAULT_WATER_APPLICATION_LITERS
+            )
+
+            return
+
+        state.water_delivered_liters = 0.0
