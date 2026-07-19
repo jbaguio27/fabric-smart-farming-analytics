@@ -28,6 +28,8 @@ from smart_farming.models import IrrigationState
 from smart_farming.config import (
     DEFAULT_IRRIGATION_INTERVAL_CYCLES,
     DEFAULT_IRRIGATION_DURATION_CYCLES,
+    DEFAULT_IRRIGATION_FLOW_RATE_LPM,
+    DEFAULT_IRRIGATION_PRESSURE_BAR,
 )
 
 
@@ -131,15 +133,17 @@ class IrrigationStateManager:
 
     def advance_cycle(self) -> None:
         """
-        Advance irrigation simulation..
+        Advance the irrigation controller by one simulation cycle.
 
-        Every simulation cycle the controller evaluates whether each
-        growing zone has reached its scheduled irrigation time.
+        Each simulation cycle performs three independent controller stages.
 
-        During this milestone the controller only determines irrigation
-        eligibility and updates scheduling metadata. Actual irrigation,
-        hydraulic simulation, and water delivery are implemented in later
-        milestones.
+        1. Evaluate irrigation schedule.
+        2. Update irrigation activation.
+        3. Update hydraulic operating conditions.
+
+        Separating these responsibilities keeps the irrigation controller
+        modular and allows future milestones to evolve hydraulic behavior
+        independently from scheduling logic and crop demand.
 
         Args:
             current_cycle:
@@ -156,6 +160,10 @@ class IrrigationStateManager:
             self._update_irrigation_state(
                 state=state,
                 current_cycle=current_cycle,
+            )
+
+            self._update_hydraulics(
+                state=state,
             )
 
     def _update_schedule(
@@ -235,3 +243,43 @@ class IrrigationStateManager:
         state.is_irrigation_active = False
 
         state.irrigation_end_cycle = 0
+
+    def _update_hydraulics(
+        self,
+        state: IrrigationState,
+    ) -> None:
+        """
+        Update irrigation hydraulic operating conditions.
+
+        The hydraulic model is responsible for exposing the runtime
+        operating conditions of an irrigation zone while irrigation is
+        active.
+
+        During this milestone hydraulic behavior remains intentionally
+        deterministic. When irrigation is active the configured nominal
+        flow rate and operating pressure are applied. When irrigation is
+        inactive both values return immediately to zero.
+
+        Water application is intentionally excluded from this method and
+        will be implemented during the next milestone.
+
+        Args:
+            state:
+                Mutable irrigation runtime state.
+        """
+
+        if state.is_irrigation_active:
+
+            state.flow_rate_lpm = (
+                DEFAULT_IRRIGATION_FLOW_RATE_LPM
+            )
+
+            state.pressure_bar = (
+                DEFAULT_IRRIGATION_PRESSURE_BAR
+            )
+
+            return
+
+        state.flow_rate_lpm = 0.0
+
+        state.pressure_bar = 0.0
