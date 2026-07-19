@@ -39,6 +39,7 @@ from smart_farming.environment import (
     CropRegistry,
     CropStateManager,
     IrrigationStateManager,
+    LightingStateManager,
 )
 
 
@@ -102,6 +103,13 @@ def main() -> None:
 
         irrigation_state_manager = (
             IrrigationStateManager(
+                zone_count=settings.zone_count,
+            )
+        )
+
+        lighting_state_manager = (
+            LightingStateManager(
+                settings=settings,
                 zone_count=settings.zone_count,
             )
         )
@@ -177,6 +185,7 @@ def main() -> None:
             crop_state_manager=crop_state_manager,
             growing_environment_manager=growing_enviroment_manager,
             irrigation_state_manager=irrigation_state_manager,
+            lighting_state_manager=lighting_state_manager,
         )
 
         simulator.run()
