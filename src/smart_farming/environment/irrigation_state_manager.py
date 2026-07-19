@@ -25,6 +25,9 @@ simulation logic.
 """
 
 from smart_farming.models import IrrigationState
+from smart_farming.config import (
+    DEFAULT_IRRIGATION_INTERVAL_CYCLES,
+)
 
 
 class IrrigationStateManager:
@@ -54,9 +57,16 @@ class IrrigationStateManager:
         zone_count: int,
     ) -> None:
         """
-        Create one runtime irrigation state for every growing zone.
+        Create the initial irrigation state for every growing zone.
 
-        Initial values represent an idle irrigation system.
+        Each zone begins with a deterministic irrigation schedule initialized
+        from simulator configuration. Although no irrigation controller is
+        active yet, every runtime state now tracks when its first irrigation
+        event should occur.
+
+        Future milestones will allow crop-specific irrigation intervals,
+        dynamic scheduling, and closed-loop irrigation decisions based on
+        crop demand and environmental conditions.
         """
 
         self._states.clear()
@@ -74,6 +84,13 @@ class IrrigationStateManager:
                 irrigation_duration_seconds=0,
                 water_delivered_liters=0.0,
                 nutrient_solution_delivered_liters=0.0,
+                last_irrigation_cycle=0,
+                next_irrigation_cycle=(
+                    DEFAULT_IRRIGATION_INTERVAL_CYCLES
+                ),
+                irrigation_interval_cycles=(
+                    DEFAULT_IRRIGATION_INTERVAL_CYCLES
+                )
             )
 
     def get_zone_state(
