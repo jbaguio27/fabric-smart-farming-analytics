@@ -48,9 +48,3 @@ class LightingState:
     photoperiod_hours: float
 
     daily_light_integral: float
-
-    last_irrigation_cycle: int = 0
-
-    next_irrigation_cycle: int = 0
-
-    irrigation_interval_cycles: int = 0

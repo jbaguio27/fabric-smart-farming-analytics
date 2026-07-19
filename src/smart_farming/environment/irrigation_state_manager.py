@@ -91,7 +91,8 @@ class IrrigationStateManager:
                 ),
                 irrigation_interval_cycles=(
                     DEFAULT_IRRIGATION_INTERVAL_CYCLES
-                )
+                ),
+                irrigation_end_cycle=0,
             )
 
     def get_zone_state(
@@ -187,6 +188,11 @@ class IrrigationStateManager:
 
         state.last_irrigation_cycle = current_cycle
 
+        state.irrigation_end_cycle = (
+            current_cycle
+            + DEFAULT_IRRIGATION_DURATION_CYCLES
+        )
+
         state.next_irrigation_cycle = (
             current_cycle
             + state.irrigation_interval_cycles
@@ -198,18 +204,16 @@ class IrrigationStateManager:
         current_cycle: int
     ) -> None:
         """
-        Updates the current state of the irrigation system.
+        Update the active irrigation window.
 
-        This method handles the high-level controller responsibilities for 
-        activating and deactivating irrigation. 
+        The irrigation controller keeps irrigation active until the configured
+        end cycle is reached. Using an explicit end-cycle simplifies future
+        controller enhancements, including crop-specific irrigation durations,
+        manual overrides, and adaptive scheduling.
 
-        Note:
-            This controller explicitly excludes the management of fluid dynamics 
-            and application metrics. The following elements remain separate 
-            responsibilities handled by external modules:
-            - Flow rate monitoring
-            - System pressure regulation
-            - Water application depth/volume tracking
+        This milestone manages only runtime activation. Hydraulic simulation,
+        flow generation, pressure modeling, and water delivery remain future
+        enhancements.
 
         Args:
             state:
@@ -222,13 +226,12 @@ class IrrigationStateManager:
         if not state.is_irrigation_active:
             return
 
-        elapsed_cycles = (
-            current_cycle
-            - state.last_irrigation_cycle
-        )
-
         if (
-            elapsed_cycles
-            >= DEFAULT_IRRIGATION_DURATION_CYCLES
+            current_cycle
+            < state.irrigation_end_cycle
         ):
-            state.is_irrigation_active = False
+            return
+
+        state.is_irrigation_active = False
+
+        state.irrigation_end_cycle = 0

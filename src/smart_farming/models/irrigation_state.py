@@ -74,3 +74,11 @@ class IrrigationState:
     water_delivered_liters: float
 
     nutrient_solution_delivered_liters: float
+
+    last_irrigation_cycle: int = 0
+
+    next_irrigation_cycle: int = 0
+
+    irrigation_interval_cycles: int = 0
+
+    irrigation_end_cycle: int = 0
