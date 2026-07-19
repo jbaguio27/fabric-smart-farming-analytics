@@ -37,17 +37,17 @@ class CropState:
     planting_timestamp: datetime
     expected_harvest_timestamp: datetime
 
-    age_days: float
-    health_score: float
-    growth_rate: float
-    biomass_grams: float
+    age_days: float = 0.0
+    health_score: float = 100.0
+    growth_rate: float = 0.0
+    biomass_grams: float = 0.0
 
     water_demand_liters: float = 0.0
     total_water_demand_liters: float = 0.0
     water_deficit_liters: float = 0.0
     water_surplus_liters: float = 0.0
+    water_uptake_liters: float = 0.0
+    nutrient_uptake_grams: float = 0.0
 
-    water_uptake_liters: float
-    nutrient_uptake_grams: float
-    stress_index: float
-    is_active: bool
+    stress_index: float = 0.0
+    is_active: bool = True

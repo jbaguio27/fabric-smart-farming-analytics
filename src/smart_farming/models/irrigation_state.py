@@ -63,19 +63,19 @@ class IrrigationState:
 
     facility_id: str
 
-    irrigation_active: bool
+    irrigation_active: bool = False
 
-    flow_rate_liters_per_minute: float
+    flow_rate_liters_per_minute: float = 0.0
 
-    pressure_kpa: float
+    pressure_kpa: float = 0.0
 
-    irrigation_duration_seconds: int
+    irrigation_duration_seconds: int = 0.0
 
     water_delivered_liters: float = 0.0
 
     total_water_delivered_liters: float = 0.0
 
-    nutrient_solution_delivered_liters: float
+    nutrient_solution_delivered_liters: float = 0.0
 
     last_irrigation_cycle: int = 0
 
