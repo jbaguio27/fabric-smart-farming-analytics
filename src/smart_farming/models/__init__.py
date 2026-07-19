@@ -42,5 +42,4 @@ __all__ = [
     "LightingState",
     "MaintenanceState",
     "LightingTelemetryEvent",
-    
 ]

@@ -19,6 +19,7 @@ from .crop_profile_registry import CropProfileRegistry
 from .growing_environment_state_manager import GrowingEnvironmentStateManager
 from .irrigation_state_manager import IrrigationStateManager
 from .lighting_state_manager import LightingStateManager
+from .maintenance_state_manager import MaintenanceStateManager
 
 __all__ = [
     "EnvironmentState",
@@ -32,4 +33,5 @@ __all__ = [
     "CropProfileRegistry",
     "IrrigationStateManager",
     "LightingStateManager",
+    "MaintenanceStateManager",
 ]
