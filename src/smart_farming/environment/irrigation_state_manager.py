@@ -27,6 +27,7 @@ simulation logic.
 from smart_farming.models import IrrigationState
 from smart_farming.config import (
     DEFAULT_IRRIGATION_INTERVAL_CYCLES,
+    DEFAULT_IRRIGATION_DURATION_CYCLES,
 )
 
 
@@ -151,6 +152,11 @@ class IrrigationStateManager:
                 current_cycle=current_cycle,
             )
 
+            self._update_irrigation_state(
+                state=state,
+                current_cycle=current_cycle,
+            )
+
     def _update_schedule(
         self,
         state: IrrigationState,
@@ -177,9 +183,52 @@ class IrrigationStateManager:
         if current_cycle < state.next_irrigation_cycle:
             return
 
+        state.is_irrigation_active = True
+
         state.last_irrigation_cycle = current_cycle
 
         state.next_irrigation_cycle = (
             current_cycle
             + state.irrigation_interval_cycles
         )
+
+    def _update_irrigation_state(
+        self,
+        state: IrrigationState,
+        current_cycle: int
+    ) -> None:
+        """
+        Updates the current state of the irrigation system.
+
+        This method handles the high-level controller responsibilities for 
+        activating and deactivating irrigation. 
+
+        Note:
+            This controller explicitly excludes the management of fluid dynamics 
+            and application metrics. The following elements remain separate 
+            responsibilities handled by external modules:
+            - Flow rate monitoring
+            - System pressure regulation
+            - Water application depth/volume tracking
+
+        Args:
+            state:
+                Mutable irrigation runtime state.
+
+            current_cycle:
+                Current simulator cycle.
+        """
+
+        if not state.is_irrigation_active:
+            return
+
+        elapsed_cycles = (
+            current_cycle
+            - state.last_irrigation_cycle
+        )
+
+        if (
+            elapsed_cycles
+            >= DEFAULT_IRRIGATION_DURATION_CYCLES
+        ):
+            state.is_irrigation_active = False
