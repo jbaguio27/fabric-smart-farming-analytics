@@ -86,7 +86,7 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
                     facility_id=state.facility_id,
                     work_order_id=state.work_order_id,
                     equipment_id=state.equipment_id,
-                    zone_id="",
+                    zone_id=state.zone_id,
                     maintenance_type=state.maintenance_type,
                     priority=state.priority,
                     assigned_technician=state.assigned_technician,

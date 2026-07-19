@@ -43,6 +43,8 @@ class MaintenanceState:
 
     facility_id: str
 
+    zone_id: str
+
     equipment_id: str
 
     maintenance_type: str
