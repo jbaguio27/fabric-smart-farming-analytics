@@ -283,6 +283,8 @@ class CropStateManager:
 
             self._update_water_balance(state)
 
+            self._update_water_stress(state)
+
             self._update_water_uptake(state)
 
             self._update_nutrient_uptake(state)
@@ -577,10 +579,10 @@ class CropStateManager:
         supplied during the current simulation cycle.
 
         This calculation intentionally does not modify crop health.
-        Instead, it provides an intermediate runtime representation that
-        future physiological models can consume when estimating moisture
-        stress and irrigation efficiency.
-
+        Instead, it supplies physiological inputs for the crop stress
+        model, allowing irrigation performance and biological response
+        to remain independently testable.
+        
         Args:
             state:
                 Mutable runtime crop state.
@@ -605,6 +607,52 @@ class CropStateManager:
         state.water_surplus_liters = max(
             supplied - demand,
             0.0,
+        )
+
+    def _update_water_stress(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update crop physiological stress from irrigation performance.
+
+        Water stress represents the biological response of the crop to
+        insufficient or excessive irrigation.
+
+        Rather than modifying crop health directly, this method adjusts the
+        runtime stress index. The health model remains responsible for
+        translating accumulated stress into long-term biological condition.
+
+        During this implementation phase the response is intentionally
+        lightweight:
+
+        * Water deficits gradually increase stress.
+        * Balanced irrigation slowly reduces accumulated stress.
+        * Irrigation surplus has no additional benefit.
+
+        Future milestones may incorporate evapotranspiration,
+        root-zone moisture storage, nutrient availability,
+        crop-specific tolerance curves, and recovery dynamics.
+
+        Args:
+            state:
+                Mutable runtime crop state.
+        """
+
+        if state.water_deficit_liters > 0.0:
+
+            state.stress_index = min(
+                100.0,
+                state.stress_index + (
+                    state.water_deficit_liters * 50.0
+                ),
+            )
+
+            return
+
+        state.stress_index = max(
+            0.0,
+            state.stress_index - 0.25,
         )
 
     def _update_water_uptake(
