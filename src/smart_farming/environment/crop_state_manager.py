@@ -252,6 +252,10 @@ class CropStateManager:
 
         Each simulation cycle increases the accumulated crop age based on
         the configured simulation time step.
+
+        Water demand estimation is performed after biomass accumulation so
+        that crop demand reflects the current biological growth state while
+        remaining independent of irrigation delivery.
         """
 
         for state in self._states.values():
@@ -266,6 +270,8 @@ class CropStateManager:
             self._advance_crop_age(state)
 
             self._update_biomass(state)
+            
+            self._update_water_demand(state)
 
             self._update_water_uptake(state)
 
@@ -516,6 +522,38 @@ class CropStateManager:
             state.age_days
             * state.growth_rate
             * BIOMASS_GROWTH_MULTIPLIER
+        )
+
+    def _update_water_demand(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update crop irrigation demand.
+
+        Water demand represents the biological requirement of the crop
+        during the current simulation cycle.
+
+        Demand is intentionally calculated independently from irrigation
+        delivery. This separation allows future irrigation controllers to
+        compare required water against supplied water before modifying crop
+        health.
+
+        During this implementation phase demand is estimated from crop
+        growth rate.
+
+        Args:
+            state:
+                Mutable runtime crop state.
+        """
+
+        state.water_demand_liters = (
+            state.growth_rate
+            * 0.20
+        )
+
+        state.total_water_demand_liters += (
+            state.water_demand_liters
         )
 
     def _update_water_uptake(

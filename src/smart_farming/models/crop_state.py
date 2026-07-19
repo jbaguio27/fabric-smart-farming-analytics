@@ -45,3 +45,6 @@ class CropState:
     nutrient_uptake_grams: float
     stress_index: float
     is_active: bool
+
+    water_demand_liters: float = 0.0
+    total_water_demand_liters: float = 0.0
