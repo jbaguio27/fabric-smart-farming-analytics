@@ -67,6 +67,7 @@ class IrrigationStateManager:
 
             self._states[zone_id] = IrrigationState(
                 zone_id=zone_id,
+                facility_id="FAC-001",
                 irrigation_active=False,
                 flow_rate_liters_per_minute=0.0,
                 pressure_kpa=0.0,

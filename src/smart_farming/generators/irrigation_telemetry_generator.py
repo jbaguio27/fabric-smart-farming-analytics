@@ -48,8 +48,7 @@ class IrrigationTelemetryGenerator(
             irrigation_state_manager:
                 Provides runtime irrigation state.
         """
-
-        super().__init__(settings)
+        self._settings = settings
 
         self._environment_manager = (
             environment_manager
@@ -96,7 +95,7 @@ class IrrigationTelemetryGenerator(
 
                     event_timestamp=timestamp,
 
-                    facility_id=self.settings.facility_id,
+                    facility_id=state.facility_id,
 
                     zone_id=state.zone_id,
 

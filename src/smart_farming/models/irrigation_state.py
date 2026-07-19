@@ -61,6 +61,8 @@ class IrrigationState:
 
     zone_id: str
 
+    facility_id: str
+
     irrigation_active: bool
 
     flow_rate_liters_per_minute: float
