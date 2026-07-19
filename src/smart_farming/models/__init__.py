@@ -22,6 +22,7 @@ from .lighting_state import LightingState
 from .maintenance_state import MaintenanceState
 from .lighting_telemetry_event import LightingTelemetryEvent
 from .irrigation_telemetry_event import IrrigationTelemetryEvent
+from .maintenance_event import MaintenanceEvent
 
 
 
@@ -42,4 +43,5 @@ __all__ = [
     "LightingState",
     "MaintenanceState",
     "LightingTelemetryEvent",
+    "MaintenanceEvent",
 ]
