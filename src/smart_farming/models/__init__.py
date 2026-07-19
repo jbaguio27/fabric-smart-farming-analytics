@@ -17,6 +17,7 @@ from .crop_lifecycle_event import CropLifecycleEvent
 from .crop_growth_profile import CropGrowthProfile
 from .growing_environment_state import GrowingEnvironmentState
 from .crop_telemetry_event import CropTelemetryEvent
+from .irrigation_state import IrrigationState
 
 
 __all__ = [
@@ -31,4 +32,5 @@ __all__ = [
     "GrowingEnvironmentState",
     "CropLifecycleEvent",
     "CropTelemetryEvent",
+    "IrrigationState",
 ]
