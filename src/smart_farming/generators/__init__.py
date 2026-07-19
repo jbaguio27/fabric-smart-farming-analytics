@@ -8,6 +8,7 @@ from .base_telemetry_generator import BaseTelemetryGenerator
 from .crop_lifecycle_generator import CropLifecycleGenerator
 from .crop_telemetry_generator import CropTelemetryGenerator
 from .irrigation_telemetry_generator import IrrigationTelemetryGenerator
+from .lighting_telemetry_generator import LightingTelemetryGenerator
 
 __all__ = [
     "EnvironmentalTelemetryGenerator",
@@ -16,4 +17,5 @@ __all__ = [
     "CropLifecycleGenerator",
     "CropTelemetryGenerator",
     "IrrigationTelemetryGenerator",
+    "LightingTelemetryGenerator",
 ]
