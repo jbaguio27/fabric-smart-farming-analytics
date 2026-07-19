@@ -16,6 +16,7 @@ from smart_farming.environment import (
     EnvironmentStateManager,
     EquipmentStateManager,
     CropStateManager,
+    GrowingEnvironmentStateManager,
 )
 
 
@@ -39,7 +40,8 @@ class Simulator:
         generator: list[BaseTelemetryGenerator],
         environment_manager: EnvironmentStateManager,
         equipment_state_manager: EquipmentStateManager,
-        crop_state_manager: CropStateManager | None = None,
+        crop_state_manager: CropStateManager,
+        growing_environment_manager: GrowingEnvironmentStateManager,
     ) -> None:
         self.settings: Settings = settings
         self.dispatcher: EventDispatcher = dispatcher
@@ -49,6 +51,7 @@ class Simulator:
         self.environment_manager: EnvironmentStateManager = environment_manager
         self.equipment_state_manager: EquipmentStateManager = equipment_state_manager
         self.crop_state_manager: CropStateManager = crop_state_manager
+        self.growing_environment_manager: GrowingEnvironmentStateManager = growing_environment_manager
         self.logger: logging.Logger = get_logger(__name__)
         self.is_running: bool = False
         self.completed_cycles: int = 0
@@ -119,6 +122,8 @@ class Simulator:
         self.equipment_state_manager.advance_runtime(
             hours=self.settings.simulation_cycle_hours,
         )
+
+        self.growing_environment_manager.advance_cycle()
 
         self.equipment_state_manager.update_health(
             hours=self.settings.simulation_cycle_hours,

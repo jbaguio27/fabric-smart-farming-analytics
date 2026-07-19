@@ -11,7 +11,7 @@ for real-time monitoring dashboards and analytics.
 The generator performs no crop simulation. It simply transforms runtime
 state into immutable telemetry events.
 """
-
+from datetime import datetime, UTC
 from smart_farming.config import Settings
 from smart_farming.environment import (
     CropRegistry,
@@ -128,7 +128,7 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
         )
 
         return CropTelemetryEvent(
-            event_timestamp=crop_state.event_timestamp,
+            event_timestamp=datetime.now(UTC),
             simulation_cycle=(
                 self._crop_state_manager.simulation_cycle
             ),
@@ -139,6 +139,11 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
             lifecycle_stage=crop_state.lifecycle_stage,
             age_days=crop_state.age_days,
             health_score=crop_state.health_score,
+            growth_rate=crop_state.growth_rate,
+            biomass_grams=crop_state.biomass_grams,
+            water_uptake_liters=crop_state.water_uptake_liters,
+            nutrient_uptake_grams=crop_state.nutrient_uptake_grams,
+            stress_index=crop_state.stress_index,
             air_temperature_celsius=(
                 environment.air_temperature_celsius
             ),

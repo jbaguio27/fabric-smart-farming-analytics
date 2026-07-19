@@ -81,6 +81,16 @@ class CropTelemetryEvent:
 
     health_score: float
 
+    growth_rate: float
+
+    biomass_grams: float
+
+    water_uptake_liters: float
+
+    nutrient_uptake_grams: float
+
+    stress_index: float
+
     air_temperature_celsius: float
 
     humidity_percent: float

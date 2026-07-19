@@ -14,6 +14,9 @@ Simulation logic must never be implemented here.
 from typing import Final
 from smart_farming.models import CropGrowthProfile
 
+# ============================================================================
+# Lifecycle
+# ============================================================================
 
 EVENT_TYPE_CROP_LIFECYCLE: Final[str] = "CropLifecycleEvent"
 CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
@@ -130,6 +133,34 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
 }
 
 # ============================================================================
+# Health
+# ============================================================================
+
+MAX_HEALTH_SCORE = 100.0
+
+# ============================================================================
+# Growth Model
+# ============================================================================
+
+IDEAL_GROWTH_TEMPERATURE_C = 22.0
+IDEAL_GROWTH_HUMIDITY_PERCENT = 65.0
+
+TEMPERATURE_GROWTH_TOLERANCE_C = 10.0
+HUMIDITY_GROWTH_TOLERANCE_PERCENT = 25.0
+
+# ============================================================================
+# Biomass Model
+# ============================================================================
+
+BIOMASS_GROWTH_MULTIPLIER = 10.0
+
+# ============================================================================
+# Water Uptake Model
+# ============================================================================
+
+WATER_UPTAKE_PER_GRAM_BIOMASS = 0.002
+
+# ============================================================================
 # Crop Lifecycle Stages
 # ============================================================================
 
@@ -164,3 +195,29 @@ NEXT_CROP_STAGE: Final[dict[str, str | None]] = {
     CROP_STAGE_MATURE: CROP_STAGE_HARVESTED,
     CROP_STAGE_HARVESTED: None,
 }
+
+# ============================================================================
+# Air Environment
+# ============================================================================
+
+DEFAULT_AIR_TEMPERATURE_C = 22.0
+DEFAULT_RELATIVE_HUMIDITY_PERCENT = 65.0
+
+# ============================================================================
+# Hydroponic Solution
+# ============================================================================
+
+DEFAULT_WATER_PH = 6.0
+DEFAULT_ELECTRICAL_CONDUCTIVITY = 1.8
+
+# ============================================================================
+# Environmental Variation
+# ============================================================================
+
+AIR_TEMPERATURE_VARIATION_C = 0.20
+
+HUMIDITY_VARIATION_PERCENT = 0.75
+
+WATER_PH_VARIATION = 0.03
+
+EC_VARIATION = 0.02

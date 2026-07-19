@@ -39,4 +39,9 @@ class CropState:
 
     age_days: float
     health_score: float
+    growth_rate: float
+    biomass_grams: float
+    water_uptake_liters: float
+    nutrient_uptake_grams: float
+    stress_index: float
     is_active: bool

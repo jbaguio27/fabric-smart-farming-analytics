@@ -15,6 +15,16 @@ humidity, nutrient solution pH, and electrical conductivity.
 from smart_farming.config import Settings
 from smart_farming.models import GrowingEnvironmentState
 from smart_farming.utils import RandomManager
+from smart_farming.config import (
+    DEFAULT_AIR_TEMPERATURE_C,
+    DEFAULT_RELATIVE_HUMIDITY_PERCENT,
+    DEFAULT_WATER_PH,
+    DEFAULT_ELECTRICAL_CONDUCTIVITY,
+    AIR_TEMPERATURE_VARIATION_C,
+    HUMIDITY_VARIATION_PERCENT,
+    WATER_PH_VARIATION,
+    EC_VARIATION,
+)
 
 class GrowingEnvironmentStateManager:
     """
@@ -75,10 +85,10 @@ class GrowingEnvironmentStateManager:
 
             self._states[zone_id] = GrowingEnvironmentState(
                 zone_id=zone_id,
-                air_temperature_celsius=22.0,
-                humidity_percent=65.0,
-                water_ph=6.0,
-                electrical_conductivity=1.8,
+                air_temperature_celsius=DEFAULT_AIR_TEMPERATURE_C,
+                humidity_percent=DEFAULT_RELATIVE_HUMIDITY_PERCENT,
+                water_ph=DEFAULT_WATER_PH,
+                electrical_conductivity=DEFAULT_ELECTRICAL_CONDUCTIVITY,
             )
 
     def get_zone_state(
@@ -109,3 +119,23 @@ class GrowingEnvironmentStateManager:
         """
 
         return list(self._states.values())
+
+    def advance_cycle(self) -> None:
+        """
+        Advance the simulated growing environment by one simulation cycle.
+
+        Indoor vertical farms operate under closed-loop environmental control.
+        Rather than allowing abrupt environmental changes, the control systems
+        continuously regulate temperature, humidity, nutrient solution pH, and
+        electrical conductivity toward their configured operating targets.
+
+        During this implementation phase a lightweight controller is used. Each
+        simulation cycle nudges the current environmental state toward its
+        configured target values using a small correction factor. This produces
+        stable and deterministic behavior suitable for telemetry generation.
+
+        Future milestones may replace this simplified controller with equipment-
+        driven HVAC, humidification, irrigation, and nutrient dosing models.
+        """
+
+        return

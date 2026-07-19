@@ -25,7 +25,14 @@ from smart_farming.config import (
     CROP_STAGE_SEEDLING,
     CROP_STAGE_VEGETATIVE,
     CROP_STAGE_MATURE,
-    CROP_STAGE_HARVESTED
+    CROP_STAGE_HARVESTED,
+    MAX_HEALTH_SCORE,
+    IDEAL_GROWTH_TEMPERATURE_C,
+    IDEAL_GROWTH_HUMIDITY_PERCENT,
+    TEMPERATURE_GROWTH_TOLERANCE_C,
+    HUMIDITY_GROWTH_TOLERANCE_PERCENT,
+    BIOMASS_GROWTH_MULTIPLIER,
+    WATER_UPTAKE_PER_GRAM_BIOMASS,
 )
 
 class CropStateManager:
@@ -125,6 +132,11 @@ class CropStateManager:
                 expected_harvest_timestamp=None,
                 age_days=0.0,
                 health_score=profile.optimal_health,
+                growth_rate=0.0,
+                biomass_grams=0.0,
+                water_uptake_liters=0.0,
+                nutrient_uptake_grams=0.0,
+                stress_index=0.0,
                 is_active=True,
             )
     
@@ -249,7 +261,17 @@ class CropStateManager:
 
             self._update_health(state)
 
+            self._update_growth_rate(state)
+
             self._advance_crop_age(state)
+
+            self._update_biomass(state)
+
+            self._update_water_uptake(state)
+
+            self._update_nutrient_uptake(state)
+
+            self._update_stress_index(state)
 
             self.evaluate_lifecycle_transition(state)
             
@@ -321,32 +343,22 @@ class CropStateManager:
         state: CropState
     ) -> None:
         """
-        Update the biological health of a crop batch.
+        Update the runtime crop health score.
 
-        Health changes gradually based on how closely the current growing
-        environment matches the crop's optimal biological profile.
+        Crop health represents the overall biological condition of the crop
+        on a normalized scale from zero to one hundred.
 
-        Rather than applying large cumulative penalties every simulation
-        cycle, this implementation evaluates an overall environmental
-        suitability score and adjusts crop health slowly toward or away
-        from optimal conditions.
+        During this implementation phase health degradation is influenced by
+        the current stress index, creating a deterministic relationship
+        between crop stress and biological performance.
 
-        This approach produces realistic long-running simulations where
-        healthy crops remain stable while sustained environmental stress
-        gradually reduces biological health.
-
-        Future roadmap phases will extend this model with additional
-        influences including:
-
-        * disease pressure
-        * nutrient depletion
-        * irrigation failures
-        * equipment degradation
-        * pest outbreaks
+        Future milestones will incorporate environmental conditions,
+        irrigation performance, nutrient availability, equipment failures,
+        and crop-specific physiological responses.
 
         Args:
             state:
-                Runtime crop state to update.
+                Mutable runtime crop state.
         """
 
         profile = self._crop_profile_registry.get_profile(
@@ -409,9 +421,187 @@ class CropStateManager:
         state.health_score = max(
             0.0,
             min(
-                100.0,
+                MAX_HEALTH_SCORE,
                 state.health_score + health_delta,
             )
+        )
+
+    def _update_growth_rate(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update the simulated crop growth rate.
+
+        Growth rate represents the relative biological growth achieved during
+        the current simulation cycle.
+
+        During this implementation phase the estimate combines crop health
+        with the current growing environment. The calculation remains fully
+        deterministic while establishing the foundation for richer
+        physiological models.
+
+        Future milestones may incorporate crop-specific coefficients,
+        lighting intensity, carbon dioxide concentration, irrigation,
+        nutrient availability, and equipment performance.
+
+        Args:
+            state:
+                Mutable runtime crop state.
+        """
+
+        environment = self._growing_environment_manager.get_zone_state(
+            state.zone_id,
+        )
+
+        temperature_factor = max(
+            0.0,
+            1.0 - (
+                abs(
+                    environment.air_temperature_celsius - IDEAL_GROWTH_TEMPERATURE_C
+                )
+                / TEMPERATURE_GROWTH_TOLERANCE_C
+            ),
+        )
+
+        humidity_factor = max(
+            0.0,
+            1.0 - (
+                abs(
+                    environment.humidity_percent - IDEAL_GROWTH_HUMIDITY_PERCENT
+                )
+                / HUMIDITY_GROWTH_TOLERANCE_PERCENT
+            ),
+        )
+
+        health_factor = max(
+            0.0,
+            min(
+                state.health_score / MAX_HEALTH_SCORE,
+                1.0,
+            ),
+        )
+
+        state.growth_rate = (
+            health_factor
+            * temperature_factor
+            * humidity_factor
+        )
+
+    def _update_biomass(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update the estimated crop biomass.
+
+        Biomass represents the cumulative above-ground plant mass
+        produced by the simulated crop.
+
+        During this implementation phase biomass is intentionally
+        estimated using accumulated crop age and current growth
+        rate only.
+
+        Future milestones will incorporate environmental conditions,
+        lighting, irrigation, nutrient availability, and crop-specific
+        physiological models.
+
+        Args
+        ----
+        state:
+            Mutable runtime crop state.
+        """
+
+        state.biomass_grams = (
+            state.age_days
+            * state.growth_rate
+            * BIOMASS_GROWTH_MULTIPLIER
+        )
+
+    def _update_water_uptake(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update the estimated crop water uptake.
+
+        Water uptake represents the cumulative volume of irrigation
+        solution absorbed by the crop.
+
+        During this implementation phase the value is estimated from
+        accumulated biomass.
+
+        Future milestones will incorporate environmental conditions,
+        vapor pressure deficit, lighting intensity, irrigation
+        scheduling, and crop-specific physiology.
+
+        Args
+        ----
+        state:
+            Mutable runtime crop state.
+        """
+
+        state.water_uptake_liters = (
+            state.biomass_grams
+            * WATER_UPTAKE_PER_GRAM_BIOMASS
+        )
+
+    def _update_nutrient_uptake(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update the estimated nutrient uptake.
+
+        Nutrient uptake represents the cumulative mass of dissolved nutrients
+        absorbed by the crop from the hydroponic solution.
+
+        During this implementation phase the estimate is derived directly from
+        cumulative water uptake using a fixed proportional relationship.
+
+        Future milestones will incorporate nutrient solution electrical
+        conductivity, crop growth stage, crop species, irrigation strategy,
+        and environmental conditions.
+
+        Args
+        ----
+        state:
+            Mutable runtime crop state.
+        """
+
+        state.nutrient_uptake_grams = (
+            state.water_uptake_liters
+            * 45.0
+        )
+
+    def _update_stress_index(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update the crop stress index.
+
+        The stress index provides a normalized estimate of overall crop
+        stress.
+
+        A value of zero represents an ideal growing condition, while a
+        value of one hundred represents severe biological stress.
+
+        During this implementation phase the index is derived solely from
+        crop health.
+
+        Future milestones will incorporate environmental conditions,
+        irrigation performance, nutrient availability, equipment health,
+        and crop-specific physiological responses.
+
+        Args:
+            state:
+                Mutable runtime crop state.
+        """
+
+        state.stress_index = (
+            100.0
+            - state.health_score
         )
 
     def _determine_next_stage(
