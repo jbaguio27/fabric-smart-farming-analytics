@@ -120,6 +120,7 @@ def main() -> None:
             random_manager=random_manager,
             crop_registry=crop_registry,
             growing_environment_manager=growing_enviroment_manager,
+            irrigation_state_manager=irrigation_state_manager,
         )
 
         environmental_generator = (

@@ -41,10 +41,13 @@ class CropState:
     health_score: float
     growth_rate: float
     biomass_grams: float
+
+    water_demand_liters: float = 0.0
+    total_water_demand_liters: float = 0.0
+    water_deficit_liters: float = 0.0
+    water_surplus_liters: float = 0.0
+
     water_uptake_liters: float
     nutrient_uptake_grams: float
     stress_index: float
     is_active: bool
-
-    water_demand_liters: float = 0.0
-    total_water_demand_liters: float = 0.0

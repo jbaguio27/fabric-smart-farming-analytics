@@ -16,6 +16,7 @@ from .crop_registry import CropRegistry
 from .crop_profile_registry import (
     CropProfileRegistry,
 )
+from .irrigation_state_manager import IrrigationStateManager
 from .growing_environment_state_manager import (
     GrowingEnvironmentStateManager,
 )
@@ -35,6 +36,7 @@ from smart_farming.config import (
     WATER_UPTAKE_PER_GRAM_BIOMASS,
 )
 
+
 class CropStateManager:
     """
     Manages runtime state for simulated crop batches.
@@ -53,6 +55,7 @@ class CropStateManager:
         crop_profile_registry: CropProfileRegistry,
         growing_environment_manager: GrowingEnvironmentStateManager,
         random_manager: RandomManager,
+        irrigation_state_manager: IrrigationStateManager,
     ) -> None:
         """
         Initialize the crop runtime state manager.
@@ -73,6 +76,10 @@ class CropStateManager:
 
             random_manager:
                 Shared random number provider used throughout the simulator.
+
+            irrigation_state_manager:
+                Runtime irrigation manager providing irrigation
+                delivery information for water balance calculations.
         """
 
         self._settings = settings
@@ -80,6 +87,7 @@ class CropStateManager:
         self._crop_profile_registry = crop_profile_registry
         self._growing_environment_manager = growing_environment_manager
         self._random_manager = random_manager
+        self._irrigation_state_manager = irrigation_state_manager
 
         self._states: dict[str, CropState] = {}
 
@@ -263,15 +271,17 @@ class CropStateManager:
             if not state.is_active:
                 continue
 
-            self._update_health(state)
-
             self._update_growth_rate(state)
+
+            self._update_health(state)
 
             self._advance_crop_age(state)
 
             self._update_biomass(state)
             
             self._update_water_demand(state)
+
+            self._update_water_balance(state)
 
             self._update_water_uptake(state)
 
@@ -554,6 +564,47 @@ class CropStateManager:
 
         state.total_water_demand_liters += (
             state.water_demand_liters
+        )
+
+    def _update_water_balance(
+        self,
+        state: CropState,
+    ) -> None:
+        """
+        Update irrigation water balance.
+
+        Water balance compares biological crop demand against irrigation
+        supplied during the current simulation cycle.
+
+        This calculation intentionally does not modify crop health.
+        Instead, it provides an intermediate runtime representation that
+        future physiological models can consume when estimating moisture
+        stress and irrigation efficiency.
+
+        Args:
+            state:
+                Mutable runtime crop state.
+        """
+
+        irrigation = (
+            self._irrigation_state_manager
+            .get_zone_state(
+                state.zone_id,
+            )
+        )
+
+        demand = state.water_demand_liters
+
+        supplied = irrigation.water_delivered_liters
+
+        state.water_deficit_liters = max(
+            demand - supplied,
+            0.0,
+        )
+
+        state.water_surplus_liters = max(
+            supplied - demand,
+            0.0,
         )
 
     def _update_water_uptake(
