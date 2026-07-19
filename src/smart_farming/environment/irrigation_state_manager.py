@@ -129,14 +129,57 @@ class IrrigationStateManager:
 
     def advance_cycle(self) -> None:
         """
-        Advance the irrigation runtime simulation.
+        Advance irrigation simulation..
 
-        During this implementation phase the irrigation subsystem remains
-        idle. Future milestones will introduce irrigation scheduling,
-        flow regulation, nutrient dosing, and pump behavior.
+        Every simulation cycle the controller evaluates whether each
+        growing zone has reached its scheduled irrigation time.
 
-        This method exists to establish a stable runtime lifecycle that
-        matches the other simulation state managers.
+        During this milestone the controller only determines irrigation
+        eligibility and updates scheduling metadata. Actual irrigation,
+        hydraulic simulation, and water delivery are implemented in later
+        milestones.
+
+        Args:
+            current_cycle:
+                Current simulation cycle.
         """
 
-        return
+        for state in self._states.values():
+
+            self._update_schedule(
+                state=state,
+                current_cycle=current_cycle,
+            )
+
+    def _update_schedule(
+        self,
+        state: IrrigationState,
+        current_cycle: int,
+    ) -> None:
+        """
+        Evaluate irrigation schedule.
+
+        This method determines whether the current simulation cycle has
+        reached the zone's next scheduled irrigation event.
+
+        During this milestone no irrigation is started. The controller
+        simply records that the irrigation window has been reached and
+        schedules the next irrigation interval.
+
+        Args:
+            state:
+                Mutable irrigation runtime state.
+
+            current_cycle:
+                Current simulator cycle.
+        """
+
+        if current_cycle < state.next_irrigation_cycle:
+            return
+
+        state.last_irrigation_cycle = current_cycle
+
+        state.next_irrigation_cycle = (
+            current_cycle
+            + state.irrigation_interval_cycles
+        )
