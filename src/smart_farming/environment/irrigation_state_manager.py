@@ -306,9 +306,13 @@ class IrrigationStateManager:
         solution is delivered during that operating period.
 
         During this implementation phase a deterministic delivery volume is
-        used whenever irrigation is active. Future milestones will derive
-        delivered volume from hydraulic characteristics, irrigation
-        duration, valve performance, and crop-specific demand.
+        used whenever irrigation is active. In addition to the instantaneous
+        delivery value, the controller maintains a cumulative irrigation
+        volume for each growing zone.
+
+        Future milestones will compare cumulative water delivery against crop
+        water demand, enabling irrigation efficiency analysis and closed-loop
+        water management.
 
         Args:
             state:
@@ -319,6 +323,10 @@ class IrrigationStateManager:
 
             state.water_delivered_liters = (
                 DEFAULT_WATER_APPLICATION_LITERS
+            )
+
+            state.total_water_delivered_liters += (
+                state.water_delivered_liters
             )
 
             return

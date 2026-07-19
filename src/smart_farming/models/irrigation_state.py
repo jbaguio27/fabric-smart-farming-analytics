@@ -71,7 +71,9 @@ class IrrigationState:
 
     irrigation_duration_seconds: int
 
-    water_delivered_liters: float
+    water_delivered_liters: float = 0.0
+
+    total_water_delivered_liters: float = 0.0
 
     nutrient_solution_delivered_liters: float
 
