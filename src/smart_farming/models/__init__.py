@@ -19,7 +19,9 @@ from .growing_environment_state import GrowingEnvironmentState
 from .crop_telemetry_event import CropTelemetryEvent
 from .irrigation_state import IrrigationState
 from .lighting_state import LightingState
+from .lighting_telemetry_event import LightingTelemetryEvent
 from .irrigation_telemetry_event import IrrigationTelemetryEvent
+
 
 
 __all__ = [
@@ -37,4 +39,5 @@ __all__ = [
     "IrrigationTelemetryEvent",
     "IrrigationState",
     "LightingState",
+    "LightingTelemetryEvent",
 ]
