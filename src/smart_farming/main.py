@@ -31,6 +31,7 @@ from smart_farming.generators import (
     CropTelemetryGenerator,
     IrrigationTelemetryGenerator,
     LightingTelemetryGenerator,
+    MaintenanceEventGenerator,
 )
 from smart_farming.environment import (
     EnvironmentStateManager,
@@ -41,6 +42,7 @@ from smart_farming.environment import (
     CropStateManager,
     IrrigationStateManager,
     LightingStateManager,
+    MaintenanceStateManager,
 )
 
 
@@ -123,6 +125,8 @@ def main() -> None:
             irrigation_state_manager=irrigation_state_manager,
         )
 
+        maintenance_state_manager = MaintenanceStateManager()
+
         environmental_generator = (
             EnvironmentalTelemetryGenerator(
                 settings=settings,
@@ -175,6 +179,13 @@ def main() -> None:
             )
         )
 
+        maintenance_generator = (
+            MaintenanceEventGenerator(
+                settings=settings,
+                maintenance_state_manager=maintenance_state_manager,
+            )
+        )
+
         generators: list[
             BaseTelemetryGenerator
         ] = [
@@ -184,6 +195,7 @@ def main() -> None:
             crop_telemetry_generator,
             irrigation_generator,
             lighting_generator,
+            maintenance_generator,
         ]
 
         simulator = Simulator(
@@ -196,6 +208,7 @@ def main() -> None:
             growing_environment_manager=growing_enviroment_manager,
             irrigation_state_manager=irrigation_state_manager,
             lighting_state_manager=lighting_state_manager,
+            maintenance_state_manager=maintenance_state_manager,
         )
 
         simulator.run()
