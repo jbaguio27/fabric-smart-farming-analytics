@@ -139,7 +139,7 @@ class CropStateManager:
                 planting_timestamp=None,
                 expected_harvest_timestamp=None,
                 age_days=0.0,
-                health_score=profile.optimal_health,
+                health_score=MAX_HEALTH_SCORE,
                 growth_rate=0.0,
                 biomass_grams=0.0,
                 water_uptake_liters=0.0,

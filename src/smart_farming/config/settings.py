@@ -17,8 +17,8 @@ from .constants import (
     MIN_TOTAL_FACILITIES,
     MIN_EVENT_BATCH_SIZE,
     MIN_RANDOM_SEED,
-    MIN_SIMULATION_CYCLE_HOURS,
 )
+from .equipment_runtime import MIN_SIMULATION_CYCLE_HOURS
 
 @dataclass(slots=True)
 class Settings:

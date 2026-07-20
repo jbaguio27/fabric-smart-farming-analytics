@@ -3,18 +3,14 @@ Shared data models used throughout the HydroGrow Smart Farming Simulator.
 """
 
 from .base_event import BaseEvent
-from .environmental_event import (
-    EnvironmentalTelemetryEvent,
-)
+from .environmental_event import EnvironmentalTelemetryEvent
 from .weather_state import WeatherState
-from .equipment import (
-    EquipmentOperatingStatus,
-    Equipment
-)
-from .equipment_event import EquipmentTelemetryEvent
+from .equipment import Equipment
+from .equipment_operating_status import EquipmentOperatingStatus
+from .equipment_telemetry_event import EquipmentTelemetryEvent
+from .equipment_state import EquipmentState
 from .crop_state import CropState
 from .crop_lifecycle_event import CropLifecycleEvent
-from .crop_growth_profile import CropGrowthProfile
 from .growing_environment_state import GrowingEnvironmentState
 from .crop_telemetry_event import CropTelemetryEvent
 from .irrigation_state import IrrigationState
@@ -25,16 +21,15 @@ from .irrigation_telemetry_event import IrrigationTelemetryEvent
 from .maintenance_event import MaintenanceEvent
 
 
-
 __all__ = [
     "BaseEvent",
     "EnvironmentalTelemetryEvent",
     "WeatherState",
     "EquipmentOperatingStatus",
     "Equipment",
+    "EquipmentState",
     "EquipmentTelemetryEvent",
     "CropState",
-    "CropGrowthProfile",
     "GrowingEnvironmentState",
     "CropLifecycleEvent",
     "CropTelemetryEvent",

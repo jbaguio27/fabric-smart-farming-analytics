@@ -12,7 +12,7 @@ Simulation logic must never be implemented here.
 """
 
 from typing import Final
-from smart_farming.models import CropGrowthProfile
+from smart_farming.schemas import CropGrowthProfile
 
 # ============================================================================
 # Lifecycle
@@ -30,6 +30,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=65.0,
         optimal_ph=6.0,
         optimal_ec=1.8,
+        biomass_growth_rate=10.0,
+        daily_water_uptake_liters=0.20,
+        daily_nutrient_uptake_grams=1.00,
     ),
     "batavia_lettuce": CropGrowthProfile(
         crop_type="Batavia Lettuce",
@@ -41,6 +44,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=65.0,
         optimal_ph=6.0,
         optimal_ec=1.9,
+        biomass_growth_rate=10.5,
+        daily_water_uptake_liters=0.22,
+        daily_nutrient_uptake_grams=1.05,
     ),
     "kale": CropGrowthProfile(
         crop_type="Kale",
@@ -52,6 +58,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=60.0,
         optimal_ph=6.2,
         optimal_ec=2.2,
+        biomass_growth_rate=14.0,
+        daily_water_uptake_liters=0.30,
+        daily_nutrient_uptake_grams=1.40,
     ),
     "spinach": CropGrowthProfile(
         crop_type="Spinach",
@@ -63,6 +72,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=65.0,
         optimal_ph=6.3,
         optimal_ec=1.8,
+        biomass_growth_rate=11.0,
+        daily_water_uptake_liters=0.24,
+        daily_nutrient_uptake_grams=1.10,
     ),
     "arugula": CropGrowthProfile(
         crop_type="Arugula",
@@ -74,6 +86,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=60.0,
         optimal_ph=6.1,
         optimal_ec=1.7,
+        biomass_growth_rate=9.0,
+        daily_water_uptake_liters=0.18,
+        daily_nutrient_uptake_grams=0.90,
     ),
     "basil": CropGrowthProfile(
         crop_type="Genovese Basil",
@@ -85,6 +100,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=65.0,
         optimal_ph=6.0,
         optimal_ec=2.0,
+        biomass_growth_rate=8.5,
+        daily_water_uptake_liters=0.17,
+        daily_nutrient_uptake_grams=0.85,
     ),
     "cilantro": CropGrowthProfile(
         crop_type="Cilantro",
@@ -96,6 +114,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=60.0,
         optimal_ph=6.3,
         optimal_ec=1.8,
+        biomass_growth_rate=8.0,
+        daily_water_uptake_liters=0.16,
+        daily_nutrient_uptake_grams=0.80,
     ),
     "parsley": CropGrowthProfile(
         crop_type="Parsley",
@@ -107,6 +128,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=65.0,
         optimal_ph=6.2,
         optimal_ec=1.9,
+        biomass_growth_rate=7.5,
+        daily_water_uptake_liters=0.15,
+        daily_nutrient_uptake_grams=0.75,
     ),
     "microgreens": CropGrowthProfile(
         crop_type="Microgreens",
@@ -118,6 +142,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=60.0,
         optimal_ph=6.0,
         optimal_ec=1.2,
+        biomass_growth_rate=4.0,
+        daily_water_uptake_liters=0.08,
+        daily_nutrient_uptake_grams=0.40,
     ),
     "strawberry": CropGrowthProfile(
         crop_type="Strawberry",
@@ -129,6 +156,9 @@ CROP_GROWTH_PROFILES: Final[dict[str, CropGrowthProfile]] = {
         optimal_humidity_percent=70.0,
         optimal_ph=5.8,
         optimal_ec=2.2,
+        biomass_growth_rate=18.0,
+        daily_water_uptake_liters=0.45,
+        daily_nutrient_uptake_grams=2.00,
     ),
 }
 

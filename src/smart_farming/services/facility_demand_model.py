@@ -1,17 +1,30 @@
 """
 Facility demand model.
 
-This service provides facility-wide demand adjustments that influence
-equipment utilization patterns across the simulator.
+This module provides the domain service responsible for estimating the
+overall facility demand multiplier used during equipment load
+simulation.
 
-The initial implementation introduces a simple day/night operating
-cycle that affects all facilities uniformly.
+The FacilityDemandModel is intentionally stateless. It converts
+simulation runtime into a demand multiplier that represents changing
+facility utilization throughout a typical operating day.
 
-Future enhancements may introduce:
+Responsibilities
+----------------
+The FacilityDemandModel is responsible only for:
 
-- Seasonal demand variation
-- Harvest-period demand spikes
-- Facility-specific operating schedules
+- Calculating facility demand multipliers
+- Representing predictable utilization cycles
+
+It intentionally does not perform:
+
+- Equipment load simulation
+- Equipment wear calculations
+- Failure analysis
+- Maintenance scheduling
+- Telemetry generation
+
+Those responsibilities belong to other simulator components.
 """
 
 from typing import Final
@@ -25,7 +38,14 @@ from smart_farming.config import (
 
 class FacilityDemandModel:
     """
-    Simulates facility-wide demand conditions.
+    Stateless domain service for facility utilization.
+
+    The FacilityDemandModel converts simulator runtime into a facility
+    demand multiplier used by EquipmentStateManager when calculating
+    equipment operating load.
+
+    The service contains no mutable state and performs no modification
+    of simulator objects.
     """
 
     DAY_MULTIPLIER: Final[float] = DAYTIME_DEMAND_MULTIPLIER
@@ -37,21 +57,21 @@ class FacilityDemandModel:
         runtime_hours: float,
     ) -> float:
         """
-        Return the current facility demand multiplier.
+        Calculate the facility demand multiplier.
 
-        Runtime is mapped into a repeating 24-hour operating cycle.
-
-        Hours 06:00-18:00 are considered daytime.
+        The multiplier represents predictable changes in overall
+        facility utilization throughout the simulated operating day.
 
         Parameters
         ----------
         runtime_hours:
-            Total elapsed simulation runtime.
+            Total accumulated simulator runtime.
 
         Returns
         -------
         float
-            Current demand multiplier.
+            Facility demand multiplier applied during equipment load
+            simulation.
         """
 
         hour_of_day = int(

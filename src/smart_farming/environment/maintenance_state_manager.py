@@ -14,7 +14,9 @@ maintenance, work-order creation, technician assignment, and lifecycle
 progression.
 """
 
-from smart_farming.models import MaintenanceState
+from smart_farming.models import (
+    MaintenanceState,
+)
 
 
 class MaintenanceStateManager:

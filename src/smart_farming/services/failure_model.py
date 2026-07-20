@@ -1,79 +1,72 @@
 """
-Failure model for equipment simulation.
+Equipment failure model.
 
-This service centralizes operating-status decisions and future
-failure-state behavior.
+This module implements the domain service responsible for evaluating
+equipment reliability during simulation.
 
-The initial implementation reproduces the existing simulator
-behavior without changing thresholds or probabilities.
+The FailureModel is intentionally stateless. It receives immutable input
+values or runtime state and returns derived results without mutating the
+simulation.
+
+Responsibilities
+----------------
+The FailureModel is responsible for:
+
+- Normalizing failure probability values
+- Determining operating status from runtime condition
+
+It intentionally does not perform:
+
+- Health degradation
+- Load simulation
+- Maintenance scheduling
+- Telemetry generation
+
+Those concerns belong to other domain services.
 """
-
-from smart_farming.environment.equipment_state import (
+from smart_farming.models import (
     EquipmentState,
+    EquipmentOperatingStatus
 )
-
-from smart_farming.models.equipment import (
-    EquipmentOperatingStatus,
-)
-
-from smart_farming.config.constants import (
+from smart_farming.config import (
+    MIN_FAILURE_PROBABILITY,
+    MAX_FAILURE_PROBABILITY,
     ONLINE_FAILURE_THRESHOLD,
     WARNING_FAILURE_THRESHOLD,
     ERROR_FAILURE_THRESHOLD,
-    MAX_FAILURE_PROBABILITY,
-    MIN_FAILURE_PROBABILITY,
 )
 
 
 class FailureModel:
     """
-    Determines equipment operating status.
+    Stateless domain service responsible for equipment reliability.
+
+    The FailureModel evaluates runtime equipment condition and produces
+    normalized reliability metrics used throughout the simulator.
+
+    The service contains no persistent state and performs no mutation of
+    simulator objects.
     """
 
-    def determine_operating_status(
+    def normalize_probability(
         self,
-        state: EquipmentState,
-    ) -> EquipmentOperatingStatus:
+        probability: float,
+    ) -> float:
         """
-        Determine operating status from failure probability.
+        Normalize a calculated failure probability.
+
+        Failure probability is constrained to the simulator's configured
+        minimum and maximum limits.
 
         Parameters
         ----------
-        state:
-            Runtime equipment state.
+        probability:
+            Raw probability calculated by the simulation.
 
         Returns
         -------
-        EquipmentOperatingStatus
-            Calculated operating condition.
-        """
-
-        if (
-            state.operating_status
-            == EquipmentOperatingStatus.ERROR
-        ):
-            return EquipmentOperatingStatus.ERROR
-
-        if (
-            state.failure_probability
-            >= WARNING_FAILURE_THRESHOLD
-        ):
-            return EquipmentOperatingStatus.ERROR
-
-        if (
-            state.failure_probability
-            >= ONLINE_FAILURE_THRESHOLD
-        ):
-            return EquipmentOperatingStatus.WARNING
-
-        return EquipmentOperatingStatus.ONLINE
-    
-    def calculate_probability(
-    self,
-    probability: float,
-    ) -> float:
-        """
-        Normalize and constrain failure probability.
+        float
+            Probability constrained to the configured limits.
         """
 
         return round(
@@ -87,19 +80,55 @@ class FailureModel:
             4,
         )
 
+    def determine_operating_status(
+        self,
+        state: EquipmentState,
+    ) -> EquipmentOperatingStatus:
+        """
+        Determine the equipment operating status.
+
+        Operating status is derived from the current runtime condition
+        using configured warning and error thresholds.
+
+        Parameters
+        ----------
+        state:
+            Runtime equipment state.
+
+        Returns
+        -------
+        EquipmentOperatingStatus
+            Operating status representing the current equipment
+            condition.
+        """
+
+        if (
+            state.operating_status
+            == EquipmentOperatingStatus.ERROR
+        ):
+            return EquipmentOperatingStatus.ERROR
+
+        if (
+            state.failure_probability
+            >= ERROR_FAILURE_THRESHOLD
+        ):
+            return EquipmentOperatingStatus.ERROR
+
+        if (
+            state.failure_probability
+            >= WARNING_FAILURE_THRESHOLD
+        ):
+            return EquipmentOperatingStatus.WARNING
+
+        return EquipmentOperatingStatus.ONLINE
+
     def is_terminal_failure(
-    self,
-    state: EquipmentState,
+        self,
+        state: EquipmentState,
     ) -> bool:
         """
-        Determine whether equipment has entered a terminal
-        failure condition.
-
-        A terminal failure occurs when failure probability
-        exceeds the ERROR threshold.
-
-        Once an asset reaches ERROR state it remains in that
-        state until a maintenance event restores operation.
+        Determine whether the equipment has entered a
+        non-recoverable runtime failure condition.
 
         Parameters
         ----------
@@ -109,7 +138,7 @@ class FailureModel:
         Returns
         -------
         bool
-            True if terminal failure occurred.
+            True if the equipment is in terminal failure.
         """
 
         return (

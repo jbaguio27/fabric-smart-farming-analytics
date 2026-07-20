@@ -13,7 +13,7 @@ simulation remains the responsibility of CropStateManager.
 from smart_farming.config import (
     CROP_GROWTH_PROFILES
 )
-from smart_farming.models import CropGrowthProfile
+from smart_farming.schemas import CropGrowthProfile
 
 class CropProfileRegistry:
     """
