@@ -84,25 +84,20 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
             events.append(
                 MaintenanceEvent(
                     event_type=self.EVENT_TYPE,
+                    event_timestamp=event_timestamp,
                     simulation_cycle=simulation_cycle,
-                    timestamp=timestamp,
                     facility_id=state.facility_id,
-                    work_order_id=state.work_order_id,
-                    equipment_id=state.equipment_id,
                     zone_id=state.zone_id,
+                    equipment_id=state.equipment_id,
+                    work_order_id=state.work_order_id,
+                    maintenance_cycle=state.maintenance_cycle,
                     maintenance_type=state.maintenance_type,
                     priority=state.priority,
                     assigned_technician=state.assigned_technician,
                     work_status=state.work_status,
-                    estimated_duration_minutes=(
-                        state.estimated_duration_minutes
-                    ),
-                    remaining_duration_minutes=(
-                        state.remaining_duration_minutes
-                    ),
-                    completion_percent=(
-                        state.completion_percent
-                    ),
+                    estimated_duration_minutes=state.estimated_duration_minutes,
+                    remaining_duration_minutes=state.remaining_duration_minutes,
+                    completion_percent=state.completion_percent,
                     is_active=state.is_active,
                 )
             )
