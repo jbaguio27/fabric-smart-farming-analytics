@@ -12,10 +12,9 @@ state managed by the EquipmentStateManager. It contains event data only
 and intentionally excludes simulation behavior.
 """
 from dataclasses import dataclass
-from smart_farming.models import (
-    BaseEvent,
-    EquipmentOperatingStatus,
-)
+from .base_event import BaseEvent
+from .equipment_operating_status import EquipmentOperatingStatus
+
 
 @dataclass(slots=True)
 class EquipmentTelemetryEvent(BaseEvent):

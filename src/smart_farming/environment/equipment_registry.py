@@ -18,13 +18,15 @@ from smart_farming.config import (
     FACILITY_ID_PREFIX,
     ZONE_ID_PREFIX,
     DEFAULT_GROWING_ZONES_PER_FACILITY,
-    EQUIPMENT_TYPES,
     EQUIPMENT_ID_PREFIX,
+    EQUIPMENT_TYPES,
     EQUIPMENT_MANUFACTURERS,
     EQUIPMENT_MODELS,
 )
 from smart_farming.models import Equipment
 from smart_farming.utils import SimulationError
+from .equipment_factory import EquipmentFactory
+
 
 class EquipmentRegistry:
     """
@@ -55,7 +57,10 @@ class EquipmentRegistry:
         self._settings = settings
         self._equipment: dict[str, Equipment] = {}
 
-        self._initialize_equipment()
+        factory = EquipmentFactory(settings)
+
+        for equipment in factory.create_inventory():
+            self.register(equipment)
 
     def register(
         self,
@@ -175,56 +180,6 @@ class EquipmentRegistry:
             grouped[equipment.zone_id].append(equipment)
 
         return dict(grouped)
-
-    def _initialize_equipment(self) -> None:
-        """
-        Build the default equipment inventory.
-
-        Every configured facility receives the same baseline
-        equipment layout. This inventory forms the persistent
-        asset catalog used throughout the simulation.
-        """
-
-        equipment_counter = 1
-
-        for facility_number in range(
-            1,
-            self._settings.total_facilities + 1,
-        ):
-            facility_id = (
-                f"{FACILITY_ID_PREFIX}-{facility_number:03d}"
-            )
-
-            for zone_number in range(
-                1,
-                DEFAULT_GROWING_ZONES_PER_FACILITY + 1,
-            ):
-                zone_id = (
-                    f"{ZONE_ID_PREFIX}-{zone_number:03d}"
-                )
-
-                for equipment_type in EQUIPMENT_TYPES:
-                    equipment = Equipment(
-                        equipment_id=(
-                            f"{EQUIPMENT_ID_PREFIX}-{equipment_counter:05d}"
-                        ),
-                        facility_id=facility_id,
-                        zone_id=zone_id,
-                        equipment_type=equipment_type,
-                        manufacturer=EQUIPMENT_MANUFACTURERS[
-                            equipment_type
-                        ],
-                        model=EQUIPMENT_MODELS[
-                            equipment_type
-                        ],
-                        serial_number=(
-                            f"SN-{equipment_counter:08d}"
-                        ),
-                    )
-
-                    self.register(equipment)
-
-                    equipment_counter += 1
 
     def __len__(self) -> int:
         """

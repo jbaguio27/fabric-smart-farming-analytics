@@ -3,7 +3,7 @@ Base event model shared by all Smart Farming simulator events.
 """
 
 from dataclasses import dataclass, field, asdict
-from smart_farming.config import (
+from smart_farming.config.constants import (
     APPLICATION_NAME,
     SCHEMA_VERSION,
     FacilityId

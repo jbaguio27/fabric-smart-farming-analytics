@@ -15,45 +15,39 @@ architecture.
 """
 
 from dataclasses import dataclass
-from enum import Enum
 
-class EquipmentOperatingStatus(str, Enum):
-    """
-    Current operating status of an equipment asset.
-
-    This represents the equipment's runtime operating condition rather
-    than its lifecycle within the facility.
-    """
-
-    ONLINE = "ONLINE"
-    OFFLINE = "OFFLINE"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
 
 @dataclass(slots=True)
 class Equipment:
     """
-    Represents a physical equipment assets installed within a facility.
+    Represents a physical equipment asset installed within a facility.
 
     This model stores persistent business metadata only. Runtime values
     are managed by the EquipmentStateManager and emitted through
     equipment telemetry events.
 
-    Attributes:
-        equipment_id:
-            Unique identifier for the equipment asset.
-        facility_id:
-            Identifier of the facility where the equipment is installed.
-        zone_id:
-            Identifier of the growing zone where the equipment operates.
-        equipment_type:
-            Equipment category defined in config.constants.EQUIPMENT_TYPES.
-        manufacturer:
-            Equipment manufacturer.
-        model:
-            Manufacturer model designation.
-        serial_number:
-            Manufacturer-assigned serial number.
+    Attributes
+    ----------
+    equipment_id:
+        Unique identifier for the equipment asset.
+
+    facility_id:
+        Identifier of the facility where the equipment is installed.
+
+    zone_id:
+        Identifier of the growing zone where the equipment operates.
+
+    equipment_type:
+        Equipment category.
+
+    manufacturer:
+        Equipment manufacturer.
+
+    model:
+        Manufacturer model designation.
+
+    serial_number:
+        Manufacturer-assigned serial number.
     """
 
     equipment_id: str

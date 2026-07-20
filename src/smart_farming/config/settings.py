@@ -17,8 +17,8 @@ from .constants import (
     MIN_TOTAL_FACILITIES,
     MIN_EVENT_BATCH_SIZE,
     MIN_RANDOM_SEED,
-    MIN_SIMULATION_CYCLE_HOURS,
 )
+from .equipment_runtime import MIN_SIMULATION_CYCLE_HOURS
 
 @dataclass(slots=True)
 class Settings:
@@ -36,7 +36,7 @@ class Settings:
     )
 
     # ------------------------------------------------------------
-    # Simulator Configuration
+    # Facility Configuration
     # ------------------------------------------------------------
 
     total_facilities: int = field(
@@ -44,6 +44,17 @@ class Settings:
             os.getenv("TOTAL_FACILITIES", "8")
         )
     )
+
+    zone_count: int = field(
+        default_factory=lambda: int(
+            os.getenv("ZONE_COUNT", "100")
+        )
+    )
+
+    # ------------------------------------------------------------
+    # Simulator Configuration
+    # ------------------------------------------------------------
+
     random_seed: int = field(
         default_factory=lambda: int(
             os.getenv("RANDOM_SEED", "42")

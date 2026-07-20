@@ -8,10 +8,7 @@ updates. It intentionally separates business logic from the Equipment
 and EquipmentState models.
 """
 
-from smart_farming.environment import (
-    EquipmentRegistry,
-    EquipmentState
-)
+from smart_farming.environment import EquipmentRegistry
 from smart_farming.config import (
     HEALTH_DEGRADATION_PER_RUNTIME_HOUR,
     MAX_EQUIPMENT_HEALTH,
@@ -40,6 +37,7 @@ from smart_farming.config import (
     MAX_LOAD_VARIATION_PER_CYCLE,
 )
 from smart_farming.models import (
+    EquipmentState,
     EquipmentOperatingStatus,
 )
 from smart_farming.utils import (
@@ -413,7 +411,7 @@ class EquipmentStateManager:
             probability *= profile.failure_multiplier
 
             state.failure_probability = (
-                self._failure_model.calculate_probability(
+                self._failure_model.normalize_probability(
                     probability=probability,
                 )
             )
@@ -630,7 +628,7 @@ class EquipmentStateManager:
 
         return (
             self._maintenance_manager
-            .maintenance_count()
+            .maintenance_count
         )
 
     def list_all(self) -> list[EquipmentState]:

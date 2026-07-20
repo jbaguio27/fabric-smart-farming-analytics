@@ -15,6 +15,9 @@ from smart_farming.generators import BaseTelemetryGenerator
 from smart_farming.environment import (
     EnvironmentStateManager,
     EquipmentStateManager,
+    CropStateManager,
+    GrowingEnvironmentStateManager,
+    IrrigationStateManager,
 )
 
 
@@ -38,6 +41,9 @@ class Simulator:
         generator: list[BaseTelemetryGenerator],
         environment_manager: EnvironmentStateManager,
         equipment_state_manager: EquipmentStateManager,
+        crop_state_manager: CropStateManager,
+        growing_environment_manager: GrowingEnvironmentStateManager,
+        irrigation_state_manager: IrrigationStateManager,
     ) -> None:
         self.settings: Settings = settings
         self.dispatcher: EventDispatcher = dispatcher
@@ -46,6 +52,9 @@ class Simulator:
         ] = generators
         self.environment_manager: EnvironmentStateManager = environment_manager
         self.equipment_state_manager: EquipmentStateManager = equipment_state_manager
+        self.crop_state_manager: CropStateManager = crop_state_manager
+        self.growing_environment_manager: GrowingEnvironmentStateManager = growing_environment_manager
+        self.irrigation_state_manager: IrrigationStateManager = irrigation_state_manager
         self.logger: logging.Logger = get_logger(__name__)
         self.is_running: bool = False
         self.completed_cycles: int = 0
@@ -117,6 +126,9 @@ class Simulator:
             hours=self.settings.simulation_cycle_hours,
         )
 
+        self.growing_environment_manager.advance_cycle()
+        self.irrigation_state_manager.advance_cycle()
+
         self.equipment_state_manager.update_health(
             hours=self.settings.simulation_cycle_hours,
         )
@@ -126,6 +138,8 @@ class Simulator:
         self.equipment_state_manager.update_operating_status()
         self.equipment_state_manager.update_sensor_metrics()
         self.equipment_state_manager.evaluate_maintenance()
+
+        self.crop_state_manager.advance_cycle()
 
         environment = (
             self.environment_manager.get_current_state()

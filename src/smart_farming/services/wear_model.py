@@ -1,49 +1,79 @@
 """
-Wear model for equipment simulation.
+Equipment wear model.
+
+This module provides the domain service responsible for calculating
+equipment health degradation over time.
+
+The WearModel is intentionally stateless. It receives the current
+runtime state and degradation inputs from the EquipmentStateManager and
+returns the updated health value without mutating simulator state.
+
+Responsibilities
+----------------
+The WearModel is responsible only for:
+
+- Applying health degradation
+- Applying equipment-specific wear multipliers
+- Enforcing health boundaries
+
+It intentionally does not determine:
+
+- Equipment load
+- Failure probability
+- Operating status
+- Maintenance scheduling
+
+Those responsibilities belong to their respective domain services.
 """
 
-from smart_farming.environment.equipment_state import (
-    EquipmentState,
+from smart_farming.config import (
+    MAX_EQUIPMENT_HEALTH,
+    MIN_EQUIPMENT_HEALTH,
 )
+from smart_farming.models import EquipmentState
 
 
 class WearModel:
     """
-    Calculates equipment health degradation.
+    Stateless domain service for equipment wear calculations.
     """
 
     def calculate_health(
         self,
         state: EquipmentState,
         degradation: float,
-        wear_multiplier: float = 1.0,
+        wear_multiplier: float,
     ) -> float:
         """
-        Calculate the next health value.
+        Calculate the next equipment health value.
 
         Parameters
         ----------
         state:
-            Runtime equipment state.
+            Current runtime state.
 
         degradation:
-            Base degradation amount.
+            Base degradation for the simulation cycle.
 
         wear_multiplier:
-            Equipment-type wear multiplier.
+            Equipment-specific wear multiplier.
 
         Returns
         -------
         float
-            Updated health value.
+            Updated equipment health constrained to the configured
+            health boundaries.
         """
 
-        effective_degradation = (
-            degradation
-            * wear_multiplier
+        health = (
+            state.health
+            - (degradation * wear_multiplier)
         )
 
         return max(
-            0.0,
-            state.health - effective_degradation,
+            MIN_EQUIPMENT_HEALTH,
+            min(
+                MAX_EQUIPMENT_HEALTH,
+                health,
+            ),
         )
