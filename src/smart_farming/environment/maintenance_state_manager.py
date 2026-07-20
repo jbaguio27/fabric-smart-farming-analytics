@@ -42,6 +42,7 @@ class MaintenanceStateManager:
         """
 
         self._states: dict[str, MaintenanceState] = {}
+        self._simulation_cycle: int = 0
 
     def add_work_order(
         self,
@@ -99,6 +100,16 @@ class MaintenanceStateManager:
 
         return len(self._states)
 
+    @property
+    def simulation_cycle(self) -> int:
+        """
+        Return the current simulation cycle.
+
+        Returns:
+            int: The current simulation cycle index.
+        """
+        return self._simulation_cycle
+
     def advance_cycle(self) -> None:
         """
         Advance the maintenance simulation.
@@ -114,4 +125,4 @@ class MaintenanceStateManager:
         - deferred maintenance
         """
 
-        return
+        self._simulation_cycle += 1

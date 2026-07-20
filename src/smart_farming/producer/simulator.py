@@ -18,6 +18,8 @@ from smart_farming.environment import (
     CropStateManager,
     GrowingEnvironmentStateManager,
     IrrigationStateManager,
+    LightingStateManager,
+    MaintenanceStateManager,
 )
 
 
@@ -38,16 +40,18 @@ class Simulator:
         self,
         settings: Settings,
         dispatcher: EventDispatcher,
-        generator: list[BaseTelemetryGenerator],
+        generators: list[BaseTelemetryGenerator],
         environment_manager: EnvironmentStateManager,
         equipment_state_manager: EquipmentStateManager,
         crop_state_manager: CropStateManager,
         growing_environment_manager: GrowingEnvironmentStateManager,
         irrigation_state_manager: IrrigationStateManager,
+        lighting_state_manager: LightingStateManager,
+        maintenance_state_manager: MaintenanceStateManager,
     ) -> None:
         self.settings: Settings = settings
         self.dispatcher: EventDispatcher = dispatcher
-        self.generator: list[
+        self.generators: list[
             BaseTelemetryGenerator
         ] = generators
         self.environment_manager: EnvironmentStateManager = environment_manager
@@ -55,6 +59,8 @@ class Simulator:
         self.crop_state_manager: CropStateManager = crop_state_manager
         self.growing_environment_manager: GrowingEnvironmentStateManager = growing_environment_manager
         self.irrigation_state_manager: IrrigationStateManager = irrigation_state_manager
+        self.lighting_state_manager: LightingStateManager = lighting_state_manager
+        self.maintenance_state_manager: MaintenanceStateManager = maintenance_state_manager
         self.logger: logging.Logger = get_logger(__name__)
         self.is_running: bool = False
         self.completed_cycles: int = 0
@@ -128,6 +134,8 @@ class Simulator:
 
         self.growing_environment_manager.advance_cycle()
         self.irrigation_state_manager.advance_cycle()
+        self.lighting_state_manager.advance_cycle()
+        self.maintenance_state_manager.advance_cycle()
 
         self.equipment_state_manager.update_health(
             hours=self.settings.simulation_cycle_hours,

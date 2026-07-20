@@ -1,6 +1,8 @@
 """
 Application entry point for the HydroGrow Smart Farming Simulator.
 """
+from smart_farming.environment import crop_profile_registry
+from smart_farming.services import wear_model
 from smart_farming.utils import RandomManager
 from smart_farming.config import Settings
 from smart_farming.monitoring import (
@@ -40,6 +42,8 @@ from smart_farming.environment import (
     GrowingEnvironmentStateManager,
     CropRegistry,
     CropStateManager,
+    CropProfileRegistry,
+    CropDefinition,
     IrrigationStateManager,
     LightingStateManager,
     MaintenanceStateManager,
@@ -78,7 +82,9 @@ def main() -> None:
             random_manager=random_manager,
         )
 
-        equipment_registry = EquipmentRegistry()
+        equipment_registry = EquipmentRegistry(
+            settings=settings,
+        )
 
         wear_model = WearModel()
         failure_model = FailureModel()
@@ -94,9 +100,23 @@ def main() -> None:
             facility_demand_model=facility_demand_model,
         )
 
+        crop_profile_registry = CropProfileRegistry()
         crop_registry = CropRegistry()
 
-        growing_enviroment_manager = (
+        for index, profile in enumerate(
+            crop_profile_registry.get_all_profiles(),
+            start=1,
+        ):
+            crop_registry.register(
+                CropDefinition(
+                    crop_batch_id=f"BATCH-{index:05d}",
+                    facility_id="FAC-001",
+                    zone_id=f"ZONE-{index:03d}",
+                    crop_type=profile.crop_type,
+                )
+            )
+
+        growing_environment_manager = (
             GrowingEnvironmentStateManager(
                 settings=settings,
                 random_manager=random_manager,
@@ -119,12 +139,13 @@ def main() -> None:
 
         crop_state_manager = CropStateManager(
             settings=settings,
-            random_manager=random_manager,
             crop_registry=crop_registry,
-            growing_environment_manager=growing_enviroment_manager,
+            crop_profile_registry=crop_profile_registry,
+            growing_environment_manager=growing_environment_manager,
+            random_manager=random_manager,
             irrigation_state_manager=irrigation_state_manager,
         )
-
+        
         maintenance_state_manager = MaintenanceStateManager()
 
         environmental_generator = (
@@ -148,7 +169,7 @@ def main() -> None:
             CropLifecycleGenerator(
                 settings=settings,
                 random_manager=random_manager,
-                environment_manager=growing_enviroment_manager,
+                environment_manager=growing_environment_manager,
                 crop_registry=crop_registry,
                 crop_state_manager=crop_state_manager,
             )
@@ -158,7 +179,7 @@ def main() -> None:
             CropTelemetryGenerator(
                 settings=settings,
                 random_manager=random_manager,
-                environment_manager=growing_enviroment_manager,
+                environment_manager=growing_environment_manager,
                 crop_registry=crop_registry,
                 crop_state_manager=crop_state_manager,
             )
@@ -205,7 +226,7 @@ def main() -> None:
             environment_manager=environment_manager,
             equipment_state_manager=equipment_state_manager,
             crop_state_manager=crop_state_manager,
-            growing_environment_manager=growing_enviroment_manager,
+            growing_environment_manager=growing_environment_manager,
             irrigation_state_manager=irrigation_state_manager,
             lighting_state_manager=lighting_state_manager,
             maintenance_state_manager=maintenance_state_manager,

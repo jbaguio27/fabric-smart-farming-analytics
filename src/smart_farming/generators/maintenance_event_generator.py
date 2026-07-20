@@ -23,7 +23,11 @@ from smart_farming.config import (
 )
 from smart_farming.environment import MaintenanceStateManager
 from smart_farming.models import MaintenanceEvent
-from .base_telemetry_generator import BaseTelemetryGenerator
+from smart_farming.generators.base_telemetry_generator import BaseTelemetryGenerator
+from smart_farming.utils import (
+    utc_now,
+    format_timestamp,
+)
 
 
 class MaintenanceEventGenerator(BaseTelemetryGenerator):
@@ -51,23 +55,16 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
             maintenance_state_manager:
                 Runtime maintenance state owner.
         """
-
-        super().__init__(settings)
-
+        self._settings = settings
         self._maintenance_state_manager = (
             maintenance_state_manager
         )
 
     def generate(
         self,
-        simulation_cycle: int,
     ) -> list[MaintenanceEvent]:
         """
         Generate maintenance telemetry.
-
-        Args:
-            simulation_cycle:
-                Current simulator cycle.
 
         Returns:
             Maintenance telemetry events.
@@ -75,8 +72,9 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
 
         events: list[MaintenanceEvent] = []
 
-        timestamp = self._build_timestamp()
-
+        timestamp = format_timestamp(utc_now())
+        simulation_cycle = self._maintenance_state_manager.simulation_cycle
+        
         for state in (
             self._maintenance_state_manager.get_all_states()
         ):
@@ -84,7 +82,7 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
             events.append(
                 MaintenanceEvent(
                     event_type=self.EVENT_TYPE,
-                    event_timestamp=event_timestamp,
+                    event_timestamp=timestamp,
                     simulation_cycle=simulation_cycle,
                     facility_id=state.facility_id,
                     zone_id=state.zone_id,
