@@ -17,7 +17,10 @@ Future roadmap milestones will introduce:
 - maintenance history
 """
 
-from smart_farming.config import Settings
+from smart_farming.config import (
+    Settings,
+    EVENT_TYPE_MAINTENANCE,
+)
 from smart_farming.environment import MaintenanceStateManager
 from smart_farming.models import MaintenanceEvent
 from .base_telemetry_generator import BaseTelemetryGenerator
@@ -31,7 +34,7 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
     immutable MaintenanceEvent instances.
     """
 
-    EVENT_TYPE = "maintenance.event"
+    EVENT_TYPE = EVENT_TYPE_MAINTENANCE
 
     def __init__(
         self,

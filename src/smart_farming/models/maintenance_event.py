@@ -24,34 +24,34 @@ class MaintenanceEvent:
     work order when emitted by the MaintenanceEventGenerator.
     """
 
-    event_type
+    event_type: str
 
-    event_timestamp
+    event_timestamp: str
 
-    simulation_cycle
+    simulation_cycle: int
 
-    facility_id
+    facility_id: str
 
-    zone_id
+    zone_id: str
 
-    equipment_id
+    equipment_id: str
 
-    work_order_id
+    work_order_id: str
 
-    maintenance_cycle
+    maintenance_cycle: int
 
-    maintenance_type
+    maintenance_type: str
 
-    priority
+    priority: str
 
-    assigned_technician
+    assigned_technician: str
 
-    work_status
+    work_status: str
 
-    estimated_duration_minutes
-    
-    remaining_duration_minutes
+    estimated_duration_minutes: int
 
-    completion_percent
+    remaining_duration_minutes: int
 
-    is_active
+    completion_percent: float
+
+    is_active: bool

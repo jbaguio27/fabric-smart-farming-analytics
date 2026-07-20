@@ -23,7 +23,7 @@ from typing import Final
 # Event
 # ============================================================================
 
-EVENT_TYPE_MAINTENANCE: Final[str] = "maintenance"
+EVENT_TYPE_MAINTENANCE: Final[str] = "maintenance.event"
 
 # ============================================================================
 # Work Order Identifiers
