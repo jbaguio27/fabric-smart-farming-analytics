@@ -43,6 +43,21 @@ class MaintenanceStateManager:
 
         self._states: dict[str, MaintenanceState] = {}
 
+    def add_work_order(
+        self,
+        state: MaintenanceState,
+    ) -> None:
+        """
+        Register a runtime maintenance work order.
+
+        Parameters
+        ----------
+        state:
+            Runtime maintenance work order.
+        """
+
+        self._states[state.work_order_id] = state
+
     def get_work_order(
         self,
         work_order_id: str,
