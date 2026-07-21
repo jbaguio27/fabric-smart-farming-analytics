@@ -2,6 +2,8 @@
 Event dispatcher for the HydroGrow Smart Farming Simulator.
 """
 
+from requests.utils import requote_uri
+from requests.adapters import BaseAdapter
 import logging
 from dataclasses import is_dataclass, asdict
 from datetime import datetime
@@ -16,6 +18,7 @@ from smart_farming.utils import (
     EventSerializationError,
     format_timestamp,
 )
+from .anomaly_injector import DataAnomalyInjector
 
 
 class EventDispatcher:
@@ -36,24 +39,15 @@ class EventDispatcher:
         """
         self.settings: Settings | None = settings
         self.logger: logging.Logger = get_logger(__name__)
+        self.anomaly_injector = DataAnomalyInjector(
+            anomaly_rate=0.05 if settings is not None else 0.0,
+        )
 
     def dispatch(
         self,
         events: list[BaseEvent],
     ) -> None:
-        """
-        Dispatch a batch of telemetry events.
 
-        Args:
-            events:
-                Events produced during a simulation cycle.
-
-        Raises:
-            DispatchError:
-                If dispatching to the configured Eventstream endpoint fails.
-            EventSerializationError:
-                If an event payload cannot be serialized to JSON.
-        """
         if not events:
             self.logger.debug("No events to dispatch.")
             return
@@ -63,9 +57,11 @@ class EventDispatcher:
             len(events),
         )
 
-        serialized_events = [
-            self._serialize_event(event) for event in events
-        ]
+        serialized_events: list[dict[str, object]] = []
+
+        for event in events:
+            payloads = self._serialize_event(event)
+            serialized_events.extend(payloads)
 
         endpoint = (
             self.settings.eventstream_endpoint
@@ -114,7 +110,13 @@ class EventDispatcher:
             else:
                 raw_dict = getattr(event, "__dict__", {})
 
-            return self._normalize_payload(raw_dict)
+            normalized = self._normalize_payload(raw_dict)
+
+            if isinstance(normalized, dict):
+                return self.anomaly_injector.inject_anomalies(normalized)
+
+            return [normalized] if isinstance(normalized, dict) else []
+
         except Exception as exc:
             raise EventSerializationError(
                 f"Failed to serialize event '{event}': {exc}"
