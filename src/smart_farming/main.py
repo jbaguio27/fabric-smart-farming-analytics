@@ -1,6 +1,7 @@
 """
 Application entry point for the HydroGrow Smart Farming Simulator.
 """
+from smart_farming.generators import facility_generator
 from smart_farming.environment import crop_profile_registry
 from smart_farming.services import wear_model
 from smart_farming.utils import RandomManager
@@ -34,6 +35,7 @@ from smart_farming.generators import (
     IrrigationTelemetryGenerator,
     LightingTelemetryGenerator,
     MaintenanceEventGenerator,
+    FacilityGenerator,
 )
 from smart_farming.environment import (
     EnvironmentStateManager,
@@ -47,6 +49,7 @@ from smart_farming.environment import (
     IrrigationStateManager,
     LightingStateManager,
     MaintenanceStateManager,
+    FacilityStateManager,
 )
 
 
@@ -158,6 +161,10 @@ def main() -> None:
             )
         )
 
+        facility_state_manager = FacilityStateManager(
+            equipment_state_manager=equipment_state_manager,
+        )
+
         equipment_generator = (
             EquipmentTelemetryGenerator(
                 settings=settings,
@@ -209,6 +216,10 @@ def main() -> None:
             )
         )
 
+        facility_generator = FacilityGenerator(
+            facility_state_manager=facility_state_manager,
+        )
+
         generators: list[
             BaseTelemetryGenerator
         ] = [
@@ -219,6 +230,7 @@ def main() -> None:
             irrigation_generator,
             lighting_generator,
             maintenance_generator,
+            facility_generator,
         ]
 
         simulator = Simulator(
@@ -232,6 +244,7 @@ def main() -> None:
             irrigation_state_manager=irrigation_state_manager,
             lighting_state_manager=lighting_state_manager,
             maintenance_state_manager=maintenance_state_manager,
+            facility_state_manager=facility_state_manager,
         )
 
         simulator.run()

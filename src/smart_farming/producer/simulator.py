@@ -20,6 +20,7 @@ from smart_farming.environment import (
     IrrigationStateManager,
     LightingStateManager,
     MaintenanceStateManager,
+    FacilityStateManager,
 )
 
 
@@ -48,6 +49,7 @@ class Simulator:
         irrigation_state_manager: IrrigationStateManager,
         lighting_state_manager: LightingStateManager,
         maintenance_state_manager: MaintenanceStateManager,
+        facility_state_manager: FacilityStateManager,
     ) -> None:
         self.settings: Settings = settings
         self.dispatcher: EventDispatcher = dispatcher
@@ -61,6 +63,7 @@ class Simulator:
         self.irrigation_state_manager: IrrigationStateManager = irrigation_state_manager
         self.lighting_state_manager: LightingStateManager = lighting_state_manager
         self.maintenance_state_manager: MaintenanceStateManager = maintenance_state_manager
+        self.facility_state_manager: FacilityStateManager = facility_state_manager
         self.logger: logging.Logger = get_logger(__name__)
         self.is_running: bool = False
         self.completed_cycles: int = 0

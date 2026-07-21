@@ -10,6 +10,7 @@ from .crop_telemetry_generator import CropTelemetryGenerator
 from .irrigation_telemetry_generator import IrrigationTelemetryGenerator
 from .lighting_telemetry_generator import LightingTelemetryGenerator
 from .maintenance_event_generator import MaintenanceEventGenerator
+from .facility_generator import FacilityGenerator
 
 __all__ = [
     "EnvironmentalTelemetryGenerator",
@@ -20,4 +21,5 @@ __all__ = [
     "IrrigationTelemetryGenerator",
     "LightingTelemetryGenerator",
     "MaintenanceEventGenerator",
+    "FacilityGenerator",
 ]
