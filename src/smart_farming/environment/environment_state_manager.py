@@ -123,8 +123,15 @@ class EnvironmentStateManager:
     def _select_weather(self) -> WeatherType:
         """
         Select the next weather condition using the Markov transition matrix.
+
+        Monsoonal seasonality shifts transition probability weights:
+            - Habagat (May-Oct): Boost rainy/thunderstorm weather probabilities.
+            - Amihan (Nov-Apr): Boost sunny/partly cloudy dry weather probabilities.
         """
         hour = self.simulation_time.hour
+        month = self.simulation_time.month
+        is_habagat = 5 <= month <= 10
+
         if 5 <= hour < 11:
             transition_matrix = WEATHER_TRANSITIONS_MORNING
         elif 11 <= hour < 17:
@@ -135,6 +142,21 @@ class EnvironmentStateManager:
         probabilities = transition_matrix.get(self.current_weather, transition_matrix[WEATHER_SUNNY])
         options = list(probabilities.keys())
         weights = list(probabilities.values())
+
+        # Apply seasonal monsoon probability multipliers
+        if is_habagat:
+            for i, opt in enumerate(options):
+                if opt in (WEATHER_RAINY, WEATHER_THUNDERSTORM):
+                    weights[i] *= 1.8
+                elif opt == WEATHER_SUNNY:
+                    weights[i] *= 0.5
+
+        else:
+            for i, opt in enumerate(options):
+                if opt in (WEATHER_SUNNY, WEATHER_PARTLY_CLOUDY):
+                    weights[i] *= 1.5
+                elif opt in (WEATHER_RAINY, WEATHER_THUNDERSTORM):
+                    weights[i] *= 0.4
 
         weather = self.random_manager.weighted_choice(options, weights)
         if weather not in WEATHER_TYPES:
@@ -157,27 +179,36 @@ class EnvironmentStateManager:
         """
         hour_float = self.simulation_time.hour + self.simulation_time.minute / 60.0
         is_day = self._is_daytime(self.simulation_time)
+        month = self.simulation_time.month
+        is_habagat = 5 <= month <= 10
 
-        # 1. Solar elevation and irradiance calculations
+        # Solar elevation and irradiance calculations
         solar_irradiance = 0.0
         if is_day:
             solar_factor = math.sin(math.pi * (hour_float - DAY_START_HOUR) / (NIGHT_START_HOUR - DAY_START_HOUR))
             attenuation = WEATHER_SOLAR_ATTENUATION.get(self.current_weather, 1.0)
             solar_irradiance = 1000.0 * max(0.0, solar_factor) * attenuation
 
-        # 2. Rainfall rate calculations (mm/hour)
+        # Rainfall rate calculations (mm/hour)
         rainfall = 0.0
         if self.current_weather == WEATHER_RAINY:
             rainfall = self.random_manager.uniform(1.0, 5.0)
+            if is_habagat:
+                rainfall *= 1.5
         elif self.current_weather == WEATHER_THUNDERSTORM:
             rainfall = self.random_manager.uniform(10.0, 35.0)
+            if is_habagat:
+                rainfall *= 1.3
 
-        # 3. Sinusoidal Diurnal Ambient Temperature Curve
+        # Sinusoidal Diurnal Ambient Temperature Curve
         # Peaks at DIURNAL_MAX_TEMP_HOUR, minimum at DIURNAL_MIN_TEMP_HOUR
         mid_hour = (DIURNAL_MAX_TEMP_HOUR + DIURNAL_MIN_TEMP_HOUR) / 2.0
         period = DIURNAL_MAX_TEMP_HOUR - DIURNAL_MIN_TEMP_HOUR
         diurnal_factor = math.sin(math.pi * (hour_float - mid_hour) / (period * 1.5))
-        ambient_temp = 27.0 + 4.5 * diurnal_factor
+
+        base_temp = 28.0 if is_habagat else 25.0
+        temp_amplitude = 4.0 if is_habagat else 3.5
+        ambient_temp = base_temp + temp_amplitude * diurnal_factor
 
         # Modulate temperature by weather state
         if self.current_weather == WEATHER_RAINY:
@@ -194,8 +225,10 @@ class EnvironmentStateManager:
         # Tiny random thermal noise fluctuation
         ambient_temp += self.random_manager.uniform(-0.3, 0.3)
 
-        # 4. Sinusoidal Relative Humidity Curve (inversely proportional to temperature)
-        ambient_humidity = 78.0 - 15.0 * diurnal_factor
+        # Sinusoidal Relative Humidity Curve (inversely proportional to temperature)
+        # Base humidity varies with season: Habagat (higher) vs Amihan (lower)
+        base_humidity = 82.0 if is_habagat else 74.0
+        ambient_humidity = base_humidity - 12.0 * diurnal_factor
 
         # Boost humidity during precipitation or morning fog
         if self.current_weather == WEATHER_RAINY:

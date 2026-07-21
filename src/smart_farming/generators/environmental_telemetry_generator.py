@@ -663,14 +663,7 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
         """
         Apply the current weather influence to a sensor reading based on continuous physical variables.
         Each sensor responds dynamically to continuous temperature, humidity, solar radiation,
-        and precipitation levels.
-        Args:
-            sensor_type: Environmental sensor type.
-            sensor_value: Current sensor reading.
-            environment: Current simulated weather state.
-            facility_id: Target facility identifier.
-        Returns:
-            Weather-adjusted sensor value.
+        and precipitation levels scaled by regional climate offsets.
         """
         if sensor_value is None:
             return None
@@ -678,6 +671,30 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
         metadata = self.get_sensor_metadata(sensor_type)
         sensitivity = metadata['weather_sensitivity']
         precision = metadata['precision']
+
+        # Apply regional outdoor microclimate scaling offsets
+        temp_offset = 0.0
+        humidity_offset = 0.0
+
+        if facility_id == "FAC-001": #Benguet
+            temp_offset = -6.0
+            humidity_offset = 5.0
+        elif facility_id == "FAC-002": # Tagaytay
+            temp_offset = -3.0
+            humidity_offset = 2.0
+        elif facility_id == "FAC-003": # Manila NCR
+            temp_offset = 2.0
+            humidity_offset = -4.0
+        elif facility_id == "FAC-004": # Davao
+            temp_offset = 1.0
+            humidity_offset = 1.0
+        elif facility_id == "FAC-006": # Cebu
+            temp_offset = 0.5
+            humidity_offset = -1.0
+
+        adjusted_ambient_temp = environment.ambient_temperature_celsius + temp_offset
+        adjusted_ambient_humidity = environment.ambient_humidity_percent + humidity_offset
+        
         adjustment = 0.0
         if sensor_type == SENSOR_TYPE_AIR_TEMPERATURE:
             # Ambient air temp is perturbed by external temp and solar thermal roof gain
@@ -704,6 +721,7 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
                 current_temp = 24.0
             temp_delta = current_temp - 24.0
             adjustment = (-temp_delta * 0.15) * sensitivity
+
         value = sensor_value + adjustment
         # Clamp to safety limits
         value = max(metadata['min_value'], min(value, metadata['max_value']))
