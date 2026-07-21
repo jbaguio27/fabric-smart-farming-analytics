@@ -580,10 +580,10 @@ class EquipmentStateManager:
         or runtime thresholds are exceeded.
         """
 
-        for state in self._states.values():
-
+        for equipment_id, state in self._states.items():
             self._maintenance_manager.apply(
-                state,
+                equipment_id=equipment_id,
+                state=state,
             )
 
     def get(

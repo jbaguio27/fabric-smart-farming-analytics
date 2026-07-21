@@ -56,9 +56,11 @@ class MaintenanceManager:
         """
 
         self._maintenance_count = 0
+        self._last_pm_runtime: dict[str, float] = {}
 
     def requires_maintenance(
         self,
+        equipment_id: str,
         state: EquipmentState,
     ) -> bool:
         """
@@ -66,16 +68,16 @@ class MaintenanceManager:
 
         Maintenance is required when either:
 
-        - Equipment health drops below the configured threshold.
-        - Runtime exceeds the configured preventive interval.
+            - Equipment health drops below the configured threshold.
+            - Runtime hours accumulated since the last PM exceeds the preventive interval.
 
         Args:
-            state:
-                Runtime equipment state.
-
+            equipment_id: Injected identifier of the target equipment.
+            state: Runtime equipment state.
         Returns:
             True if maintenance should be performed.
         """
+        runtime_since_pm = state.runtime_hours - self._last_pm_runtime.get(equipment_id, 0.0)
 
         return (
             state.health <= MAINTENANCE_HEALTH_THRESHOLD
@@ -84,6 +86,7 @@ class MaintenanceManager:
 
     def apply(
         self,
+        equipment_id: str,
         state: EquipmentState,
     ) -> None:
         """
@@ -94,17 +97,13 @@ class MaintenanceManager:
 
         Parameters
         ----------
+        equipment_id:
+            Identifier of the equipment asset.
         state:
             Runtime state that may receive maintenance.
-
-        Notes
-        -----
-        The maintenance policy itself is intentionally implemented within
-        this service so that EquipmentStateManager remains responsible
-        only for orchestration.
         """
 
-        if not self.requires_maintenance(state):
+        if not self.requires_maintenance(equipment_id, state):
             return
 
         state.health = MAINTENANCE_RESTORE_HEALTH
@@ -118,7 +117,6 @@ class MaintenanceManager:
         )
 
         state.last_maintenance_at = datetime.now(UTC)
-
         self._maintenance_count += 1
 
     @property

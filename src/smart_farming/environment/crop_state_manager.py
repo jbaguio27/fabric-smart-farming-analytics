@@ -91,6 +91,8 @@ class CropStateManager:
 
         self._states: dict[str, CropState] = {}
 
+        self._cleaning_cycles: dict[str, int] = {}
+
         self._simulation_cycle = 0
 
         self.initialize()
@@ -253,46 +255,52 @@ class CropStateManager:
         Advance the runtime state of every managed crop batch by one
         simulation cycle.
 
-        This phase of the Crop Lifecycle Generator is intentionally limited
-        to deterministic time progression. Biological lifecycle transitions,
-        environmental effects, equipment effects, and health calculations
-        are introduced in subsequent implementation phases.
-
-        Each simulation cycle increases the accumulated crop age based on
-        the configured simulation time step.
-
-        Water demand estimation is performed after biomass accumulation so
-        that crop demand reflects the current biological growth state while
-        remaining independent of irrigation delivery.
+        Tracks biological lifecycle stages and handles automatic crop rotations.
+        Crops that reach the HARVESTED stage trigger a 48-cycle zone disinfection
+        and cleaning cycle before being re-seeded.
         """
 
         for state in self._states.values():
-
+            # Manage inactive batches in the cleaning and disinfection cycle
             if not state.is_active:
+                if state.crop_batch_id in self._cleaning_cycles:
+                    remaining = self._cleaning_cycles[state.crop_batch_id]
+                    if remaining > 1:
+                        self._cleaning_cycles[state.crop_batch_id] = remaining - 1
+                    else:
+                        # Cleaning completed! Re-sow a new batch in this zone.
+                        del self._cleaning_cycles[state.crop_batch_id]
+                        state.lifecycle_stage = CROP_STAGE_GERMINATION
+                        state.age_days = 0.0
+                        state.health_score = MAX_HEALTH_SCORE
+                        state.growth_rate = 0.0
+                        state.biomass_grams = 0.0
+                        state.water_demand_liters = 0.0
+                        state.total_water_demand_liters = 0.0
+                        state.water_deficit_liters = 0.0
+                        state.water_surplus_liters = 0.0
+                        state.water_uptake_liters = 0.0
+                        state.nutrient_uptake_grams = 0.0
+                        state.stress_index = 0.0
+                        state.is_active = True
                 continue
+                
+            # Advance active crop metrics
 
             self._update_growth_rate(state)
-
             self._update_health(state)
-
             self._advance_crop_age(state)
-
             self._update_biomass(state)
-            
             self._update_water_demand(state)
-
             self._update_water_balance(state)
-
             self._update_water_stress(state)
-
             self._update_water_uptake(state)
-
             self._update_nutrient_uptake(state)
-
             self._update_stress_index(state)
 
             self.evaluate_lifecycle_transition(state)
-            
+
+            # Transition harvested crop to inactive and begin cleaning cycle
             if state.lifecycle_stage == CROP_STAGE_HARVESTED:
                 state.is_active = False
         
