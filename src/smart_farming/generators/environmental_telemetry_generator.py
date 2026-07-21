@@ -34,6 +34,7 @@ from smart_farming.config import (
     SENSOR_TYPE_LIGHT_INTENSITY,
     SENSOR_TYPE_CO2,
     SENSOR_TYPE_DISSOLVED_OXYGEN,
+    SENSOR_TYPE_ELECTRICAL_CONDUCTIVITY,
 )
 from smart_farming.models import (
     EnvironmentalTelemetryEvent,
@@ -79,6 +80,7 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
             FacilityId,
             dict[str, float | None],
         ] = {}
+        self._sensor_drift: dict[tuple[FacilityId, str], float] = {}
         
         self.facility_profiles: dict[
             FacilityId,
@@ -282,6 +284,46 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
             facility_id=facility_id,
             sensor_value=sensor_value,
         )
+
+        # Apply continuous physical sensor noise and calibration drift (under HEALTHY status)
+        if sensor_value is not None and sensor_status == SENSOR_STATUS_HEALTHY:
+            drift_key = (facility_id, sensor_type)
+            drift = self._sensor_drift.get(drift_key, 0.0)
+
+            # 1. Update calibration drift increments
+            if sensor_type == SENSOR_TYPE_DISSOLVED_OXYGEN:
+                drift += 0.0002
+            elif sensor_type == SENSOR_TYPE_ELECTRICAL_CONDUCTIVITY:
+                drift -= 0.0003
+            elif sensor_type == SENSOR_TYPE_AIR_TEMPERATURE:
+                drift += 0.0001
+            elif sensor_type == SENSOR_TYPE_HUMIDITY:
+                drift -= 0.005
+
+            self._sensor_drift[drift_key] = drift
+            sensor_value += drift
+
+            # 2. Add Gaussian noise
+            sigma = 0.0
+            if sensor_type == SENSOR_TYPE_DISSOLVED_OXYGEN:
+                sigma = 0.04
+            elif sensor_type == SENSOR_TYPE_ELECTRICAL_CONDUCTIVITY:
+                sigma = 0.02
+            elif sensor_type == SENSOR_TYPE_AIR_TEMPERATURE:
+                sigma = 0.12
+            elif sensor_type == SENSOR_TYPE_HUMIDITY:
+                sigma = 0.35
+            elif sensor_type == SENSOR_TYPE_CO2:
+                sigma = 4.0
+            elif sensor_type == SENSOR_TYPE_LIGHT_INTENSITY:
+                sigma = 15.0
+
+            if sigma > 0.0:
+                sensor_value += self.random_manager.gauss(0.0, sigma)
+
+            # 3. Clamp and round to original precision
+            sensor_value = max(metadata['min_value'], min(sensor_value, metadata['max_value']))
+            sensor_value = round(sensor_value, metadata['precision'])
 
         self._update_sensor_state(
             facility_id=facility_id,

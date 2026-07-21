@@ -124,3 +124,20 @@ class RandomManager:
             weights=weights,
             k=1,
         )[0]
+
+    def gauss(
+        self,
+        mu: float,
+        sigma: float,
+    ) -> float:
+        """
+        Return a random floating point value from a Gaussian distribution.
+
+        Args:
+            mu: Mean of the distribution.
+            sigma: Standard deviation.
+
+        Returns:
+            Random floating point value from the distribution.
+        """
+        return self._generator.gauss(mu, sigma)
