@@ -87,8 +87,8 @@ class FailureModel:
         """
         Determine the equipment operating status.
 
-        Operating status is derived from the current runtime condition
-        using configured warning and error thresholds.
+        Operating status is derived progressively from the current runtime condition
+        and health index (ONLINE -> DEGRADED -> WARNING -> ERROR).
 
         Parameters
         ----------
@@ -101,24 +101,29 @@ class FailureModel:
             Operating status representing the current equipment
             condition.
         """
-
         if (
             state.operating_status
             == EquipmentOperatingStatus.ERROR
         ):
             return EquipmentOperatingStatus.ERROR
 
+        # 1. ERROR: Health falls below 35% or failure probability is critical
         if (
-            state.failure_probability
-            >= ERROR_FAILURE_THRESHOLD
+            state.health < 35.0
+            or state.failure_probability >= ERROR_FAILURE_THRESHOLD
         ):
             return EquipmentOperatingStatus.ERROR
 
+        # 2. WARNING: Health falls below 65% or failure probability is warning
         if (
-            state.failure_probability
-            >= WARNING_FAILURE_THRESHOLD
+            state.health < 65.0
+            or state.failure_probability >= WARNING_FAILURE_THRESHOLD
         ):
             return EquipmentOperatingStatus.WARNING
+
+        # 3. DEGRADED: Health falls below 85% indicating early wear
+        if state.health < 85.0:
+            return EquipmentOperatingStatus.DEGRADED
 
         return EquipmentOperatingStatus.ONLINE
 
@@ -140,8 +145,7 @@ class FailureModel:
         bool
             True if the equipment is in terminal failure.
         """
-
         return (
-            state.failure_probability
-            >= ERROR_FAILURE_THRESHOLD
+            state.failure_probability >= ERROR_FAILURE_THRESHOLD
+            or state.health < 35.0
         )

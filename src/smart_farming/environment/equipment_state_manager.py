@@ -448,10 +448,11 @@ class EquipmentStateManager:
                 / MAX_EQUIPMENT_LOAD
             )
 
+            # Non-linear wear acceleration: stress spikes exponentially as health decreases
             health_stress_ratio = (
-                MAX_EQUIPMENT_HEALTH
-                - state.health
-            ) / MAX_EQUIPMENT_HEALTH
+                (MAX_EQUIPMENT_HEALTH - state.health)
+                / MAX_EQUIPMENT_HEALTH
+            ) ** 2
 
             power_range = (
                 profile.max_power_kw

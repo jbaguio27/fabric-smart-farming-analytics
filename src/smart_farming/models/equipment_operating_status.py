@@ -50,6 +50,7 @@ class EquipmentOperatingStatus(str, Enum):
     """
 
     ONLINE = "ONLINE"
+    DEGRADED = "DEGRADED"
     OFFLINE = "OFFLINE"
     WARNING = "WARNING"
     ERROR = "ERROR"
