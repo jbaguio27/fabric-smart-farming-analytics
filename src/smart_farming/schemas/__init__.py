@@ -13,6 +13,7 @@ Examples include:
     - Equipment sensor profiles
     - Crop growth profiles
     - Facility profiles
+    - Zone micro-locations
     - Lighting profiles
     - Irrigation profiles
 
@@ -24,11 +25,12 @@ eliminating circular import dependencies.
 from .equipment_load_profile import EquipmentLoadProfile
 from .equipment_sensor_profile import EquipmentSensorProfile
 from .crop_growth_profile import CropGrowthProfile
-from .facility_profiles import FacilityProfile
+from .facility_profiles import FacilityProfile, ZoneMicroLocation
 
 __all__ = [
     "EquipmentLoadProfile",
     "EquipmentSensorProfile",
     "CropGrowthProfile",
-    "FacilityProfile"
+    "FacilityProfile",
+    "ZoneMicroLocation",
 ]

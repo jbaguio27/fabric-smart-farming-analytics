@@ -1,7 +1,7 @@
-# Philippine Facility Infrastructure & Regional Configurations
+# Comprehensive Hydroponics Vertical Farming Architecture & Package Integration
 
-**Document Owner:** Data Engineering & IoT Architecture Team  
-**Version:** 3.0  
+**Document Owner:** Hydroponics IoT, Systems Architecture & Data Engineering Team  
+**Version:** 7.0 (Complete System Package Integration)  
 **Status:** Approved  
 **Last Updated:** 2026-07-21  
 
@@ -9,81 +9,157 @@
 
 ## Executive Summary
 
-The Microsoft Fabric Smart Farming Analytics Platform simulates an enterprise network of **8 smart farming facilities** distributed across key agricultural regions in the Philippines.
+The Microsoft Fabric Smart Farming Analytics Platform focuses **exclusively on multi-facility Hydroponics Vertical Farming systems**.
 
-This document details the facility infrastructure components, domain configuration layout, and regional facility profile specifications.
+This document maps all core Python packages (`schemas`, `services`, `validation`, `monitoring`, `producer`, `config`, `environment`, `generators`, `models`) to their role in driving the simulator loop, paired equipment-maintenance lifecycle, biological crop growth, and raw dirty data streaming for Microsoft Fabric Medallion data cleaning.
 
 ---
 
-## Facility Infrastructure Architecture
-
-To dynamically instantiate and manage facilities, the codebase incorporates the following architectural components:
+## Integrated Package Architecture Layout (`src/smart_farming`)
 
 ```text
 src/smart_farming/
-├── config/                      # Domain-split configuration constants
-│   ├── facility.py              # Facility operational defaults & capacity constants
-│   ├── weather.py               # Regional weather & ambient baseline configs
-│   ├── soil.py                  # Soil substrate, moisture & pH baselines
-│   ├── livestock.py             # Livestock & poultry climate parameters
-│   ├── crop.py                  # Crop growth & biomass constants
-│   ├── environment.py           # Climate control bounds
-│   ├── equipment.py             # Equipment asset definitions
-│   ├── equipment_runtime.py     # Wear & failure probability constants
-│   ├── irrigation.py            # Water & nutrient dosing thresholds
-│   ├── maintenance.py          # Work order & technician rosters
-│   └── settings.py              # Environment settings loader
+├── config/                               # Hydroponics Subsystem Configuration Constants
+│   ├── crop.py                           # [CROP PROFILES] Biological growth profiles (CROP_GROWTH_PROFILES)
+│   ├── facility.py                       # Hardcoded PHILIPPINE_FACILITY_PROFILES dictionary data
+│   ├── nutrient_solution_domain.py       # pH (5.5-6.5), EC (1.2-2.4 mS/cm), Dissolved Oxygen, N-P-K dosing bounds
+│   ├── hvac_climate_domain.py            # Air temp, relative humidity, CO2 enrichment (800-1200ppm), CFM airflow
+│   ├── led_lighting_domain.py            # PPFD (200-600 µmol/m²/s), DLI (14-22 mol/m²/d), photoperiod hours
+│   ├── water_recirculation_domain.py     # Reservoir levels, GPM flow rates, pump pressure, chiller water temp
+│   ├── equipment_maintenance_domain.py   # Equipment wear rates, load profiles, failure curves
+│   ├── constants.py                      # Global prefixes (FAC-, ZONE-, EQ-)
+│   └── settings.py                       # Environment settings loader
 │
-├── schemas/                     # Schema profiles & registries
-│   ├── facility_profiles.py     # [STRICT LOCATION] Facility profiles & registry
-│   ├── crop_growth_profile.py
-│   ├── equipment_load_profile.py
-│   └── equipment_sensor_profile.py
+├── schemas/                              # Structural Configuration Schemas
+│   ├── facility_profiles.py              # FacilityProfile & ZoneMicroLocation dataclasses
+│   ├── crop_growth_profile.py            # CropGrowthProfile dataclass
+│   ├── equipment_load_profile.py          # EquipmentLoadProfile dataclass
+│   └── equipment_sensor_profile.py        # EquipmentSensorProfile dataclass
 │
-├── environment/                 # State managers
-│   ├── facility_state_manager.py # [FACILITY STATE] Tracks facility operational state
-│   ├── crop_state_manager.py
-│   ├── equipment_state_manager.py
-│   └── growing_environment_state_manager.py
+├── services/                             # Physics, Mechanical & Wear Models
+│   ├── wear_model.py                     # Calculates equipment health wear per cycle based on load & hours
+│   ├── failure_model.py                  # Calculates failure probability curves based on accumulated wear
+│   ├── maintenance_manager.py            # Drives work order triggers, technician assignment & repair resets
+│   └── facility_demand_model.py          # Computes diurnal resource demand multipliers (power & water)
 │
-├── generators/                  # Telemetry event generators
-│   ├── facility_generator.py    # [FACILITY GENERATOR] Emits facility telemetry events
+├── validation/                           # Pre-Dispatch Structural Sanity Validators
+│   ├── telemetry_validator.py            # Validates structural fields of telemetry events without filtering dirty data
+│   ├── crop_lifecycle_validator.py       # Structural validation for crop stage transitions
+│   └── irrigation_telemetry_validator.py # Structural validation for irrigation & dosing events
+│
+├── monitoring/                           # Application Health & Logging
+│   └── logger.py                         # Structured logging, execution cycle tracing & metrics logging
+│
+├── environment/                          # State Managers (Paired Equipment & Maintenance)
+│   ├── facility_state_manager.py          # Tracks facility operational state & aggregated metrics
+│   ├── equipment_registry.py              # Inventory lookup linking EQ-00001 to FACILITY_ID + ZONE_ID
+│   ├── equipment_state_manager.py         # Tracks health degradation, load, runtime hours via services/
+│   ├── maintenance_state_manager.py       # Tracks active work orders, technicians, repair cycles
+│   ├── crop_state_manager.py              # Biological crop growth & stage progression (hooks to crop.py)
+│   ├── growing_environment_state_manager.py # Zone climate state tracking
+│   ├── irrigation_state_manager.py        # Water recirculation & dosing state
+│   └── lighting_state_manager.py          # LED array intensity & DLI tracking
+│
+├── generators/                           # Telemetry Event Generators
+│   ├── facility_generator.py             # Instantiates & emits vertical farm operational telemetry
+│   ├── equipment_telemetry_generator.py   # Emits hardware health & wear telemetry
+│   ├── maintenance_event_generator.py     # Emits work order & repair activity events
 │   ├── crop_lifecycle_generator.py
 │   ├── crop_telemetry_generator.py
 │   ├── environmental_telemetry_generator.py
-│   ├── equipment_telemetry_generator.py
 │   ├── irrigation_telemetry_generator.py
-│   ├── lighting_telemetry_generator.py
-│   └── maintenance_event_generator.py
+│   └── lighting_telemetry_generator.py
 │
-└── models/                      # Telemetry event dataclasses
-    ├── facility_event.py        # [FACILITY MODEL] Facility telemetry event dataclass
-    ├── base_event.py
-    └── ...
+├── producer/                             # Event Orchestration & Raw Anomaly Injection
+│   ├── simulator.py                      # Master simulation loop driving all state managers
+│   ├── event_dispatcher.py               # Serializes payloads and posts HTTP batches to Eventstream
+│   └── anomaly_injector.py               # Injects raw data quality defects (pH drift, nulls, typos, duplicates)
+│
+└── main.py                               # Application entry point & composition root
 ```
 
 ---
 
-## Philippine Facility Directory
+## Equipment & Maintenance Pairing Model (`services/`)
 
-| Facility ID | Facility Name | Location / Region | Domain Focus | Target Temp (°C) | Target Humidity (%) | Target Soil/pH | Raw Ingestion Anomaly Profile (Bronze Layer) |
-|-------------|---------------|-------------------|--------------|------------------|---------------------|----------------|----------------------------------------------|
-| **FAC-001** | Benguet High-Altitude Strawberries & Greens | La Trinidad, Benguet (CAR) | Highland Crops & Strawberries | 18.0°C | 75% | pH 5.80 | Mountain morning fog power dips, duplicate events (~3%). |
-| **FAC-002** | Tagaytay Ridge Smart Greenhouse & Nursery | Tagaytay City, Cavite (Region IV-A) | Culinary Herbs & Sub-Tropical Nursery | 22.0°C | 70% | pH 6.00 | Ridge cloud condensation drift, empty string payloads (`""`). |
-| **FAC-003** | Davao Cacao & Vertical Agro-Plantation | Davao City, Davao del Sur (Region XI) | Premium Cacao & Vertical Asian Greens | 25.0°C | 80% | pH 6.50 | Afternoon HVAC thermal spikes (`temperature = 9999.99`). |
-| **FAC-004** | Bukidnon Cattle & High-Altitude Agro-Ranch | Manolo Fortich, Bukidnon (Region X) | Livestock Environmental & Herbs | 20.0°C | 72% | pH 5.90 | Uncalibrated pH probe sub-zero corrupted values (`-999.0`). |
-| **FAC-005** | Laguna Technopark Smart Hydro-Facility | Calamba City, Laguna (Region IV-A) | Commercial Romaine & Tomatoes | 24.0°C | 68% | pH 6.00 | Omitted payload keys (`null`), lowercase string casing (`fac-005`). |
-| **FAC-006** | Pampanga Lowland Poultry & Agri-Center | San Fernando, Pampanga (Region III) | Poultry Climate & Lowland Veggies | 27.0°C | 72% | pH 6.20 | Gateway latency out-of-order timestamps (15–120 min delay). |
-| **FAC-007** | Western Visayas Rice & Coastal Aquaculture Hub | Iloilo City, Iloilo (Region VI) | Rice Paddy Irrigation & Aquaponics | 26.0°C | 75% | pH 6.80 | Mixed timestamp formats (ISO 8601 vs. Unix Epoch integers). |
-| **FAC-008** | Cagayan Valley Smart Agro-Research Station | Tuguegarao City, Cagayan (Region II) | Hybrid Grain Seeds & Agro-Forestry | 28.0°C | 65% | pH 6.15 | Serial buffer string typos (`operating_status: "ONLNE"`), duplicate bursts. |
+Equipment tracking and maintenance scheduling are tightly coupled throughout the simulation lifecycle using `services/`:
+
+```text
++-----------------------------------------------------------------------------------+
+|                        1. Equipment Inventory & Asset Registry                    |
+|  (Each asset assigned to FACILITY_ID + ZONE_ID: e.g. EQ-00001 Water Pump FAC-001) |
++-----------------------------------------------------------------------------------+
+                                         │
+                                         ▼
++-----------------------------------------------------------------------------------+
+|               2. Wear & Failure Models (wear_model.py & failure_model.py)          |
+|  (EquipmentStateManager calculates runtime_hours, health degradation, load,       |
+|   and failure_probability using WearModel & FailureModel)                          |
++-----------------------------------------------------------------------------------+
+                                         │
+                                         ▼
++-----------------------------------------------------------------------------------+
+|             3. Predictive Maintenance Manager (services/maintenance_manager.py)    |
+|  (When Health < 85% or Failure Prob > 10%, MaintenanceStateManager generates a    |
+|   WorkOrder: WORK-00042 assigned to Technician, setting state to PENDING/ACTIVE)  |
++-----------------------------------------------------------------------------------+
+                                         │
+                                         ▼
++-----------------------------------------------------------------------------------+
+|                   4. Maintenance Completion & Equipment Reset                     |
+|  (Once remaining_duration_minutes reaches 0, Equipment Health resets to 100%,      |
+|   operating_status resets to ONLINE, and WorkOrder is marked COMPLETED)           |
++-----------------------------------------------------------------------------------+
+                                         │
+                                         ▼
++-----------------------------------------------------------------------------------+
+|              5. Raw Dirty Telemetry & Maintenance Anomaly Injection                |
+|  (DataAnomalyInjector introduces typos in work_status, duplicate work orders,     |
+|   delayed repair timestamps, null technician notes, and mismatched equipment IDs)  |
++-----------------------------------------------------------------------------------+
+```
 
 ---
 
-## Dynamic Facility Generator Specification (`facility_generator.py`)
+## Philippine Hydroponics Vertical Farm Directory & Crop Allocation
 
-The `FacilityGenerator` reads registered profiles from `schemas/facility_profiles.py` and current operational states from `FacilityStateManager` to emit `facility.telemetry` events containing:
+Each Philippine facility maps internal micro-locations (zones/racks/chambers) to dominant crops in `CROP_GROWTH_PROFILES` (`crop.py`) and installed equipment sets:
 
-1. **Facility Metadata**: `facility_id`, `facility_name`, `location`, `region`, `domain_focus`.
-2. **Environmental & Soil Metrics**: Aggregated ambient temperature, humidity, regional weather condition, soil moisture, and substrate pH.
-3. **Operational Metrics**: Total power draw (kW), total water delivered (Liters), active zone counts, and online/warning/error equipment breakdown.
-4. **Data Quality Anomalies**: Intentional raw noise (nulls, typos, epoch timestamps, corrupted bounds) injected per facility anomaly profile prior to Fabric Eventstream ingestion.
+| Facility ID | Facility Name & Region | Zone ID | Zone Micro-Location Name | Dominant Crop Key | Dominant Crop Name | Equipment Set Installed |
+|-------------|------------------------|---------|-------------------------------|-------------------|--------------------|-------------------------|
+| **FAC-001** | Benguet Highland Strawberries Vertical Farm (La Trinidad, Benguet) | `ZONE-001` | Top-Tier Highland LED Canopy | `strawberry` | Strawberry | LED Array, Water Pump, HVAC Blower |
+| | | `ZONE-002` | Mid-Tier NFT Rack Alpha | `butterhead_lettuce` | Butterhead Lettuce | Dosing Valve, Chiller |
+| | | `ZONE-003` | Lower-Tier High-Humidity Bed | `kale` | Kale | CO2 Injector, Water Pump |
+| **FAC-002** | Tagaytay Ridge Hydroponics Nursery (Tagaytay City, Cavite) | `ZONE-001` | Ridge Micro-Climate Nursery Chamber | `basil` | Genovese Basil | LED Array, Dosing Valve |
+| | | `ZONE-002` | Vertical NFT Rack Beta | `batavia_lettuce` | Batavia Lettuce | Water Pump, HVAC Blower |
+| | | `ZONE-003` | Controlled Herb Tier | `arugula` | Arugula | Chiller, CO2 Injector |
+| **FAC-003** | Metro Manila Rooftop Vertical Hydro-Farm (BGC, Taguig City, NCR) | `ZONE-001` | Top-Tier High PPFD Canopy | `butterhead_lettuce` | Butterhead Lettuce | LED Array, HVAC Blower |
+| | | `ZONE-002` | BGC Urban Microgreen Chamber | `microgreens` | Microgreens | Water Pump, Dosing Valve |
+| | | `ZONE-003` | NFT High-Density Rack | `spinach` | Spinach | Chiller, CO2 Injector |
+| **FAC-004** | Davao City Indoor Greens Vertical Facility (Davao City, Davao del Sur) | `ZONE-001` | High-Tower Aeroponic Array A | `spinach` | Spinach | Aeroponic Pump, HVAC Blower |
+| | | `ZONE-002` | Sub-Tropical Vertical Chamber | `kale` | Kale | LED Array, Dosing Valve |
+| | | `ZONE-003` | DWC Nutrient Tank 1 | `arugula` | Arugula | Chiller, CO2 Injector |
+| **FAC-005** | Laguna Technopark Hydroponic Plant Factory (Calamba City, Laguna) | `ZONE-001` | Industrial DWC Vine System | `basil` | Genovese Basil | Industrial DWC Pump, Chiller |
+| | | `ZONE-002` | NFT Commercial Rack Line 1 | `butterhead_lettuce` | Butterhead Lettuce | LED Array, Dosing Valve |
+| | | `ZONE-003` | High-Output Herb Tier | `parsley` | Parsley | HVAC Blower, CO2 Injector |
+| **FAC-006** | Cebu Urban Vertical Greens Hub (Cebu IT Park, Cebu City) | `ZONE-001` | IT Park Smart LED Canopy | `batavia_lettuce` | Batavia Lettuce | LED Array, HVAC Blower |
+| | | `ZONE-002` | Urban Vertical NFT Rack 2 | `cilantro` | Cilantro | Water Pump, Dosing Valve |
+| | | `ZONE-003` | Aeroponic Herb Chamber | `arugula` | Arugula | Aeroponic Pump, Chiller |
+| **FAC-007** | Clark Freeport Urban Hydroponic Complex (Clark Freeport, Pampanga) | `ZONE-001` | High-Capacity Aeroponic Tower A | `spinach` | Spinach | Aeroponic Tower Pump |
+| | | `ZONE-002` | Controlled Photoperiod Module | `parsley` | Parsley | LED Array, CO2 Injector |
+| | | `ZONE-003` | NFT Leafy Greens Tier | `butterhead_lettuce` | Butterhead Lettuce | Water Pump, Chiller |
+| **FAC-008** | Iloilo City Microgreens Vertical Agro-Lab (Mandurriao, Iloilo City) | `ZONE-001` | Precision Microgreen Tray Module A | `microgreens` | Microgreens | Precision LED Module |
+| | | `ZONE-002` | LED Agro-Research Chamber | `basil` | Genovese Basil | Dosing Valve, HVAC Blower |
+| | | `ZONE-003` | High-Density Sprout Rack | `strawberry` | Strawberry | Water Pump, Chiller |
+
+---
+
+## Role of Pre-Dispatch Validation (`validation/`) vs Raw Anomaly Injection (`producer/`)
+
+1. **`validation/` Package**:
+   - `telemetry_validator.py`, `crop_lifecycle_validator.py`, `irrigation_telemetry_validator.py` perform structural checks (ensuring required schema keys exist, field types are compatible, payloads are non-empty).
+   - *Crucial Rule*: Validation checks ensure structural sanity before payload dispatching without cleaning or stripping out raw telemetry defects (spikes, nulls, typos, out-of-order timestamps).
+
+2. **`producer/anomaly_injector.py` Package**:
+   - Intentionally injects real-world raw data quality defects into the JSON payload stream prior to Eventstream transmission.
+   - Ensures that **Microsoft Fabric (Bronze to Silver Lakehouse)** receives realistic dirty data for testing PySpark deduplication, null imputation, timestamp standardization, and outlier handling.
