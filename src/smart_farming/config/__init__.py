@@ -12,6 +12,10 @@ from .maintenance import *
 from .settings import Settings
 from .irrigation import *
 from .facility import *
+from .nutrient_solution_domain import *
+from .hvac_climate_domain import *
+from .led_lighting_domain import *
+from .water_recirculation_domain import *
 
 
 __all__ = [
@@ -101,6 +105,47 @@ __all__ = [
 
     # Facility Variables
     "PHILIPPINE_FACILITY_PROFILES"
+    # Nutrient Solution Variables
+    "TARGET_NUTRIENT_PH",
+    "MIN_SAFE_NUTRIENT_PH",
+    "MAX_SAFE_NUTRIENT_PH",
+    "TARGET_NUTRIENT_EC_MS_CM",
+    "MIN_SAFE_NUTRIENT_EC_MS_CM",
+    "MAX_SAFE_NUTRIENT_EC_MS_CM",
+    "TARGET_DISSOLVED_OXYGEN_MG_L",
+    "MIN_SAFE_DISSOLVED_OXYGEN_MG_L",
+    "MAX_SAFE_DISSOLVED_OXYGEN_MG_L",
+    "NUTRIENT_DOSING_RATE_ML_PER_SEC",
+    "PH_ADJUST_DOSING_RATE_ML_PER_SEC",
+    # HVAC Climate Variables
+    "TARGET_AIR_TEMPERATURE_CELSIUS",
+    "MIN_SAFE_AIR_TEMPERATURE_CELSIUS",
+    "MAX_SAFE_AIR_TEMPERATURE_CELSIUS",
+    "TARGET_RELATIVE_HUMIDITY_PERCENT",
+    "MIN_SAFE_RELATIVE_HUMIDITY_PERCENT",
+    "MAX_SAFE_RELATIVE_HUMIDITY_PERCENT",
+    "TARGET_CO2_PPM",
+    "MIN_SAFE_CO2_PPM",
+    "MAX_SAFE_CO2_PPM",
+    "DEFAULT_HVAC_AIRFLOW_CFM",
+    # LED Lighting Variables
+    "TARGET_PPFD_UMOL_M2_S",
+    "MIN_PPFD_UMOL_M2_S",
+    "MAX_PPFD_UMOL_M2_S",
+    "TARGET_DLI_MOL_M2_DAY",
+    "MIN_DLI_MOL_M2_DAY",
+    "MAX_DLI_MOL_M2_DAY",
+    "DEFAULT_PHOTOPERIOD_HOURS",
+    # Water Recirculation Variables
+    "DEFAULT_RESERVOIR_CAPACITY_LITERS",
+    "MIN_RESERVOIR_WATER_LEVEL_PERCENT",
+    "DEFAULT_PUMP_FLOW_RATE_GPM",
+    "MIN_SAFE_PUMP_FLOW_RATE_GPM",
+    "MAX_SAFE_PUMP_FLOW_RATE_GPM",
+    "TARGET_PUMP_PRESSURE_PSI",
+    "MIN_SAFE_PUMP_PRESSURE_PSI",
+    "MAX_SAFE_PUMP_PRESSURE_PSI",
+    "TARGET_CHILLER_WATER_TEMP_CELSIUS",
 
     # Maintenance 
     "EVENT_TYPE_MAINTENANCE",
