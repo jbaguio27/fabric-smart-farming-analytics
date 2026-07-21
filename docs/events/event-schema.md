@@ -38,11 +38,54 @@ This document supports the implementation of:
 - Microsoft Fabric Eventstream
 - Eventhouse (KQL Database)
 - OneLake
-- Lakehouse
+- Lakehouse (Bronze, Silver, Gold Layers)
 - Spark Notebooks
 - Warehouse
 - Power BI
 - Data Activator
+
+---
+
+# Raw Data Anomaly & Fabric Medallion Cleaning Specification
+
+Raw telemetry emitted by the simulator deliberately includes real-world data quality anomalies to mirror enterprise Industrial IoT production environments. The platform follows a Medallion Architecture pattern for handling raw and cleaned data:
+
+```
++-----------------------------+
+| Python Smart Farm Simulator |  (Emits Raw, Dirty Data: Nulls, Epoch Timestamps, Spikes, Duplicates)
++-----------------------------+
+               |
+               v
++-----------------------------+
+|  Fabric Eventstream / KQL   |  (Ingests Raw Telemetry Payloads verbatim into Bronze Layer)
++-----------------------------+
+               |
+               v
++-----------------------------+
+|   OneLake Bronze Lakehouse   |  (Stores raw append-only event JSON records without filtering)
++-----------------------------+
+               |
+               v
++-----------------------------+
+|   PySpark Silver Notebooks  |  (Executes Data Cleaning: Deduplication, Null Imputation, Outlier Handling)
++-----------------------------+
+               |
+               v
++-----------------------------+
+|    OneLake Silver Layer     |  (Cleaned, Standardized Delta Tables ready for Gold Aggregations)
++-----------------------------+
+```
+
+## Data Quality Transformation Matrix
+
+| Event Field | Raw Anomaly Behavior (Bronze) | Silver Cleaning Rule |
+|-------------|-------------------------------|----------------------|
+| `event_id` | Duplicate deliveries (~2%) | `dropDuplicates(["event_id"])` |
+| `timestamp` / `event_timestamp` | Mixed ISO 8601 strings and Unix Epoch integer strings; out-of-order timestamps | Convert all timestamp variants to standard UTC `TimestampType` using custom PySpark UDF or `coalesce(to_timestamp(col, 'yyyy-MM-dd...'), to_timestamp(col.cast('long')))` |
+| `facility_id` / `zone_id` | Mixed casing (`fac-001`, `FAC-001`) | `upper(trim(col))` standardization |
+| `operating_status` | Lowercase/uppercase mismatch (`online`, `ONLINE`, `warning`) | `upper(trim(col))` standardization |
+| Sensor Metrics (`reading_value`, `health`, `power_consumption_kw`) | Negative values (`-999.0`), extreme spikes (`9999.99`), `null` values | Filter or clamp invalid ranges (`when(col < 0, null).when(col > max_val, max_val).otherwise(col)`); log bad records into Data Quality audit table |
+| Optional payload fields | Missing keys, empty strings (`""`), `null` | Impute median/default values or preserve `NULL` explicitly for Silver analytics |
 
 ---
 
