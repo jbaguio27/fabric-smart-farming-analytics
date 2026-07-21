@@ -11,12 +11,13 @@ from .equipment_runtime import *
 from .maintenance import *
 from .settings import Settings
 from .irrigation import *
+from .facility import *
 
 
 __all__ = [
     "Settings",
 
-    # Environment Variables
+    # Global Variables
     "APPLICATION_NAME",
     "APPLICATION_VERSION",
     "APPLICATION_OWNER",
@@ -42,6 +43,10 @@ __all__ = [
     "DAYTIME_SENSOR_ADJUSTMENTS",
     "NIGHTTIME_SENSOR_ADJUSTMENTS",
     "WEATHER_SENSOR_ADJUSTMENTS",
+    "SIMULATION_START_HOUR",
+    "SIMULATION_START_MINUTE",
+    "EVENT_TYPE_ENVIRONMENTAL",
+    "EVENT_TYPE_EQUIPMENT",
 
     # Environment Variables
     "DAY_START_HOUR",
@@ -94,11 +99,8 @@ __all__ = [
     "NIGHTTIME_DEMAND_MULTIPLIER",
     "HOURS_PER_DAY",
 
-
-    "SIMULATION_START_HOUR",
-    "SIMULATION_START_MINUTE",
-    "EVENT_TYPE_ENVIRONMENTAL",
-    "EVENT_TYPE_EQUIPMENT",
+    # Facility Variables
+    "PHILIPPINE_FACILITY_PROFILES"
 
     # Maintenance 
     "EVENT_TYPE_MAINTENANCE",
