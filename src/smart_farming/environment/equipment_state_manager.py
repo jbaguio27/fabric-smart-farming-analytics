@@ -107,6 +107,7 @@ class EquipmentStateManager:
         self._maintenance_manager: MaintenanceManager = maintenance_manager
         self._facility_demand_model: FacilityDemandModel = facility_demand_model
         self._states: dict[str, EquipmentState] = {}
+        self._previous_status: dict[str, EquipmentOperatingStatus] = {}
         
         self.initialize()
 
@@ -472,12 +473,25 @@ class EquipmentStateManager:
                 )
             )
 
+            # Motor startup inrush current spike logic:
+            prev_status = self._previous_status.get(equipment.equipment_id)
+            current_status = state.operating_status
+            is_startup = (
+                prev_status is not None
+                and prev_status != EquipmentOperatingStatus.ONLINE
+                and current_status == EquipmentOperatingStatus.ONLINE
+            )
+            self._previous_status[equipment.equipment_id] = current_status
+
+            if is_startup:
+                power *= 4.5
+
             temperature_range = (
                 profile.max_temperature_celsius
                 - profile.base_temperature_celsius
             )
 
-            temperature = (
+            target_temp = (
                 profile.base_temperature_celsius
                 + (temperature_range * load_ratio)
                 + (
@@ -488,6 +502,16 @@ class EquipmentStateManager:
                     state.failure_probability
                     * SENSOR_TEMPERATURE_FAILURE_STRESS_CELSIUS
                 )
+            )
+
+            # Thermal Inertia: warms-up/cool-down lag (0.85 previous + 0.15 target)
+            prev_temp = state.temperature_celsius
+            if prev_temp == 0.0:
+                prev_temp = profile.base_temperature_celsius
+
+            temperature = (
+                prev_temp * 0.85
+                + target_temp * 0.15
                 + self._random_manager.uniform(
                     -SENSOR_TEMPERATURE_VARIATION_CELSIUS,
                     SENSOR_TEMPERATURE_VARIATION_CELSIUS,
@@ -499,7 +523,7 @@ class EquipmentStateManager:
                 - profile.base_vibration_mm_s
             )
 
-            vibration = (
+            target_vibration = (
                 profile.base_vibration_mm_s
                 + (vibration_range * load_ratio)
                 + (
@@ -510,6 +534,16 @@ class EquipmentStateManager:
                     state.failure_probability
                     * SENSOR_VIBRATION_FAILURE_STRESS_MM_S
                 )
+            )
+
+            # Mechanical Inertia (0.75 previous + 0.25 target)
+            prev_vib = state.vibration_mm_s
+            if prev_vib == 0.0:
+                prev_vib = profile.base_vibration_mm_s
+
+            vibration = (
+                prev_vib * 0.75
+                + target_vibration * 0.25
                 + self._random_manager.uniform(
                     -SENSOR_VIBRATION_VARIATION_MM_S,
                     SENSOR_VIBRATION_VARIATION_MM_S,
@@ -518,7 +552,7 @@ class EquipmentStateManager:
 
             state.power_consumption_kw = round(
                 min(
-                    profile.max_power_kw,
+                    profile.max_power_kw * 5.0,
                     max(
                         profile.idle_power_kw,
                         power,
