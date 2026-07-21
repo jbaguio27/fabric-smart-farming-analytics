@@ -90,8 +90,8 @@ class CropStateManager:
         self._irrigation_state_manager = irrigation_state_manager
 
         self._states: dict[str, CropState] = {}
-
         self._cleaning_cycles: dict[str, int] = {}
+        self._growth_multipliers: dict[str, float] = {}
 
         self._simulation_cycle = 0
 
@@ -116,22 +116,18 @@ class CropStateManager:
         This method is executed once during simulator startup. One mutable
         CropState instance is created for every immutable CropDefinition
         stored in the CropRegistry.
-
-        Runtime state is initialized to represent newly planted crops.
-        Lifecycle progression is intentionally not performed during
-        initialization.
-
-        Repeated calls completely rebuild the runtime state from the
-        registered crop definitions.
         """
 
         self._states.clear()
+        self._growth_multipliers.clear()
 
         for definition in self._crop_registry.get_all():
-
             profile = self._crop_profile_registry.get_profile(
                 definition.crop_type,
             )
+
+            # Roll random biological growth rate offset (representing genotype/seed variance)
+            self._growth_multipliers[definition.crop_batch_id] = self._random_manager.uniform(0.95, 1.05)
 
             self._states[definition.crop_batch_id] = CropState(
                 crop_batch_id=definition.crop_batch_id,
@@ -270,6 +266,7 @@ class CropStateManager:
                     else:
                         # Cleaning completed! Re-sow a new batch in this zone.
                         del self._cleaning_cycles[state.crop_batch_id]
+                        self._growth_multipliers[state.crop_batch_id] = self._random_manager.uniform(0.95, 1.05)
                         state.lifecycle_stage = CROP_STAGE_GERMINATION
                         state.age_days = 0.0
                         state.health_score = MAX_HEALTH_SCORE
@@ -507,11 +504,15 @@ class CropStateManager:
                 1.0,
             ),
         )
-
+        
+        # Permanent stress stunts growth rate rate up to 50%
+        stress_stunt = 1.0 - (state.stress_index / 100.0) * 0.5
+        
         state.growth_rate = (
             health_factor
             * temperature_factor
             * humidity_factor
+            * stress_stunt
         )
 
     def _update_biomass(
@@ -523,25 +524,16 @@ class CropStateManager:
 
         Biomass represents the cumulative above-ground plant mass
         produced by the simulated crop.
-
-        During this implementation phase biomass is intentionally
-        estimated using accumulated crop age and current growth
-        rate only.
-
-        Future milestones will incorporate environmental conditions,
-        lighting, irrigation, nutrient availability, and crop-specific
-        physiological models.
-
-        Args
-        ----
-        state:
-            Mutable runtime crop state.
         """
+        # Permanent stress reduces harvested yield by up to 40%
+
+        stress_yield_stunt = 1.0 - (state.stress_index / 100.0) * 0.4
 
         state.biomass_grams = (
             state.age_days
             * state.growth_rate
             * BIOMASS_GROWTH_MULTIPLIER
+            * stress_yield_stunt
         )
 
     def _update_water_demand(
@@ -726,28 +718,30 @@ class CropStateManager:
         """
         Update the crop stress index.
 
-        The stress index provides a normalized estimate of overall crop
-        stress.
-
-        A value of zero represents an ideal growing condition, while a
-        value of one hundred represents severe biological stress.
-
-        During this implementation phase the index is derived solely from
-        crop health.
-
-        Future milestones will incorporate environmental conditions,
-        irrigation performance, nutrient availability, equipment health,
-        and crop-specific physiological responses.
-
-        Args:
-            state:
-                Mutable runtime crop state.
+        The stress index accumulates permanent physiological damage when the
+        growing environment deviates from optimal parameters.
         """
+        profile = self._crop_profile_registry.get_profile(state.crop_type)
+        environment = self._growing_environment_manager.get_zone_state(state.zone_id)
 
-        state.stress_index = (
-            100.0
-            - state.health_score
+        temperature_error = abs(environment.air_temperature_celsius - profile.optimal_temperature_celsius)
+        humidity_error = abs(environment.humidity_percent - profile.optimal_humidity_percent)
+        ph_error = abs(environment.water_ph - profile.optimal_ph)
+        ec_error = abs(environment.electrical_conductivity - profile.optimal_ec)
+
+        stress = (
+            temperature_error * 0.20
+            + humidity_error * 0.05
+            + ph_error * 4.00
+            + ec_error * 1.50
         )
+
+        if stress > 1.0:
+            # Permanent cumulative physiological damage increases with sustained stress
+            state.stress_index = min(100.0, state.stress_index + (stress - 1.0) * 0.02)
+        else:
+            # Very slow recovery of stress index in optimal condition
+            state.stress_index = max(0.0, state.stress_index - 0.01)
 
     def _determine_next_stage(
         self,
@@ -757,22 +751,7 @@ class CropStateManager:
         Determine whether a crop batch should advance to its next lifecycle
         stage.
 
-        Lifecycle progression during this phase is deterministic and depends
-        solely on accumulated crop age compared with the configured growth
-        profile.
-
-        Environmental conditions, equipment health, irrigation, disease,
-        stress, and harvest scheduling are intentionally excluded from this
-        implementation to minimize regression risk. Those influences will be
-        introduced in later roadmap phases.
-
-        Args:
-            state:
-                Runtime crop state.
-
-        Returns:
-            The next lifecycle stage if the crop has reached the required
-            biological age; otherwise None.
+        Applies genetic variance multipliers to make growth timings probabilistic.
         """
 
         profile = self._crop_profile_registry.get_profile(
@@ -780,18 +759,18 @@ class CropStateManager:
         )
 
         age = state.age_days
+        multiplier = self._growth_multipliers.get(state.crop_batch_id, 1.0)
 
         if (
             state.lifecycle_stage == CROP_STAGE_GERMINATION
-            and age >= profile.germination_days
+            and age >= (profile.germination_days * multiplier)
         ):
             return CROP_STAGE_SEEDLING
 
         if (
             state.lifecycle_stage == CROP_STAGE_SEEDLING
             and age >= (
-                profile.germination_days
-                + profile.seedling_days
+                (profile.germination_days + profile.seedling_days) * multiplier
             )
         ):
             return CROP_STAGE_VEGETATIVE
@@ -799,9 +778,7 @@ class CropStateManager:
         if (
             state.lifecycle_stage == CROP_STAGE_VEGETATIVE
             and age >= (
-                profile.germination_days
-                + profile.seedling_days
-                + profile.vegetative_days
+                (profile.germination_days + profile.seedling_days + profile.vegetative_days) * multiplier
             )
         ):
             return CROP_STAGE_MATURE
@@ -809,10 +786,7 @@ class CropStateManager:
         if (
             state.lifecycle_stage == CROP_STAGE_MATURE
             and age >= (
-                profile.germination_days
-                + profile.seedling_days
-                + profile.vegetative_days
-                + profile.maturity_days
+                (profile.germination_days + profile.seedling_days + profile.vegetative_days + profile.maturity_days) * multiplier
             )
         ):
             return CROP_STAGE_HARVESTED
