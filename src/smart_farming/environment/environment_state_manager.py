@@ -136,7 +136,10 @@ class EnvironmentStateManager:
         options = list(probabilities.keys())
         weights = list(probabilities.values())
 
-        return self.random_manager.weighted_choice(options, weights)
+        weather = self.random_manager.weighted_choice(options, weights)
+        if weather not in WEATHER_TYPES:
+            weather = WEATHER_SUNNY
+        return weather
 
     def _random_weather_duration(self) -> int:
         """
@@ -170,8 +173,10 @@ class EnvironmentStateManager:
             rainfall = self.random_manager.uniform(10.0, 35.0)
 
         # 3. Sinusoidal Diurnal Ambient Temperature Curve
-        # Peaks at 13:30 (DIURNAL_MAX_TEMP_HOUR), minimum at 05:30 (DIURNAL_MIN_TEMP_HOUR)
-        diurnal_factor = math.sin(math.pi * (hour_float - 9.5) / 12.0)
+        # Peaks at DIURNAL_MAX_TEMP_HOUR, minimum at DIURNAL_MIN_TEMP_HOUR
+        mid_hour = (DIURNAL_MAX_TEMP_HOUR + DIURNAL_MIN_TEMP_HOUR) / 2.0
+        period = DIURNAL_MAX_TEMP_HOUR - DIURNAL_MIN_TEMP_HOUR
+        diurnal_factor = math.sin(math.pi * (hour_float - mid_hour) / (period * 1.5))
         ambient_temp = 27.0 + 4.5 * diurnal_factor
 
         # Modulate temperature by weather state
@@ -181,6 +186,10 @@ class EnvironmentStateManager:
             ambient_temp -= 4.5
         elif self.current_weather == WEATHER_FOGGY:
             ambient_temp -= 1.5
+        elif self.current_weather == WEATHER_CLOUDY:
+            ambient_temp -= 1.2
+        elif self.current_weather == WEATHER_PARTLY_CLOUDY:
+            ambient_temp -= 0.5
 
         # Tiny random thermal noise fluctuation
         ambient_temp += self.random_manager.uniform(-0.3, 0.3)

@@ -29,6 +29,11 @@ from smart_farming.config import (
     DAYTIME_SENSOR_ADJUSTMENTS,
     NIGHTTIME_SENSOR_ADJUSTMENTS,
     WEATHER_SENSOR_ADJUSTMENTS,
+    SENSOR_TYPE_AIR_TEMPERATURE,
+    SENSOR_TYPE_HUMIDITY,
+    SENSOR_TYPE_LIGHT_INTENSITY,
+    SENSOR_TYPE_CO2,
+    SENSOR_TYPE_DISSOLVED_OXYGEN,
 )
 from smart_farming.models import (
     EnvironmentalTelemetryEvent,
@@ -268,7 +273,8 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
         sensor_value = self._apply_weather_adjustment(
             sensor_type=sensor_type,
             sensor_value=sensor_value,
-            weather=environment.weather,
+            environment=environment,
+            facility_id=facility_id,
         )
 
         sensor_value = self._apply_facility_adjustment(
@@ -609,45 +615,58 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
         self,
         sensor_type: str,
         sensor_value: float | None,
-        weather: str,
+        environment: WeatherState,
+        facility_id: FacilityId,
     ) -> float | None:
         """
-        Apply the current weather influence to a sensor reading.
-
-        Each sensor responds differently based on its configured
-        weather sensitivity.
-
+        Apply the current weather influence to a sensor reading based on continuous physical variables.
+        Each sensor responds dynamically to continuous temperature, humidity, solar radiation,
+        and precipitation levels.
         Args:
-            sensor_type:
-                Environmental sensor type.
-            sensor_value:
-                Current sensor reading.
-            weather:
-                Current simulated weather.
-
+            sensor_type: Environmental sensor type.
+            sensor_value: Current sensor reading.
+            environment: Current simulated weather state.
+            facility_id: Target facility identifier.
         Returns:
             Weather-adjusted sensor value.
         """
-
         if sensor_value is None:
             return None
         
         metadata = self.get_sensor_metadata(sensor_type)
-
         sensitivity = metadata['weather_sensitivity']
+        precision = metadata['precision']
+        adjustment = 0.0
+        if sensor_type == SENSOR_TYPE_AIR_TEMPERATURE:
+            # Ambient air temp is perturbed by external temp and solar thermal roof gain
+            temp_delta = environment.ambient_temperature_celsius - 24.0
+            solar_gain = environment.solar_irradiance_w_m2 / 1000.0
+            adjustment = (temp_delta * 0.45 + solar_gain * 1.8) * sensitivity
+        elif sensor_type == SENSOR_TYPE_HUMIDITY:
+            # Internal humidity drifts slightly with external ambient humidity levels
+            humidity_delta = environment.ambient_humidity_percent - 65.0
+            adjustment = (humidity_delta * 0.25) * sensitivity
+        elif sensor_type == SENSOR_TYPE_LIGHT_INTENSITY:
+            # Ambient daylight adds natural light component
+            adjustment = (environment.solar_irradiance_w_m2 * 25.0) * sensitivity
+        elif sensor_type == SENSOR_TYPE_CO2:
+            # High rainfall limits CO2 concentration slightly due to pressure differences
+            adjustment = (-environment.rainfall_mm_hr * 1.2) * sensitivity
+        elif sensor_type == SENSOR_TYPE_DISSOLVED_OXYGEN:
+            # Dissolved oxygen solubility decreases as ambient temperature increases (gas solubility law)
+            current_temp = self._get_sensor_state(
+                facility_id=facility_id,
+                sensor_type=SENSOR_TYPE_AIR_TEMPERATURE,
+            )
+            if current_temp is None:
+                current_temp = 24.0
+            temp_delta = current_temp - 24.0
+            adjustment = (-temp_delta * 0.15) * sensitivity
+        value = sensor_value + adjustment
+        # Clamp to safety limits
+        value = max(metadata['min_value'], min(value, metadata['max_value']))
 
-        adjustment = (
-            WEATHER_SENSOR_ADJUSTMENTS
-            .get(weather, {})
-            .get(sensor_type, 0.0)
-        )
-
-        value = sensor_value + (adjustment * sensitivity)
-
-        return round(
-            value,
-            metadata['precision'],
-        )
+        return round(value, precision)
 
     def _apply_facility_adjustment(
         self,
