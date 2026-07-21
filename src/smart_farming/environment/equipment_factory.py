@@ -20,6 +20,7 @@ from smart_farming.config import (
     ZONE_ID_PREFIX,
     DEFAULT_GROWING_ZONES_PER_FACILITY,
     EQUIPMENT_TYPES,
+    FACILITY_EQUIPMENT_TYPES,
     EQUIPMENT_ID_PREFIX,
     EQUIPMENT_MANUFACTURERS,
     EQUIPMENT_MODELS,
@@ -76,6 +77,22 @@ class EquipmentFactory:
                 f"{FACILITY_ID_PREFIX}-{facility_number:03d}"
             )
 
+            # 1. Create facility-level common infrastructure assets
+            for infra_type in FACILITY_EQUIPMENT_TYPES:
+                inventory.append(
+                    Equipment(
+                        equipment_id=f"{EQUIPMENT_ID_PREFIX}-{equipment_counter:05d}",
+                        facility_id=facility_id,
+                        zone_id="ZONE-000",  # Represents central/common facility infrastructure
+                        equipment_type=infra_type,
+                        manufacturer=EQUIPMENT_MANUFACTURERS[infra_type],
+                        model=EQUIPMENT_MODELS[infra_type],
+                        serial_number=f"SN-{equipment_counter:08d}",
+                    )
+                )
+                equipment_counter += 1
+
+            # 2. Create zone-level equipment assets
             for zone_number in range(
                 1,
                 DEFAULT_GROWING_ZONES_PER_FACILITY + 1,

@@ -36,6 +36,13 @@ EQUIPMENT_TYPES = (
     "co2_injector",
 )
 
+FACILITY_EQUIPMENT_TYPES = (
+    "ro_system",
+    "plc_controller",
+    "ups_system",
+    "edge_gateway",
+)
+
 EQUIPMENT_MANUFACTURERS = {
     "water_pump": "Grundfos",
     "hvac": "Daikin",
@@ -43,6 +50,10 @@ EQUIPMENT_MANUFACTURERS = {
     "nutrient_pump": "Netafim",
     "ventilation_fan": "ebm-papst",
     "co2_injector": "Atlas Copco",
+    "ro_system": "Suez",
+    "plc_controller": "Siemens",
+    "ups_system": "APC",
+    "edge_gateway": "Advantech",
 }
 
 EQUIPMENT_MODELS = {
@@ -52,4 +63,8 @@ EQUIPMENT_MODELS = {
     "nutrient_pump": "NMC Pro",
     "ventilation_fan": "AxiBlade",
     "co2_injector": "GA11",
+    "ro_system": "PRO-RO",
+    "plc_controller": "S7-1500",
+    "ups_system": "Smart-UPS",
+    "edge_gateway": "UNO-2484G",
 }
