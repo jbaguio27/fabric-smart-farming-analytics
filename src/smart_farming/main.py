@@ -71,7 +71,9 @@ def main() -> None:
 
         log_application_start(logger, settings)
 
-        dispatcher = EventDispatcher()
+        dispatcher = EventDispatcher(
+            settings=settings,
+        )
 
         random_manager = RandomManager(
             seed=settings.random_seed,
