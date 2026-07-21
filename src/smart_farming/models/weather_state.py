@@ -17,3 +17,7 @@ class WeatherState:
     timestamp: datetime
     weather: WeatherType
     is_daytime: bool
+    ambient_temperature_celsius: float
+    ambient_humidity_percent: float
+    solar_irradiance_w_m2: float
+    rainfall_mm_hr: float
