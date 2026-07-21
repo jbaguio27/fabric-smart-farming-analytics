@@ -167,3 +167,12 @@ PHILIPPINE_FACILITY_PROFILES: Final[dict[str, FacilityProfile]] = {
         ),
     ),
 }
+
+# ========================================================================================
+# Facility Operational Calculation Constants
+# ========================================================================================
+
+EVENT_TYPE_FACILITY: Final[str] = "FacilityEvent"
+HEALTHY_FACILITY_THRESHOLD: Final[float] = 70.0
+ZONE_POWER_CONSUMPTION_KW: Final[float] = 45.5
+ZONE_WATER_RECIRCULATION_LPH: Final[float] = 250.0

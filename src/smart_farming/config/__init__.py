@@ -105,6 +105,10 @@ __all__ = [
 
     # Facility Variables
     "PHILIPPINE_FACILITY_PROFILES"
+    "EVENT_TYPE_FACILITY",
+    "HEALTHY_FACILITY_THRESHOLD",
+    "ZONE_POWER_CONSUMPTION_KW",
+    "ZONE_WATER_RECIRCULATION_LPH",
     # Nutrient Solution Variables
     "TARGET_NUTRIENT_PH",
     "MIN_SAFE_NUTRIENT_PH",

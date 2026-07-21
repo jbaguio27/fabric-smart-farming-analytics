@@ -19,6 +19,7 @@ from .maintenance_state import MaintenanceState
 from .lighting_telemetry_event import LightingTelemetryEvent
 from .irrigation_telemetry_event import IrrigationTelemetryEvent
 from .maintenance_event import MaintenanceEvent
+from .facility_event import FacilityEvent
 
 
 __all__ = [
@@ -39,4 +40,5 @@ __all__ = [
     "MaintenanceState",
     "LightingTelemetryEvent",
     "MaintenanceEvent",
+    "FacilityEvent",
 ]
