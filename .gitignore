@@ -41,4 +41,4 @@ htmlcov/
 .DS_Store
 
 # Local Development Verification
-verify_pipeline.py
+/verify_pipeline.py
