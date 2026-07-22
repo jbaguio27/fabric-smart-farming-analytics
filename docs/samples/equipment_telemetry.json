@@ -1,0 +1,19 @@
+{
+  "event_id": "ab704d2e-13cb-4d89-b1d5-86af10283c79",
+  "event_type": "equipment_telemetry",
+  "facility_id": "FAC-001",
+  "source": "SmartFarmingSimulator",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-07-22T09:12:00.000Z",
+  "zone_id": "ZONE-001",
+  "equipment_id": "EQ-00005",
+  "equipment_type": "water_pump",
+  "operating_status": "ONLINE",
+  "health": 99.57,
+  "current_load": 60.06,
+  "failure_probability": 0.0204,
+  "runtime_hours": 12.0,
+  "vibration_vps": 1.866,
+  "operating_temperature_c": 35.6,
+  "power_consumption_kw": 3.36
+}

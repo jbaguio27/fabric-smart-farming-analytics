@@ -1,0 +1,15 @@
+{
+  "event_id": "fe8912d0-e145-4299-87a3-cb2478b0198e",
+  "event_type": "crop_lifecycle",
+  "facility_id": "FAC-001",
+  "source": "SmartFarmingSimulator",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-07-22T09:12:00.000Z",
+  "zone_id": "ZONE-001",
+  "crop_batch_id": "BATCH-00001",
+  "crop_type": "Butterhead Lettuce",
+  "lifecycle_stage": "VEGETATIVE",
+  "age_days": 17.36,
+  "health_score": 100.0,
+  "environmental_stress_index": 0.0
+}

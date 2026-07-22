@@ -1,0 +1,14 @@
+{
+  "event_id": "c1a01ef9-81cb-4029-a1b7-a3f290d238b7",
+  "event_type": "environmental_telemetry",
+  "facility_id": "FAC-001",
+  "source": "SmartFarmingSimulator",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-07-22T09:12:00.000Z",
+  "sensor_type": "air_temperature",
+  "sensor_value": 24.6,
+  "unit": "°C",
+  "sensor_status": "HEALTHY",
+  "weather": "PARTLY_CLOUDY",
+  "is_daytime": true
+}

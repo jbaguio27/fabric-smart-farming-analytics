@@ -1,0 +1,66 @@
+{
+  "eventstream": {
+    "name": "FarmingTelemetryEventstream",
+    "description": "Smart Farming real-time event routing gateway",
+    "sources": [
+      {
+        "name": "SmartFarmSimulatorSource",
+        "type": "CustomApp",
+        "properties": {
+          "dataFormat": "Json",
+          "ingestionEndpoint": "https://<fabric-eventstream-endpoint>/zip/ingest"
+        }
+      }
+    ],
+    "destinations": [
+      {
+        "name": "EquipmentKQLTarget",
+        "type": "KQLDatabase",
+        "properties": {
+          "database": "SmartFarmingKQLDB",
+          "table": "EquipmentTelemetry",
+          "format": "Json"
+        },
+        "routingRule": {
+          "filter": "event_type == 'equipment_telemetry'"
+        }
+      },
+      {
+        "name": "EnvironmentalKQLTarget",
+        "type": "KQLDatabase",
+        "properties": {
+          "database": "SmartFarmingKQLDB",
+          "table": "EnvironmentalTelemetry",
+          "format": "Json"
+        },
+        "routingRule": {
+          "filter": "event_type == 'environmental_telemetry'"
+        }
+      },
+      {
+        "name": "CropLifecycleKQLTarget",
+        "type": "KQLDatabase",
+        "properties": {
+          "database": "SmartFarmingKQLDB",
+          "table": "CropLifecycle",
+          "format": "Json"
+        },
+        "routingRule": {
+          "filter": "event_type == 'crop_lifecycle'"
+        }
+      },
+      {
+        "name": "OneLakeLakehouseTarget",
+        "type": "Lakehouse",
+        "properties": {
+          "lakehouse": "SmartFarmingLakehouse",
+          "path": "Files/bronze/raw_telemetry/",
+          "format": "Json"
+        },
+        "routingRule": {
+          "filter": "true"
+        }
+      }
+    ]
+  }
+}
