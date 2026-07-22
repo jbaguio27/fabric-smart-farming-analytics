@@ -53,6 +53,7 @@ class IrrigationStateManager:
         """
 
         self._states: dict[str, IrrigationState] = {}
+        self._simulation_cycle = 0
 
         self._initialize(zone_count)
 
@@ -141,15 +142,8 @@ class IrrigationStateManager:
         1. Evaluate irrigation schedule.
         2. Update irrigation activation.
         3. Update hydraulic operating conditions.
-
-        Separating these responsibilities keeps the irrigation controller
-        modular and allows future milestones to evolve hydraulic behavior
-        independently from scheduling logic and crop demand.
-
-        Args:
-            current_cycle:
-                Current simulation cycle.
         """
+        current_cycle = self._simulation_cycle
 
         for state in self._states.values():
 
@@ -170,6 +164,8 @@ class IrrigationStateManager:
             self._update_water_delivery(
                 state=state,
             )
+
+        self._simulation_cycle += 1
 
     def _update_schedule(
         self,
@@ -197,7 +193,7 @@ class IrrigationStateManager:
         if current_cycle < state.next_irrigation_cycle:
             return
 
-        state.is_irrigation_active = True
+        state.irrigation_active = True
 
         state.last_irrigation_cycle = current_cycle
 
@@ -236,7 +232,7 @@ class IrrigationStateManager:
                 Current simulator cycle.
         """
 
-        if not state.is_irrigation_active:
+        if not state.irrigation_active:
             return
 
         if (
@@ -245,7 +241,7 @@ class IrrigationStateManager:
         ):
             return
 
-        state.is_irrigation_active = False
+        state.irrigation_active = False
 
         state.irrigation_end_cycle = 0
 
@@ -274,21 +270,21 @@ class IrrigationStateManager:
                 Mutable irrigation runtime state.
         """
 
-        if state.is_irrigation_active:
+        if state.irrigation_active:
 
-            state.flow_rate_lpm = (
+            state.flow_rate_liters_per_minute = (
                 DEFAULT_IRRIGATION_FLOW_RATE_LPM
             )
 
-            state.pressure_bar = (
+            state.pressure_kpa = (
                 DEFAULT_IRRIGATION_PRESSURE_BAR
             )
 
             return
 
-        state.flow_rate_lpm = 0.0
+        state.flow_rate_liters_per_minute = 0.0
 
-        state.pressure_bar = 0.0
+        state.pressure_kpa = 0.0
 
     def _update_water_delivery(
         self,
@@ -319,7 +315,7 @@ class IrrigationStateManager:
                 Mutable irrigation runtime state.
         """
 
-        if state.is_irrigation_active:
+        if state.irrigation_active:
 
             state.water_delivered_liters = (
                 DEFAULT_WATER_APPLICATION_LITERS
