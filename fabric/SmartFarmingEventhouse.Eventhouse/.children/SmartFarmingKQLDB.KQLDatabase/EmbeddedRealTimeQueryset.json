@@ -12,7 +12,7 @@
     "tabs": [
       {
         "id": "3e239f70-b472-4a25-a218-a08364ba6aef",
-        "content": ".show tables ",
+        "content": ".clear table MaintenanceActivity data",
         "title": "Tab",
         "dataSourceId": "7e5d1dd6-d10d-4fe6-af14-aaceb69ebafd"
       }
