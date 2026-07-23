@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Eventstream",
+    "displayName": "FarmingTelemetryEventstream"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "53481396-2c72-a3c5-4074-382f1261ba10"
+  }
+}
