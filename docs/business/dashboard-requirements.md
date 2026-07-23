@@ -19,7 +19,7 @@ Each dashboard is designed to support a specific user persona while maintaining 
 |------------|-----------------|-------------|--------------|
 | Real-Time Operations Dashboard | Farm Operator | Eventhouse | Near Real-Time |
 | Farm Performance Dashboard | Agricultural Director | Fabric Warehouse | Scheduled |
-| Executive Dashboard | Executive Leadership | Fabric Warehouse | Scheduled |
+| Executive Dashboard | Executive Leadership, Regional Operations Director | Fabric Warehouse (Direct Lake) | Scheduled / Direct Lake |
 | Platform Monitoring Dashboard | Data Engineer | Fabric Monitoring Hub, Eventhouse | Near Real-Time |
 
 ---
@@ -32,10 +32,11 @@ Each dashboard is designed to support a specific user persona while maintaining 
 
 - Farm Operator
 - Operations Manager
+- Maintenance Technician Supervisor
 
 ### Business Purpose
 
-Provide live operational visibility into environmental conditions, equipment status, and active alerts across one or more farming facilities.
+Provide live operational visibility into environmental conditions, equipment status, active alerts, and maintenance work order execution across farming facilities.
 
 ### Data Source
 
@@ -44,20 +45,21 @@ Provide live operational visibility into environmental conditions, equipment sta
 
 ### Key Metrics
 
-- Current Water pH
-- Current Dissolved Oxygen
-- Current Electrical Conductivity
-- Current Air Temperature
-- Current Humidity
-- Pump Status
-- Active Critical Alerts
+- Current Water pH & Electrical Conductivity (EC)
+- Current Dissolved Oxygen & Air Temperature
+- Relative Humidity & Light Intensity (PPFD / DLI)
+- Equipment Operating Health & Vibration (`vps`)
+- Active Critical Alerts & Failure Probability (`> 0.35`)
+- Active Maintenance Work Orders & Remaining Repair Minutes
 - Sensor Availability
 
 ### Visualizations
 
-- Live KPI Cards
-- Live Sensor Trend Charts
-- Current Equipment Status Grid
+- Live KPI Cards & Day/Night Photoperiod Status
+- Live Sensor Trend Charts & KQL Time-Series Decomposition
+- Equipment Health & Vibration Heatmap Grid
+- Maintenance Work Order Kanban & Repair Velocity Visualizer
+- Active Threshold Breach Alerts Table
 - Active Alert Feed
 - Facility Status Overview
 
@@ -128,11 +130,12 @@ Provide executives with historical business performance, enterprise KPIs, and st
 
 ### Visualizations
 
-- KPI Cards
-- Facility Performance Ranking
-- Monthly Trend Lines
-- Production Summary
-- Operational Scorecards
+- Interactive Geospatial Philippines Map (Luzon, Visayas, Mindanao regional facilities using `latitude`, `longitude`, `elevation_m`)
+- Executive KPI Cards & Multi-Facility Health Scores
+- Regional Facility Performance Ranking & Risk Matrix
+- Monthly Yield & Biomass Growth Trend Lines
+- Power Grid Redundancy & Water Source Vulnerability Matrix
+- Operational Health Scorecards
 
 ---
 

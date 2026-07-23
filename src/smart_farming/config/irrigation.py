@@ -18,9 +18,9 @@ optimization parameters.
 # Irrigation Scheduling
 # ==================================================================
 
-DEFAULT_IRRIGATION_INTERVAL_CYCLES = 180
+DEFAULT_IRRIGATION_INTERVAL_CYCLES = 3
 
-DEFAULT_IRRIGATION_DURATION_CYCLES = 8
+DEFAULT_IRRIGATION_DURATION_CYCLES = 1
 
 # ==================================================================
 # Hydraulic Targets

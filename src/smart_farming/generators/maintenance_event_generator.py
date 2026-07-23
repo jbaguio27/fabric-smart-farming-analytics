@@ -79,11 +79,17 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
             self._maintenance_state_manager.get_all_states()
         ):
 
+            # Generate realistic technician notes and health restoration data based on status
+            is_completed = (state.work_status == "COMPLETED" or not state.is_active)
+            tech_notes = (
+                "Preventative maintenance completed successfully. Calibration verified."
+                if is_completed else f"Maintenance in progress. {state.remaining_duration_minutes}m remaining."
+            )
+            health_restored_val = 100.0 if is_completed else 0.0
+
             events.append(
                 MaintenanceEvent(
                     event_type=self.EVENT_TYPE,
-                    event_timestamp=timestamp,
-                    simulation_cycle=simulation_cycle,
                     facility_id=state.facility_id,
                     zone_id=state.zone_id,
                     equipment_id=state.equipment_id,
@@ -92,11 +98,14 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
                     maintenance_type=state.maintenance_type,
                     priority=state.priority,
                     assigned_technician=state.assigned_technician,
-                    work_status=state.work_status,
+                    maintenance_status=state.work_status,
                     estimated_duration_minutes=state.estimated_duration_minutes,
                     remaining_duration_minutes=state.remaining_duration_minutes,
                     completion_percent=state.completion_percent,
                     is_active=state.is_active,
+                    technician_notes=tech_notes,
+                    health_restored=health_restored_val,
+                    simulation_cycle=simulation_cycle,
                 )
             )
 

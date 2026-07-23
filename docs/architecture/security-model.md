@@ -207,18 +207,16 @@ No embedded credentials are stored in notebooks or pipelines.
 
 ---
 
-# Data Protection
+# Data Protection & Microsoft Purview Governance
 
-The platform protects data using Microsoft Fabric security capabilities.
+The platform protects data using Microsoft Fabric security capabilities and Microsoft Purview governance policies.
 
 Controls include:
 
-- Encryption at rest
-- Encryption in transit (HTTPS/TLS)
-- Secure OneLake storage
-- Managed storage services
-
-Telemetry data is encrypted throughout the platform.
+- **Encryption at Rest & In Transit**: Full TLS 1.3 encryption across Eventstream ingestion, OneLake Delta tables, Eventhouse, and Synapse Data Warehouse.
+- **Microsoft Purview PII Classification**: Operator contact fields (`operator_contact`, `operator_phone`) are tagged with Microsoft Purview Sensitivity Labels (`Confidential / PII`).
+- **Cryptographic PII Masking**: PySpark Silver Notebooks apply SHA-256 column-level masking (`sha2(operator_contact, 256)`), masking raw email addresses and phone numbers before data is promoted to Silver and Gold analytics.
+- **Row-Level Security (RLS) by Philippine Region**: Synapse Data Warehouse and Power BI semantic models enforce Row-Level Security filtering on `DimFacility.region` so Regional Operations Directors can only view facilities within their authorized geographic territory (e.g. NCR, CAR, Davao Region).
 
 ---
 

@@ -86,42 +86,15 @@ class IrrigationTelemetryGenerator(
             events.append(
 
                 IrrigationTelemetryEvent(
-
-                    event_id=str(
-                        uuid4()
-                    ),
-
                     event_type=self.EVENT_TYPE,
-
-                    event_timestamp=timestamp,
-
                     facility_id=state.facility_id,
-
                     zone_id=state.zone_id,
-
-                    irrigation_active=(
-                        state.irrigation_active
-                    ),
-
-                    flow_rate_liters_per_minute=(
-                        state.flow_rate_liters_per_minute
-                    ),
-
-                    pressure_kpa=(
-                        state.pressure_kpa
-                    ),
-
-                    irrigation_duration_seconds=(
-                        state.irrigation_duration_seconds
-                    ),
-
-                    water_delivered_liters=(
-                        state.water_delivered_liters
-                    ),
-
-                    nutrient_solution_delivered_liters=(
-                        state.nutrient_solution_delivered_liters
-                    ),
+                    irrigation_active=state.irrigation_active,
+                    flow_rate_liters_per_minute=state.flow_rate_liters_per_minute,
+                    pressure_kpa=state.pressure_kpa,
+                    irrigation_duration_seconds=state.irrigation_duration_seconds,
+                    water_delivered_liters=state.water_delivered_liters,
+                    nutrient_solution_delivered_liters=state.nutrient_solution_delivered_liters,
                 )
             )
 

@@ -75,5 +75,7 @@ class EquipmentTelemetryEvent(BaseEvent):
     current_load: float
     failure_probability: float
     power_consumption_kw: float
-    temperature_celsius: float
-    vibration_mm_s: float
+    operating_temperature_c: float
+    vibration_vps: float
+    manufacturer: str = ""
+    model_number: str = ""

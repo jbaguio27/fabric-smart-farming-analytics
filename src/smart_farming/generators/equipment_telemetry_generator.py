@@ -148,7 +148,15 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
         events: list[EquipmentTelemetryEvent] = []
 
         try:
-            for equipment in self.equipment_registry.list_all():
+            import random
+            sample_rate = getattr(self.settings, "equipment_telemetry_sample_rate", 1.0)
+            equipment_list = self.equipment_registry.list_all()
+            
+            if sample_rate < 1.0:
+                k = max(1, int(len(equipment_list) * sample_rate))
+                equipment_list = random.sample(equipment_list, k=k)
+
+            for equipment in equipment_list:
                 events.append(
                     self._create_equipment_event(
                         equipment=equipment,
@@ -161,8 +169,9 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
             ) from exc
 
         self.logger.info(
-            "Generated %d equipment telemetry events.",
+            "Generated %d equipment telemetry events (Sample Rate: %.2f).",
             len(events),
+            sample_rate,
         )
 
         return events
@@ -210,8 +219,10 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
             current_load=state.current_load,
             failure_probability=state.failure_probability,
             power_consumption_kw=state.power_consumption_kw,
-            temperature_celsius=state.temperature_celsius,
-            vibration_mm_s=state.vibration_mm_s,
+            operating_temperature_c=state.temperature_celsius,
+            vibration_vps=state.vibration_mm_s,
+            manufacturer=getattr(equipment, "manufacturer", ""),
+            model_number=getattr(equipment, "model_number", ""),
         )
 
         event.timestamp = timestamp

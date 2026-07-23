@@ -172,19 +172,18 @@ Metrics include:
 
 ---
 
-# Data Quality Monitoring
+# Data Quality & Anomaly Defect Rate Monitoring
 
-Data quality monitoring ensures telemetry remains trustworthy throughout processing.
+Data quality monitoring ensures telemetry remains trustworthy throughout processing, tracking raw defects intentionally introduced by `DataAnomalyInjector` to validate Medallion PySpark Silver cleansing.
 
-## Metrics
+## Monitored Anomaly Defect Categories
 
-- Validation failures
-- Schema violations
-- Null rate
-- Duplicate rate
-- Invalid records
-- Quarantine table growth
-- Data Quality Score
+- **Deduplication Rate**: Percentage of duplicate event bursts detected and dropped by PySpark `dropDuplicates(["event_id"])`.
+- **Missing Value Imputation Rate**: Frequency of `null` or `"N/A"` string values requiring Silver default imputation.
+- **Format Standardization Rate**: Percentage of non-standard timestamps (Epoch integer strings) standardized to ISO 8601 UTC.
+- **Type Casting Defect Rate**: Volume of stringified numbers (`"97.10"`) converted back to float/double primitives during Silver processing.
+- **Outlier Quarantine Volume**: Count of extreme physical outliers (e.g. `air_temp > 100°C` or `pH < 0`) routed into the `quarantine_invalid_events` Delta table.
+- **Integrity Constraint Violations**: Orphaned asset events (`EQ-99999_ORPHAN`) flagged during dimensional Silver joins.
 
 Monitoring results are stored as validation logs and surfaced through the Platform Monitoring Dashboard.
 

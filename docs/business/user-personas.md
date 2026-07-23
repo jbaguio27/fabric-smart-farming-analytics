@@ -209,12 +209,58 @@ Executives require a high-level operational view of the business to monitor orga
 
 ---
 
+# Persona 7: Maintenance Technician Supervisor
+
+## Overview
+
+Maintenance Technician Supervisors coordinate work order execution across equipment assets, track MTTR, and oversee preventative equipment repairs.
+
+## Responsibilities
+
+- Schedule preventative maintenance work orders
+- Track technician repair velocity and Mean Time To Repair (MTTR)
+- Manage spare parts and equipment restoration health targets
+- Respond to equipment failure probability alerts (`> 0.35`)
+
+## Data Needs
+
+- Real-Time Maintenance Work Order Kanban
+- Technician Workload Velocity & Resolution Time
+- Equipment Degradation & Health Scores
+- Work Order Notes & Health Restoration Logs
+
+---
+
+# Persona 8: Regional Operations Director
+
+## Overview
+
+Regional Operations Directors oversee vertical farming facilities across Philippine geographical regions (Luzon, Visayas, Mindanao), evaluating regional climate risks and power grid redundancy.
+
+## Responsibilities
+
+- Monitor multi-facility regional performance across Luzon, Visayas, and Mindanao
+- Assess regional power grid redundancy and water source reliability
+- Evaluate geographic crop yield and biomass growth variance
+- Allocate operational budget across regional vertical farm complexes
+
+## Data Needs
+
+- Interactive Geospatial Philippines Map
+- Regional Facility Health & Risk Scorecards
+- Power Grid Redundancy & Climate Vulnerability Matrix
+- Regional Financial & Production Performance Reports
+
+---
+
 # Persona Summary
 
 | Persona | Primary Focus | Primary Dashboard | Primary Data Source |
 |----------|---------------|-------------------|---------------------|
 | Farm Operator | Real-time facility monitoring | Real-Time Operations Dashboard | Eventhouse |
 | Operations Manager | Multi-facility operations | Real-Time Operations Dashboard | Eventhouse, Fabric Warehouse |
+| Maintenance Technician Supervisor | Equipment repairs & MTTR | Real-Time Operations Dashboard | Eventhouse, Fabric Warehouse |
+| Regional Operations Director | Regional multi-facility health | Executive Dashboard (Geospatial Map) | Fabric Warehouse (Direct Lake) |
 | Agricultural Director | Crop health and yield | Farm Performance Dashboard | Fabric Warehouse |
 | Data Engineer | Platform operations | Platform Monitoring Dashboard | Fabric Monitoring Hub, Eventhouse, Monitoring Lakehouse |
 | Data Analyst | Historical analytics | Farm Performance Dashboard | Fabric Warehouse |
@@ -228,6 +274,8 @@ Executives require a high-level operational view of the business to monitor orga
 |----------|--------------|
 | Farm Operator | Read access to assigned facility |
 | Operations Manager | Read access to Real-Time Operations Dashboard and Farm Performance Dashboard |
+| Maintenance Technician Supervisor | Read access to Maintenance Kanban and Equipment Telemetry |
+| Regional Operations Director | Read access to Executive Regional Geospatial Dashboards (filtered by region via RLS) |
 | Agricultural Director | Read access to historical analytics |
 | Data Engineer | Administrative access to Fabric engineering resources |
 | Data Analyst | Read access to Fabric Warehouse, curated analytical datasets, and historical dashboards |
@@ -241,9 +289,9 @@ The user personas influence the design of several project components:
 
 - Real-Time Operations Dashboard
 - Farm Performance Dashboard
-- Executive Dashboard
+- Executive Dashboard (Geospatial Philippines Map)
 - Platform Monitoring Dashboard
-- Microsoft Fabric workspace security
+- Microsoft Fabric workspace security & Row-Level Security (RLS)
 - Role-Based Access Control (RBAC)
 - Data Activator alert routing
 - Reporting and semantic models

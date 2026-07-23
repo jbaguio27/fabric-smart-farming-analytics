@@ -21,6 +21,76 @@ from smart_farming.utils import (
 from .anomaly_injector import DataAnomalyInjector
 
 
+UNIFIED_EVENT_SCHEMA_KEYS: list[str] = [
+    "event_id",
+    "event_type",
+    "facility_id",
+    "zone_id",
+    "equipment_id",
+    "equipment_type",
+    "operating_status",
+    "health",
+    "current_load",
+    "failure_probability",
+    "runtime_hours",
+    "vibration_vps",
+    "operating_temperature_c",
+    "power_consumption_kw",
+    "sensor_type",
+    "sensor_value",
+    "unit",
+    "sensor_status",
+    "weather",
+    "is_daytime",
+    "crop_batch_id",
+    "crop_type",
+    "lifecycle_stage",
+    "age_days",
+    "health_score",
+    "growth_rate",
+    "biomass_grams",
+    "water_consumption_liters",
+    "nutrient_consumption_grams",
+    "environmental_stress_index",
+    "ambient_temperature_celsius",
+    "ambient_humidity_percent",
+    "irrigation_active",
+    "flow_rate_liters_per_minute",
+    "pressure_kpa",
+    "irrigation_duration_seconds",
+    "water_delivered_liters",
+    "nutrient_solution_delivered_liters",
+    "lighting_enabled",
+    "lighting_intensity_percent",
+    "photoperiod_hours",
+    "daily_light_integral",
+    "maintenance_type",
+    "maintenance_status",
+    "technician_notes",
+    "health_restored",
+    "overall_health",
+    "active_critical_alerts",
+    "power_draw_kw",
+    "water_circulation_lph",
+    "facility_name",
+    "region",
+    "city",
+    "latitude",
+    "longitude",
+    "elevation_m",
+    "climate_zone",
+    "water_source",
+    "power_grid_redundancy",
+    "max_zone_capacity",
+    "manufacturer",
+    "model_number",
+    "operator_contact",
+    "operator_phone",
+    "timestamp",
+    "schema_version",
+]
+
+
 class EventDispatcher:
     """
     Dispatch simulator events to the configured destination (e.g., Microsoft Fabric Eventstream).
@@ -113,7 +183,12 @@ class EventDispatcher:
             normalized = self._normalize_payload(raw_dict)
 
             if isinstance(normalized, dict):
-                return self.anomaly_injector.inject_anomalies(normalized)
+                # Pad payload with master schema keys so all stream columns are always present
+                unified_payload = {key: normalized.get(key, None) for key in UNIFIED_EVENT_SCHEMA_KEYS}
+                for k, v in normalized.items():
+                    unified_payload[k] = v
+
+                return self.anomaly_injector.inject_anomalies(unified_payload)
 
             return [normalized] if isinstance(normalized, dict) else []
 
@@ -171,7 +246,52 @@ class EventDispatcher:
             DispatchError:
                 If the HTTP POST request encounters an exception or non-2xx response.
         """
+        import time
+        import urllib.parse
+        import hmac
+        import hashlib
+        import base64
+
         headers = {"Content-Type": "application/json"}
+
+        # Check if the configured endpoint is a Connection String instead of a raw URL
+        if endpoint.startswith("Endpoint=sb://"):
+            try:
+                parts = dict(x.split("=", 1) for x in endpoint.split(";") if "=" in x)
+                sb_endpoint = parts["Endpoint"]
+                key_name = parts["SharedAccessKeyName"]
+                key = parts["SharedAccessKey"]
+                entity_path = parts["EntityPath"]
+
+                # Extract host domain (e.g. esehsgl63ww6tcoggbvlhg.servicebus.windows.net)
+                host = sb_endpoint.replace("sb://", "").replace("/", "")
+                
+                # Build the standard HTTP POST REST URL
+                target_url = f"https://{host}/{entity_path}/messages"
+                
+                # Sign the Event Hub Resource URI
+                resource_uri = f"https://{host}/{entity_path}"
+                expiry = int(time.time() + 3600)
+                string_to_sign = urllib.parse.quote_plus(resource_uri) + '\n' + str(expiry)
+                
+                sig = base64.b64encode(
+                    hmac.new(
+                        key.encode("utf-8"),
+                        string_to_sign.encode("utf-8"),
+                        hashlib.sha256
+                    ).digest()
+                ).decode("utf-8")
+                
+                sas_token = (
+                    f"SharedAccessSignature sr={urllib.parse.quote_plus(resource_uri)}"
+                    f"&sig={urllib.parse.quote_plus(sig)}&se={expiry}&skn={key_name}"
+                )
+                
+                headers["Authorization"] = sas_token
+                endpoint = target_url
+                self.logger.info("Automatically generated SAS Token and configured HTTP headers for Eventstream authentication.")
+            except Exception as e:
+                raise DispatchError(f"Failed to parse Event Hub connection string from settings: {e}")
 
         try:
             response = requests.post(

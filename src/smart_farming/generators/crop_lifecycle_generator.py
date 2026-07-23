@@ -81,19 +81,12 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
         self,
     ) -> list[CropLifecycleEvent]:
         """
-        Generate immutable crop lifecycle telemetry events.
-
-        One lifecycle event is produced for every active crop during each
-        simulation cycle.
-
-        The generator intentionally performs no lifecycle transition
-        detection. Detecting historical changes belongs to downstream
-        analytics rather than the telemetry producer.
+        Generate immutable crop lifecycle telemetry events on stage transitions.
 
         Returns
         -------
         list[CropLifecycleEvent]
-            Immutable lifecycle events for all active crop batches.
+            Immutable lifecycle events for crop batches that transitioned.
         """
 
         events: list[CropLifecycleEvent] = []
@@ -103,6 +96,13 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
             if not crop_state.is_active:
                 continue
             
+            # Change Detection: only emit on stage transition or first detection
+            last_stage = self._last_stage_emitted.get(crop_state.crop_batch_id)
+            if last_stage == crop_state.lifecycle_stage:
+                continue
+
+            self._last_stage_emitted[crop_state.crop_batch_id] = crop_state.lifecycle_stage
+
             events.append(
                 self._build_event(crop_state)
             )
@@ -137,24 +137,21 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
             crop_state.crop_batch_id
         )
 
-        return CropLifecycleEvent(
-            crop_batch_id=definition.crop_batch_id,
+        event = CropLifecycleEvent(
+            event_type="CropLifecycleEvent",
             facility_id=definition.facility_id,
+            crop_batch_id=definition.crop_batch_id,
             zone_id=definition.zone_id,
             crop_type=definition.crop_type,
-
             lifecycle_stage=crop_state.lifecycle_stage,
             age_days=crop_state.age_days,
             health_score=crop_state.health_score,
+            environmental_stress_index=crop_state.stress_index,
             is_active=crop_state.is_active,
-
             air_temperature_celsius=environment.air_temperature_celsius,
             humidity_percent=environment.humidity_percent,
             water_ph=environment.water_ph,
             electrical_conductivity=environment.electrical_conductivity,
-
-            event_timestamp=datetime.now(UTC),
             simulation_cycle=self._crop_state_manager.simulation_cycle,
-            event_type="CropLifecycleEvent",
-            event_id=str(uuid.uuid4())
         )
+        return event

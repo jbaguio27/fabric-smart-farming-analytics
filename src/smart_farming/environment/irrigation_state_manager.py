@@ -90,9 +90,7 @@ class IrrigationStateManager:
                 water_delivered_liters=0.0,
                 nutrient_solution_delivered_liters=0.0,
                 last_irrigation_cycle=0,
-                next_irrigation_cycle=(
-                    DEFAULT_IRRIGATION_INTERVAL_CYCLES
-                ),
+                next_irrigation_cycle=index % 3,
                 irrigation_interval_cycles=(
                     DEFAULT_IRRIGATION_INTERVAL_CYCLES
                 ),
@@ -174,20 +172,6 @@ class IrrigationStateManager:
     ) -> None:
         """
         Evaluate irrigation schedule.
-
-        This method determines whether the current simulation cycle has
-        reached the zone's next scheduled irrigation event.
-
-        During this milestone no irrigation is started. The controller
-        simply records that the irrigation window has been reached and
-        schedules the next irrigation interval.
-
-        Args:
-            state:
-                Mutable irrigation runtime state.
-
-            current_cycle:
-                Current simulator cycle.
         """
 
         if current_cycle < state.next_irrigation_cycle:
@@ -214,22 +198,6 @@ class IrrigationStateManager:
     ) -> None:
         """
         Update the active irrigation window.
-
-        The irrigation controller keeps irrigation active until the configured
-        end cycle is reached. Using an explicit end-cycle simplifies future
-        controller enhancements, including crop-specific irrigation durations,
-        manual overrides, and adaptive scheduling.
-
-        This milestone manages only runtime activation. Hydraulic simulation,
-        flow generation, pressure modeling, and water delivery remain future
-        enhancements.
-
-        Args:
-            state:
-                Mutable irrigation runtime state.
-
-            current_cycle:
-                Current simulator cycle.
         """
 
         if not state.irrigation_active:
@@ -251,23 +219,6 @@ class IrrigationStateManager:
     ) -> None:
         """
         Update irrigation hydraulic operating conditions.
-
-        The hydraulic model is responsible for exposing the runtime
-        operating conditions of an irrigation zone while irrigation is
-        active.
-
-        During this milestone hydraulic behavior remains intentionally
-        deterministic. When irrigation is active the configured nominal
-        flow rate and operating pressure are applied. When irrigation is
-        inactive both values return immediately to zero.
-
-        Water delivery is handled by a dedicated controller stage,
-        allowing hydraulic simulation and delivered irrigation volume
-        to evolve independently as the simulator becomes more realistic.
-
-        Args:
-            state:
-                Mutable irrigation runtime state.
         """
 
         if state.irrigation_active:
@@ -276,9 +227,12 @@ class IrrigationStateManager:
                 DEFAULT_IRRIGATION_FLOW_RATE_LPM
             )
 
+            # Convert 2.2 bar to 220.0 kPa
             state.pressure_kpa = (
-                DEFAULT_IRRIGATION_PRESSURE_BAR
+                DEFAULT_IRRIGATION_PRESSURE_BAR * 100.0
             )
+
+            state.irrigation_duration_seconds = 300
 
             return
 
@@ -286,39 +240,26 @@ class IrrigationStateManager:
 
         state.pressure_kpa = 0.0
 
+        state.irrigation_duration_seconds = 0
+
     def _update_water_delivery(
         self,
         state: IrrigationState,
     ) -> None:
         """
         Update irrigation water delivery.
-
-        Water delivery represents the volume of nutrient solution applied
-        during the current simulation cycle.
-
-        This responsibility is intentionally isolated from hydraulic
-        simulation. Hydraulic simulation determines whether irrigation is
-        physically operating, while water delivery determines how much
-        solution is delivered during that operating period.
-
-        During this implementation phase a deterministic delivery volume is
-        used whenever irrigation is active. In addition to the instantaneous
-        delivery value, the controller maintains a cumulative irrigation
-        volume for each growing zone.
-
-        Future milestones will compare cumulative water delivery against crop
-        water demand, enabling irrigation efficiency analysis and closed-loop
-        water management.
-
-        Args:
-            state:
-                Mutable irrigation runtime state.
         """
 
         if state.irrigation_active:
 
-            state.water_delivered_liters = (
-                DEFAULT_WATER_APPLICATION_LITERS
+            # 2.5 L/min * 5 min = 12.5 liters water delivered
+            state.water_delivered_liters = round(
+                state.flow_rate_liters_per_minute * 5.0, 2
+            )
+
+            # 5% nutrient dosing solution = 0.63 liters
+            state.nutrient_solution_delivered_liters = round(
+                state.water_delivered_liters * 0.05, 2
             )
 
             state.total_water_delivered_liters += (
@@ -328,3 +269,5 @@ class IrrigationStateManager:
             return
 
         state.water_delivered_liters = 0.0
+
+        state.nutrient_solution_delivered_liters = 0.0

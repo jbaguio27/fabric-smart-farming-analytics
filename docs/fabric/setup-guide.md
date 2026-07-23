@@ -82,58 +82,10 @@ This sits in the **Operational Real-Time Analytics** path. It is the destination
 1. In your Fabric workspace, click **+ New item** and select **Eventhouse**.
 2. Name the Eventhouse `SmartFarmingEventhouse` and click **Create**.
 3. Under the newly created Eventhouse, select **New KQL Database**. Name it `SmartFarmingKQLDB`.
-4. Open the KQL Query editor and run the KQL table creation queries to define the schemas:
+4. Open the KQL Query editor and run the complete clean deployment KQL table creation queries from [`config/fabric/kql-table-schemas.kql`](file:///c:/Users/iosep/Github%20Repositories/fabric-realtime-retail-monitoring/config/fabric/kql-table-schemas.kql).
+5. If dropping existing tables for a clean deployment, run:
    ```kql
-   // Create Equipment Telemetry Table
-   .create table EquipmentTelemetry (
-       event_id: string,
-       event_type: string,
-       facility_id: string,
-       zone_id: string,
-       equipment_id: string,
-       equipment_type: string,
-       operating_status: string,
-       health: real,
-       current_load: real,
-       failure_probability: real,
-       runtime_hours: real,
-       vibration_vps: real,
-       operating_temperature_c: real,
-       power_consumption_kw: real,
-       timestamp: datetime,
-       schema_version: string
-   )
-
-   // Create Environmental Telemetry Table
-   .create table EnvironmentalTelemetry (
-       event_id: string,
-       event_type: string,
-       facility_id: string,
-       sensor_type: string,
-       sensor_value: real,
-       unit: string,
-       sensor_status: string,
-       weather: string,
-       is_daytime: bool,
-       timestamp: datetime,
-       schema_version: string
-   )
-
-   // Create Crop Lifecycle Table
-   .create table CropLifecycle (
-       event_id: string,
-       event_type: string,
-       facility_id: string,
-       zone_id: string,
-       crop_batch_id: string,
-       crop_type: string,
-       lifecycle_stage: string,
-       age_days: real,
-       health_score: real,
-       environmental_stress_index: real,
-       timestamp: datetime,
-       schema_version: string
-   )
+   .drop tables (EquipmentTelemetry, EnvironmentalTelemetry, CropLifecycle, CropTelemetry, IrrigationTelemetry, LightingTelemetry, MaintenanceActivity, FacilityOperations) ifexists
    ```
 
 ### 5. How it Integrates with Git and Version Control

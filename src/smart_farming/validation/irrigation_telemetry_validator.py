@@ -44,7 +44,7 @@ class IrrigationTelemetryValidator:
             "Unexpected irrigation event type."
         )
 
-        assert event.event_timestamp is not None, (
+        assert event.timestamp is not None, (
             "Event timestamp is required."
         )
 

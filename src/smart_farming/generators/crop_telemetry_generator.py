@@ -128,12 +128,9 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
         )
 
         return CropTelemetryEvent(
-            event_timestamp=datetime.now(UTC),
-            simulation_cycle=(
-                self._crop_state_manager.simulation_cycle
-            ),
-            crop_batch_id=definition.crop_batch_id,
+            event_type="crop",
             facility_id=definition.facility_id,
+            crop_batch_id=definition.crop_batch_id,
             zone_id=definition.zone_id,
             crop_type=definition.crop_type,
             lifecycle_stage=crop_state.lifecycle_stage,
@@ -141,17 +138,12 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
             health_score=crop_state.health_score,
             growth_rate=crop_state.growth_rate,
             biomass_grams=crop_state.biomass_grams,
-            water_uptake_liters=crop_state.water_uptake_liters,
-            nutrient_uptake_grams=crop_state.nutrient_uptake_grams,
-            stress_index=crop_state.stress_index,
-            air_temperature_celsius=(
-                environment.air_temperature_celsius
-            ),
-            humidity_percent=(
-                environment.humidity_percent
-            ),
+            water_consumption_liters=crop_state.water_uptake_liters,
+            nutrient_consumption_grams=crop_state.nutrient_uptake_grams,
+            environmental_stress_index=crop_state.stress_index,
+            ambient_temperature_celsius=environment.air_temperature_celsius,
+            ambient_humidity_percent=environment.humidity_percent,
             water_ph=environment.water_ph,
-            electrical_conductivity=(
-                environment.electrical_conductivity
-            ),
+            electrical_conductivity=environment.electrical_conductivity,
+            simulation_cycle=self._crop_state_manager.simulation_cycle,
         )

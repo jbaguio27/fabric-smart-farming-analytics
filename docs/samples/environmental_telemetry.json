@@ -1,6 +1,6 @@
 {
   "event_id": "c1a01ef9-81cb-4029-a1b7-a3f290d238b7",
-  "event_type": "environmental_telemetry",
+  "event_type": "environmental",
   "facility_id": "FAC-001",
   "source": "SmartFarmingSimulator",
   "schema_version": "1.0.0",

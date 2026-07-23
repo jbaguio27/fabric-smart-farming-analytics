@@ -437,6 +437,72 @@ Measure the availability of the Microsoft Fabric environment supporting operatio
 
 ---
 
+## KPI-019: Mean Time To Repair (MTTR) & Maintenance Velocity
+
+### Business Objective
+
+Measure technician maintenance response velocity and work order resolution speed across equipment assets.
+
+### Formula
+
+Total Maintenance Repair Minutes / Total Completed Work Orders
+
+### Target
+
+< 45 minutes
+
+### Primary Users
+
+- Operations Manager
+- Maintenance Technician Supervisor
+
+### Dashboard
+
+- Real-Time Operations Dashboard & Farm Performance Dashboard
+
+---
+
+## KPI-020: Crop Biomass Accumulation Rate
+
+### Business Objective
+
+Measure biological growth progress (`biomass_grams`) vs. baseline target growth curves per crop stage.
+
+### Target
+
+≥ 95% of target biomass curve
+
+### Primary Users
+
+- Agricultural Director
+
+### Dashboard
+
+- Farm Performance Dashboard
+
+---
+
+## KPI-021: Regional Facility Operational Health Score
+
+### Business Objective
+
+Measure multi-facility operational health across Philippine geographic regions (Luzon, Visayas, Mindanao), incorporating elevation and power grid redundancy.
+
+### Target
+
+≥ 95%
+
+### Primary Users
+
+- Executive Leadership
+- Regional Operations Director
+
+### Dashboard
+
+- Executive Dashboard (Geospatial Philippine Map)
+
+---
+
 ## KPI Summary
 
 | KPI | Category | Target | Primary Dashboard | Primary Persona |
@@ -444,9 +510,11 @@ Measure the availability of the Microsoft Fabric environment supporting operatio
 | Crop Health Score | Crop Health | ≥95% | Farm Performance Dashboard | Agricultural Director |
 | Crop Mortality Rate | Crop Health | <5% | Farm Performance Dashboard | Agricultural Director |
 | Growth Cycle Completion Rate | Crop Health | ≥98% | Farm Performance Dashboard | Agricultural Director |
+| Crop Biomass Accumulation Rate | Crop Health | ≥95% | Farm Performance Dashboard | Agricultural Director |
 | Active Critical Alerts | Operations | 0 | Real-Time Operations Dashboard | Farm Operator |
 | Average Alert Response Time | Operations | <5 min | Farm Performance Dashboard | Operations Manager |
 | Facility Health Score | Operations | ≥95% | Real-Time Operations Dashboard | Operations Manager |
+| Mean Time To Repair (MTTR) | Operations | <45 min | Real-Time Operations Dashboard | Operations Manager |
 | Equipment Availability | Equipment | ≥99% | Farm Performance Dashboard | Operations Manager |
 | Pump Failure Rate | Equipment | <1% | Farm Performance Dashboard | Operations Manager |
 | Sensor Availability | Equipment | ≥99% | Platform Monitoring Dashboard | Data Engineer |
@@ -456,6 +524,7 @@ Measure the availability of the Microsoft Fabric environment supporting operatio
 | Data Quality Score | Platform | ≥99.5% | Platform Monitoring Dashboard | Data Engineer |
 | Pipeline Success Rate | Platform | ≥99.9% | Platform Monitoring Dashboard | Data Engineer |
 | Multi-Facility Operational Score | Executive | ≥95% | Executive Dashboard | Executive Leadership |
+| Regional Facility Health Score | Executive | ≥95% | Executive Dashboard | Regional Operations Director |
 | Warehouse Load Success Rate | Platform | ≥99.9% | Platform Monitoring Dashboard | Data Engineer |
 | Quarantine Rate | Platform | <0.5% | Platform Monitoring Dashboard | Data Engineer |
 | Platform Availability | Platform | ≥99.9% | Platform Monitoring Dashboard | Data Engineer |

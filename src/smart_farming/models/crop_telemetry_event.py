@@ -13,11 +13,11 @@ receive a consistent snapshot of the simulated crop state.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from .base_event import BaseEvent
 
 
-@dataclass(frozen=True, slots=True)
-class CropTelemetryEvent:
+@dataclass(slots=True)
+class CropTelemetryEvent(BaseEvent):
     """
     Immutable crop telemetry event.
 
@@ -50,10 +50,25 @@ class CropTelemetryEvent:
     health_score:
         Overall crop health.
 
-    air_temperature_celsius:
-        Current zone air temperature.
+    growth_rate:
+        Current growth rate.
 
-    humidity_percent:
+    biomass_grams:
+        Total biomass in grams.
+
+    water_consumption_liters:
+        Water consumption in liters.
+
+    nutrient_consumption_grams:
+        Nutrient consumption in grams.
+
+    environmental_stress_index:
+        Index representing environmental stress.
+
+    ambient_temperature_celsius:
+        Current ambient air temperature.
+
+    ambient_humidity_percent:
         Current relative humidity.
 
     water_ph:
@@ -63,38 +78,19 @@ class CropTelemetryEvent:
         Nutrient solution electrical conductivity.
     """
 
-    event_timestamp: datetime
-
     simulation_cycle: int
-
     crop_batch_id: str
-
-    facility_id: str
-
     zone_id: str
-
     crop_type: str
-
     lifecycle_stage: str
-
     age_days: float
-
     health_score: float
-
     growth_rate: float
-
     biomass_grams: float
-
-    water_uptake_liters: float
-
-    nutrient_uptake_grams: float
-
-    stress_index: float
-
-    air_temperature_celsius: float
-
-    humidity_percent: float
-
+    water_consumption_liters: float
+    nutrient_consumption_grams: float
+    environmental_stress_index: float
+    ambient_temperature_celsius: float
+    ambient_humidity_percent: float
     water_ph: float
-
     electrical_conductivity: float

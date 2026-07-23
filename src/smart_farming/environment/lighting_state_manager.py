@@ -66,9 +66,11 @@ class LightingStateManager:
         for index in range(1, zone_count + 1):
 
             zone_id = f"ZONE-{index:03d}"
+            facility_index = ((index - 1) // 10) + 1
+            facility_id = f"FAC-{min(8, max(1, facility_index)):03d}"
 
             self._states[zone_id] = LightingState(
-                facility_id="FAC-001",
+                facility_id=facility_id,
                 zone_id=zone_id,
                 lights_enabled=True,
                 light_intensity_percent=100.0,
@@ -76,19 +78,14 @@ class LightingStateManager:
                 daily_light_integral=17.0,
             )
 
+        self._cycle_count = 0
+
     def get_zone_state(
         self,
         zone_id: str,
     ) -> LightingState:
         """
         Retrieve the runtime lighting state of a growing zone.
-
-        Args:
-            zone_id:
-                Zone identifier.
-
-        Returns:
-            Mutable LightingState instance.
         """
 
         return self._states[zone_id]
@@ -98,9 +95,6 @@ class LightingStateManager:
     ) -> list[LightingState]:
         """
         Return every managed lighting state.
-
-        Returns:
-            Runtime lighting states.
         """
 
         return list(self._states.values())
@@ -109,9 +103,20 @@ class LightingStateManager:
         """
         Advance the lighting simulation by one cycle.
 
-        Dynamic lighting behavior is intentionally deferred to a
-        later milestone. The runtime state therefore remains
-        unchanged during this implementation phase.
+        Simulates daytime/nighttime photoperiod cycles (16h day / 8h night).
         """
+        self._cycle_count = getattr(self, "_cycle_count", 0) + 1
+        # 1 day = 288 cycles (5-minute cycles)
+        day_cycle = self._cycle_count % 288
+        # 16h day = first 192 cycles, 8h night = remaining 96 cycles
+        is_day = day_cycle < 192
 
-        return
+        for state in self._states.values():
+            if is_day:
+                state.lights_enabled = True
+                state.light_intensity_percent = 100.0
+                state.daily_light_integral = 17.0
+            else:
+                state.lights_enabled = False
+                state.light_intensity_percent = 0.0
+                state.daily_light_integral = 0.0

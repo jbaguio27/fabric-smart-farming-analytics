@@ -22,7 +22,10 @@ The platform separates operational analytics from historical business analytics.
 | Pump Failure Rate | fact_hardware_metrics | dim_sensor, dim_date | (Pump Failures ÷ Total Pump Events) × 100 | Farm Performance Dashboard |
 | Environmental Stability Score | fact_sensor_telemetry | dim_crop_batch, dim_facility, dim_date | Percentage of environmental readings within acceptable operating ranges | Farm Performance Dashboard |
 | Multi-Facility Operational Score | fact_sensor_telemetry, fact_hardware_metrics | dim_crop_batch, dim_facility, dim_date | Weighted aggregation of operational KPIs across all facilities | Executive Dashboard |
-| Active Critical Alerts | Eventhouse (KQL) | Facility Metadata | Count of unresolved critical alerts | Real-Time Operations Dashboard |
+| Crop Biomass Accumulation Rate | fact_crop_telemetry | dim_crop_batch, dim_crop_profile | (Actual Biomass Grams ÷ Baseline Biomass Target) × 100 | Farm Performance Dashboard |
+| Mean Time To Repair (MTTR) | fact_equipment_maintenance | dim_equipment, dim_facility | Average repair minutes (`remaining_duration_minutes`, `health_restored`) per work order | Real-Time Operations Dashboard, Farm Performance Dashboard |
+| Regional Facility Operational Score | fact_sensor_telemetry, fact_hardware_metrics | dim_facility (Philippine Region, Coordinates) | Weighted aggregation of operational KPIs across Luzon, Visayas, and Mindanao facilities | Executive Dashboard (Geospatial Map) |
+| Active Critical Alerts | Eventhouse (KQL) | Facility Metadata | Count of unresolved critical alerts (`active_critical_alerts`) | Real-Time Operations Dashboard |
 | Average Alert Response Time | Eventhouse (KQL) | Facility Metadata | Average time between alert generation and acknowledgment | Real-Time Operations Dashboard |
 | Sensor Availability | Eventhouse (KQL) | Facility Metadata | (Active Sensors Reporting ÷ Total Registered Sensors) × 100 | Real-Time Operations Dashboard, Platform Monitoring Dashboard |
 | Current Environmental Status | Eventhouse (KQL) | Facility Metadata | Latest temperature, humidity, pH, EC, and dissolved oxygen readings | Real-Time Operations Dashboard |

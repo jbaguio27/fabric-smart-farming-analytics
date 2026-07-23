@@ -38,11 +38,33 @@ class MaintenanceStateManager:
 
     def __init__(self) -> None:
         """
-        Initialize an empty maintenance workspace.
+        Initialize the maintenance workspace with routine zone maintenance work orders.
         """
 
         self._states: dict[str, MaintenanceState] = {}
         self._simulation_cycle: int = 0
+
+        # Seed 10 initial routine maintenance work orders (1 per zone)
+        for index in range(1, 11):
+            wo_id = f"WO-{index:05d}"
+            zone = f"ZONE-{index:03d}"
+            facility = "FAC-001"
+            equip = f"EQ-{index:05d}"
+            self._states[wo_id] = MaintenanceState(
+                work_order_id=wo_id,
+                facility_id=facility,
+                zone_id=zone,
+                equipment_id=equip,
+                maintenance_type="PREVENTATIVE",
+                priority="MEDIUM",
+                assigned_technician=f"tech.zone-{index:03d}@smartfarm.ph",
+                work_status="IN_PROGRESS" if index % 2 == 0 else "COMPLETED",
+                estimated_duration_minutes=60,
+                remaining_duration_minutes=30 if index % 2 == 0 else 0,
+                completion_percent=50.0 if index % 2 == 0 else 100.0,
+                maintenance_cycle=1,
+                is_active=True,
+            )
 
     def add_work_order(
         self,
@@ -112,17 +134,19 @@ class MaintenanceStateManager:
 
     def advance_cycle(self) -> None:
         """
-        Advance the maintenance simulation.
-
-        Initial implementation intentionally performs no state updates.
-
-        Future roadmap milestones will introduce:
-
-        - predictive maintenance
-        - technician scheduling
-        - work-order progression
-        - maintenance completion
-        - deferred maintenance
+        Advance the maintenance simulation cycle and progress work orders.
         """
 
         self._simulation_cycle += 1
+
+        for state in self._states.values():
+            if state.work_status == "IN_PROGRESS":
+                state.remaining_duration_minutes = max(0, state.remaining_duration_minutes - 5)
+                state.completion_percent = min(100.0, ((state.estimated_duration_minutes - state.remaining_duration_minutes) / state.estimated_duration_minutes) * 100.0)
+                if state.remaining_duration_minutes == 0:
+                    state.work_status = "COMPLETED"
+            elif state.work_status == "COMPLETED" and self._simulation_cycle % 10 == 0:
+                # Re-issue a routine inspection work order every 10 cycles
+                state.work_status = "IN_PROGRESS"
+                state.remaining_duration_minutes = state.estimated_duration_minutes
+                state.completion_percent = 0.0

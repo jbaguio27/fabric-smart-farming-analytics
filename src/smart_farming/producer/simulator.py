@@ -3,6 +3,7 @@ Core simulator for the HydroGrow Smart Farming Simulator.
 """
 
 import time
+import random
 import logging
 from smart_farming.config import Settings
 from smart_farming.monitoring import (
@@ -179,6 +180,9 @@ class Simulator:
             "Generated %d events for dispatch.",
             len(events),
         )
+
+        # Sort events deterministically by event_type to ensure stable schema preview in Eventstream
+        events.sort(key=lambda x: getattr(x, "event_type", ""))
 
         self.dispatcher.dispatch(events)
 

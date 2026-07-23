@@ -13,45 +13,27 @@ serialization.
 """
 
 from dataclasses import dataclass
+from .base_event import BaseEvent
 
 
-@dataclass(slots=True, frozen=True)
-class MaintenanceEvent:
+@dataclass(slots=True)
+class MaintenanceEvent(BaseEvent):
     """
     Immutable maintenance telemetry event.
-
-    One MaintenanceEvent represents the current state of a maintenance
-    work order when emitted by the MaintenanceEventGenerator.
     """
 
-    event_type: str
-
-    event_timestamp: str
-
-    simulation_cycle: int
-
-    facility_id: str
-
     zone_id: str
-
     equipment_id: str
-
     work_order_id: str
-
     maintenance_cycle: int
-
     maintenance_type: str
-
     priority: str
-
     assigned_technician: str
-
-    work_status: str
-
+    maintenance_status: str
     estimated_duration_minutes: int
-
     remaining_duration_minutes: int
-
     completion_percent: float
-
     is_active: bool
+    technician_notes: str
+    health_restored: float
+    simulation_cycle: int

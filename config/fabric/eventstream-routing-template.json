@@ -22,7 +22,7 @@
           "format": "Json"
         },
         "routingRule": {
-          "filter": "event_type == 'equipment_telemetry'"
+          "filter": "event_type == 'equipment'"
         }
       },
       {
@@ -34,7 +34,7 @@
           "format": "Json"
         },
         "routingRule": {
-          "filter": "event_type == 'environmental_telemetry'"
+          "filter": "event_type == 'environmental'"
         }
       },
       {
@@ -46,7 +46,7 @@
           "format": "Json"
         },
         "routingRule": {
-          "filter": "event_type == 'crop_lifecycle'"
+          "filter": "event_type == 'CropLifecycleEvent'"
         }
       },
       {

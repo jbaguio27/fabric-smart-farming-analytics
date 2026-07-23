@@ -71,8 +71,9 @@ class DataAnomalyInjector:
             return [dirty_payload, dirty_payload]
 
         elif anomaly_type == "missing_values":
-            # Handling missing values task: omit fields, set to None, "N/A", or empty strings
-            target_key = random.choice(["operating_status", "unit", "zone_id", "health"])
+            # Handling missing values task: set string fields to None, "N/A", "Unknown", or ""
+            # Set numeric metrics to None (JSON null) to maintain numeric schema compatibility
+            target_key = random.choice(["operating_status", "unit", "zone_id", "equipment_type"])
             if target_key in dirty_payload:
                 dirty_payload[target_key] = random.choice([None, "N/A", "Unknown", ""])
 
@@ -83,23 +84,28 @@ class DataAnomalyInjector:
             if "operating_status" in dirty_payload:
                 dirty_payload["operating_status"] = random.choice(["online", "onlne", "WARNIN"])
             if "timestamp" in dirty_payload:
-                dirty_payload["timestamp"] = int(time.time())
+                dirty_payload["timestamp"] = str(int(time.time()))
 
         elif anomaly_type == "type_casting":
-            # data type casting tasks: convert floats.ints to string and booleans to "Yes"/"Y"
-            if "temperature" in dirty_payload:
-                dirty_payload["temperature"] = str(dirty_payload["temperature"])
-            if "is_active" in dirty_payload:
+            # data type casting tasks: convert floats/ints to string and booleans to "Yes"/"Y"
+            for temp_key in ["operating_temperature_c", "ambient_temperature_celsius", "sensor_value", "health", "current_load"]:
+                if temp_key in dirty_payload and isinstance(dirty_payload[temp_key], (int, float)):
+                    dirty_payload[temp_key] = str(dirty_payload[temp_key])
+            if "is_active" in dirty_payload and isinstance(dirty_payload["is_active"], bool):
                 dirty_payload["is_active"] = "Yes" if dirty_payload["is_active"] else "N"
-            if "health" in dirty_payload:
-                dirty_payload["health"] = str(dirty_payload["health"])
 
         elif anomaly_type == "outliers":
             # handling outliers & value bounds tasks: system thermal spikes or negative values
-            if "ph" in dirty_payload:
-                dirty_payload["ph"] = -999.0
-            elif "temperature" in dirty_payload:
-                dirty_payload["temperature"] = 9999.99
+            if "water_ph" in dirty_payload:
+                dirty_payload["water_ph"] = -999.0
+            elif dirty_payload.get("sensor_type") == "water_ph" and dirty_payload.get("sensor_value") is not None:
+                dirty_payload["sensor_value"] = -999.0
+            elif "operating_temperature_c" in dirty_payload:
+                dirty_payload["operating_temperature_c"] = 9999.99
+            elif "ambient_temperature_celsius" in dirty_payload:
+                dirty_payload["ambient_temperature_celsius"] = 9999.99
+            elif dirty_payload.get("sensor_type") == "air_temperature" and dirty_payload.get("sensor_value") is not None:
+                dirty_payload["sensor_value"] = 9999.99
             elif "current_load" in dirty_payload:
                 dirty_payload["current_load"] = -50.0
 

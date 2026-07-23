@@ -120,6 +120,6 @@ class CropLifecycleValidator:
             "Event identifier is required."
         )
 
-        assert event.event_timestamp is not None, (
+        assert event.timestamp is not None, (
             "Event timestamp is required."
         )

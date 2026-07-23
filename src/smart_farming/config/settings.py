@@ -85,6 +85,12 @@ class Settings:
         )
     )
 
+    equipment_telemetry_sample_rate: float = field(
+        default_factory=lambda: float(
+            os.getenv("EQUIPMENT_TELEMETRY_SAMPLE_RATE", "1.0")
+        )
+    )
+
     # ------------------------------------------------------------
     # Microsoft Fabric Configuration
     # ------------------------------------------------------------

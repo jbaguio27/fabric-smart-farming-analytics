@@ -103,18 +103,41 @@ class FacilityStateManager:
 
         operating_status = "ONLINE" if avg_health >= HEALTHY_FACILITY_THRESHOLD else "WARNING"
 
-        # Baseline power & water utilization estimates
+        # Dynamically aggregate real-time equipment power draw if equipment states exist
         total_power_kw = active_zones_count * ZONE_POWER_CONSUMPTION_KW
+        if self._equipment_state_manager is not None and facility_states:
+            equipment_power = sum(getattr(s, "power_consumption_kw", 0.0) for s in facility_states)
+            if equipment_power > 0:
+                total_power_kw = equipment_power
+
         total_water_lph = active_zones_count * ZONE_WATER_RECIRCULATION_LPH
 
-        return FacilityEvent(
+        active_alerts = 0
+        if self._equipment_state_manager is not None and facility_states:
+            active_alerts = sum(
+                1 for s in facility_states
+                if str(getattr(s, "operating_status", "")).upper() in ["WARNING", "ERROR"]
+            )
+
+        event = FacilityEvent(
+            event_type="FacilityEvent",
             facility_id=profile.facility_id,
             facility_name=profile.facility_name,
             operating_status=operating_status,
             active_zones_count=active_zones_count,
             total_equipment_count=total_equipment,
-            average_equipment_health=round(avg_health, 2),
-            total_power_consumption_kw=round(total_power_kw, 2),
-            total_water_consumption_lph=round(total_water_lph, 2),
-            timestamp=datetime.now(timezone.utc),
+            overall_health=round(avg_health, 2),
+            power_draw_kw=round(total_power_kw, 2),
+            water_circulation_lph=round(total_water_lph, 2),
+            active_critical_alerts=active_alerts,
+            region=getattr(profile, "region", ""),
+            city=getattr(profile, "location", ""),
+            latitude=getattr(profile, "latitude", 0.0),
+            longitude=getattr(profile, "longitude", 0.0),
+            elevation_m=getattr(profile, "elevation_m", 0.0),
+            climate_zone=getattr(profile, "domain_focus", ""),
+            water_source=getattr(profile, "water_source", ""),
+            power_grid_redundancy=getattr(profile, "power_grid_redundancy", ""),
+            max_zone_capacity=getattr(profile, "max_zone_capacity", 0),
         )
+        return event

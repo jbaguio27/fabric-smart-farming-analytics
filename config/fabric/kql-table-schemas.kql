@@ -1,6 +1,8 @@
 // ========================================================================================
-// KQL Schema Scripts - HydroGrow Smart Farming Analytics Platform
+// KQL Schema Scripts - HydroGrow Smart Farming Analytics Platform (Clean Deployment v2.0)
+// Database: SmartFarmingKQLDB
 // ========================================================================================
+
 // 1. Equipment Telemetry
 .create table EquipmentTelemetry (
     event_id: string,
@@ -9,6 +11,8 @@
     zone_id: string,
     equipment_id: string,
     equipment_type: string,
+    manufacturer: string,
+    model_number: string,
     operating_status: string,
     health: real,
     current_load: real,
@@ -17,23 +21,30 @@
     vibration_vps: real,
     operating_temperature_c: real,
     power_consumption_kw: real,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )
+
 // 2. Environmental Telemetry
 .create table EnvironmentalTelemetry (
     event_id: string,
     event_type: string,
     facility_id: string,
+    zone_id: string,
     sensor_type: string,
     sensor_value: real,
     unit: string,
     sensor_status: string,
     weather: string,
-    is_daytime: bool,
+    is_daytime: string,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )
+
 // 3. Crop Lifecycle
 .create table CropLifecycle (
     event_id: string,
@@ -46,9 +57,14 @@
     age_days: real,
     health_score: real,
     environmental_stress_index: real,
+    harvest_cycle_days: long,
+    target_biomass_g: real,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )
+
 // 4. Crop Telemetry (Biomass & Growth Metrics)
 .create table CropTelemetry (
     event_id: string,
@@ -67,9 +83,12 @@
     environmental_stress_index: real,
     ambient_temperature_celsius: real,
     ambient_humidity_percent: real,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )
+
 // 5. Irrigation Telemetry (Zone Flow & Pressure)
 .create table IrrigationTelemetry (
     event_id: string,
@@ -79,12 +98,15 @@
     irrigation_active: bool,
     flow_rate_liters_per_minute: real,
     pressure_kpa: real,
-    irrigation_duration_seconds: int,
+    irrigation_duration_seconds: long,
     water_delivered_liters: real,
     nutrient_solution_delivered_liters: real,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )
+
 // 6. Lighting Telemetry (DLI & Intensity)
 .create table LightingTelemetry (
     event_id: string,
@@ -95,9 +117,12 @@
     lighting_intensity_percent: real,
     photoperiod_hours: real,
     daily_light_integral: real,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )
+
 // 7. Maintenance Activity Log
 .create table MaintenanceActivity (
     event_id: string,
@@ -105,22 +130,46 @@
     facility_id: string,
     zone_id: string,
     equipment_id: string,
+    work_order_id: string,
+    priority: string,
+    assigned_technician: string,
     maintenance_type: string,
     maintenance_status: string,
-    technician_notes: string,
+    estimated_duration_minutes: long,
+    remaining_duration_minutes: long,
+    completion_percent: real,
     health_restored: real,
+    technician_notes: string,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )
+
 // 8. Facility High-Level Operations
 .create table FacilityOperations (
     event_id: string,
     event_type: string,
     facility_id: string,
+    facility_name: string,
+    operating_status: string,
+    active_zones_count: long,
+    total_equipment_count: long,
     overall_health: real,
-    active_critical_alerts: int,
     power_draw_kw: real,
     water_circulation_lph: real,
+    active_critical_alerts: long,
+    region: string,
+    city: string,
+    latitude: real,
+    longitude: real,
+    elevation_m: real,
+    climate_zone: string,
+    water_source: string,
+    power_grid_redundancy: string,
+    max_zone_capacity: long,
+    operator_contact: string,
+    operator_phone: string,
     timestamp: datetime,
     schema_version: string
 )

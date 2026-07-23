@@ -120,18 +120,16 @@ No business logic is applied at this stage.
 
 # Bronze to Silver Transformation
 
-Dedicated Spark Notebooks process Bronze data into validated operational datasets.
+Dedicated PySpark Notebooks process Bronze data into validated operational datasets.
 
-Primary transformation activities include:
+Primary PySpark transformation activities include:
 
-- Schema validation
-- Data type standardization
-- Duplicate removal
-- Null handling
-- Timestamp normalization
-- Data enrichment
-- Unit standardization
-- Business rule validation
+- **PII Governance & Hashing**: Obfuscate mock operator PII using SHA-256 cryptographic hashing (`sha2(col("operator_contact"), 256)` and `sha2(col("operator_phone"), 256)`).
+- **Deduplication**: Remove duplicate event deliveries using `dropDuplicates(["event_id"])`.
+- **Timestamp Standardization**: Convert ISO 8601 strings and Unix Epoch timestamps into standardized UTC timestamps (`to_timestamp(col("timestamp"))`).
+- **Type Standardization**: Cast stringified numeric metrics (`health`, `sensor_value`, `current_load`) back to float/double types (`col("sensor_value").cast("double")`).
+- **Outlier Quarantine Filtering**: Quarantine physically impossible readings (e.g. `air_temperature > 100°C` or `pH < 0`) into a `quarantine_invalid_events` Delta table.
+- **Dimensional Enrichment**: Join raw event payloads with regional Philippine facility profiles (`DimFacility`) to attach `region`, `city`, `latitude`, and `longitude`.
 
 Output is written into Silver Delta tables.
 

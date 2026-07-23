@@ -8,6 +8,9 @@ be committed.
 As the simulator evolves, additional verification stages will be added
 to this script.
 """
+import os
+os.environ["EQUIPMENT_TELEMETRY_SAMPLE_RATE"] = "1.0"
+
 from dataclasses import dataclass
 from smart_farming.config import (
     Settings,
@@ -147,6 +150,7 @@ def build_verification_context() -> VerificationContext:
     """
 
     settings = Settings.from_env()
+    settings.equipment_telemetry_sample_rate = 1.0
 
     random_manager = RandomManager(
         seed=settings.random_seed,
@@ -972,13 +976,18 @@ def verify_crop_lifecycle_generator(
             == environment.electrical_conductivity
         )
 
+        assert (
+            event.environmental_stress_index
+            == runtime.stress_index
+        )
+
         assert event.simulation_cycle >= 0
 
         assert event.event_type == "CropLifecycleEvent"
 
         assert event.event_id
 
-        assert event.event_timestamp is not None
+        assert event.timestamp is not None
 
     print(
         "[PASS] Crop lifecycle events validated."
@@ -1131,7 +1140,7 @@ def verify_crop_telemetry_generator(
         )
 
         assert (
-            event.water_uptake_liters
+            event.water_consumption_liters
             == runtime.water_uptake_liters
         ), (
             f"Water uptake mismatch for "
@@ -1139,7 +1148,7 @@ def verify_crop_telemetry_generator(
         )
 
         assert (
-            event.nutrient_uptake_grams
+            event.nutrient_consumption_grams
             == runtime.nutrient_uptake_grams
         ), (
             f"Nutrient uptake mismatch for "
@@ -1147,7 +1156,7 @@ def verify_crop_telemetry_generator(
         )
 
         assert (
-            event.stress_index
+            event.environmental_stress_index
             == runtime.stress_index
         ), (
             f"Stress index mismatch for "
@@ -1155,7 +1164,7 @@ def verify_crop_telemetry_generator(
         )
 
         assert (
-            event.air_temperature_celsius
+            event.ambient_temperature_celsius
             == environment.air_temperature_celsius
         ), (
             f"Temperature mismatch for "
@@ -1163,7 +1172,7 @@ def verify_crop_telemetry_generator(
         )
 
         assert (
-            event.humidity_percent
+            event.ambient_humidity_percent
             == environment.humidity_percent
         ), (
             f"Humidity mismatch for "
@@ -1223,11 +1232,11 @@ def verify_crop_telemetry_generator(
             f"{event.health_score:10.1f}"
             f"{event.growth_rate:10.2f}"
             f"{event.biomass_grams:12.1f}"
-            f"{event.water_uptake_liters:10.2f}"
-            f"{event.nutrient_uptake_grams:12.1f}"
-            f"{event.stress_index:10.1f}"
-            f"{event.air_temperature_celsius:8.1f}"
-            f"{event.humidity_percent:12.1f}"
+            f"{event.water_consumption_liters:10.2f}"
+            f"{event.nutrient_consumption_grams:12.1f}"
+            f"{event.environmental_stress_index:10.1f}"
+            f"{event.ambient_temperature_celsius:8.1f}"
+            f"{event.ambient_humidity_percent:12.1f}"
         )
 
 def verify_irrigation_telemetry_generator(
@@ -1396,8 +1405,8 @@ def verify_lighting_telemetry_generator(
 
         print(
             f"{event.zone_id:<10}"
-            f"{str(event.lights_enabled):<10}"
-            f"{event.light_intensity_percent:>12.1f}"
+            f"{str(event.lighting_enabled):<10}"
+            f"{event.lighting_intensity_percent:>12.1f}"
             f"{event.photoperiod_hours:>12.1f}"
             f"{event.daily_light_integral:>10.1f}"
         )
@@ -1408,13 +1417,13 @@ def verify_lighting_telemetry_generator(
     print("=" * 60)
 
     enabled_count = sum(
-        event.lights_enabled
+        event.lighting_enabled
         for event in events
     )
 
     average_intensity = (
         sum(
-            event.light_intensity_percent
+            event.lighting_intensity_percent
             for event in events
         )
         / len(events)
@@ -1463,9 +1472,9 @@ def verify_lighting_telemetry_generator(
 
     print(
         f"Intensity : "
-        f"{min(event.light_intensity_percent for event in events):.2f}"
+        f"{min(event.lighting_intensity_percent for event in events):.2f}"
         f" - "
-        f"{max(event.light_intensity_percent for event in events):.2f}"
+        f"{max(event.lighting_intensity_percent for event in events):.2f}"
     )
 
     print(
@@ -1682,14 +1691,14 @@ def verify_equipment_telemetry_generator(
         )
 
         assert (
-            event.temperature_celsius > 0.0
+            event.operating_temperature_c > 0.0
         ), (
             f"{event.equipment_id} "
             "temperature was not emitted."
         )
 
         assert (
-            event.vibration_mm_s > 0.0
+            event.vibration_vps > 0.0
         ), (
             f"{event.equipment_id} "
             "vibration was not emitted."
@@ -1698,8 +1707,8 @@ def verify_equipment_telemetry_generator(
         print(
             f"{event.equipment_id:<10}"
             f"Power={event.power_consumption_kw:<8.3f}"
-            f"Temp={event.temperature_celsius:<8.2f}"
-            f"Vibration={event.vibration_mm_s:<8.3f}"
+            f"Temp={event.operating_temperature_c:<8.2f}"
+            f"Vibration={event.vibration_vps:<8.3f}"
         )
 
     for event in events:
@@ -1710,12 +1719,12 @@ def verify_equipment_telemetry_generator(
         )
 
         assert (
-            event.temperature_celsius
+            event.operating_temperature_c
             is not None
         )
 
         assert (
-            event.vibration_mm_s
+            event.vibration_vps
             is not None
         )
 
@@ -2201,7 +2210,10 @@ def verify_simulator_lifecycle() -> None:
     telemetry events.
     """
 
+    import os
+    os.environ["EQUIPMENT_TELEMETRY_SAMPLE_RATE"] = "1.0"
     settings = Settings.from_env()
+    settings.equipment_telemetry_sample_rate = 1.0
 
     random_manager = RandomManager(
         seed=settings.random_seed,

@@ -170,14 +170,20 @@ This design simplifies:
 ```json
 {
   "event_id": "d8dbed93-2bb5-4d2f-aee0-b053b4d7543b",
-  "event_type": "sensor.telemetry",
-  "event_timestamp": "2026-07-01T10:30:15Z",
-  "ingestion_timestamp": null,
+  "event_type": "environmental",
+  "timestamp": "2026-07-23T14:30:15Z",
   "schema_version": "1.0",
-  "facility_id": "FACILITY-NY-01",
-  "zone_id": "ZONE-A",
-  "correlation_id": "5b3bb60e-1fa4-43d8-bfa8-8d5342e6593e",
-  "producer_id": "smart-farm-simulator",
+  "facility_id": "FAC-001",
+  "zone_id": "ZONE-001",
+  "operator_contact": "tech.fac-001@smartfarm.ph",
+  "operator_phone": "+639175551234",
+  "source": "HydroGrow Smart Farming Simulator"
+}
+```
+
+## Unified 52-Column Master Payload Strategy
+
+To eliminate schema preview flip-flopping in **Microsoft Fabric Eventstream** and ensure `ManageFields` dropdown stability, every JSON event payload emitted by the simulator contains the complete set of master schema keys (`UNIFIED_EVENT_SCHEMA_KEYS`). Unused keys for a specific event type default to JSON `null`.
   "environment": "DEV",
   "payload": {
     "<event-specific-fields>"

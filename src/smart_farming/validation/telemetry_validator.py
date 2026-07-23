@@ -166,21 +166,21 @@ class TelemetryValidator():
         )
 
         assert (
-            event.temperature_celsius
+            event.operating_temperature_c
             == state.temperature_celsius
         ), (
             f"{event.equipment_id}: "
             f"temperature celcius precision violation "
-            f"({event.temperature_celsius})"
+            f"({event.operating_temperature_c})"
         )
 
         assert (
-            event.vibration_mm_s
+            event.vibration_vps
             == state.vibration_mm_s
         ), (
             f"{event.equipment_id}: "
             f"vibration mm/s precision violation "
-            f"({event.vibration_mm_s})"
+            f"({event.vibration_vps})"
         )
 
         self.statistics.runtime_consistency_checks += 1
@@ -223,22 +223,22 @@ class TelemetryValidator():
 
         assert (
             profile.base_temperature_celsius
-            <= event.temperature_celsius
+            <= event.operating_temperature_c
             <= profile.max_temperature_celsius
         ), (
             f"{event.equipment_id}: "
             f"temperature celsius outside profile range "
-            f"({event.temperature_celsius})"
+            f"({event.operating_temperature_c})"
         )
 
         assert (
             profile.base_vibration_mm_s
-            <= event.vibration_mm_s
+            <= event.vibration_vps
             <= profile.max_vibration_mm_s
         ), (
             f"{event.equipment_id}: "
             f"vibration mm/s outside profile range "
-            f"({event.vibration_mm_s})"
+            f"({event.vibration_vps})"
         )
 
         self.statistics.profile_compliance_checks += 1
@@ -316,36 +316,36 @@ class TelemetryValidator():
         )
 
         assert (
-            event.temperature_celsius 
+            event.operating_temperature_c 
             > 0.0
         ), (
             f"{event.equipment_id}: "
             f"temperature celcius under 0.0 "
-            f"({event.temperature_celsius})"
+            f"({event.operating_temperature_c})"
         )
 
         assert (
-            event.vibration_mm_s 
+            event.vibration_vps 
             > 0.0
         ), (
             f"{event.equipment_id}: "
             f"vibration under 0.0 "
-            f"({event.vibration_mm_s})"
+            f"({event.vibration_vps})"
         )
 
         # Physical plausibility validation
 
         assert (
-            event.temperature_celsius 
+            event.operating_temperature_c 
             >= 0.0
         ), (
             f"{event.equipment_id}: "
             f"temperature celcius under 0.0 "
-            f"({event.temperature_celsius})"
+            f"({event.operating_temperature_c})"
         )
 
         assert (
-            event.temperature_celsius 
+            event.operating_temperature_c 
             <= 100.0
         ), (
             f"{event.equipment_id}: "
@@ -353,12 +353,12 @@ class TelemetryValidator():
         )
 
         assert (
-            event.vibration_mm_s 
+            event.vibration_vps 
             <= 20.0
         ), (
             f"{event.equipment_id}: "
             f"vibration exceeded 20.0 "
-            f"({event.vibration_mm_s})"
+            f"({event.vibration_vps})"
         )
 
         assert (
@@ -421,27 +421,27 @@ class TelemetryValidator():
         )
 
         assert (
-            event.temperature_celsius
+            event.operating_temperature_c
             == round(
-                event.temperature_celsius,
+                event.operating_temperature_c,
                 2,
             )
         ), (
             f"{event.equipment_id}: "
             f"temperature celcius precision violation "
-            f"({event.temperature_celsius})"
+            f"({event.operating_temperature_c})"
         )
 
         assert (
-            event.vibration_mm_s
+            event.vibration_vps
             == round(
-                event.vibration_mm_s,
+                event.vibration_vps,
                 3,
             )
         ), (
             f"{event.equipment_id}: "
             f"vibration precision violation "
-            f"({event.vibration_mm_s})"
+            f"({event.vibration_vps})"
         )
 
         self.statistics.validated_events += 1

@@ -13,68 +13,19 @@ as Microsoft Fabric Eventstream, Eventhouse, Lakehouse, and Power BI.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from .base_event import BaseEvent
 
 
-@dataclass(slots=True, frozen=True)
-class IrrigationTelemetryEvent:
+@dataclass(slots=True)
+class IrrigationTelemetryEvent(BaseEvent):
     """
     Immutable irrigation telemetry event.
-
-    Attributes
-    ----------
-    event_id:
-        Globally unique telemetry event identifier.
-
-    event_type:
-        Event contract name.
-
-    event_timestamp:
-        Timestamp when the telemetry event was generated.
-
-    facility_id:
-        Facility identifier.
-
-    zone_id:
-        Growing zone identifier.
-
-    irrigation_active:
-        Indicates whether irrigation is currently operating.
-
-    flow_rate_liters_per_minute:
-        Current irrigation flow rate.
-
-    pressure_kpa:
-        Irrigation line pressure.
-
-    irrigation_duration_seconds:
-        Current irrigation duration.
-
-    water_delivered_liters:
-        Water volume delivered.
-
-    nutrient_solution_delivered_liters:
-        Nutrient solution volume delivered.
     """
 
-    event_id: str
-
-    event_type: str
-
-    event_timestamp: datetime
-
-    facility_id: str
-
     zone_id: str
-
     irrigation_active: bool
-
     flow_rate_liters_per_minute: float
-
     pressure_kpa: float
-
     irrigation_duration_seconds: int
-
     water_delivered_liters: float
-
     nutrient_solution_delivered_liters: float

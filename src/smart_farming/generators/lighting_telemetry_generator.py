@@ -82,19 +82,11 @@ class LightingTelemetryGenerator(BaseTelemetryGenerator):
         """
 
         return LightingTelemetryEvent(
-            event_id=str(uuid4()),
-            event_timestamp=datetime.now(UTC),
             event_type=self.EVENT_TYPE,
             facility_id=state.facility_id,
             zone_id=state.zone_id,
-            lights_enabled=state.lights_enabled,
-            light_intensity_percent=(
-                state.light_intensity_percent
-            ),
-            photoperiod_hours=(
-                state.photoperiod_hours
-            ),
-            daily_light_integral=(
-                state.daily_light_integral
-            ),
+            lighting_enabled=state.lights_enabled,
+            lighting_intensity_percent=state.light_intensity_percent,
+            photoperiod_hours=state.photoperiod_hours,
+            daily_light_integral=state.daily_light_integral,
         )
