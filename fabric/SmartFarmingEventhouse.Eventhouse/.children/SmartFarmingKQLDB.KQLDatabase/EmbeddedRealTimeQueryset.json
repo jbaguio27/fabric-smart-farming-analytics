@@ -12,7 +12,7 @@
     "tabs": [
       {
         "id": "3e239f70-b472-4a25-a218-a08364ba6aef",
-        "content": "MaintenanceActivity\n| take 10\n| project \n    EventTime = todatetime(timestamp), \n    ClusterIngestionTime = ingestion_time(), \n    LagSeconds = datetime_diff('second', ingestion_time(), todatetime(timestamp)), \n    facility_id",
+        "content": "DeadLetterTelemetry\n| order by ingestion_time() desc\n| take 10\n| project timestamp, event_type, facility_id, operator_contact, IngestionTime = ingestion_time()\n",
         "title": "Tab",
         "dataSourceId": "7e5d1dd6-d10d-4fe6-af14-aaceb69ebafd"
       }

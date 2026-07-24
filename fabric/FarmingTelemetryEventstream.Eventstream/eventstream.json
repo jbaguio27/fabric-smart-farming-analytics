@@ -226,6 +226,37 @@
       ]
     },
     {
+      "id": "b557089f-7a21-4fd2-89a6-1aa12e4563cf",
+      "name": "Dest_DeadLetterTelemetry",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "DeadLetterTelemetry",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "SQLNode_DeadLetter"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "SQLNode_DeadLetter",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
       "id": "e6b574e9-f1a8-4a3b-826b-e4ad0cdf41db",
       "name": "KQL_LightingTelemetry",
       "type": "Eventhouse",
@@ -4219,6 +4250,31 @@
                 "items": null
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "SQLNode_DeadLetter",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [Dest_DeadLetterTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE \n    event_type = 'legacy.deprecated_sensor'\n    OR facility_id IS NULL",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": []
           }
         }
       ]
