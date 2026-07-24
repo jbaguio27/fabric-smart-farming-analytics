@@ -147,11 +147,14 @@ class EventDispatcher:
             payloads = self._serialize_event(event)
             serialized_events.extend(payloads)
 
-        endpoint = (
-            self.settings.eventstream_endpoint
-            if self.settings and hasattr(self.settings, "eventstream_endpoint")
-            else ""
-        )
+        endpoint = ""
+        if self.settings:
+            conn = getattr(self.settings, "connection_str", "") or getattr(self.settings, "eventstream_endpoint", "")
+            hub = getattr(self.settings, "eventhub_name", "")
+            if conn:
+                endpoint = conn
+                if hub and "EntityPath=" not in endpoint:
+                    endpoint = f"{endpoint.rstrip(';')};EntityPath={hub}"
 
         if endpoint:
             self._send_to_eventstream(endpoint, serialized_events)

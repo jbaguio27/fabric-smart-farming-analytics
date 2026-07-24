@@ -103,6 +103,14 @@ class Settings:
         default_factory=lambda: os.getenv("FABRIC_WORKSPACE", "")
     )
 
+    connection_str: str = field(
+        default_factory=lambda: os.getenv("CONNECTION_STR", os.getenv("EVENTSTREAM_ENDPOINT", ""))
+    )
+
+    eventhub_name: str = field(
+        default_factory=lambda: os.getenv("EVENTHUB_NAME", "")
+    )
+
     eventstream_endpoint: str = field(
         default_factory=lambda: os.getenv("EVENTSTREAM_ENDPOINT", "")
     )
