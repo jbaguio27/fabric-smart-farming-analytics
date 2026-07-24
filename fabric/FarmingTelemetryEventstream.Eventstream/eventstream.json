@@ -2,7 +2,7 @@
   "sources": [
     {
       "id": "d1de5ce6-5baa-4a0b-b5a6-ba2eb006bbdb",
-      "name": "SmartFarmSimulatorSource",
+      "name": "PythonIoTSimulator",
       "type": "CustomEndpoint",
       "properties": {}
     }
@@ -265,7 +265,7 @@
       "properties": {},
       "inputNodes": [
         {
-          "name": "SmartFarmSimulatorSource"
+          "name": "PythonIoTSimulator"
         }
       ]
     }
@@ -280,7 +280,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_CropLifecycle] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'CropLifecycleEvent'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_CropLifecycle] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'CropLifecycleEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -324,8 +324,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -378,14 +378,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -396,20 +396,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -438,7 +438,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -456,14 +456,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -739,6 +739,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -756,7 +774,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_CropTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'crop'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_CropTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'crop'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -800,8 +818,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -854,14 +872,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -872,20 +890,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -914,7 +932,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -932,14 +950,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -1215,6 +1233,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -1232,7 +1268,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_EnvironmentalTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'environmental' OR event_type = 'EnvironmentalTelemetryEvent'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_EnvironmentalTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'environmental'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -1276,8 +1312,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -1330,14 +1366,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -1348,20 +1384,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -1390,7 +1426,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -1408,14 +1444,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -1691,6 +1727,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -1708,7 +1762,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_EquipmentTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'equipment' OR event_type = 'EquipmentTelemetryEvent'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_EquipmentTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'equipment'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -1752,8 +1806,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -1806,14 +1860,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -1824,20 +1878,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -1866,7 +1920,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -1884,14 +1938,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -2167,6 +2221,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -2184,7 +2256,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_FacilityOperations] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'facility' OR event_type = 'FacilityEvent'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_FacilityOperations] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'facility' OR event_type = 'FacilityEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -2228,8 +2300,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -2282,14 +2354,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -2300,20 +2372,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -2342,7 +2414,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -2360,14 +2432,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -2643,6 +2715,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -2660,7 +2750,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_IrrigationTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'irrigation' OR event_type = 'IrrigationTelemetryEvent'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_IrrigationTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'irrigation' OR event_type = 'IrrigationTelemetryEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -2704,8 +2794,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -2758,14 +2848,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -2776,20 +2866,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -2818,7 +2908,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -2836,14 +2926,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -3119,6 +3209,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -3136,7 +3244,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_LightingTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'lighting' OR event_type = 'LightingTelemetryEvent'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_LightingTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'lighting' OR event_type = 'LightingTelemetryEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -3180,8 +3288,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -3234,14 +3342,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -3252,20 +3360,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -3294,7 +3402,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -3312,14 +3420,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -3595,6 +3703,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -3612,7 +3738,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT * \nINTO [KQL_MaintenanceActivity] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'maintenance.event'",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_MaintenanceActivity] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'maintenance.event'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -3656,8 +3782,8 @@
               },
               {
                 "name": "equipment_type",
-                "type": "Record",
-                "fields": [],
+                "type": "Nvarchar(max)",
+                "fields": null,
                 "items": null
               },
               {
@@ -3710,14 +3836,14 @@
               },
               {
                 "name": "sensor_type",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "sensor_value",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -3728,20 +3854,20 @@
               },
               {
                 "name": "sensor_status",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "weather",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "is_daytime",
-                "type": "Nvarchar(max)",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -3770,7 +3896,7 @@
               },
               {
                 "name": "health_score",
-                "type": "Float",
+                "type": "BigInt",
                 "fields": null,
                 "items": null
               },
@@ -3788,14 +3914,14 @@
               },
               {
                 "name": "harvest_cycle_days",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
                 "name": "target_biomass_g",
-                "type": "BigInt",
-                "fields": null,
+                "type": "Record",
+                "fields": [],
                 "items": null
               },
               {
@@ -4071,6 +4197,24 @@
               {
                 "name": "source",
                 "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "simulation_cycle",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_ph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "electrical_conductivity",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
