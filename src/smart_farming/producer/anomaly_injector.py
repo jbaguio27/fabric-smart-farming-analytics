@@ -48,9 +48,19 @@ class DataAnomalyInjector:
 
         # Always inject PII mock operator contact info for PII masking validation
         dirty_payload = dict(payload)
-        facility_id = str(dirty_payload.get("facility_id", "FAC-001"))
-        dirty_payload["operator_contact"] = f"tech.{facility_id.lower()}@smartfarm.ph"
-        dirty_payload["operator_phone"] = "+639175551234"
+        facility_id = str(dirty_payload.get("facility_id", "FAC-001")).lower()
+        facility_phones = {
+            "fac-001": "+639178452190",
+            "fac-002": "+639183920411",
+            "fac-003": "+639209518342",
+            "fac-004": "+639284031955",
+            "fac-005": "+639985721048",
+            "fac-006": "+639082496103",
+            "fac-007": "+639196308274",
+            "fac-008": "+639271845920",
+        }
+        dirty_payload["operator_contact"] = f"tech.{facility_id}@smartfarm.ph"
+        dirty_payload["operator_phone"] = facility_phones.get(facility_id, "+639178452190")
 
         # If random roll exceeds anomaly_rate, return single enriched payload
         if random.random() > self.anomaly_rate:

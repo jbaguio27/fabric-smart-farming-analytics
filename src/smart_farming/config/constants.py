@@ -50,7 +50,7 @@ EVENT_SOURCE: Final[str] = "hydrogrow-smart-farming-simulator"
 EVENT_TYPE_ENVIRONMENTAL = "environmental"
 EVENT_TYPE_EQUIPMENT = "equipment"
 EVENT_TYPE_CROP = "crop"
-EVENT_TYPE_MAINTENANCE = "maintenance"
+EVENT_TYPE_MAINTENANCE = "maintenance.event"
 EVENT_TYPE_FACILITY = "facility"
 
 EVENT_TYPES: Final[tuple[str, ...]] = (

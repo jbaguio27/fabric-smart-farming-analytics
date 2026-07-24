@@ -61,4 +61,10 @@ class FacilityProfile:
     primary_crops: tuple[str, ...]
     operating_hours: str
     anomaly_trait: str
+    latitude: float = 0.0
+    longitude: float = 0.0
+    elevation_m: float = 0.0
+    water_source: str = ""
+    power_grid_redundancy: str = ""
+    max_zone_capacity: int = 0
     micro_locations: tuple[ZoneMicroLocation, ...] = field(default_factory=tuple)

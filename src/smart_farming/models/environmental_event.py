@@ -24,6 +24,7 @@ class EnvironmentalTelemetryEvent(BaseEvent):
     facility at a particular point in time.
     """
 
+    zone_id: str
     sensor_type: str
     sensor_value: float | None
     unit: str

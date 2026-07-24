@@ -27,7 +27,7 @@ class IrrigationTelemetryGenerator(
     Generates irrigation telemetry events.
     """
 
-    EVENT_TYPE = "irrigation.telemetry"
+    EVENT_TYPE = "irrigation"
 
     def __init__(
         self,

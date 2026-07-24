@@ -137,6 +137,18 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
             crop_state.crop_batch_id
         )
 
+        from smart_farming.config import CROP_GROWTH_PROFILES
+
+        crop_type_lower = str(definition.crop_type).lower()
+        profile = None
+        for p in CROP_GROWTH_PROFILES.values():
+            if p.crop_type.lower() == crop_type_lower or p.crop_type.lower() in crop_type_lower or crop_type_lower in p.crop_type.lower():
+                profile = p
+                break
+
+        harvest_cycle_days = profile.maturity_days if profile else 35
+        target_biomass_g = round(profile.maturity_days * profile.biomass_growth_rate, 1) if profile else 150.0
+
         event = CropLifecycleEvent(
             event_type="CropLifecycleEvent",
             facility_id=definition.facility_id,
@@ -147,6 +159,8 @@ class CropLifecycleGenerator(BaseTelemetryGenerator):
             age_days=crop_state.age_days,
             health_score=crop_state.health_score,
             environmental_stress_index=crop_state.stress_index,
+            harvest_cycle_days=harvest_cycle_days,
+            target_biomass_g=target_biomass_g,
             is_active=crop_state.is_active,
             air_temperature_celsius=environment.air_temperature_celsius,
             humidity_percent=environment.humidity_percent,

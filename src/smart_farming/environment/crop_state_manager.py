@@ -121,27 +121,47 @@ class CropStateManager:
         self._states.clear()
         self._growth_multipliers.clear()
 
-        for definition in self._crop_registry.get_all():
+        for idx, definition in enumerate(self._crop_registry.get_all(), start=1):
             profile = self._crop_profile_registry.get_profile(
                 definition.crop_type,
             )
 
-            # Roll random biological growth rate offset (representing genotype/seed variance)
-            self._growth_multipliers[definition.crop_batch_id] = self._random_manager.uniform(0.95, 1.05)
+            # Roll random biological growth rate offset
+            multiplier = self._random_manager.uniform(0.95, 1.05)
+            self._growth_multipliers[definition.crop_batch_id] = multiplier
+
+            # Stagger initial age across facility zones to simulate active rotational farm lifecycle
+            staggered_age = round((idx * 4.3) % (profile.maturity_days * 0.95), 1)
+
+            # Determine initial stage from staggered age
+            if staggered_age < (profile.germination_days * multiplier):
+                initial_stage = CROP_STAGE_GERMINATION
+                initial_growth = 0.1
+            elif staggered_age < ((profile.germination_days + profile.seedling_days) * multiplier):
+                initial_stage = CROP_STAGE_SEEDLING
+                initial_growth = 0.3
+            elif staggered_age < ((profile.germination_days + profile.seedling_days + profile.vegetative_days) * multiplier):
+                initial_stage = CROP_STAGE_VEGETATIVE
+                initial_growth = 0.7
+            else:
+                initial_stage = CROP_STAGE_MATURE
+                initial_growth = 0.95
+
+            initial_biomass = round(staggered_age * initial_growth * BIOMASS_GROWTH_MULTIPLIER, 1)
 
             self._states[definition.crop_batch_id] = CropState(
                 crop_batch_id=definition.crop_batch_id,
                 zone_id=definition.zone_id,
                 crop_type=definition.crop_type,
-                lifecycle_stage=CROP_STAGE_GERMINATION,
+                lifecycle_stage=initial_stage,
                 planting_timestamp=None,
                 expected_harvest_timestamp=None,
-                age_days=0.0,
+                age_days=staggered_age,
                 health_score=MAX_HEALTH_SCORE,
-                growth_rate=0.0,
-                biomass_grams=0.0,
-                water_uptake_liters=0.0,
-                nutrient_uptake_grams=0.0,
+                growth_rate=initial_growth,
+                biomass_grams=initial_biomass,
+                water_uptake_liters=round(initial_biomass * WATER_UPTAKE_PER_GRAM_BIOMASS, 3),
+                nutrient_uptake_grams=round(initial_biomass * WATER_UPTAKE_PER_GRAM_BIOMASS * 45.0, 2),
                 stress_index=0.0,
                 is_active=True,
             )
@@ -421,32 +441,35 @@ class CropStateManager:
         # Smaller values indicate healthier growing conditions.
 
         stress = (
-            temperature_error * 0.20
-            + humidity_error * 0.05
-            + ph_error * 4.00
-            + ec_error * 1.50
+            temperature_error * 0.25
+            + humidity_error * 0.08
+            + ph_error * 5.00
+            + ec_error * 2.00
+            + (state.water_deficit_liters * 10.0)
         )
 
-        # Gradual health adjustment.
-
-        if stress <= 1.0:
-            health_delta = +0.05
-
-        elif stress <= 3.0:
-            health_delta = -0.01
-        
-        elif stress <= 6.0:
+        # Realistic health adjustments
+        if stress <= 0.8:
+            health_delta = +0.03
+        elif stress <= 2.5:
             health_delta = -0.05
-
+        elif stress <= 5.0:
+            health_delta = -0.18
         else:
-            health_delta = -0.10
+            health_delta = -0.35
 
-        state.health_score = max(
-            0.0,
-            min(
-                MAX_HEALTH_SCORE,
-                state.health_score + health_delta,
-            )
+        # Older mature crops experience natural senescent health decay
+        age_decay = 0.02 if state.age_days > (profile.maturity_days * 0.7) else 0.0
+
+        state.health_score = round(
+            max(
+                35.0,
+                min(
+                    MAX_HEALTH_SCORE,
+                    state.health_score + health_delta - age_decay,
+                ),
+            ),
+            1,
         )
 
     def _update_growth_rate(

@@ -28,10 +28,12 @@ class CropLifecycleEvent(BaseEvent):
     age_days: float
     health_score: float
     environmental_stress_index: float
-    is_active: bool
+    harvest_cycle_days: int = 35
+    target_biomass_g: float = 150.0
+    is_active: bool = True
 
-    air_temperature_celsius: float
-    humidity_percent: float
-    water_ph: float
-    electrical_conductivity: float
-    simulation_cycle: int
+    air_temperature_celsius: float = 22.0
+    humidity_percent: float = 65.0
+    water_ph: float = 6.0
+    electrical_conductivity: float = 1.8
+    simulation_cycle: int = 0

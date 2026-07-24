@@ -35,32 +35,33 @@ class CropProfileRegistry:
         provide consistent lookup throughout the simulator.
         """
 
-        self._profiles: dict[str, CropGrowthProfile] = {
-            profile.crop_type: profile
-            for profile in CROP_GROWTH_PROFILES.values()
-        }
+        self._profiles: dict[str, CropGrowthProfile] = {}
+        for key, profile in CROP_GROWTH_PROFILES.items():
+            self._profiles[key] = profile
+            self._profiles[profile.crop_type] = profile
+            self._profiles[key.lower()] = profile
+            self._profiles[profile.crop_type.lower()] = profile
 
     def get_profile(
         self,
         crop_type: str,
     ) -> CropGrowthProfile:
         """
-        Retrieve the growth profile for a crop type.
-
-        Args:
-            crop_type:
-                Crop variety name.
-
-        Returns:
-            Immutable biological profile.
-
-        Raises:
-            KeyError:
-                Raised if the requested crop type has not been
-                registered.
+        Retrieve the growth profile for a crop type or key.
         """
+        if crop_type in self._profiles:
+            return self._profiles[crop_type]
 
-        return self._profiles[crop_type]
+        crop_type_lower = str(crop_type).lower()
+        if crop_type_lower in self._profiles:
+            return self._profiles[crop_type_lower]
+
+        for k, p in self._profiles.items():
+            if k.lower() in crop_type_lower or crop_type_lower in k.lower():
+                return p
+
+        # Return nominal Butterhead Lettuce profile as fallback for specialty crops
+        return self._profiles.get("butterhead_lettuce", list(self._profiles.values())[0])
 
     def get_all_profiles(self) -> list[CropGrowthProfile]:
         """
@@ -69,8 +70,8 @@ class CropProfileRegistry:
         Returns:
             List containing all immutable crop growth profiles.
         """
-
-        return list(self._profiles.values())
+        from smart_farming.config import CROP_GROWTH_PROFILES
+        return list(CROP_GROWTH_PROFILES.values())
 
     @property
     def profiles(self) -> dict[str, CropGrowthProfile]:

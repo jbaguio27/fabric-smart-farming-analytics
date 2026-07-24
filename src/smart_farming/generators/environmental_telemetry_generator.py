@@ -234,6 +234,7 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
     def _create_environmental_event(
         self,
         facility_id: FacilityId,
+        zone_id: str,
         sensor_type: str,
         environment: WeatherState,
     ) -> EnvironmentalTelemetryEvent:
@@ -247,6 +248,8 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
         Args:
             facility_id: 
                 Facility producing the telemetry.
+            zone_id:
+                Growing zone identifier.
             sensor_type: 
                 Environmental sensor type.
             environment:
@@ -334,6 +337,7 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
         event = EnvironmentalTelemetryEvent(
             event_type=EVENT_TYPE_ENVIRONMENTAL,
             facility_id=facility_id,
+            zone_id=zone_id,
             sensor_type=sensor_type,
             sensor_value=sensor_value,
             unit=metadata['unit'],
@@ -366,10 +370,13 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
 
         events: list[EnvironmentalTelemetryEvent] = []
 
-        for sensor_type in self.get_supported_sensors():
+        supported_sensors = self.get_supported_sensors()
+        for index, sensor_type in enumerate(supported_sensors, start=1):
+            zone_id = f"ZONE-{((index - 1) % 10) + 1:03d}"
             events.append(
                 self._create_environmental_event(
                     facility_id=facility_id,
+                    zone_id=zone_id,
                     sensor_type=sensor_type,
                     environment=environment,
                 )

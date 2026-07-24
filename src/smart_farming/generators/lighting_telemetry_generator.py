@@ -26,7 +26,7 @@ class LightingTelemetryGenerator(BaseTelemetryGenerator):
     each simulation cycle.
     """
 
-    EVENT_TYPE = "lighting.telemetry"
+    EVENT_TYPE = "lighting"
 
     def __init__(
         self,

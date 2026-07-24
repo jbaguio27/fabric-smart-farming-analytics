@@ -76,21 +76,23 @@ class GrowingEnvironmentStateManager:
 
         self._states.clear()
 
-        for index in range(1, zone_count + 1):
+        for facility_id, fac_profile in PHILIPPINE_FACILITY_PROFILES.items():
+            for micro in fac_profile.micro_locations:
+                zone_id = micro.zone_id
+                state_key = f"{facility_id}:{zone_id}"
 
-            zone_id=f"ZONE-{index:03d}"
-
-            self._states[zone_id] = GrowingEnvironmentState(
-                zone_id=zone_id,
-                air_temperature_celsius=DEFAULT_AIR_TEMPERATURE_C,
-                humidity_percent=DEFAULT_RELATIVE_HUMIDITY_PERCENT,
-                water_ph=DEFAULT_WATER_PH,
-                electrical_conductivity=DEFAULT_ELECTRICAL_CONDUCTIVITY,
-            )
+                self._states[state_key] = GrowingEnvironmentState(
+                    zone_id=zone_id,
+                    air_temperature_celsius=fac_profile.target_temperature_celsius,
+                    humidity_percent=fac_profile.target_humidity_percent,
+                    water_ph=fac_profile.target_ph,
+                    electrical_conductivity=fac_profile.target_ec,
+                )
 
     def get_zone_state(
         self,
         zone_id: str,
+        facility_id: str | None = None,
     ) -> GrowingEnvironmentState:
         """
         Retrieve the current environmental state of a zone.
@@ -98,12 +100,22 @@ class GrowingEnvironmentStateManager:
         Args:
             zone_id:
                 Zone identifier.
+            facility_id:
+                Optional facility identifier.
 
         Returns:
             Mutable GrowingEnvironmentState instance.
         """
+        if facility_id:
+            state_key = f"{facility_id}:{zone_id}"
+            if state_key in self._states:
+                return self._states[state_key]
 
-        return self._states[zone_id]
+        for state in self._states.values():
+            if state.zone_id == zone_id:
+                return state
+
+        return list(self._states.values())[0]
 
     def get_all_states(
         self,
@@ -125,12 +137,10 @@ class GrowingEnvironmentStateManager:
         Indoor temperatures nudge gradually towards the facility targets rather than shifting instantly.
         """
 
-        for zone_id, state in self._states.items():
-            # Determine parent facility location and targets based on zone index bounds
+        for state_key, state in self._states.items():
+            # Determine parent facility location and targets based on state_key (FAC-XXX:ZONE-YYY)
             try:
-                zone_num = int(zone_id.split("-")[1])
-                facility_index = ((zone_num - 1) // 10) + 1
-                facility_id = f"FAC-{min(8, max(1, facility_index)):03d}"
+                facility_id = state_key.split(":")[0] if ":" in state_key else "FAC-001"
                 profile = PHILIPPINE_FACILITY_PROFILES[facility_id]
                 target_temp = profile.target_temperature_celsius
                 target_humidity = profile.target_humidity_percent

@@ -221,8 +221,8 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
             power_consumption_kw=state.power_consumption_kw,
             operating_temperature_c=state.temperature_celsius,
             vibration_vps=state.vibration_mm_s,
-            manufacturer=getattr(equipment, "manufacturer", ""),
-            model_number=getattr(equipment, "model_number", ""),
+            manufacturer=getattr(equipment, "manufacturer", "HydroTech Corp"),
+            model_number=getattr(equipment, "model", getattr(equipment, "model_number", "HT-SERIES")),
         )
 
         event.timestamp = timestamp

@@ -126,21 +126,26 @@ class EquipmentStateManager:
 
         self._states.clear()
 
-        for equipment in self._equipment_registry.list_all():
-            
+        for idx, equipment in enumerate(self._equipment_registry.list_all(), start=1):
             state = EquipmentState()
 
-            state.health = round(
-                self._random_manager.uniform(
-                    MIN_INITIAL_EQUIPMENT_HEALTH,
-                    MAX_INITIAL_EQUIPMENT_HEALTH,
-                ),
-                2,
-            )
+            # Stagger starting health across new, mid-life, and high-wear operational tiers
+            tier = idx % 10
+            if tier in (1, 2, 3, 4, 5):
+                # Fresh / Recently Maintained Assets (88.0% - 100.0%)
+                base_health = self._random_manager.uniform(88.0, 100.0)
+            elif tier in (6, 7, 8):
+                # Mid-Life Operating Assets (68.0% - 87.9%)
+                base_health = self._random_manager.uniform(68.0, 87.9)
+            else:
+                # High-Wear / Degraded Assets (48.0% - 67.9%)
+                base_health = self._random_manager.uniform(48.0, 67.9)
 
-            self._states[
-                equipment.equipment_id
-            ] = state
+            state.health = round(base_health, 2)
+            state.runtime_hours = 0.0
+            state.operating_status = self._failure_model.determine_operating_status(state)
+
+            self._states[equipment.equipment_id] = state
 
     def advance_runtime(
         self,

@@ -82,10 +82,21 @@ class MaintenanceEventGenerator(BaseTelemetryGenerator):
             # Generate realistic technician notes and health restoration data based on status
             is_completed = (state.work_status == "COMPLETED" or not state.is_active)
             tech_notes = (
-                "Preventative maintenance completed successfully. Calibration verified."
-                if is_completed else f"Maintenance in progress. {state.remaining_duration_minutes}m remaining."
+                f"Work order {state.work_order_id} ({state.maintenance_type}) completed by {state.assigned_technician}. Calibration verified."
+                if is_completed else f"Maintenance in progress by {state.assigned_technician}. {state.remaining_duration_minutes}m remaining."
             )
-            health_restored_val = 100.0 if is_completed else 0.0
+            # Dynamic max health restoration potential based on maintenance type
+            max_restoration_map = {
+                "EMERGENCY_REPAIR": 35.0,
+                "CORRECTIVE": 25.0,
+                "PREVENTATIVE": 15.0,
+                "CALIBRATION": 8.0,
+                "INSPECTION": 5.0,
+            }
+            max_health_points = max_restoration_map.get(state.maintenance_type, 15.0)
+            
+            # Dynamic health restoration proportional to completion percent
+            health_restored_val = round((state.completion_percent / 100.0) * max_health_points, 1)
 
             events.append(
                 MaintenanceEvent(

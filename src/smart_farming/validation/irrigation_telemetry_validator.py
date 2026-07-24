@@ -38,8 +38,9 @@ class IrrigationTelemetryValidator:
             "Event ID must not be empty."
         )
 
-        assert event.event_type == (
-            "irrigation.telemetry"
+        assert event.event_type in (
+            "irrigation",
+            "irrigation.telemetry",
         ), (
             "Unexpected irrigation event type."
         )

@@ -108,18 +108,20 @@ def main() -> None:
         crop_profile_registry = CropProfileRegistry()
         crop_registry = CropRegistry()
 
-        for index, profile in enumerate(
-            crop_profile_registry.get_all_profiles(),
-            start=1,
-        ):
-            crop_registry.register(
-                CropDefinition(
-                    crop_batch_id=f"BATCH-{index:05d}",
-                    facility_id="FAC-001",
-                    zone_id=f"ZONE-{index:03d}",
-                    crop_type=profile.crop_type,
+        from smart_farming.config import PHILIPPINE_FACILITY_PROFILES
+
+        batch_counter = 1
+        for facility_id, fac_profile in PHILIPPINE_FACILITY_PROFILES.items():
+            for micro in fac_profile.micro_locations:
+                crop_registry.register(
+                    CropDefinition(
+                        crop_batch_id=f"BATCH-{batch_counter:05d}",
+                        facility_id=facility_id,
+                        zone_id=micro.zone_id,
+                        crop_type=micro.dominant_crop_key,
+                    )
                 )
-            )
+                batch_counter += 1
 
         growing_environment_manager = (
             GrowingEnvironmentStateManager(
@@ -132,6 +134,7 @@ def main() -> None:
         irrigation_state_manager = (
             IrrigationStateManager(
                 zone_count=settings.zone_count,
+                random_manager=random_manager,
             )
         )
 
@@ -163,6 +166,7 @@ def main() -> None:
 
         facility_state_manager = FacilityStateManager(
             equipment_state_manager=equipment_state_manager,
+            equipment_registry=equipment_registry,
         )
 
         equipment_generator = (

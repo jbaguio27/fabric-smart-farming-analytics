@@ -15,6 +15,8 @@ from smart_farming.config import (
 from smart_farming.schemas import FacilityProfile
 from smart_farming.models import FacilityEvent
 from .equipment_state_manager import EquipmentStateManager
+from .equipment_registry import EquipmentRegistry
+
 
 class FacilityStateManager:
     """
@@ -24,15 +26,19 @@ class FacilityStateManager:
     def __init__(
         self,
         equipment_state_manager: EquipmentStateManager | None = None,
+        equipment_registry: EquipmentRegistry | None = None,
     ) -> None:
         """
         Initialize the FacilityStateManager.
+
         Args:
             equipment_state_manager: Optional EquipmentStateManager reference for health aggregation.
+            equipment_registry: Optional EquipmentRegistry reference for facility equipment lookup.
         """
 
         self._profiles: Final[dict[str, FacilityProfile]] = PHILIPPINE_FACILITY_PROFILES
         self._equipment_state_manager = equipment_state_manager
+        self._equipment_registry = equipment_registry
 
     def get_profile(
         self,
@@ -90,34 +96,35 @@ class FacilityStateManager:
 
         total_equipment = 0
         avg_health = 100.0
+        active_alerts = 0
+        total_power_kw = active_zones_count * ZONE_POWER_CONSUMPTION_KW
 
-        if self._equipment_state_manager is not None:
-            facility_states = [
-                state
-                for state in self._equipment_state_manager.list_all()
-                if getattr(state, "facility_id", "") == facility_id
-            ]
-            if facility_states:
-                total_equipment = len(facility_states)
-                avg_health = sum(s.health for s in facility_states) / total_equipment
+        # Determine effective equipment registry
+        registry = self._equipment_registry
+        if registry is None and self._equipment_state_manager is not None:
+            registry = getattr(self._equipment_state_manager, "_equipment_registry", None)
+
+        if registry is not None and self._equipment_state_manager is not None:
+            facility_equipments = registry.list_by_facility(facility_id)
+            if facility_equipments:
+                total_equipment = len(facility_equipments)
+                states = [
+                    self._equipment_state_manager.get(eq.equipment_id)
+                    for eq in facility_equipments
+                    if self._equipment_state_manager.exists(eq.equipment_id)
+                ]
+                if states:
+                    avg_health = sum(s.health for s in states) / len(states)
+                    equipment_power = sum(s.power_consumption_kw for s in states)
+                    if equipment_power > 0:
+                        total_power_kw = equipment_power
+                    active_alerts = sum(
+                        1 for s in states
+                        if str(getattr(s.operating_status, "value", s.operating_status)).upper() in ["WARNING", "DEGRADED", "ERROR", "OFFLINE"]
+                    )
 
         operating_status = "ONLINE" if avg_health >= HEALTHY_FACILITY_THRESHOLD else "WARNING"
-
-        # Dynamically aggregate real-time equipment power draw if equipment states exist
-        total_power_kw = active_zones_count * ZONE_POWER_CONSUMPTION_KW
-        if self._equipment_state_manager is not None and facility_states:
-            equipment_power = sum(getattr(s, "power_consumption_kw", 0.0) for s in facility_states)
-            if equipment_power > 0:
-                total_power_kw = equipment_power
-
         total_water_lph = active_zones_count * ZONE_WATER_RECIRCULATION_LPH
-
-        active_alerts = 0
-        if self._equipment_state_manager is not None and facility_states:
-            active_alerts = sum(
-                1 for s in facility_states
-                if str(getattr(s, "operating_status", "")).upper() in ["WARNING", "ERROR"]
-            )
 
         event = FacilityEvent(
             event_type="FacilityEvent",
