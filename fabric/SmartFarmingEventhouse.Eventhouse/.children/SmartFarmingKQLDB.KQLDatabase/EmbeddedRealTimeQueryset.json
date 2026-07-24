@@ -1,0 +1,22 @@
+{
+  "queryset": {
+    "version": "1.0.0",
+    "dataSources": [
+      {
+        "id": "7e5d1dd6-d10d-4fe6-af14-aaceb69ebafd",
+        "clusterUri": "https://trd-p1cedx2fw7s8nxauu5.z3.kusto.fabric.microsoft.com",
+        "type": "Fabric",
+        "databaseItemId": "5eb138b9-7404-47f1-b343-0b32a31b9690"
+      }
+    ],
+    "tabs": [
+      {
+        "id": "3e239f70-b472-4a25-a218-a08364ba6aef",
+        "content": ".clear table MaintenanceActivity data",
+        "title": "Tab",
+        "dataSourceId": "7e5d1dd6-d10d-4fe6-af14-aaceb69ebafd"
+      }
+    ],
+    "querysetType": "Embedded"
+  }
+}

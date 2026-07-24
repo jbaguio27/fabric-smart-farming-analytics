@@ -1,0 +1,4084 @@
+{
+  "sources": [
+    {
+      "id": "d1de5ce6-5baa-4a0b-b5a6-ba2eb006bbdb",
+      "name": "SmartFarmSimulatorSource",
+      "type": "CustomEndpoint",
+      "properties": {}
+    }
+  ],
+  "destinations": [
+    {
+      "id": "00f7c7a3-46e8-405a-8cf1-cf7c4ab4681d",
+      "name": "KQL_FacilityOperations",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "FacilityOperations",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "FacilityOperationsStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "FacilityOperationsStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "1987bd74-f19e-4a09-94fa-e3f3f319dcdd",
+      "name": "KQL_EquipmentTelemetry",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "EquipmentTelemetry",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "EquipmentTelemetryStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "EquipmentTelemetryStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "243129cd-95ae-4e22-9af9-f4ca58f0eb60",
+      "name": "KQL_CropTelemetry",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "CropTelemetry",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "CropTelemetryStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "CropTelemetryStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "56ca3d03-e357-47cc-b6b5-2b5c7f64f86b",
+      "name": "KQL_EnvironmentalTelemetry",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "EnvironmentalTelemetry",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "EnvironmentalTelemetryStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "EnvironmentalTelemetryStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "6d25122a-a75b-4a94-8545-0ef9e7491868",
+      "name": "KQL_CropLifecycle",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "CropLifecycle",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "CropLifecycleStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "CropLifecycleStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "70c26aa7-c8fa-4786-a814-80f5822e0a28",
+      "name": "KQL_IrrigationTelemetry",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "IrrigationTelemetry",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "IrrigationTelemetryStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "IrrigationTelemetryStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "742f27a0-9b7c-44b7-9d93-a9ecd6e6d998",
+      "name": "KQL_MaintenanceActivity",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "MaintenanceActivity",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "MaintenanceActivityStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "MaintenanceActivityStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "e6b574e9-f1a8-4a3b-826b-e4ad0cdf41db",
+      "name": "KQL_LightingTelemetry",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "databaseName": "SmartFarmingKQLDB",
+        "tableName": "LightingTelemetry",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "LightingTelemetryStream"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "LightingTelemetryStream",
+          "schema": {
+            "columns": []
+          }
+        }
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "4bb4c540-a445-4a0e-98c7-3e12a73a1a13",
+      "name": "FarmingTelemetryEventstream-stream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [
+        {
+          "name": "SmartFarmSimulatorSource"
+        }
+      ]
+    }
+  ],
+  "operators": [
+    {
+      "name": "CropLifecycleStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_CropLifecycle] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'CropLifecycleEvent'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "CropTelemetryStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_CropTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'crop'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "EnvironmentalTelemetryStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_EnvironmentalTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'environmental' OR event_type = 'EnvironmentalTelemetryEvent'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "EquipmentTelemetryStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_EquipmentTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'equipment' OR event_type = 'EquipmentTelemetryEvent'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "FacilityOperationsStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_FacilityOperations] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'facility' OR event_type = 'FacilityEvent'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "IrrigationTelemetryStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_IrrigationTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'irrigation' OR event_type = 'IrrigationTelemetryEvent'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "LightingTelemetryStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_LightingTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'lighting' OR event_type = 'LightingTelemetryEvent'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "MaintenanceActivityStream",
+      "type": "SQL",
+      "inputNodes": [
+        {
+          "name": "FarmingTelemetryEventstream-stream"
+        }
+      ],
+      "properties": {
+        "query": "SELECT * \nINTO [KQL_MaintenanceActivity] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'maintenance.event'",
+        "advancedSettings": {
+          "eventsOutOfOrderPolicy": "Drop",
+          "eventsOutOfOrderMaxDelayInSeconds": 0,
+          "eventsLateArrivalMaxDelayInSeconds": 5
+        }
+      },
+      "inputSchemas": [
+        {
+          "name": "FarmingTelemetryEventstream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "event_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "event_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "zone_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "equipment_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "current_load",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "failure_probability",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "runtime_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "vibration_vps",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operating_temperature_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_consumption_kw",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "sensor_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_value",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "unit",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "sensor_status",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "weather",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "is_daytime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_batch_id",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "crop_type",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lifecycle_stage",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "age_days",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "health_score",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "growth_rate",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "biomass_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "harvest_cycle_days",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "target_biomass_g",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_consumption_liters",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "nutrient_consumption_grams",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "environmental_stress_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_temperature_celsius",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ambient_humidity_percent",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "irrigation_active",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "flow_rate_liters_per_minute",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "pressure_kpa",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "irrigation_duration_seconds",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "water_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "nutrient_solution_delivered_liters",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_enabled",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "lighting_intensity_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "photoperiod_hours",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "daily_light_integral",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "work_order_id",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "priority",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "assigned_technician",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_type",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "maintenance_status",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "estimated_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "remaining_duration_minutes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "completion_percent",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "technician_notes",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "health_restored",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "overall_health",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "active_critical_alerts",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_draw_kw",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_circulation_lph",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "facility_name",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "region",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "latitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "longitude",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "elevation_m",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "climate_zone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "water_source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "power_grid_redundancy",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "max_zone_capacity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "manufacturer",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "model_number",
+                "type": "Record",
+                "fields": [],
+                "items": null
+              },
+              {
+                "name": "operator_contact",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "operator_phone",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "timestamp",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "schema_version",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "source",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "compatibilityLevel": "1.1"
+}
