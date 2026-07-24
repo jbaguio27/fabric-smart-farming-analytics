@@ -92,7 +92,7 @@ class Settings:
     )
 
     enable_ingestion_anomalies: bool = field(
-        default_factory=lambda: os.getenv("ENABLE_INGESTION_ANOMALIES", "false").lower() in ("true", "1", "t", "yes")
+        default_factory=lambda: os.getenv("ENABLE_INGESTION_ANOMALIES", "true").lower() in ("true", "1", "t", "yes")
     )
 
     # ------------------------------------------------------------
