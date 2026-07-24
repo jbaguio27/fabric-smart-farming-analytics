@@ -19,15 +19,18 @@ class DataAnomalyInjector:
     def __init__(
         self,
         anomaly_rate: float = 0.15,
+        enable_ingestion_anomalies: bool = False,
     ) -> None:
         """
         Initialize the DataAnomalyInjector.
 
         Args:
-            anomaly_rate: Probability (0.0 to 1.0) of applying a random anomaly to an event payload.
+            anomaly_rate: Probability (0.0 to 1.0) of applying a random domain anomaly.
+            enable_ingestion_anomalies: If True, injects low-rate (2%) structural ingestion defects.
         """
 
         self.anomaly_rate: Final[float] = anomaly_rate
+        self.enable_ingestion_anomalies: Final[bool] = enable_ingestion_anomalies
 
     def inject_anomalies(
         self,
@@ -37,16 +40,10 @@ class DataAnomalyInjector:
         Inject real-world raw data anomalies into a telemetry payload dictionary.
 
         Returns a list of payload dictionaries to support duplicate event burst generation.
-
-        Args:
-            payload: Serialized JSON-compatible event dictionary.
-        Returns:
-            List of modified event dictionaries containing raw data quality defects.
         """
         if not isinstance(payload, dict):
             return [payload]
 
-        # Always inject PII mock operator contact info for PII masking validation
         dirty_payload = dict(payload)
         facility_id = str(dirty_payload.get("facility_id", "FAC-001")).lower()
         facility_phones = {
@@ -61,6 +58,25 @@ class DataAnomalyInjector:
         }
         dirty_payload["operator_contact"] = f"tech.{facility_id}@smartfarm.ph"
         dirty_payload["operator_phone"] = facility_phones.get(facility_id, "+639178452190")
+
+        # Controlled Structural Ingestion Anomaly Injection (2% sample rate when enabled)
+        if self.enable_ingestion_anomalies and random.random() <= 0.02:
+            ingestion_defect = random.choice([
+                "unmapped_event_type",
+                "missing_routing_metadata",
+                "corrupt_timestamp",
+            ])
+            if ingestion_defect == "unmapped_event_type":
+                # Tests Eventstream Dead-Letter Route (routes to DeadLetterTelemetry KQL table)
+                dirty_payload["event_type"] = "legacy.deprecated_sensor"
+            elif ingestion_defect == "missing_routing_metadata":
+                # Tests Eventstream Ingress Filter node (WHERE facility_id IS NOT NULL)
+                dirty_payload["facility_id"] = None
+            elif ingestion_defect == "corrupt_timestamp":
+                # Tests Ingestion timestamp enrichment & filter validation
+                dirty_payload["timestamp"] = None
+
+            return [dirty_payload]
 
         # If random roll exceeds anomaly_rate, return single enriched payload
         if random.random() > self.anomaly_rate:

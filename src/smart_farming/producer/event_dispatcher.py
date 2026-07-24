@@ -117,8 +117,14 @@ class EventDispatcher:
         """
         self.settings: Settings | None = settings
         self.logger: logging.Logger = get_logger(__name__)
+        enable_ingestion = (
+            settings.enable_ingestion_anomalies
+            if settings and hasattr(settings, "enable_ingestion_anomalies")
+            else False
+        )
         self.anomaly_injector = DataAnomalyInjector(
             anomaly_rate=0.05 if settings is not None else 0.0,
+            enable_ingestion_anomalies=enable_ingestion,
         )
 
     def dispatch(
