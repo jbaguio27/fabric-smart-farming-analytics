@@ -129,17 +129,14 @@ class EquipmentStateManager:
         for idx, equipment in enumerate(self._equipment_registry.list_all(), start=1):
             state = EquipmentState()
 
-            # Stagger starting health across new, mid-life, and high-wear operational tiers
-            tier = idx % 10
-            if tier in (1, 2, 3, 4, 5):
-                # Fresh / Recently Maintained Assets (88.0% - 100.0%)
-                base_health = self._random_manager.uniform(88.0, 100.0)
-            elif tier in (6, 7, 8):
-                # Mid-Life Operating Assets (68.0% - 87.9%)
-                base_health = self._random_manager.uniform(68.0, 87.9)
+            # Regional Facility Operating Health Bias:
+            # - Urban / High-Density Facilities (FAC-003 Metro Manila NCR, FAC-006 Cebu IT Park): Urban HVAC & Grid Stress (52-68% health -> DEGRADED)
+            # - Provincial Facilities (FAC-001 Benguet, FAC-002 Tagaytay, FAC-004 Davao, FAC-005 Laguna, FAC-007 Clark, FAC-008 Iloilo): Fresh Air & Modern Solar Microgrids (88-98% health -> OPTIMAL)
+            facility_id = str(equipment.facility_id).upper()
+            if facility_id in ("FAC-003", "FAC-006"):
+                base_health = self._random_manager.uniform(52.0, 68.0)
             else:
-                # High-Wear / Degraded Assets (48.0% - 67.9%)
-                base_health = self._random_manager.uniform(48.0, 67.9)
+                base_health = self._random_manager.uniform(88.0, 98.0)
 
             state.health = round(base_health, 2)
             state.runtime_hours = 0.0
