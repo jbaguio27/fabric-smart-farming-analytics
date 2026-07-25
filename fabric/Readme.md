@@ -94,3 +94,81 @@ Every SQL transformation node injects system ingestion metadata:
        NullHealthCount = countif(isnull(health)),
        NullPowerCount = countif(isnull(power_consumption_kw))
    ```
+
+---
+
+### 5. Milestone 1.6: Dual-Dashboard KQL Monitoring Functions
+
+The platform deploys 6 parameterized KQL functions in `SmartFarmingKQLDB` powering **Dashboard A (Business & Operations)** and **Dashboard B (DataOps Observability)**:
+
+#### Dashboard A Functions (Business & Operations Viewports):
+
+1. **`GetEquipmentCriticalAnomalies(WindowMinutes)`** *(Maintenance Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Monitors critical equipment health and failure probabilities for Maintenance Dashboard") 
+   GetEquipmentCriticalAnomalies(WindowMinutes:int = 15) {
+       EquipmentTelemetry
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | where health < 60.0 or failure_probability > 0.35
+       | summarize CriticalCount = count(), AvgHealth = round(avg(health), 2), MaxFailureProb = round(max(failure_probability), 4) by facility_id, equipment_type
+       | extend AlertRequired = (CriticalCount > 0)
+   }
+   ```
+
+2. **`GetEnvironmentalStressAnomalies(WindowMinutes)`** *(Agronomy Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Monitors environmental stress index for Agronomy Dashboard") 
+   GetEnvironmentalStressAnomalies(WindowMinutes:int = 15) {
+       CropTelemetry
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | where environmental_stress_index > 55.0
+       | summarize HighStressCount = count(), AvgStressIndex = round(avg(environmental_stress_index), 2) by facility_id, zone_id, crop_type
+       | extend AlertRequired = (HighStressCount > 0)
+   }
+   ```
+
+3. **`GetFacilityOperationalOverview(WindowMinutes)`** *(Executive Operations Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Summarizes facility operational health and power draw for Executive Dashboard") 
+   GetFacilityOperationalOverview(WindowMinutes:int = 15) {
+       FacilityOperations
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | summarize LatestHealth = round(avg(overall_health), 2), TotalPowerKW = round(sum(power_draw_kw), 2), ActiveAlerts = sum(active_critical_alerts) by facility_id, facility_name, region
+       | extend HealthStatus = case(LatestHealth >= 85.0, "OPTIMAL", LatestHealth >= 70.0, "DEGRADED", "CRITICAL")
+   }
+   ```
+
+#### Dashboard B Functions (DataOps & Platform Observability Viewports):
+
+4. **`GetDeadLetterAnomalyRate(WindowMinutes)`** *(Dead-Letter Audit Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for DataOps Dashboard and Activator alerts") 
+   GetDeadLetterAnomalyRate(WindowMinutes:int = 15) {
+       DeadLetterTelemetry
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | summarize DeadLetterCount = count() by event_type
+       | extend AlertRequired = (DeadLetterCount > 5)
+   }
+   ```
+
+5. **`GetStreamIngestionSLA(WindowMinutes)`** *(Stream Throughput & Latency Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Calculates stream ingestion throughput and processing lag for DataOps Observability Dashboard") 
+   GetStreamIngestionSLA(WindowMinutes:int = 15) {
+       MaintenanceActivity
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | extend ProcessingLag = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+       | summarize TotalIngestedEvents = count(), AvgProcessingLagSec = round(avg(ProcessingLag), 2), MaxProcessingLagSec = max(ProcessingLag), SLABreachCount = countif(ProcessingLag > 5.0)
+   }
+   ```
+
+6. **`GetIngressDataQualityAudit(WindowMinutes)`** *(Data Quality Audit Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance for DataOps Observability Dashboard") 
+   GetIngressDataQualityAudit(WindowMinutes:int = 15) {
+       EquipmentTelemetry
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | summarize TotalRows = count(), ValidSchemaRows = countif(schema_version == "1.0"), NullFacilityCount = countif(isnull(facility_id)), NullTimestampCount = countif(isnull(timestamp))
+       | extend DataQualityScore = round((todouble(ValidSchemaRows) / TotalRows) * 100.0, 2)
+   }
+   ```
