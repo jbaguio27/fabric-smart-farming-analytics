@@ -38,3 +38,54 @@
         by facility_id, zone_id, crop_type
     | extend AlertRequired = (HighStressCount > 0)
 }
+.create-or-alter function with (docstring = "Summarizes facility operational health and power draw for Executive Dashboard", skipvalidation = "true") GetFacilityOperationalOverview(WindowMinutes:int=15) {
+    FacilityOperations
+    | where ingestion_time() > ago(WindowMinutes * 1m)
+    | summarize 
+        facility_name = take_any(facility_name),
+        region = take_any(region),
+        LatestHealth = round(avg(overall_health), 2),
+        TotalPowerKW = round(avg(power_draw_kw), 2),
+        ActiveAlerts = max(active_critical_alerts) by facility_id
+    | extend HealthStatus = case(LatestHealth >= 85.0, "OPTIMAL", LatestHealth >= 70.0, "DEGRADED", "CRITICAL")
+}
+.create-or-alter function with (docstring = "Calculates stream ingestion throughput and cluster processing lag for DataOps Observability Dashboard", skipvalidation = "true") GetStreamIngestionSLA(WindowMinutes:int=15) {
+    MaintenanceActivity
+    | where ingestion_time() > ago(WindowMinutes * 1m)
+    | extend ProcessingLag = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+    | summarize 
+        TotalIngestedEvents = count(),
+        AvgProcessingLagSec = round(avg(ProcessingLag), 2),
+        MaxProcessingLagSec = max(ProcessingLag),
+        SLABreachCount = countif(ProcessingLag > 5.0)
+}
+.create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance for DataOps Observability Dashboard", skipvalidation = "true") GetIngressDataQualityAudit(WindowMinutes:int=15) {
+    EquipmentTelemetry
+    | where ingestion_time() > ago(WindowMinutes * 1m)
+    | summarize 
+        TotalRows = count(),
+        ValidSchemaRows = countif(schema_version  == "1.0"),
+        NullFacilityCount = countif(isnull(facility_id)),
+        NullTimestampCount = countif(isnull(timestamp))
+    | extend DataQualityScore = round((todouble(ValidSchemaRows) / TotalRows) * 100.0, 2)
+}
+.create-or-alter function with (docstring = "Monitors low hydraulic flow rate and pressure drops during active irrigation cycles for Dashboard A and Activator Alerts", skipvalidation = "true") GetIrrigationHydraulicAnomalies(WindowMinutes:int=15) {
+    IrrigationTelemetry
+    | where ingestion_time() > ago(WindowMinutes * 1m)
+    | where irrigation_active == true and (flow_rate_liters_per_minute  < 5.0 or pressure_kpa < 100.0)
+    | summarize 
+        AnomalousCycleCount = count(),
+        AvgFlowRate = round(avg(flow_rate_liters_per_minute), 2),
+        AvgPressure = round(avg(pressure_kpa), 2) by facility_id, zone_id
+    | extend AlertRequired = (AnomalousCycleCount > 0)
+}
+.create-or-alter function with (docstring = "Monitors DLI photoperiod deficits during active lighting cycles for Dashboard A and Activator alerts", skipvalidation = "true") GetLightingDLIDeficit(WindowMinutes:int=15) {
+    LightingTelemetry
+    | where ingestion_time() > ago(WindowMinutes * 1m)
+    | where lighting_enabled == true and daily_light_integral < 14.0
+    | summarize 
+        DeficitCount = count(),
+        AvgDLI = round(avg(daily_light_integral), 2),
+        AvgIntensity = round(avg(lighting_intensity_percent), 2) by facility_id, zone_id
+    | extend AlertRequired = (DeficitCount > 0)
+}
