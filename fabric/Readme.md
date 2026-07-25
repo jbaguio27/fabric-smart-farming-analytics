@@ -322,3 +322,46 @@ The platform establishes 8 1-to-1 Activator Trigger Hooks driving automated noti
    | where DataQualityScore < 98.0 or NullFacilityCount > 0
    | project TotalRows, ValidSchemaRows, NullFacilityCount, DataQualityScore, TargetPersona = "Data Quality Steward", NotificationChannel = "Teams: Ingress DQ Governance Alert"
    ```
+
+---
+
+### 8. Milestone 2.2: Selective Inline KQL Update Policies
+
+Following Microsoft Fabric & Eventhouse Best Practices (Approach B), the platform deploys 2 selective high-value inline Update Policies for real-time streaming enrichment:
+
+#### 1. Environmental Real-Time Enrichment Policy (`Policy_EnvironmentalEnriched`)
+- **Source Table**: `EnvironmentalTelemetry`
+- **Destination Table**: `EnvironmentalEnriched`
+- **Calculated Fields**: Vapor Pressure Deficit ($\text{VPD}_\text{kPa}$), Temperature Deviation ($\text{TempDeviation}_\text{C}$), `IngestionTime`
+- **Downstream Consumer**: Agronomy Viewport (Dashboard A) & Environmental Stress Activator Hook 3
+```kql
+.create-merge table EnvironmentalEnriched (event_id: string, facility_id: string, zone_id: string, sensor_type: string, sensor_value: real, weather: string, is_daytime: string, VaporPressureDeficit_kPa: real, TempDeviation_C: real, timestamp: datetime, IngestionTime: datetime)
+
+.create-or-alter function with (docstring = "Calculates inline VPD, temperature deviation, and IngestionTime during ingestion")
+TransformEnvironmentalEnriched() {
+    EnvironmentalTelemetry
+    | extend SVP_kPa = 0.61078 * exp((17.27 * todouble(sensor_value)) / (todouble(sensor_value) + 237.3)), TempDeviation_C = round(todouble(sensor_value) - 22.0, 2)
+    | extend VaporPressureDeficit_kPa = round(SVP_kPa * (1.0 - 0.70), 3)
+    | project event_id = tostring(event_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), sensor_type = tostring(sensor_type), sensor_value = todouble(sensor_value), weather = tostring(weather), is_daytime = tostring(is_daytime), VaporPressureDeficit_kPa = todouble(VaporPressureDeficit_kPa), TempDeviation_C = todouble(TempDeviation_C), timestamp = todatetime(timestamp), IngestionTime = ingestion_time()
+}
+
+.alter table EnvironmentalEnriched policy update @'[{"Source": "EnvironmentalTelemetry", "Query": "TransformEnvironmentalEnriched()", "IsEnabled": true, "IsTransactional": false}]'
+```
+
+#### 2. Equipment Risk & Degradation Enrichment Policy (`Policy_EquipmentRiskEnriched`)
+- **Source Table**: `EquipmentTelemetry`
+- **Destination Table**: `EquipmentRiskEnriched`
+- **Calculated Fields**: Equipment Degradation Risk Score ($\text{RiskScore} = \text{failure\_probability} \times (100.0 - \text{health})$), `IngestionTime`
+- **Downstream Consumer**: Maintenance Heatmap (Dashboard A) & Critical Equipment Activator Hook 2
+```kql
+.create-merge table EquipmentRiskEnriched (equipment_id: string, facility_id: string, zone_id: string, equipment_type: string, operating_status: string, health: real, failure_probability: real, RiskScore: real, timestamp: datetime, IngestionTime: datetime)
+
+.create-or-alter function with (docstring = "Calculates inline equipment degradation risk score and IngestionTime during ingestion")
+TransformEquipmentRiskEnriched() {
+    EquipmentTelemetry
+    | extend RiskScore = round(todouble(failure_probability) * (100.0 - todouble(health)), 2)
+    | project equipment_id = tostring(equipment_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), equipment_type = tostring(equipment_type), operating_status = tostring(operating_status), health = todouble(health), failure_probability = todouble(failure_probability), RiskScore = todouble(RiskScore), timestamp = todatetime(timestamp), IngestionTime = ingestion_time()
+}
+
+.alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "TransformEquipmentRiskEnriched()", "IsEnabled": true, "IsTransactional": false}]'
+```
