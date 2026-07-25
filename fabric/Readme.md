@@ -132,8 +132,8 @@ The platform deploys 8 parameterized KQL functions in `SmartFarmingKQLDB` poweri
    GetEnvironmentalStressAnomalies(WindowMinutes:int = 15) {
        CropTelemetry
        | where ingestion_time() > ago(WindowMinutes * 1m)
-       | where environmental_stress_index > 45.0
-       | summarize HighStressCount = count(), AvgStressIndex = round(avg(environmental_stress_index), 2) by facility_id, zone_id, crop_type
+       | where environmental_stress_index > 0.45 or environmental_stress_index > 45.0
+       | summarize HighStressCount = count(), AvgStressIndex = round(avg(environmental_stress_index), 4) by facility_id, zone_id, crop_type
        | extend AlertRequired = (HighStressCount > 0)
    }
    ```
@@ -259,4 +259,66 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
    ```kql
    GetIngressDataQualityAudit(WindowMinutes = 30)
    | project TotalRows, ValidSchemaRows, NullFacilityCount, NullTimestampCount, DataQualityScore
+   ```
+
+---
+
+### 7. Sub-Task 1.6.4: Multi-Persona Fabric Activator Alert Hooks
+
+The platform establishes 8 1-to-1 Activator Trigger Hooks driving automated notification routing:
+
+1. **Executive Operations Hook** *(Teams: Operations Emergency Escalation)*:
+   ```kql
+   GetFacilityOperationalOverview(WindowMinutes = 15)
+   | where HealthStatus == "CRITICAL" or ActiveAlerts > 0
+   | project facility_name, region, LatestHealth, HealthStatus, ActiveAlerts, TargetPersona = "Executive Operations Lead", NotificationChannel = "Teams: Operations Emergency Escalation"
+   ```
+
+2. **Maintenance Specialist Hook** *(Email: Work Order Dispatch)*:
+   ```kql
+   GetEquipmentCriticalAnomalies(WindowMinutes = 15)
+   | where AlertRequired == true
+   | project facility_id, equipment_type, CriticalCount, AvgHealth, MaxFailureProb, TargetPersona = "Maintenance Specialist", NotificationChannel = "Email: Work Order Dispatch"
+   ```
+
+3. **Crop Agronomist Hook** *(Teams: Agronomy Action)*:
+   ```kql
+   GetEnvironmentalStressAnomalies(WindowMinutes = 15)
+   | where AlertRequired == true
+   | project facility_id, zone_id, crop_type, HighStressCount, AvgStressIndex, TargetPersona = "Crop Agronomist", NotificationChannel = "Teams: Agronomy Action"
+   ```
+
+4. **Irrigation Specialist Hook** *(Teams: Irrigation Audit)*:
+   ```kql
+   GetIrrigationHydraulicAnomalies(WindowMinutes = 15)
+   | where AlertRequired == true
+   | project facility_id, zone_id, AnomalousCycleCount, AvgFlowRate, AvgPressure, TargetPersona = "Irrigation Specialist", NotificationChannel = "Teams: Irrigation Audit"
+   ```
+
+5. **Photobiology Specialist Hook** *(Teams: Lighting Action)*:
+   ```kql
+   GetLightingDLIDeficit(WindowMinutes = 15)
+   | where AlertRequired == true
+   | project facility_id, zone_id, DeficitCount, AvgDLI, AvgIntensity, TargetPersona = "Photobiology Specialist", NotificationChannel = "Teams: Lighting Action"
+   ```
+
+6. **DataOps Dead-Letter Hook** *(Teams: DataOps Incidents)*:
+   ```kql
+   GetDeadLetterAnomalyRate(WindowMinutes = 15)
+   | where AlertRequired == true
+   | project event_type, DeadLetterCount, AlertTimestamp = now(), TargetPersona = "Data Engineer", NotificationChannel = "Teams: DataOps Incidents"
+   ```
+
+7. **DataOps Stream SLA Hook** *(PagerDuty: Stream SLA Incident)*:
+   ```kql
+   GetStreamIngestionSLA(WindowMinutes = 15)
+   | where SLABreachCount > 0 or AvgProcessingLagSec > 5.0
+   | project TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount, TargetPersona = "DataOps Lead", NotificationChannel = "PagerDuty: Stream SLA Incident"
+   ```
+
+8. **Data Quality Steward Hook** *(Teams: Ingress DQ Governance Alert)*:
+   ```kql
+   GetIngressDataQualityAudit(WindowMinutes = 15)
+   | where DataQualityScore < 98.0 or NullFacilityCount > 0
+   | project TotalRows, ValidSchemaRows, NullFacilityCount, DataQualityScore, TargetPersona = "Data Quality Steward", NotificationChannel = "Teams: Ingress DQ Governance Alert"
    ```
