@@ -46,20 +46,51 @@ Every SQL transformation node injects system ingestion metadata:
 
 ---
 
-### 4. Ingestion SLA Benchmarks & Health Metrics
+### 4. Milestone 1.5: Ingestion SLA Benchmarks & Validation Suite
 
 - **Average Processing Latency**: `< 1.5 seconds`
 - **Ingestion Throughput**: `~60–80 events/sec` (`~5,078 events/10 min`)
-- **Telemetry Ingestion Audit Query**:
-  ```kql
-  MaintenanceActivity
-  | where ingestion_time() > ago(30m)
-  | summarize 
-      TotalEvents = count(),
-      LatestIngestionTime = max(ingestion_time()),
-      EarliestIngestionTime = min(ingestion_time())
-  ```
-- **Dead-Letter Monitoring Function**:
-  ```kql
-  GetDeadLetterAnomalyRate(15)
-  ```
+
+#### Verified Milestone 1.5 Validation Queries:
+
+1. **Sub-Task 1.5.1 — Eventstream Throughput & Volume Audit**:
+   Verified via Fabric Data Insights panel (`~57.7 MB` per hour burst).
+
+2. **Sub-Task 1.5.2 — Ingestion Latency Audit**:
+   ```kql
+   MaintenanceActivity
+   | where ingestion_time() > ago(30m)
+   | summarize 
+       TotalEvents = count(),
+       LatestIngestionTime = max(ingestion_time()),
+       EarliestIngestionTime = min(ingestion_time())
+   ```
+
+3. **Sub-Task 1.5.3 — Dead-Letter Ingestion Rate Audit**:
+   ```kql
+   DeadLetterTelemetry
+   | where ingestion_time() > ago(30m)
+   | summarize DeadLetterCount = count() by event_type
+   ```
+
+4. **Sub-Task 1.5.4 — Edge Ingress Filtering Audit (Zero Corrupted Ingress Rows)**:
+   ```kql
+   EnvironmentalTelemetry
+   | where ingestion_time() > ago(30m)
+   | where isnull(facility_id) or isnull(timestamp)
+   | count
+   ```
+
+5. **Sub-Task 1.5.5 — Connection Status Health**:
+   `PythonIoTSimulator` Custom App source status verified as `Connected` with Green Checkmark.
+
+6. **Sub-Task 1.5.6 — Initial Data Quality & Schema Completeness Audit**:
+   ```kql
+   EquipmentTelemetry
+   | where ingestion_time() > ago(30m)
+   | summarize 
+       TotalRows = count(),
+       ValidSchemaCount = countif(schema_version == "1.0"),
+       NullHealthCount = countif(isnull(health)),
+       NullPowerCount = countif(isnull(power_consumption_kw))
+   ```
