@@ -311,7 +311,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_CropLifecycle] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'CropLifecycleEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_CropLifecycle] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'CropLifecycleEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -805,7 +805,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_CropTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'crop'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_CropTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'crop'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -1299,7 +1299,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_EnvironmentalTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'environmental'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_EnvironmentalTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'environmental'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -1793,7 +1793,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_EquipmentTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'equipment'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_EquipmentTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'equipment'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -2287,7 +2287,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_FacilityOperations] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'facility' OR event_type = 'FacilityEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_FacilityOperations] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'facility' OR event_type = 'FacilityEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -2781,7 +2781,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_IrrigationTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'irrigation' OR event_type = 'IrrigationTelemetryEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_IrrigationTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'irrigation' OR event_type = 'IrrigationTelemetryEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -3275,7 +3275,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_LightingTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'lighting' OR event_type = 'LightingTelemetryEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_LightingTelemetry] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'lighting' OR event_type = 'LightingTelemetryEvent'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -3769,7 +3769,7 @@
         }
       ],
       "properties": {
-        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTimestamp\nINTO [KQL_MaintenanceActivity] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'maintenance.event'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
+        "query": "SELECT \n    *,\n    System.Timestamp() AS IngestionTime\nINTO [KQL_MaintenanceActivity] \nFROM [FarmingTelemetryEventstream-stream]\nWHERE event_type = 'maintenance.event'\nAND facility_id IS NOT NULL\nAND timestamp IS NOT NULL",
         "advancedSettings": {
           "eventsOutOfOrderPolicy": "Drop",
           "eventsOutOfOrderMaxDelayInSeconds": 0,
