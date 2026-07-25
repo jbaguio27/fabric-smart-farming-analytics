@@ -97,13 +97,24 @@ Every SQL transformation node injects system ingestion metadata:
 
 ---
 
-### 5. Milestone 1.6: Dual-Dashboard KQL Monitoring Functions
+### 5. Milestone 1.6: 8-Function Enterprise KQL Monitoring Suite
 
-The platform deploys 6 parameterized KQL functions in `SmartFarmingKQLDB` powering **Dashboard A (Business & Operations)** and **Dashboard B (DataOps Observability)**:
+The platform deploys 8 parameterized KQL functions in `SmartFarmingKQLDB` powering **Dashboard A (Business & Operations)** and **Dashboard B (DataOps Observability)**:
 
 #### Dashboard A Functions (Business & Operations Viewports):
 
-1. **`GetEquipmentCriticalAnomalies(WindowMinutes)`** *(Maintenance Viewport)*:
+1. **`GetFacilityOperationalOverview(WindowMinutes)`** *(Executive Operations Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Summarizes facility operational health and power draw for Executive Dashboard") 
+   GetFacilityOperationalOverview(WindowMinutes:int = 15) {
+       FacilityOperations
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | summarize facility_name = take_any(facility_name), region = take_any(region), LatestHealth = round(avg(overall_health), 2), TotalPowerKW = round(avg(power_draw_kw), 2), ActiveAlerts = max(active_critical_alerts) by facility_id
+       | extend HealthStatus = case(LatestHealth >= 85.0, "OPTIMAL", LatestHealth >= 70.0, "DEGRADED", "CRITICAL")
+   }
+   ```
+
+2. **`GetEquipmentCriticalAnomalies(WindowMinutes)`** *(Maintenance Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Monitors critical equipment health and failure probabilities for Maintenance Dashboard") 
    GetEquipmentCriticalAnomalies(WindowMinutes:int = 15) {
@@ -115,32 +126,45 @@ The platform deploys 6 parameterized KQL functions in `SmartFarmingKQLDB` poweri
    }
    ```
 
-2. **`GetEnvironmentalStressAnomalies(WindowMinutes)`** *(Agronomy Viewport)*:
+3. **`GetEnvironmentalStressAnomalies(WindowMinutes)`** *(Agronomy Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Monitors environmental stress index for Agronomy Dashboard") 
    GetEnvironmentalStressAnomalies(WindowMinutes:int = 15) {
        CropTelemetry
        | where ingestion_time() > ago(WindowMinutes * 1m)
-       | where environmental_stress_index > 55.0
+       | where environmental_stress_index > 45.0
        | summarize HighStressCount = count(), AvgStressIndex = round(avg(environmental_stress_index), 2) by facility_id, zone_id, crop_type
        | extend AlertRequired = (HighStressCount > 0)
    }
    ```
 
-3. **`GetFacilityOperationalOverview(WindowMinutes)`** *(Executive Operations Viewport)*:
+4. **`GetIrrigationHydraulicAnomalies(WindowMinutes)`** *(Hydraulics Viewport)*:
    ```kql
-   .create-or-alter function with (docstring = "Summarizes facility operational health and power draw for Executive Dashboard") 
-   GetFacilityOperationalOverview(WindowMinutes:int = 15) {
-       FacilityOperations
+   .create-or-alter function with (docstring = "Monitors low hydraulic flow rate and pressure drops during active irrigation cycles") 
+   GetIrrigationHydraulicAnomalies(WindowMinutes:int = 15) {
+       IrrigationTelemetry
        | where ingestion_time() > ago(WindowMinutes * 1m)
-       | summarize LatestHealth = round(avg(overall_health), 2), TotalPowerKW = round(sum(power_draw_kw), 2), ActiveAlerts = sum(active_critical_alerts) by facility_id, facility_name, region
-       | extend HealthStatus = case(LatestHealth >= 85.0, "OPTIMAL", LatestHealth >= 70.0, "DEGRADED", "CRITICAL")
+       | where is_active == true and (flow_rate_lpm < 5.0 or pressure_kpa < 100.0)
+       | summarize AnomalousCycleCount = count(), AvgFlowRate = round(avg(flow_rate_lpm), 2), AvgPressure = round(avg(pressure_kpa), 2) by facility_id, zone_id
+       | extend AlertRequired = (AnomalousCycleCount > 0)
+   }
+   ```
+
+5. **`GetLightingDLIDeficit(WindowMinutes)`** *(Photobiology Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Monitors DLI photoperiod deficits during active lighting cycles") 
+   GetLightingDLIDeficit(WindowMinutes:int = 15) {
+       LightingTelemetry
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | where is_enabled == true and daily_light_integral < 14.0
+       | summarize DeficitCount = count(), AvgDLI = round(avg(daily_light_integral), 2), AvgIntensity = round(avg(light_intensity_percent), 2) by facility_id, zone_id
+       | extend AlertRequired = (DeficitCount > 0)
    }
    ```
 
 #### Dashboard B Functions (DataOps & Platform Observability Viewports):
 
-4. **`GetDeadLetterAnomalyRate(WindowMinutes)`** *(Dead-Letter Audit Viewport)*:
+6. **`GetDeadLetterAnomalyRate(WindowMinutes)`** *(Dead-Letter Audit Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for DataOps Dashboard and Activator alerts") 
    GetDeadLetterAnomalyRate(WindowMinutes:int = 15) {
@@ -151,7 +175,7 @@ The platform deploys 6 parameterized KQL functions in `SmartFarmingKQLDB` poweri
    }
    ```
 
-5. **`GetStreamIngestionSLA(WindowMinutes)`** *(Stream Throughput & Latency Viewport)*:
+7. **`GetStreamIngestionSLA(WindowMinutes)`** *(Stream Throughput & Latency Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Calculates stream ingestion throughput and processing lag for DataOps Observability Dashboard") 
    GetStreamIngestionSLA(WindowMinutes:int = 15) {
@@ -162,7 +186,7 @@ The platform deploys 6 parameterized KQL functions in `SmartFarmingKQLDB` poweri
    }
    ```
 
-6. **`GetIngressDataQualityAudit(WindowMinutes)`** *(Data Quality Audit Viewport)*:
+8. **`GetIngressDataQualityAudit(WindowMinutes)`** *(Data Quality Audit Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance for DataOps Observability Dashboard") 
    GetIngressDataQualityAudit(WindowMinutes:int = 15) {
@@ -177,7 +201,7 @@ The platform deploys 6 parameterized KQL functions in `SmartFarmingKQLDB` poweri
 
 ### 6. Sub-Task 1.6.3: Dual-Dashboard Real-Time Workload Queries
 
-The platform defines 6 production workload queries powering **Dashboard A (Business & Operations)** and **Dashboard B (DataOps Observability)**:
+The platform defines 8 production workload queries powering **Dashboard A (Business & Operations)** and **Dashboard B (DataOps Observability)**:
 
 #### 📊 Dashboard A Workload Queries (Business & Operations Viewports):
 
@@ -202,22 +226,36 @@ The platform defines 6 production workload queries powering **Dashboard A (Busin
    | order by AvgStressIndex desc
    ```
 
+4. **Business Workload 4 — Irrigation Hydraulic Flow & Pressure Audit**:
+   ```kql
+   GetIrrigationHydraulicAnomalies(WindowMinutes = 30)
+   | project facility_id, zone_id, AnomalousCycleCount, AvgFlowRate, AvgPressure
+   | order by AnomalousCycleCount desc
+   ```
+
+5. **Business Workload 5 — Photobiology DLI Light Deficit Audit**:
+   ```kql
+   GetLightingDLIDeficit(WindowMinutes = 30)
+   | project facility_id, zone_id, DeficitCount, AvgDLI, AvgIntensity
+   | order by DeficitCount desc
+   ```
+
 #### 🖥️ Dashboard B Workload Queries (DataOps & Platform Observability Viewports):
 
-4. **Technical Workload 1 — Ingestion Velocity & Stream SLA Lag**:
+6. **Technical Workload 1 — Ingestion Velocity & Stream SLA Lag**:
    ```kql
    GetStreamIngestionSLA(WindowMinutes = 30)
    | project TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount
    ```
 
-5. **Technical Workload 2 — Dead-Letter Ingestion Anomaly Queue Rate**:
+7. **Technical Workload 2 — Dead-Letter Ingestion Anomaly Queue Rate**:
    ```kql
    GetDeadLetterAnomalyRate(WindowMinutes = 30)
    | project event_type, DeadLetterCount, AlertRequired
    | order by DeadLetterCount desc
    ```
 
-6. **Technical Workload 3 — Ingress Data Quality & Schema Integrity Audit**:
+8. **Technical Workload 3 — Ingress Data Quality & Schema Integrity Audit**:
    ```kql
    GetIngressDataQualityAudit(WindowMinutes = 30)
    | project TotalRows, ValidSchemaRows, NullFacilityCount, NullTimestampCount, DataQualityScore
