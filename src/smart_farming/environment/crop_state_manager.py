@@ -149,26 +149,29 @@ class CropStateManager:
 
             initial_biomass = round(staggered_age * initial_growth * BIOMASS_GROWTH_MULTIPLIER, 1)
 
-            # Regional Facility Correlated Crop Stress Distribution:
-            # - Urban / High-Density Facilities (FAC-003 Manila BGC, FAC-006 Cebu IT Park):
-            #   Cascading thermal & HVAC stress -> elevated crop stress index (56.0 - 82.0) across zones
-            # - Provincial Facilities (FAC-001, FAC-002, FAC-004, FAC-005, FAC-007, FAC-008):
-            #   Optimal environmental conditions -> healthy low stress index (0.0 - 14.0)
+            # Stochastic Facility Health Tier Crop Stress Driver:
+            # - CRITICAL Tier (FAC-003 Metro Manila NCR Taguig BGC): High thermal stress index (58.0 - 85.0), crop health (58 - 72)
+            # - DEGRADED Tier (FAC-005 Laguna, FAC-006 Cebu, FAC-008 Iloilo): Moderate stress index (25.0 - 48.0), crop health (78 - 86)
+            # - OPTIMAL Tier (FAC-001 Benguet, FAC-002 Tagaytay, FAC-004 Davao, FAC-007 Clark): Low stress index (0.0 - 14.0), crop health (100)
             facility_id = str(getattr(definition, "facility_id", "")).upper()
             zone_str = str(getattr(definition, "zone_id", "ZONE-001"))
             zone_num = int(zone_str.split("-")[-1]) if "-" in zone_str else 1
             batch_num = int(definition.crop_batch_id.split("-")[-1])
 
-            if facility_id in ("FAC-003", "FAC-006"):
-                # Cascading Urban Micro-Climate Stress (FAC-003 Taguig BGC & FAC-006 Cebu IT Park)
-                initial_stress = round(56.0 + (zone_num * 3.5) + (batch_num % 10), 1)
-                initial_health = round(72.0 - (zone_num * 2.0), 1)
+            if facility_id == "FAC-003":
+                # CRITICAL Tier
+                initial_stress = round(58.0 + (zone_num * 3.5) + (batch_num % 10), 1)
+                initial_health = round(68.0 - (zone_num * 2.0), 1)
+            elif facility_id in ("FAC-005", "FAC-006", "FAC-008"):
+                # DEGRADED Tier
+                initial_stress = round(25.0 + (zone_num * 3.0) + (batch_num % 8), 1)
+                initial_health = round(82.0 - (zone_num * 1.5), 1)
             elif batch_num % 13 == 0:
-                # Mild operational variance
-                initial_stress = round(22.0 + (batch_num % 15), 1)
-                initial_health = round(84.0 - (batch_num % 8), 1)
+                # Occasional edge variance in optimal facility
+                initial_stress = round(18.0 + (batch_num % 10), 1)
+                initial_health = round(88.0 - (batch_num % 5), 1)
             else:
-                # Provincial Optimal Healthy Condition
+                # OPTIMAL Tier
                 initial_stress = round((batch_num % 8) * 1.5, 1)
                 initial_health = MAX_HEALTH_SCORE
 

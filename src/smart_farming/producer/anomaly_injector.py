@@ -78,8 +78,19 @@ class DataAnomalyInjector:
 
             return [dirty_payload]
 
-        # If random roll exceeds anomaly_rate, return single enriched payload
-        if random.random() > self.anomaly_rate:
+        # Stochastic Facility Health Tier Anomaly Rate Adjuster:
+        # - CRITICAL Tier (FAC-003): High edge network defect rate (20.0%)
+        # - DEGRADED Tier (FAC-005, FAC-006, FAC-008): Moderate defect rate (10.0%)
+        # - OPTIMAL Tier (FAC-001, FAC-002, FAC-004, FAC-007): Low defect rate (3.0%)
+        if facility_id == "fac-003":
+            effective_anomaly_rate = 0.20
+        elif facility_id in ("fac-005", "fac-006", "fac-008"):
+            effective_anomaly_rate = 0.10
+        else:
+            effective_anomaly_rate = 0.03
+
+        # If random roll exceeds effective_anomaly_rate, return single enriched payload
+        if random.random() > effective_anomaly_rate:
             return [dirty_payload]
 
         # Select a random anomaly pattern

@@ -129,13 +129,19 @@ class EquipmentStateManager:
         for idx, equipment in enumerate(self._equipment_registry.list_all(), start=1):
             state = EquipmentState()
 
-            # Regional Facility Operating Health Bias:
-            # - Urban / High-Density Facilities (FAC-003 Metro Manila NCR, FAC-006 Cebu IT Park): Urban HVAC & Grid Stress (52-68% health -> DEGRADED)
-            # - Provincial Facilities (FAC-001 Benguet, FAC-002 Tagaytay, FAC-004 Davao, FAC-005 Laguna, FAC-007 Clark, FAC-008 Iloilo): Fresh Air & Modern Solar Microgrids (88-98% health -> OPTIMAL)
+            # Stochastic Facility Health Tier Initializer:
+            # - OPTIMAL Tier (FAC-001 Benguet, FAC-002 Tagaytay, FAC-004 Davao, FAC-007 Clark): 88.0% - 98.0% health
+            # - DEGRADED Tier (FAC-005 Laguna, FAC-006 Cebu, FAC-008 Iloilo): 70.0% - 84.0% health
+            # - CRITICAL Tier (FAC-003 Metro Manila NCR Taguig BGC): 52.0% - 68.0% health
             facility_id = str(equipment.facility_id).upper()
-            if facility_id in ("FAC-003", "FAC-006"):
+            if facility_id == "FAC-003":
+                # CRITICAL Tier
                 base_health = self._random_manager.uniform(52.0, 68.0)
+            elif facility_id in ("FAC-005", "FAC-006", "FAC-008"):
+                # DEGRADED Tier
+                base_health = self._random_manager.uniform(70.0, 84.0)
             else:
+                # OPTIMAL Tier
                 base_health = self._random_manager.uniform(88.0, 98.0)
 
             state.health = round(base_health, 2)
