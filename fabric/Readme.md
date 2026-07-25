@@ -50,11 +50,17 @@ Every SQL transformation node injects system ingestion metadata:
 
 - **Average Processing Latency**: `< 1.5 seconds`
 - **Ingestion Throughput**: `~60–80 events/sec` (`~55 MB/hour`)
-- **Telemetry Latency Audit Query**:
+- **Telemetry Processing SLA Audit Query**:
   ```kql
-  MaintenanceActivity
-  | take 10
-  | project timestamp, IngestionTime, LagSeconds = datetime_diff('second', IngestionTime, todatetime(timestamp)), facility_id
+  let SLA_Limit_Seconds = 5.0;
+  EnvironmentalTelemetry
+  | where ingestion_time() > ago(30m) and isnotnull(IngestionTime)
+  | extend FabricProcessingLag = datetime_diff('second', ingestion_time(), todatetime(IngestionTime))
+  | summarize 
+      TotalEvents = count(),
+      AvgFabricLagSeconds = round(avg(FabricProcessingLag), 2),
+      MaxFabricLagSeconds = max(FabricProcessingLag),
+      SLAViolations = countif(FabricProcessingLag > SLA_Limit_Seconds)
   ```
 - **Dead-Letter Monitoring Function**:
   ```kql
