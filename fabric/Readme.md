@@ -24,17 +24,17 @@ The **HydroGrow Smart Farming Analytics Platform** ingests real-time IoT telemet
 
 Telemetry events are routed asynchronously based on `event_type` to their designated KQL database tables:
 
-| Stream Name | Transformation SQL Condition (`WHERE`) | Target KQL Table |
-| :--- | :--- | :--- |
-| **Environmental** | `event_type = 'environmental.telemetry'` | `EnvironmentalTelemetry` |
-| **Equipment** | `event_type = 'equipment.telemetry'` | `EquipmentTelemetry` |
-| **Crop Telemetry** | `event_type = 'crop.telemetry'` | `CropTelemetry` |
-| **Crop Lifecycle** | `event_type = 'crop.lifecycle'` | `CropLifecycle` |
-| **Irrigation** | `event_type = 'irrigation.telemetry'` | `IrrigationTelemetry` |
-| **Lighting** | `event_type = 'lighting.telemetry'` | `LightingTelemetry` |
-| **Maintenance** | `event_type = 'maintenance.event'` | `MaintenanceActivity` |
-| **Facility Operations** | `event_type = 'facility.operations'` | `FacilityOperations` |
-| **Dead-Letter Route** | `event_type = 'legacy.deprecated_sensor' OR facility_id IS NULL` | `DeadLetterTelemetry` |
+| Stream Name             | Transformation SQL Condition (`WHERE`)                           | Target KQL Table         |
+| :---------------------- | :--------------------------------------------------------------- | :----------------------- |
+| **Environmental**       | `event_type = 'environmental.telemetry'`                         | `EnvironmentalTelemetry` |
+| **Equipment**           | `event_type = 'equipment.telemetry'`                             | `EquipmentTelemetry`     |
+| **Crop Telemetry**      | `event_type = 'crop.telemetry'`                                  | `CropTelemetry`          |
+| **Crop Lifecycle**      | `event_type = 'crop.lifecycle'`                                  | `CropLifecycle`          |
+| **Irrigation**          | `event_type = 'irrigation.telemetry'`                            | `IrrigationTelemetry`    |
+| **Lighting**            | `event_type = 'lighting.telemetry'`                              | `LightingTelemetry`      |
+| **Maintenance**         | `event_type = 'maintenance.event'`                               | `MaintenanceActivity`    |
+| **Facility Operations** | `event_type = 'facility.operations'`                             | `FacilityOperations`     |
+| **Dead-Letter Route**   | `event_type = 'legacy.deprecated_sensor' OR facility_id IS NULL` | `DeadLetterTelemetry`    |
 
 ---
 
@@ -383,3 +383,15 @@ The platform configures hot caching and soft retention policies in `SmartFarming
    .alter database SmartFarmingKQLDB policy retention @'{"SoftDeletePeriod": "365.00:00:00", "Recoverability": "Enabled"}'
    ```
    - **Purpose**: Retains 365 days of historical telemetry in cold storage before permanent deletion, enabling cold-path Medallion Lakehouse (Step 5) extraction.
+
+---
+
+### 10. Milestone 2.4: Fabric Managed Extent Partitioning Architecture
+
+In Microsoft Fabric Eventhouse (SaaS Managed Capacity), data extent partitioning and column indexing are **managed natively by Fabric's backend engine (`Policy: null`)**:
+
+- **Auto-Indexing & Extent Clustering**: Microsoft Fabric automatically indexes and clusters disk extents by ingestion time and string hash keys (`facility_id`), delivering sub-second query performance without manual policy maintenance churn.
+- **Verification Query**:
+  ```kql
+  .show table EnvironmentalTelemetry policy partitioning
+  ```
