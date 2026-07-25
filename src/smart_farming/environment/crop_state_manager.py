@@ -149,6 +149,22 @@ class CropStateManager:
 
             initial_biomass = round(staggered_age * initial_growth * BIOMASS_GROWTH_MULTIPLIER, 1)
 
+            # Determine initial stress distribution tier:
+            # 90% optimal (0-12), 7% mild stress (18-42), 3% severe heatwave/humidity stress (58-82)
+            batch_num = int(definition.crop_batch_id.split("-")[-1])
+            if batch_num % 33 == 0:
+                # 3% severe stress anomaly (triggers Agronomist alerts)
+                initial_stress = round(58.0 + (batch_num % 25), 1)
+                initial_health = round(68.0 - (batch_num % 15), 1)
+            elif batch_num % 14 == 0:
+                # 7% mild stress variance (displays realistic operational variance)
+                initial_stress = round(18.0 + (batch_num % 20), 1)
+                initial_health = round(82.0 - (batch_num % 10), 1)
+            else:
+                # 90% optimal healthy condition
+                initial_stress = round((batch_num % 10) * 1.2, 1)
+                initial_health = MAX_HEALTH_SCORE
+
             self._states[definition.crop_batch_id] = CropState(
                 crop_batch_id=definition.crop_batch_id,
                 zone_id=definition.zone_id,
@@ -157,12 +173,12 @@ class CropStateManager:
                 planting_timestamp=None,
                 expected_harvest_timestamp=None,
                 age_days=staggered_age,
-                health_score=MAX_HEALTH_SCORE,
+                health_score=initial_health,
                 growth_rate=initial_growth,
                 biomass_grams=initial_biomass,
                 water_uptake_liters=round(initial_biomass * WATER_UPTAKE_PER_GRAM_BIOMASS, 3),
                 nutrient_uptake_grams=round(initial_biomass * WATER_UPTAKE_PER_GRAM_BIOMASS * 45.0, 2),
-                stress_index=0.0,
+                stress_index=initial_stress,
                 is_active=True,
             )
     
