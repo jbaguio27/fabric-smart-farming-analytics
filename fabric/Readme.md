@@ -172,3 +172,53 @@ The platform deploys 6 parameterized KQL functions in `SmartFarmingKQLDB` poweri
        | extend DataQualityScore = round((todouble(ValidSchemaRows) / TotalRows) * 100.0, 2)
    }
    ```
+
+---
+
+### 6. Sub-Task 1.6.3: Dual-Dashboard Real-Time Workload Queries
+
+The platform defines 6 production workload queries powering **Dashboard A (Business & Operations)** and **Dashboard B (DataOps Observability)**:
+
+#### 📊 Dashboard A Workload Queries (Business & Operations Viewports):
+
+1. **Business Workload 1 — Executive Facility Operations Overview**:
+   ```kql
+   GetFacilityOperationalOverview(WindowMinutes = 30)
+   | project facility_name, region, LatestHealth, HealthStatus, TotalPowerKW, ActiveAlerts
+   | order by LatestHealth desc
+   ```
+
+2. **Business Workload 2 — Maintenance Equipment Degradation Risk Heatmap**:
+   ```kql
+   GetEquipmentCriticalAnomalies(WindowMinutes = 30)
+   | project facility_id, equipment_type, CriticalCount, AvgHealth, MaxFailureProb
+   | order by MaxFailureProb desc
+   ```
+
+3. **Business Workload 3 — Agronomy Crop Biological Stress Distribution**:
+   ```kql
+   GetEnvironmentalStressAnomalies(WindowMinutes = 30)
+   | project facility_id, zone_id, crop_type, HighStressCount, AvgStressIndex
+   | order by AvgStressIndex desc
+   ```
+
+#### 🖥️ Dashboard B Workload Queries (DataOps & Platform Observability Viewports):
+
+4. **Technical Workload 1 — Ingestion Velocity & Stream SLA Lag**:
+   ```kql
+   GetStreamIngestionSLA(WindowMinutes = 30)
+   | project TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount
+   ```
+
+5. **Technical Workload 2 — Dead-Letter Ingestion Anomaly Queue Rate**:
+   ```kql
+   GetDeadLetterAnomalyRate(WindowMinutes = 30)
+   | project event_type, DeadLetterCount, AlertRequired
+   | order by DeadLetterCount desc
+   ```
+
+6. **Technical Workload 3 — Ingress Data Quality & Schema Integrity Audit**:
+   ```kql
+   GetIngressDataQualityAudit(WindowMinutes = 30)
+   | project TotalRows, ValidSchemaRows, NullFacilityCount, NullTimestampCount, DataQualityScore
+   ```
