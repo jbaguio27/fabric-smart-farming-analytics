@@ -365,3 +365,21 @@ TransformEquipmentRiskEnriched() {
 
 .alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "TransformEquipmentRiskEnriched()", "IsEnabled": true, "IsTransactional": false}]'
 ```
+
+---
+
+### 9. Milestone 2.3: Database Retention & Caching Policies
+
+The platform configures hot caching and soft retention policies in `SmartFarmingKQLDB` to optimize sub-second real-time query performance while preserving cold-path historical data:
+
+1. **Hot Caching Policy (RAM / SSD)**:
+   ```kql
+   .alter database SmartFarmingKQLDB policy caching hot = 7d
+   ```
+   - **Purpose**: Holds 7 days of recent telemetry in memory SSD for sub-second Real-Time Dashboard (Step 3) performance.
+
+2. **Soft Retention Policy (Cold Storage Archive)**:
+   ```kql
+   .alter database SmartFarmingKQLDB policy retention @'{"SoftDeletePeriod": "365.00:00:00", "Recoverability": "Enabled"}'
+   ```
+   - **Purpose**: Retains 365 days of historical telemetry in cold storage before permanent deletion, enabling cold-path Medallion Lakehouse (Step 5) extraction.
