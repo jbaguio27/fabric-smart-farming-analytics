@@ -142,11 +142,12 @@ The platform deploys 8 parameterized KQL functions in `SmartFarmingKQLDB` poweri
    ```kql
    .create-or-alter function with (docstring = "Monitors low hydraulic flow rate and pressure drops during active irrigation cycles") 
    GetIrrigationHydraulicAnomalies(WindowMinutes:int = 15) {
-       IrrigationTelemetry
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | where is_active == true and (flow_rate_lpm < 5.0 or pressure_kpa < 100.0)
-       | summarize AnomalousCycleCount = count(), AvgFlowRate = round(avg(flow_rate_lpm), 2), AvgPressure = round(avg(pressure_kpa), 2) by facility_id, zone_id
+       MaterializedViewIrrigationSummary
+       | where LastUpdated > ago(WindowMinutes * 1m)
+       | where AnomalousCycleCount > 0
+       | extend AvgFlowRate = round(RawAvgFlowRate, 2), AvgPressure = round(RawAvgPressure, 2)
        | extend AlertRequired = (AnomalousCycleCount > 0)
+       | project facility_id, zone_id, AnomalousCycleCount, AvgFlowRate, AvgPressure, AlertRequired, LastUpdated
    }
    ```
 
@@ -154,17 +155,48 @@ The platform deploys 8 parameterized KQL functions in `SmartFarmingKQLDB` poweri
    ```kql
    .create-or-alter function with (docstring = "Monitors DLI photoperiod deficits during active lighting cycles") 
    GetLightingDLIDeficit(WindowMinutes:int = 15) {
-       LightingTelemetry
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | where is_enabled == true and daily_light_integral < 14.0
-       | summarize DeficitCount = count(), AvgDLI = round(avg(daily_light_integral), 2), AvgIntensity = round(avg(light_intensity_percent), 2) by facility_id, zone_id
+       MaterializedViewLightingSummary
+       | where LastUpdated > ago(WindowMinutes * 1m)
+       | where DeficitCount > 0
+       | extend AvgDLI = round(RawAvgDLI, 2), AvgIntensity = round(RawAvgIntensity, 2)
        | extend AlertRequired = (DeficitCount > 0)
+       | project facility_id, zone_id, DeficitCount, AvgDLI, AvgIntensity, AlertRequired, LastUpdated
+   }
+   ```
+
+6. **`GetMaintenanceSLABreach(WindowMinutes)`** *(Maintenance Work Orders Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Monitors emergency maintenance work orders using MaterializedViewMaintenanceWorkOrders") 
+   GetMaintenanceSLABreach(WindowMinutes:int = 15) {
+       MaterializedViewMaintenanceWorkOrders
+       | where LastUpdated > ago(WindowMinutes * 1m)
+       | where EmergencyOrderCount > 0 or PendingOrderCount > 0
+       | extend AvgResolutionTimeMin = round(RawAvgResolutionTimeMin, 2)
+       | extend AlertRequired = (EmergencyOrderCount > 0)
+       | project facility_id, equipment_id, maintenance_type, EmergencyOrderCount, PendingOrderCount, AvgResolutionTimeMin, AlertRequired, LastUpdated
    }
    ```
 
 #### Dashboard B Functions (DataOps & Platform Observability Viewports):
 
-6. **`GetDeadLetterAnomalyRate(WindowMinutes)`** *(Dead-Letter Audit Viewport)*:
+7. **`GetStreamIngestionSLA(WindowMinutes)`** *(Multi-Stream Throughput & Latency Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Calculates stream ingestion throughput and processing lag across all 5 operational streams") 
+   GetStreamIngestionSLA(WindowMinutes:int = 15) {
+       union 
+           (EquipmentTelemetry | extend StreamName = "EquipmentTelemetry"),
+           (EnvironmentalTelemetry | extend StreamName = "EnvironmentalTelemetry"),
+           (CropTelemetry | extend StreamName = "CropTelemetry"),
+           (IrrigationTelemetry | extend StreamName = "IrrigationTelemetry"),
+           (LightingTelemetry | extend StreamName = "LightingTelemetry")
+       | where ingestion_time() > ago(WindowMinutes * 1m)
+       | extend ProcessingLagSec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+       | summarize TotalIngestedEvents = count(), AvgProcessingLagSec = round(avg(ProcessingLagSec), 2), MaxProcessingLagSec = max(ProcessingLagSec), SLABreachCount = countif(ProcessingLagSec > 5.0) by StreamName
+       | extend SLABreachAlert = (SLABreachCount > 0 or AvgProcessingLagSec > 5.0)
+   }
+   ```
+
+8. **`GetDeadLetterAnomalyRate(WindowMinutes)`** *(Dead-Letter Audit Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for DataOps Dashboard and Activator alerts") 
    GetDeadLetterAnomalyRate(WindowMinutes:int = 15) {
@@ -175,25 +207,20 @@ The platform deploys 8 parameterized KQL functions in `SmartFarmingKQLDB` poweri
    }
    ```
 
-7. **`GetStreamIngestionSLA(WindowMinutes)`** *(Stream Throughput & Latency Viewport)*:
+9. **`GetIngressDataQualityAudit(WindowMinutes)`** *(Multi-Stream Data Quality Audit Viewport)*:
    ```kql
-   .create-or-alter function with (docstring = "Calculates stream ingestion throughput and processing lag for DataOps Observability Dashboard") 
-   GetStreamIngestionSLA(WindowMinutes:int = 15) {
-       MaintenanceActivity
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | extend ProcessingLag = datetime_diff('second', ingestion_time(), todatetime(timestamp))
-       | summarize TotalIngestedEvents = count(), AvgProcessingLagSec = round(avg(ProcessingLag), 2), MaxProcessingLagSec = max(ProcessingLag), SLABreachCount = countif(ProcessingLag > 5.0)
-   }
-   ```
-
-8. **`GetIngressDataQualityAudit(WindowMinutes)`** *(Data Quality Audit Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance for DataOps Observability Dashboard") 
+   .create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance across all 5 operational streams") 
    GetIngressDataQualityAudit(WindowMinutes:int = 15) {
-       EquipmentTelemetry
+       union 
+           (EquipmentTelemetry | extend StreamName = "EquipmentTelemetry"),
+           (EnvironmentalTelemetry | extend StreamName = "EnvironmentalTelemetry"),
+           (CropTelemetry | extend StreamName = "CropTelemetry"),
+           (IrrigationTelemetry | extend StreamName = "IrrigationTelemetry"),
+           (LightingTelemetry | extend StreamName = "LightingTelemetry")
        | where ingestion_time() > ago(WindowMinutes * 1m)
-       | summarize TotalRows = count(), ValidSchemaRows = countif(schema_version == "1.0"), NullFacilityCount = countif(isnull(facility_id)), NullTimestampCount = countif(isnull(timestamp))
+       | summarize TotalRows = count(), ValidSchemaRows = countif(schema_version == "1.0"), NullFacilityCount = countif(isnull(facility_id)), NullTimestampCount = countif(isnull(timestamp)) by StreamName
        | extend DataQualityScore = round((todouble(ValidSchemaRows) / TotalRows) * 100.0, 2)
+       | extend DQViolationAlert = (DataQualityScore < 98.0 or NullFacilityCount > 0 or NullTimestampCount > 0)
    }
    ```
 
@@ -222,8 +249,8 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
 3. **Business Workload 3 — Agronomy Crop Biological Stress Distribution**:
    ```kql
    GetEnvironmentalStressAnomalies(WindowMinutes = 30)
-   | project facility_id, zone_id, crop_type, HighStressCount, AvgStressIndex
-   | order by AvgStressIndex desc
+   | project facility_id, zone_id, sensor_type, HighStressCount, AvgVPD, AvgTempDeviation
+   | order by HighStressCount desc
    ```
 
 4. **Business Workload 4 — Irrigation Hydraulic Flow & Pressure Audit**:
@@ -240,25 +267,32 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
    | order by DeficitCount desc
    ```
 
-#### 🖥️ Dashboard B Workload Queries (DataOps & Platform Observability Viewports):
-
-6. **Technical Workload 1 — Ingestion Velocity & Stream SLA Lag**:
+6. **Business Workload 6 — Maintenance Emergency Work Order SLA Resolution**:
    ```kql
-   GetStreamIngestionSLA(WindowMinutes = 30)
-   | project TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount
+   GetMaintenanceSLABreach(WindowMinutes = 30)
+   | project facility_id, equipment_id, maintenance_type, EmergencyOrderCount, PendingOrderCount, AvgResolutionTimeMin
+   | order by EmergencyOrderCount desc
    ```
 
-7. **Technical Workload 2 — Dead-Letter Ingestion Anomaly Queue Rate**:
+#### 🖥️ Dashboard B Workload Queries (DataOps & Platform Observability Viewports):
+
+7. **Technical Workload 1 — Multi-Stream Ingestion Velocity & Stream SLA Lag**:
+   ```kql
+   GetStreamIngestionSLA(WindowMinutes = 30)
+   | project StreamName, TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount, SLABreachAlert
+   ```
+
+8. **Technical Workload 2 — Dead-Letter Ingestion Anomaly Queue Rate**:
    ```kql
    GetDeadLetterAnomalyRate(WindowMinutes = 30)
    | project event_type, DeadLetterCount, AlertRequired
    | order by DeadLetterCount desc
    ```
 
-8. **Technical Workload 3 — Ingress Data Quality & Schema Integrity Audit**:
+9. **Technical Workload 3 — Multi-Stream Ingress Data Quality & Schema Integrity Audit**:
    ```kql
    GetIngressDataQualityAudit(WindowMinutes = 30)
-   | project TotalRows, ValidSchemaRows, NullFacilityCount, NullTimestampCount, DataQualityScore
+   | project StreamName, TotalRows, ValidSchemaRows, NullFacilityCount, NullTimestampCount, DataQualityScore, DQViolationAlert
    ```
 
 ---
@@ -285,7 +319,7 @@ The platform establishes 8 1-to-1 Activator Trigger Hooks driving automated noti
    ```kql
    GetEnvironmentalStressAnomalies(WindowMinutes = 15)
    | where AlertRequired == true
-   | project facility_id, zone_id, crop_type, HighStressCount, AvgStressIndex, TargetPersona = "Crop Agronomist", NotificationChannel = "Teams: Agronomy Action"
+   | project facility_id, zone_id, sensor_type, HighStressCount, AvgVPD, AvgTempDeviation, TargetPersona = "Crop Agronomist", NotificationChannel = "Teams: Agronomy Action"
    ```
 
 4. **Irrigation Specialist Hook** *(Teams: Irrigation Audit)*:
@@ -302,25 +336,32 @@ The platform establishes 8 1-to-1 Activator Trigger Hooks driving automated noti
    | project facility_id, zone_id, DeficitCount, AvgDLI, AvgIntensity, TargetPersona = "Photobiology Specialist", NotificationChannel = "Teams: Lighting Action"
    ```
 
-6. **DataOps Dead-Letter Hook** *(Teams: DataOps Incidents)*:
+6. **Maintenance Dispatch Hook** *(Email: Emergency Work Order)*:
+   ```kql
+   GetMaintenanceSLABreach(WindowMinutes = 15)
+   | where AlertRequired == true
+   | project facility_id, equipment_id, maintenance_type, EmergencyOrderCount, PendingOrderCount, TargetPersona = "Maintenance Dispatch", NotificationChannel = "Email: Emergency Work Order"
+   ```
+
+7. **DataOps Dead-Letter Hook** *(Teams: DataOps Incidents)*:
    ```kql
    GetDeadLetterAnomalyRate(WindowMinutes = 15)
    | where AlertRequired == true
    | project event_type, DeadLetterCount, AlertTimestamp = now(), TargetPersona = "Data Engineer", NotificationChannel = "Teams: DataOps Incidents"
    ```
 
-7. **DataOps Stream SLA Hook** *(PagerDuty: Stream SLA Incident)*:
+8. **DataOps Stream SLA Hook** *(PagerDuty: Stream SLA Incident)*:
    ```kql
    GetStreamIngestionSLA(WindowMinutes = 15)
-   | where SLABreachCount > 0 or AvgProcessingLagSec > 5.0
-   | project TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount, TargetPersona = "DataOps Lead", NotificationChannel = "PagerDuty: Stream SLA Incident"
+   | where SLABreachAlert == true
+   | project StreamName, TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount, TargetPersona = "DataOps Lead", NotificationChannel = "PagerDuty: Stream SLA Incident"
    ```
 
-8. **Data Quality Steward Hook** *(Teams: Ingress DQ Governance Alert)*:
+9. **Data Quality Steward Hook** *(Teams: Ingress DQ Governance Alert)*:
    ```kql
    GetIngressDataQualityAudit(WindowMinutes = 15)
-   | where DataQualityScore < 98.0 or NullFacilityCount > 0
-   | project TotalRows, ValidSchemaRows, NullFacilityCount, DataQualityScore, TargetPersona = "Data Quality Steward", NotificationChannel = "Teams: Ingress DQ Governance Alert"
+   | where DQViolationAlert == true
+   | project StreamName, TotalRows, ValidSchemaRows, NullFacilityCount, DataQualityScore, TargetPersona = "Data Quality Steward", NotificationChannel = "Teams: Ingress DQ Governance Alert"
    ```
 
 ---
