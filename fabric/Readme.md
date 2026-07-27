@@ -373,17 +373,17 @@ Following Microsoft Fabric & Eventhouse Best Practices (Approach B), the platfor
 #### 1. Environmental Vapor Pressure Deficit & Thermal Drift Policy (`Policy_EnvironmentalEnriched`)
 - **Source Table**: `EnvironmentalTelemetry`
 - **Destination Table**: `EnvironmentalEnriched`
-- **Calculated Fields**: Vapor Pressure Deficit ($\text{VPD}_\text{kPa}$), Thermal Drift from Baseline ($\text{TempDeviation}_\text{C}$), `ingestion_timestamp`
+- **Calculated Fields**: Vapor Pressure Deficit ($\text{vapor\_pressure\_deficit\_kpa}$), Thermal Drift from Baseline ($\text{temperature\_deviation\_celsius}$), `ingestion_timestamp`
 - **Downstream Consumer**: Crop Agronomist Heatmap (Dashboard A) & Biological Stress Activator Hook 3
 ```kql
-.create-merge table EnvironmentalEnriched (sensor_id: string, facility_id: string, zone_id: string, sensor_type: string, temperature_c: real, humidity_percent: real, co2_ppm: real, vapor_pressure_deficit_kpa: real, temperature_deviation_celsius: real, timestamp: datetime, ingestion_timestamp: datetime)
+.create-merge table EnvironmentalEnriched (event_id: string, facility_id: string, zone_id: string, sensor_type: string, sensor_value: real, weather: string, is_daytime: string, vapor_pressure_deficit_kpa: real, temperature_deviation_celsius: real, timestamp: datetime, ingestion_timestamp: datetime)
 
 .create-or-alter function with (docstring = "Calculates inline vapor_pressure_deficit_kpa, temperature_deviation_celsius, and ingestion_timestamp during ingestion")
 transform_environmental_enriched() {
     EnvironmentalTelemetry
-    | extend vapor_pressure_deficit_kpa = round(0.61078 * exp((17.27 * todouble(temperature_c)) / (todouble(temperature_c) + 237.3)) * (1.0 - (todouble(humidity_percent) / 100.0)), 3)
-    | extend temperature_deviation_celsius = round(abs(todouble(temperature_c) - 22.0), 2)
-    | project sensor_id = tostring(sensor_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), sensor_type = tostring(sensor_type), temperature_c = todouble(temperature_c), humidity_percent = todouble(humidity_percent), co2_ppm = todouble(co2_ppm), vapor_pressure_deficit_kpa = todouble(vapor_pressure_deficit_kpa), temperature_deviation_celsius = todouble(temperature_deviation_celsius), timestamp = todatetime(timestamp), ingestion_timestamp = ingestion_time()
+    | extend SVP_kPa = 0.61078 * exp((17.27 * todouble(sensor_value)) / (todouble(sensor_value) + 237.3)), temperature_deviation_celsius = round(todouble(sensor_value) - 22.0, 2)
+    | extend vapor_pressure_deficit_kpa = round(SVP_kPa * (1.0 - 0.70), 3)
+    | project event_id = tostring(event_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), sensor_type = tostring(sensor_type), sensor_value = todouble(sensor_value), weather = tostring(weather), is_daytime = tostring(is_daytime), vapor_pressure_deficit_kpa = todouble(vapor_pressure_deficit_kpa), temperature_deviation_celsius = todouble(temperature_deviation_celsius), timestamp = todatetime(timestamp), ingestion_timestamp = ingestion_time()
 }
 
 .alter table EnvironmentalEnriched policy update @'[{"Source": "EnvironmentalTelemetry", "Query": "transform_environmental_enriched()", "IsEnabled": true, "IsTransactional": false}]'
