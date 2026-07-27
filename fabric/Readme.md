@@ -370,83 +370,83 @@ The platform establishes 8 1-to-1 Activator Trigger Hooks driving automated noti
 
 Following Microsoft Fabric & Eventhouse Best Practices (Approach B), the platform deploys 2 selective high-value inline Update Policies for real-time streaming enrichment:
 
-#### 1. Environmental Real-Time Enrichment Policy (`Policy_EnvironmentalEnriched`)
+#### 1. Environmental Vapor Pressure Deficit & Thermal Drift Policy (`Policy_EnvironmentalEnriched`)
 - **Source Table**: `EnvironmentalTelemetry`
 - **Destination Table**: `EnvironmentalEnriched`
-- **Calculated Fields**: Vapor Pressure Deficit ($\text{VPD}_\text{kPa}$), Temperature Deviation ($\text{TempDeviation}_\text{C}$), `IngestionTime`
-- **Downstream Consumer**: Agronomy Viewport (Dashboard A) & Environmental Stress Activator Hook 3
+- **Calculated Fields**: Vapor Pressure Deficit ($\text{VPD}_\text{kPa}$), Thermal Drift from Baseline ($\text{TempDeviation}_\text{C}$), `ingestion_timestamp`
+- **Downstream Consumer**: Crop Agronomist Heatmap (Dashboard A) & Biological Stress Activator Hook 3
 ```kql
-.create-merge table EnvironmentalEnriched (event_id: string, facility_id: string, zone_id: string, sensor_type: string, sensor_value: real, weather: string, is_daytime: string, VaporPressureDeficit_kPa: real, TempDeviation_C: real, timestamp: datetime, IngestionTime: datetime)
+.create-merge table EnvironmentalEnriched (sensor_id: string, facility_id: string, zone_id: string, sensor_type: string, temperature_c: real, humidity_percent: real, co2_ppm: real, vapor_pressure_deficit_kpa: real, temperature_deviation_celsius: real, timestamp: datetime, ingestion_timestamp: datetime)
 
-.create-or-alter function with (docstring = "Calculates inline VPD, temperature deviation, and IngestionTime during ingestion")
-TransformEnvironmentalEnriched() {
+.create-or-alter function with (docstring = "Calculates inline vapor_pressure_deficit_kpa, temperature_deviation_celsius, and ingestion_timestamp during ingestion")
+transform_environmental_enriched() {
     EnvironmentalTelemetry
-    | extend SVP_kPa = 0.61078 * exp((17.27 * todouble(sensor_value)) / (todouble(sensor_value) + 237.3)), TempDeviation_C = round(todouble(sensor_value) - 22.0, 2)
-    | extend VaporPressureDeficit_kPa = round(SVP_kPa * (1.0 - 0.70), 3)
-    | project event_id = tostring(event_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), sensor_type = tostring(sensor_type), sensor_value = todouble(sensor_value), weather = tostring(weather), is_daytime = tostring(is_daytime), VaporPressureDeficit_kPa = todouble(VaporPressureDeficit_kPa), TempDeviation_C = todouble(TempDeviation_C), timestamp = todatetime(timestamp), IngestionTime = ingestion_time()
+    | extend vapor_pressure_deficit_kpa = round(0.61078 * exp((17.27 * todouble(temperature_c)) / (todouble(temperature_c) + 237.3)) * (1.0 - (todouble(humidity_percent) / 100.0)), 3)
+    | extend temperature_deviation_celsius = round(abs(todouble(temperature_c) - 22.0), 2)
+    | project sensor_id = tostring(sensor_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), sensor_type = tostring(sensor_type), temperature_c = todouble(temperature_c), humidity_percent = todouble(humidity_percent), co2_ppm = todouble(co2_ppm), vapor_pressure_deficit_kpa = todouble(vapor_pressure_deficit_kpa), temperature_deviation_celsius = todouble(temperature_deviation_celsius), timestamp = todatetime(timestamp), ingestion_timestamp = ingestion_time()
 }
 
-.alter table EnvironmentalEnriched policy update @'[{"Source": "EnvironmentalTelemetry", "Query": "TransformEnvironmentalEnriched()", "IsEnabled": true, "IsTransactional": false}]'
+.alter table EnvironmentalEnriched policy update @'[{"Source": "EnvironmentalTelemetry", "Query": "transform_environmental_enriched()", "IsEnabled": true, "IsTransactional": false}]'
 ```
 
 #### 2. Equipment Risk & Degradation Enrichment Policy (`Policy_EquipmentRiskEnriched`)
 - **Source Table**: `EquipmentTelemetry`
 - **Destination Table**: `EquipmentRiskEnriched`
-- **Calculated Fields**: Equipment Degradation Risk Score ($\text{RiskScore} = \text{failure\_probability} \times (100.0 - \text{health})$), `IngestionTime`
+- **Calculated Fields**: Equipment Degradation Risk Score ($\text{equipment\_risk\_score} = \text{failure\_probability} \times (100.0 - \text{health})$), `ingestion_timestamp`
 - **Downstream Consumer**: Maintenance Heatmap (Dashboard A) & Critical Equipment Activator Hook 2
 ```kql
-.create-merge table EquipmentRiskEnriched (equipment_id: string, facility_id: string, zone_id: string, equipment_type: string, operating_status: string, health: real, failure_probability: real, RiskScore: real, timestamp: datetime, IngestionTime: datetime)
+.create-merge table EquipmentRiskEnriched (equipment_id: string, facility_id: string, zone_id: string, equipment_type: string, operating_status: string, health: real, failure_probability: real, equipment_risk_score: real, timestamp: datetime, ingestion_timestamp: datetime)
 
-.create-or-alter function with (docstring = "Calculates inline equipment degradation risk score and IngestionTime during ingestion")
-TransformEquipmentRiskEnriched() {
+.create-or-alter function with (docstring = "Calculates inline equipment degradation risk score and ingestion_timestamp during ingestion")
+transform_equipment_risk_enriched() {
     EquipmentTelemetry
-    | extend RiskScore = round(todouble(failure_probability) * (100.0 - todouble(health)), 2)
-    | project equipment_id = tostring(equipment_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), equipment_type = tostring(equipment_type), operating_status = tostring(operating_status), health = todouble(health), failure_probability = todouble(failure_probability), RiskScore = todouble(RiskScore), timestamp = todatetime(timestamp), IngestionTime = ingestion_time()
+    | extend equipment_risk_score = round(todouble(failure_probability) * (100.0 - todouble(health)), 2)
+    | project equipment_id = tostring(equipment_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), equipment_type = tostring(equipment_type), operating_status = tostring(operating_status), health = todouble(health), failure_probability = todouble(failure_probability), equipment_risk_score = todouble(equipment_risk_score), timestamp = todatetime(timestamp), ingestion_timestamp = ingestion_time()
 }
 
-.alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "TransformEquipmentRiskEnriched()", "IsEnabled": true, "IsTransactional": false}]'
+.alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "transform_equipment_risk_enriched()", "IsEnabled": true, "IsTransactional": false}]'
 
-// 1. MaterializedViewFacilitySummary
-.create-or-alter materialized-view with (backfill = true) MaterializedViewFacilitySummary on table FacilityOperations {
+// 1. materialized_view_facility_summary
+.create-or-alter materialized-view with (backfill = true) materialized_view_facility_summary on table FacilityOperations {
     FacilityOperations
     | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize RawAvgHealth = avg(overall_health), RawAvgPowerKW = avg(power_draw_kw), ActiveAlerts = max(active_critical_alerts), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), facility_name, region
+    | summarize raw_facility_health_score = avg(overall_health), raw_total_power_consumption_kw = avg(power_draw_kw), active_critical_alerts = max(active_critical_alerts), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), facility_name, region
 }
 
-// 2. MaterializedViewEquipmentRisk
-.create-or-alter materialized-view with (backfill = true) MaterializedViewEquipmentRisk on table EquipmentRiskEnriched {
+// 2. materialized_view_equipment_risk
+.create-or-alter materialized-view with (backfill = true) materialized_view_equipment_risk on table EquipmentRiskEnriched {
     EquipmentRiskEnriched
     | where isnotempty(equipment_type) and equipment_type !in ("Unknown", "N/A", "null", "NULL")
-    | summarize CriticalCount = countif(health < 60.0 or failure_probability > 0.35), RawAvgHealth = avg(health), MaxFailureProb = max(failure_probability), RawAvgRiskScore = avg(RiskScore), LastUpdated = max(IngestionTime) by facility_id = toupper(facility_id), equipment_type
+    | summarize critical_failure_count = countif(health < 60.0 or failure_probability > 0.35), raw_equipment_health_score = avg(health), raw_failure_probability_score = max(failure_probability), raw_equipment_risk_score = avg(equipment_risk_score), last_updated_timestamp = max(ingestion_timestamp) by facility_id = toupper(facility_id), equipment_type
 }
 
-// 3. MaterializedViewEnvironmentalStress
-.create-or-alter materialized-view with (backfill = true) MaterializedViewEnvironmentalStress on table EnvironmentalEnriched {
+// 3. materialized_view_environmental_stress
+.create-or-alter materialized-view with (backfill = true) materialized_view_environmental_stress on table EnvironmentalEnriched {
     EnvironmentalEnriched
     | where isnotempty(sensor_type) and sensor_type !in ("Unknown", "N/A", "null", "NULL")
     | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize HighStressCount = countif(VaporPressureDeficit_kPa < 0.4 or TempDeviation_C > 3.0), RawAvgVPD = avg(VaporPressureDeficit_kPa), RawAvgTempDeviation = avg(TempDeviation_C), LastUpdated = max(IngestionTime) by facility_id = toupper(facility_id), zone_id, sensor_type
+    | summarize high_stress_event_count = countif(vapor_pressure_deficit_kpa < 0.4 or temperature_deviation_celsius > 3.0), raw_vapor_pressure_deficit_kpa = avg(vapor_pressure_deficit_kpa), raw_temperature_deviation_celsius = avg(temperature_deviation_celsius), last_updated_timestamp = max(ingestion_timestamp) by facility_id = toupper(facility_id), zone_id, sensor_type
 }
 
-// 4. MaterializedViewIrrigationSummary
-.create-or-alter materialized-view with (backfill = true) MaterializedViewIrrigationSummary on table IrrigationTelemetry {
+// 4. materialized_view_irrigation_summary
+.create-or-alter materialized-view with (backfill = true) materialized_view_irrigation_summary on table IrrigationTelemetry {
     IrrigationTelemetry
     | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize AnomalousCycleCount = countif(irrigation_active == true and (flow_rate_lpm < 5.0 or pressure_kpa < 100.0)), RawAvgFlowRate = avg(flow_rate_lpm), RawAvgPressure = avg(pressure_kpa), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+    | summarize anomalous_cycle_count = countif(irrigation_active == true and (flow_rate_lpm < 5.0 or pressure_kpa < 100.0)), raw_irrigation_flow_rate_lpm = avg(flow_rate_lpm), raw_pump_pressure_kpa = avg(pressure_kpa), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
 }
 
-// 5. MaterializedViewLightingSummary
-.create-or-alter materialized-view with (backfill = true) MaterializedViewLightingSummary on table LightingTelemetry {
+// 5. materialized_view_lighting_summary
+.create-or-alter materialized-view with (backfill = true) materialized_view_lighting_summary on table LightingTelemetry {
     LightingTelemetry
     | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize DeficitCount = countif(lighting_enabled == true and daily_light_integral < 14.0), RawAvgDLI = avg(daily_light_integral), RawAvgIntensity = avg(light_intensity_percent), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+    | summarize photoperiod_deficit_count = countif(lighting_enabled == true and daily_light_integral < 14.0), raw_daily_light_integral_dli = avg(daily_light_integral), raw_light_intensity_percentage = avg(light_intensity_percent), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
 }
 
-// 6. MaterializedViewMaintenanceWorkOrders
-.create-or-alter materialized-view with (backfill = true) MaterializedViewMaintenanceWorkOrders on table MaintenanceActivity {
+// 6. materialized_view_maintenance_work_orders
+.create-or-alter materialized-view with (backfill = true) materialized_view_maintenance_work_orders on table MaintenanceActivity {
     MaintenanceActivity
     | where isnotempty(equipment_id) and equipment_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize EmergencyOrderCount = countif(maintenance_type == "EMERGENCY_REPAIR"), PendingOrderCount = countif(maintenance_status != "COMPLETED"), RawAvgResolutionTimeMin = avg(duration_minutes), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), equipment_id, maintenance_type
+    | summarize emergency_order_count = countif(maintenance_type == "EMERGENCY_REPAIR"), pending_order_count = countif(maintenance_status != "COMPLETED"), raw_avg_work_order_resolution_minutes = avg(estimated_duration_minutes), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), equipment_id, maintenance_type
 }
 ```
 
