@@ -406,10 +406,47 @@ TransformEquipmentRiskEnriched() {
 
 .alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "TransformEquipmentRiskEnriched()", "IsEnabled": true, "IsTransactional": false}]'
 
+// 1. MaterializedViewFacilitySummary
+.create-or-alter materialized-view with (backfill = true) MaterializedViewFacilitySummary on table FacilityOperations {
+    FacilityOperations
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize RawAvgHealth = avg(overall_health), RawAvgPowerKW = avg(power_draw_kw), ActiveAlerts = max(active_critical_alerts), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), facility_name, region
+}
+
+// 2. MaterializedViewEquipmentRisk
 .create-or-alter materialized-view with (backfill = true) MaterializedViewEquipmentRisk on table EquipmentRiskEnriched {
     EquipmentRiskEnriched
     | where isnotempty(equipment_type) and equipment_type !in ("Unknown", "N/A", "null", "NULL")
     | summarize CriticalCount = countif(health < 60.0 or failure_probability > 0.35), RawAvgHealth = avg(health), MaxFailureProb = max(failure_probability), RawAvgRiskScore = avg(RiskScore), LastUpdated = max(IngestionTime) by facility_id = toupper(facility_id), equipment_type
+}
+
+// 3. MaterializedViewEnvironmentalStress
+.create-or-alter materialized-view with (backfill = true) MaterializedViewEnvironmentalStress on table EnvironmentalEnriched {
+    EnvironmentalEnriched
+    | where isnotempty(sensor_type) and sensor_type !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize HighStressCount = countif(VaporPressureDeficit_kPa < 0.4 or TempDeviation_C > 3.0), RawAvgVPD = avg(VaporPressureDeficit_kPa), RawAvgTempDeviation = avg(TempDeviation_C), LastUpdated = max(IngestionTime) by facility_id = toupper(facility_id), zone_id, sensor_type
+}
+
+// 4. MaterializedViewIrrigationSummary
+.create-or-alter materialized-view with (backfill = true) MaterializedViewIrrigationSummary on table IrrigationTelemetry {
+    IrrigationTelemetry
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize AnomalousCycleCount = countif(irrigation_active == true and (flow_rate_lpm < 5.0 or pressure_kpa < 100.0)), RawAvgFlowRate = avg(flow_rate_lpm), RawAvgPressure = avg(pressure_kpa), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+}
+
+// 5. MaterializedViewLightingSummary
+.create-or-alter materialized-view with (backfill = true) MaterializedViewLightingSummary on table LightingTelemetry {
+    LightingTelemetry
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize DeficitCount = countif(lighting_enabled == true and daily_light_integral < 14.0), RawAvgDLI = avg(daily_light_integral), RawAvgIntensity = avg(light_intensity_percent), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+}
+
+// 6. MaterializedViewMaintenanceWorkOrders
+.create-or-alter materialized-view with (backfill = true) MaterializedViewMaintenanceWorkOrders on table MaintenanceActivity {
+    MaintenanceActivity
+    | where isnotempty(equipment_id) and equipment_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize EmergencyOrderCount = countif(maintenance_type == "EMERGENCY_REPAIR"), PendingOrderCount = countif(maintenance_status != "COMPLETED"), RawAvgResolutionTimeMin = avg(duration_minutes), LastUpdated = max(ingestion_time()) by facility_id = toupper(facility_id), equipment_id, maintenance_type
 }
 ```
 
