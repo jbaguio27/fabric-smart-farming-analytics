@@ -405,6 +405,12 @@ TransformEquipmentRiskEnriched() {
 }
 
 .alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "TransformEquipmentRiskEnriched()", "IsEnabled": true, "IsTransactional": false}]'
+
+.create-or-alter materialized-view with (backfill = true) MaterializedViewEquipmentRisk on table EquipmentRiskEnriched {
+    EquipmentRiskEnriched
+    | where isnotempty(equipment_type) and equipment_type !in ("Unknown", "N/A", "null", "NULL")
+    | summarize CriticalCount = countif(health < 60.0 or failure_probability > 0.35), RawAvgHealth = avg(health), MaxFailureProb = max(failure_probability), RawAvgRiskScore = avg(RiskScore), LastUpdated = max(IngestionTime) by facility_id = toupper(facility_id), equipment_type
+}
 ```
 
 ---
