@@ -434,14 +434,14 @@ transform_equipment_risk_enriched() {
 .create-or-alter materialized-view with (backfill = true) materialized_view_irrigation_summary on table IrrigationTelemetry {
     IrrigationTelemetry
     | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize anomalous_cycle_count = countif(irrigation_active == true and (flow_rate_lpm < 5.0 or pressure_kpa < 100.0)), raw_irrigation_flow_rate_lpm = avg(flow_rate_lpm), raw_pump_pressure_kpa = avg(pressure_kpa), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+    | summarize anomalous_cycle_count = countif(irrigation_active == true and (flow_rate_liters_per_minute < 5.0 or pressure_kpa < 100.0)), raw_irrigation_flow_rate_lpm = avg(flow_rate_liters_per_minute), raw_pump_pressure_kpa = avg(pressure_kpa), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
 }
 
 // 5. materialized_view_lighting_summary
 .create-or-alter materialized-view with (backfill = true) materialized_view_lighting_summary on table LightingTelemetry {
     LightingTelemetry
     | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize photoperiod_deficit_count = countif(lighting_enabled == true and daily_light_integral < 14.0), raw_daily_light_integral_dli = avg(daily_light_integral), raw_light_intensity_percentage = avg(light_intensity_percent), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+    | summarize photoperiod_deficit_count = countif(lighting_enabled == true and daily_light_integral < 14.0), raw_daily_light_integral_dli = avg(daily_light_integral), raw_light_intensity_percentage = avg(lighting_intensity_percent), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
 }
 
 // 6. materialized_view_maintenance_work_orders
@@ -449,6 +449,13 @@ transform_equipment_risk_enriched() {
     MaintenanceActivity
     | where isnotempty(equipment_id) and equipment_id !in ("Unknown", "N/A", "null", "NULL")
     | summarize emergency_order_count = countif(maintenance_type == "EMERGENCY_REPAIR"), pending_order_count = countif(maintenance_status != "COMPLETED"), raw_avg_work_order_resolution_minutes = avg(estimated_duration_minutes), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), equipment_id, maintenance_type
+}
+
+// 7. materialized_view_crop_biological_stress
+.create-or-alter materialized-view with (backfill = true) materialized_view_crop_biological_stress on table CropTelemetry {
+    CropTelemetry
+    | where isnotempty(crop_type) and crop_type !in ("Unknown", "N/A", "null", "NULL")
+    | summarize raw_crop_health_score = avg(health_score), raw_growth_rate = avg(growth_rate), raw_total_biomass_grams = sum(biomass_grams), raw_biological_stress_index = avg(environmental_stress_index), high_crop_stress_count = countif(environmental_stress_index > 0.45), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id, crop_type
 }
 ```
 
