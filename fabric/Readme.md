@@ -392,16 +392,17 @@ transform_environmental_enriched() {
 #### 2. Equipment Risk & Degradation Enrichment Policy (`Policy_EquipmentRiskEnriched`)
 - **Source Table**: `EquipmentTelemetry`
 - **Destination Table**: `EquipmentRiskEnriched`
-- **Calculated Fields**: Equipment Degradation Risk Score ($\text{equipment\_risk\_score} = \text{failure\_probability} \times (100.0 - \text{health})$), `ingestion_timestamp`
+- **Calculated Fields**: Equipment Degradation Risk Score ($\text{equipment\_risk\_score} = \text{failure\_probability} \times (100.0 - \text{health})$), Cleaned `equipment_id` (trims `_ORPHAN` suffix via `replace_regex`), `ingestion_timestamp`
 - **Downstream Consumer**: Maintenance Heatmap (Dashboard A) & Critical Equipment Activator Hook 2
 ```kql
 .create-merge table EquipmentRiskEnriched (equipment_id: string, facility_id: string, zone_id: string, equipment_type: string, operating_status: string, health: real, failure_probability: real, equipment_risk_score: real, timestamp: datetime, ingestion_timestamp: datetime)
 
-.create-or-alter function with (docstring = "Calculates inline equipment degradation risk score and ingestion_timestamp during ingestion")
+.create-or-alter function with (docstring = "Calculates inline equipment degradation risk score, trims _ORPHAN suffixes, and records ingestion_timestamp during ingestion")
 transform_equipment_risk_enriched() {
     EquipmentTelemetry
+    | extend equipment_id_clean = replace_regex(tostring(equipment_id), @"_ORPHAN$", "")
     | extend equipment_risk_score = round(todouble(failure_probability) * (100.0 - todouble(health)), 2)
-    | project equipment_id = tostring(equipment_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), equipment_type = tostring(equipment_type), operating_status = tostring(operating_status), health = todouble(health), failure_probability = todouble(failure_probability), equipment_risk_score = todouble(equipment_risk_score), timestamp = todatetime(timestamp), ingestion_timestamp = ingestion_time()
+    | project equipment_id = tostring(equipment_id_clean), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), equipment_type = tostring(equipment_type), operating_status = tostring(operating_status), health = todouble(health), failure_probability = todouble(failure_probability), equipment_risk_score = todouble(equipment_risk_score), timestamp = todatetime(timestamp), ingestion_timestamp = ingestion_time()
 }
 
 .alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "transform_equipment_risk_enriched()", "IsEnabled": true, "IsTransactional": false}]'
@@ -416,6 +417,7 @@ transform_equipment_risk_enriched() {
 // 2. materialized_view_equipment_risk
 .create-or-alter materialized-view with (backfill = true) materialized_view_equipment_risk on table EquipmentRiskEnriched {
     EquipmentRiskEnriched
+    | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
     | where isnotempty(equipment_type) and equipment_type !in ("Unknown", "N/A", "null", "NULL")
     | summarize critical_failure_count = countif(health < 60.0 or failure_probability > 0.35), raw_equipment_health_score = avg(health), raw_failure_probability_score = max(failure_probability), raw_equipment_risk_score = avg(equipment_risk_score), last_updated_timestamp = max(ingestion_timestamp) by facility_id = toupper(facility_id), equipment_type
 }
