@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "KQLQueryset",
+    "displayName": "SmartFarming_Operational_Queryset",
+    "description": "SmartFarming_Operational_Queryset"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "bf126392-b682-b301-4238-7e43b4482b92"
+  }
+}
