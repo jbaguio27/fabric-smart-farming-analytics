@@ -116,8 +116,9 @@ class FacilityStateManager:
                 if states:
                     avg_health = sum(s.health for s in states) / len(states)
                     equipment_power = sum(s.power_consumption_kw for s in states)
-                    if equipment_power > 0:
-                        total_power_kw = equipment_power
+                if equipment_power > 0:
+                    health_power_multiplier = 1.0 + ((100.0 - avg_health) / 100.0) * 1.8
+                    total_power_kw = equipment_power * health_power_multiplier
                     active_alerts = sum(
                         1 for s in states
                         if str(getattr(s.operating_status, "value", s.operating_status)).upper() in ["WARNING", "DEGRADED", "ERROR", "OFFLINE"]
