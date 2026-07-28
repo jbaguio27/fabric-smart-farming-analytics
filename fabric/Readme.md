@@ -388,8 +388,13 @@ Following Microsoft Fabric & Eventhouse Best Practices (Approach B), the platfor
 .create-or-alter function with (docstring = "Calculates inline vapor_pressure_deficit_kpa, temperature_deviation_celsius, and ingestion_timestamp during ingestion")
 transform_environmental_enriched() {
     EnvironmentalTelemetry
-    | extend SVP_kPa = 0.61078 * exp((17.27 * todouble(sensor_value)) / (todouble(sensor_value) + 237.3)), temperature_deviation_celsius = round(todouble(sensor_value) - 22.0, 2)
-    | extend vapor_pressure_deficit_kpa = round(SVP_kPa * (1.0 - 0.70), 3)
+    | extend sensor_type_str = tolower(tostring(sensor_type))
+    | where sensor_type_str in ("temperature", "humidity") or isempty(sensor_type_str)
+    | extend temp_c = case(sensor_type_str == "temperature", todouble(sensor_value), 22.0)
+    | extend humidity_pct = case(sensor_type_str == "humidity", todouble(sensor_value), 70.0)
+    | extend SVP_kPa = 0.61078 * exp((17.27 * temp_c) / (temp_c + 237.3))
+    | extend vapor_pressure_deficit_kpa = round(SVP_kPa * (1.0 - (humidity_pct / 100.0)), 3)
+    | extend temperature_deviation_celsius = round(temp_c - 22.0, 2)
     | project event_id = tostring(event_id), facility_id = toupper(tostring(facility_id)), zone_id = tostring(zone_id), sensor_type = tostring(sensor_type), sensor_value = todouble(sensor_value), weather = tostring(weather), is_daytime = tostring(is_daytime), vapor_pressure_deficit_kpa = todouble(vapor_pressure_deficit_kpa), temperature_deviation_celsius = todouble(temperature_deviation_celsius), timestamp = todatetime(timestamp), ingestion_timestamp = ingestion_time()
 }
 
