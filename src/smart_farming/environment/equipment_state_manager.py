@@ -129,17 +129,17 @@ class EquipmentStateManager:
         for idx, equipment in enumerate(self._equipment_registry.list_all(), start=1):
             state = EquipmentState()
 
-            # Stochastic Facility Health Tier Initializer:
-            # - OPTIMAL Tier (FAC-001 Benguet, FAC-002 Tagaytay, FAC-004 Davao, FAC-007 Clark): 88.0% - 98.0% health
-            # - DEGRADED Tier (FAC-005 Laguna, FAC-006 Cebu, FAC-008 Iloilo): 70.0% - 84.0% health
-            # - CRITICAL Tier (FAC-003 Metro Manila NCR Taguig BGC): 52.0% - 68.0% health
+            # Balanced Regional Health Tier Initializer:
+            # - CRITICAL Tier (FAC-003 Metro Manila NCR, FAC-006 Cebu Visayas): 52.0% - 68.0% health
+            # - DEGRADED Tier (FAC-004 Davao Mindanao, FAC-005 Laguna, FAC-008 Iloilo Visayas): 68.0% - 82.0% health
+            # - OPTIMAL Tier (FAC-001 Benguet, FAC-002 Tagaytay, FAC-007 Clark): 88.0% - 98.0% health
             facility_id = str(equipment.facility_id).upper()
-            if facility_id == "FAC-003":
-                # CRITICAL Tier
+            if facility_id in ("FAC-003", "FAC-006"):
+                # CRITICAL Tier (Luzon & Visayas)
                 base_health = self._random_manager.uniform(52.0, 68.0)
-            elif facility_id in ("FAC-005", "FAC-006", "FAC-008"):
-                # DEGRADED Tier
-                base_health = self._random_manager.uniform(70.0, 84.0)
+            elif facility_id in ("FAC-004", "FAC-005", "FAC-008"):
+                # DEGRADED Tier (Mindanao, Luzon & Visayas)
+                base_health = self._random_manager.uniform(68.0, 82.0)
             else:
                 # OPTIMAL Tier
                 base_health = self._random_manager.uniform(88.0, 98.0)
