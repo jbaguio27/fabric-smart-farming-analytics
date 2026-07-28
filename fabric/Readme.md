@@ -513,7 +513,7 @@ get_equipment_critical_anomalies(window_minutes:int = 15) {
 }
 
 // 3. get_environmental_stress_anomalies (Dynamic FacilityOperations Lookup)
-.create-or-alter function with (docstring = "Monitors environmental stress using EnvironmentalEnriched across all zones with facility_name lookup") 
+.create-or-alter function with (docstring = "Monitors micro-climate stability score, VPD, and thermal drift across growing zones with facility_name lookup") 
 get_environmental_stress_anomalies(window_minutes:int = 60) {
     EnvironmentalEnriched
     | where ingestion_timestamp > ago(window_minutes * 1m)
@@ -522,6 +522,7 @@ get_environmental_stress_anomalies(window_minutes:int = 60) {
     | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
     | summarize avg_vpd_kpa = round(avg(vapor_pressure_deficit_kpa), 3), avg_temp_drift_c = round(avg(temperature_deviation_celsius), 2) by facility_name, zone_id
+    | extend microclimate_stability_score = round(maxof(0.0, 100.0 - (abs(avg_temp_drift_c) * 5.0 + abs(avg_vpd_kpa - 1.10) * 35.0)), 1)
     | sort by facility_name asc, zone_id asc
 }
 
