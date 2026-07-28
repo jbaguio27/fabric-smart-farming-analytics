@@ -311,17 +311,20 @@ class EventDispatcher:
                 raise DispatchError(f"Failed to parse Event Hub connection string from settings: {e}")
 
         try:
-            response = requests.post(
-                endpoint,
-                json=payloads,
-                headers=headers,
-                timeout=10,
-            )
-            response.raise_for_status()
+            chunk_size = 100
+            for i in range(0, len(payloads), chunk_size):
+                chunk = payloads[i:i + chunk_size]
+                response = requests.post(
+                    endpoint,
+                    json=chunk,
+                    headers=headers,
+                    timeout=10,
+                )
+                response.raise_for_status()
 
             self.logger.debug(
-                "HTTP POST to Eventstream status %d",
-                response.status_code,
+                "HTTP POST to Eventstream successfully dispatched %d events in chunks.",
+                len(payloads),
             )
         except requests.RequestException as exc:
             raise DispatchError(
