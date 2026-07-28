@@ -126,22 +126,47 @@ class EquipmentStateManager:
 
         self._states.clear()
 
-        for idx, equipment in enumerate(self._equipment_registry.list_all(), start=1):
-            state = EquipmentState()
-
-            # Balanced Regional Health Tier Initializer:
-            # - CRITICAL Tier (FAC-003 Metro Manila NCR, FAC-006 Cebu Visayas): 52.0% - 68.0% health
-            # - DEGRADED Tier (FAC-004 Davao Mindanao, FAC-005 Laguna, FAC-008 Iloilo Visayas): 68.0% - 82.0% health
-            # - OPTIMAL Tier (FAC-001 Benguet, FAC-002 Tagaytay, FAC-007 Clark): 88.0% - 98.0% health
+            # Balanced Multi-Region Equipment Degradation Wear Initializer:
+            # - FAC-003 (Metro Manila): High wear on HVAC, Water Pump, LED Panel
+            # - FAC-006 (Cebu City): High wear on RO System, PLC Controller, Ventilation Fan
+            # - FAC-004 (Davao City): High wear on Nutrient Pump, CO2 Injector
+            # - FAC-005 (Laguna): High wear on HVAC, CO2 Injector
+            # - FAC-008 (Iloilo City): High wear on Water Pump, PLC Controller
+            # - OPTIMAL Tier (FAC-001, FAC-002, FAC-007): Healthy baseline (88.0% - 98.0%)
             facility_id = str(equipment.facility_id).upper()
-            if facility_id in ("FAC-003", "FAC-006"):
-                # CRITICAL Tier (Luzon & Visayas)
-                base_health = self._random_manager.uniform(52.0, 68.0)
-            elif facility_id in ("FAC-004", "FAC-005", "FAC-008"):
-                # DEGRADED Tier (Mindanao, Luzon & Visayas)
-                base_health = self._random_manager.uniform(68.0, 82.0)
-            else:
-                # OPTIMAL Tier
+            eq_type = str(equipment.equipment_type).lower()
+
+            if facility_id == "FAC-003":  # Metro Manila (CRITICAL)
+                if eq_type in ("hvac", "water_pump", "led_panel"):
+                    base_health = self._random_manager.uniform(48.0, 58.0)
+                else:
+                    base_health = self._random_manager.uniform(62.0, 75.0)
+
+            elif facility_id == "FAC-006":  # Cebu City (CRITICAL)
+                if eq_type in ("ro_system", "plc_controller", "ventilation_fan"):
+                    base_health = self._random_manager.uniform(48.0, 58.0)
+                else:
+                    base_health = self._random_manager.uniform(62.0, 75.0)
+
+            elif facility_id == "FAC-004":  # Davao City (DEGRADED)
+                if eq_type in ("nutrient_pump", "co2_injector"):
+                    base_health = self._random_manager.uniform(52.0, 62.0)
+                else:
+                    base_health = self._random_manager.uniform(72.0, 84.0)
+
+            elif facility_id == "FAC-005":  # Laguna (DEGRADED)
+                if eq_type in ("hvac", "co2_injector"):
+                    base_health = self._random_manager.uniform(52.0, 62.0)
+                else:
+                    base_health = self._random_manager.uniform(72.0, 84.0)
+
+            elif facility_id == "FAC-008":  # Iloilo City (DEGRADED)
+                if eq_type in ("water_pump", "plc_controller"):
+                    base_health = self._random_manager.uniform(52.0, 62.0)
+                else:
+                    base_health = self._random_manager.uniform(72.0, 84.0)
+
+            else:  # OPTIMAL Tier (FAC-001, FAC-002, FAC-007)
                 base_health = self._random_manager.uniform(88.0, 98.0)
 
             state.health = round(base_health, 2)
