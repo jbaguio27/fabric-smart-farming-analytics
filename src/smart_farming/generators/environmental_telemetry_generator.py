@@ -371,16 +371,17 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
         events: list[EnvironmentalTelemetryEvent] = []
 
         supported_sensors = self.get_supported_sensors()
-        for index, sensor_type in enumerate(supported_sensors, start=1):
-            zone_id = f"ZONE-{((index - 1) % 10) + 1:03d}"
-            events.append(
-                self._create_environmental_event(
-                    facility_id=facility_id,
-                    zone_id=zone_id,
-                    sensor_type=sensor_type,
-                    environment=environment,
+        for zone_idx in range(1, 7):
+            zone_id = f"ZONE-{zone_idx:03d}"
+            for sensor_type in supported_sensors:
+                events.append(
+                    self._create_environmental_event(
+                        facility_id=facility_id,
+                        zone_id=zone_id,
+                        sensor_type=sensor_type,
+                        environment=environment,
+                    )
                 )
-            )
         
         return events
 
