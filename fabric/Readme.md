@@ -417,7 +417,71 @@ transform_equipment_risk_enriched() {
 
 ---
 
-#### Section 8: Consumer-Facing Analytical KQL Functions
+#### Section 8.1: Materialized Views (Pattern 1 Operational Filtering)
+
+```kql
+// 1. materialized_view_facility_summary
+.create-or-alter materialized-view with (backfill = true) materialized_view_facility_summary on table FacilityOperations {
+    FacilityOperations
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize raw_facility_health_score = avg(overall_health), raw_total_power_consumption_kw = avg(power_draw_kw), active_critical_alerts = max(active_critical_alerts), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), facility_name, region
+}
+
+// 2. materialized_view_equipment_risk
+.create-or-alter materialized-view with (backfill = true) materialized_view_equipment_risk on table EquipmentRiskEnriched {
+    EquipmentRiskEnriched
+    | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(equipment_type) and equipment_type !in ("Unknown", "N/A", "null", "NULL")
+    | summarize critical_failure_count = countif(health < 60.0 or failure_probability > 0.35), raw_equipment_health_score = avg(health), raw_failure_probability_score = max(failure_probability), raw_equipment_risk_score = avg(equipment_risk_score), last_updated_timestamp = max(ingestion_timestamp) by facility_id = toupper(facility_id), equipment_type
+}
+
+// 3. materialized_view_environmental_stress
+.create-or-alter materialized-view with (backfill = true) materialized_view_environmental_stress on table EnvironmentalEnriched {
+    EnvironmentalEnriched
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(sensor_type) and sensor_type !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize high_stress_event_count = countif(vapor_pressure_deficit_kpa < 0.4 or temperature_deviation_celsius > 3.0), raw_vapor_pressure_deficit_kpa = avg(vapor_pressure_deficit_kpa), raw_temperature_deviation_celsius = avg(temperature_deviation_celsius), last_updated_timestamp = max(ingestion_timestamp) by facility_id = toupper(facility_id), zone_id, sensor_type
+}
+
+// 4. materialized_view_irrigation_summary
+.create-or-alter materialized-view with (backfill = true) materialized_view_irrigation_summary on table IrrigationTelemetry {
+    IrrigationTelemetry
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize anomalous_cycle_count = countif(irrigation_active == true and (flow_rate_liters_per_minute < 5.0 or pressure_kpa < 100.0)), raw_irrigation_flow_rate_lpm = avg(flow_rate_liters_per_minute), raw_pump_pressure_kpa = avg(pressure_kpa), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+}
+
+// 5. materialized_view_lighting_summary
+.create-or-alter materialized-view with (backfill = true) materialized_view_lighting_summary on table LightingTelemetry {
+    LightingTelemetry
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize photoperiod_deficit_count = countif(lighting_enabled == true and daily_light_integral < 14.0), raw_daily_light_integral_dli = avg(daily_light_integral), raw_light_intensity_percentage = avg(lighting_intensity_percent), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+}
+
+// 6. materialized_view_maintenance_work_orders
+.create-or-alter materialized-view with (backfill = true) materialized_view_maintenance_work_orders on table MaintenanceActivity {
+    MaintenanceActivity
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(equipment_id) and equipment_id !in ("Unknown", "N/A", "null", "NULL")
+    | summarize emergency_order_count = countif(maintenance_type == "EMERGENCY_REPAIR"), pending_order_count = countif(maintenance_status != "COMPLETED"), raw_avg_work_order_resolution_minutes = avg(estimated_duration_minutes), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), equipment_id, maintenance_type
+}
+
+// 7. materialized_view_crop_biological_stress
+.create-or-alter materialized-view with (backfill = true) materialized_view_crop_biological_stress on table CropTelemetry {
+    CropTelemetry
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(crop_type) and crop_type !in ("Unknown", "N/A", "null", "NULL")
+    | summarize raw_crop_health_score = avg(health_score), raw_growth_rate = avg(growth_rate), raw_total_biomass_grams = sum(biomass_grams), raw_biological_stress_index = avg(environmental_stress_index), high_crop_stress_count = countif(environmental_stress_index > 0.45), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id, crop_type
+}
+```
+
+---
+
+#### Section 8.2: Consumer-Facing Analytical KQL Functions
 
 ```kql
 // 1. get_facility_operational_overview
