@@ -413,56 +413,98 @@ transform_equipment_risk_enriched() {
 }
 
 .alter table EquipmentRiskEnriched policy update @'[{"Source": "EquipmentTelemetry", "Query": "transform_equipment_risk_enriched()", "IsEnabled": true, "IsTransactional": false}]'
+```
 
-// 1. materialized_view_facility_summary
-.create-or-alter materialized-view with (backfill = true) materialized_view_facility_summary on table FacilityOperations {
-    FacilityOperations
-    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize raw_facility_health_score = avg(overall_health), raw_total_power_consumption_kw = avg(power_draw_kw), active_critical_alerts = max(active_critical_alerts), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), facility_name, region
+---
+
+#### Section 8: Consumer-Facing Analytical KQL Functions
+
+```kql
+// 1. get_facility_operational_overview
+.create-or-alter function with (docstring = "Summarizes facility operational health using materialized_view_facility_summary") 
+get_facility_operational_overview(window_minutes:int = 15) {
+    materialized_view_facility_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | extend facility_health_score = round(raw_facility_health_score, 2), total_power_consumption_kw = round(raw_total_power_consumption_kw, 2)
+    | extend health_status = case(facility_health_score >= 85.0, "OPTIMAL", facility_health_score >= 70.0, "DEGRADED", "CRITICAL")
+    | project facility_id, facility_name, region, facility_health_score, total_power_consumption_kw, active_critical_alerts, health_status, last_updated_timestamp
 }
 
-// 2. materialized_view_equipment_risk
-.create-or-alter materialized-view with (backfill = true) materialized_view_equipment_risk on table EquipmentRiskEnriched {
-    EquipmentRiskEnriched
-    | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
-    | where isnotempty(equipment_type) and equipment_type !in ("Unknown", "N/A", "null", "NULL")
-    | summarize critical_failure_count = countif(health < 60.0 or failure_probability > 0.35), raw_equipment_health_score = avg(health), raw_failure_probability_score = max(failure_probability), raw_equipment_risk_score = avg(equipment_risk_score), last_updated_timestamp = max(ingestion_timestamp) by facility_id = toupper(facility_id), equipment_type
+// 2. get_equipment_critical_anomalies (Dynamic FacilityOperations Lookup)
+.create-or-alter function with (docstring = "Monitors critical equipment risk using materialized_view_equipment_risk") 
+get_equipment_critical_anomalies(window_minutes:int = 15) {
+    materialized_view_equipment_risk
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where critical_failure_count > 0
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend equipment_health_score = round(raw_equipment_health_score, 2), failure_probability_score = round(raw_failure_probability_score, 4), equipment_risk_score = round(raw_equipment_risk_score, 2)
+    | extend alert_required = (critical_failure_count > 0)
+    | project facility_id, facility_name, equipment_type, critical_failure_count, equipment_health_score, failure_probability_score, equipment_risk_score, alert_required, last_updated_timestamp
 }
 
-// 3. materialized_view_environmental_stress
-.create-or-alter materialized-view with (backfill = true) materialized_view_environmental_stress on table EnvironmentalEnriched {
-    EnvironmentalEnriched
-    | where isnotempty(sensor_type) and sensor_type !in ("Unknown", "N/A", "null", "NULL")
-    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize high_stress_event_count = countif(vapor_pressure_deficit_kpa < 0.4 or temperature_deviation_celsius > 3.0), raw_vapor_pressure_deficit_kpa = avg(vapor_pressure_deficit_kpa), raw_temperature_deviation_celsius = avg(temperature_deviation_celsius), last_updated_timestamp = max(ingestion_timestamp) by facility_id = toupper(facility_id), zone_id, sensor_type
+// 3. get_environmental_stress_anomalies (Dynamic FacilityOperations Lookup)
+.create-or-alter function with (docstring = "Monitors environmental stress using materialized_view_environmental_stress") 
+get_environmental_stress_anomalies(window_minutes:int = 15) {
+    materialized_view_environmental_stress
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where high_stress_event_count > 0
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend vapor_pressure_deficit_kpa = round(raw_vapor_pressure_deficit_kpa, 3), temperature_deviation_celsius = round(raw_temperature_deviation_celsius, 2)
+    | extend alert_required = (high_stress_event_count > 0)
+    | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, alert_required, last_updated_timestamp
 }
 
-// 4. materialized_view_irrigation_summary
-.create-or-alter materialized-view with (backfill = true) materialized_view_irrigation_summary on table IrrigationTelemetry {
-    IrrigationTelemetry
-    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize anomalous_cycle_count = countif(irrigation_active == true and (flow_rate_liters_per_minute < 5.0 or pressure_kpa < 100.0)), raw_irrigation_flow_rate_lpm = avg(flow_rate_liters_per_minute), raw_pump_pressure_kpa = avg(pressure_kpa), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+// 4. get_irrigation_hydraulic_anomalies (Dynamic FacilityOperations Lookup)
+.create-or-alter function with (docstring = "Monitors hydraulic flow drops using materialized_view_irrigation_summary") 
+get_irrigation_hydraulic_anomalies(window_minutes:int = 15) {
+    materialized_view_irrigation_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where anomalous_cycle_count > 0
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend irrigation_flow_rate_lpm = round(raw_irrigation_flow_rate_lpm, 2), pump_pressure_kpa = round(raw_pump_pressure_kpa, 2)
+    | extend alert_required = (anomalous_cycle_count > 0)
+    | project facility_id, facility_name, zone_id, anomalous_cycle_count, irrigation_flow_rate_lpm, pump_pressure_kpa, alert_required, last_updated_timestamp
 }
 
-// 5. materialized_view_lighting_summary
-.create-or-alter materialized-view with (backfill = true) materialized_view_lighting_summary on table LightingTelemetry {
-    LightingTelemetry
-    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize photoperiod_deficit_count = countif(lighting_enabled == true and daily_light_integral < 14.0), raw_daily_light_integral_dli = avg(daily_light_integral), raw_light_intensity_percentage = avg(lighting_intensity_percent), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id
+// 5. get_lighting_dli_deficit (Dynamic FacilityOperations Lookup)
+.create-or-alter function with (docstring = "Monitors DLI light deficits using materialized_view_lighting_summary") 
+get_lighting_dli_deficit(window_minutes:int = 15) {
+    materialized_view_lighting_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where photoperiod_deficit_count > 0
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend daily_light_integral_dli = round(raw_daily_light_integral_dli, 2), light_intensity_percentage = round(raw_light_intensity_percentage, 2)
+    | extend alert_required = (photoperiod_deficit_count > 0)
+    | project facility_id, facility_name, zone_id, photoperiod_deficit_count, daily_light_integral_dli, light_intensity_percentage, alert_required, last_updated_timestamp
 }
 
-// 6. materialized_view_maintenance_work_orders
-.create-or-alter materialized-view with (backfill = true) materialized_view_maintenance_work_orders on table MaintenanceActivity {
-    MaintenanceActivity
-    | where isnotempty(equipment_id) and equipment_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize emergency_order_count = countif(maintenance_type == "EMERGENCY_REPAIR"), pending_order_count = countif(maintenance_status != "COMPLETED"), raw_avg_work_order_resolution_minutes = avg(estimated_duration_minutes), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), equipment_id, maintenance_type
+// 6. get_maintenance_sla_breach (Dynamic FacilityOperations Lookup)
+.create-or-alter function with (docstring = "Monitors emergency maintenance work orders using materialized_view_maintenance_work_orders") 
+get_maintenance_sla_breach(window_minutes:int = 15) {
+    materialized_view_maintenance_work_orders
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where emergency_order_count > 0 or pending_order_count > 0
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend avg_work_order_resolution_minutes = round(raw_avg_work_order_resolution_minutes, 2)
+    | extend alert_required = (emergency_order_count > 0)
+    | project facility_id, facility_name, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes, alert_required, last_updated_timestamp
 }
 
-// 7. materialized_view_crop_biological_stress
-.create-or-alter materialized-view with (backfill = true) materialized_view_crop_biological_stress on table CropTelemetry {
-    CropTelemetry
-    | where isnotempty(crop_type) and crop_type !in ("Unknown", "N/A", "null", "NULL")
-    | summarize raw_crop_health_score = avg(health_score), raw_growth_rate = avg(growth_rate), raw_total_biomass_grams = sum(biomass_grams), raw_biological_stress_index = avg(environmental_stress_index), high_crop_stress_count = countif(environmental_stress_index > 0.45), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), zone_id, crop_type
+// 7. get_crop_biological_stress_overview (Dynamic FacilityOperations Lookup)
+.create-or-alter function with (docstring = "Summarizes crop biological health, stress, and growth rates using materialized_view_crop_biological_stress") 
+get_crop_biological_stress_overview(window_minutes:int = 15) {
+    materialized_view_crop_biological_stress
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_index = round(raw_biological_stress_index, 3)
+    | extend alert_required = (high_crop_stress_count > 0 or biological_stress_index > 0.45)
+    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate, total_biomass_grams, biological_stress_index, high_crop_stress_count, alert_required, last_updated_timestamp
 }
 ```
 
