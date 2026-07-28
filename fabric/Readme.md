@@ -389,9 +389,9 @@ Following Microsoft Fabric & Eventhouse Best Practices (Approach B), the platfor
 transform_environmental_enriched() {
     EnvironmentalTelemetry
     | extend sensor_type_str = tolower(tostring(sensor_type))
-    | where sensor_type_str in ("temperature", "humidity") or isempty(sensor_type_str)
-    | extend temp_c = case(sensor_type_str == "temperature", todouble(sensor_value), 22.0)
-    | extend humidity_pct = case(sensor_type_str == "humidity", todouble(sensor_value), 70.0)
+    | where sensor_type_str == "temperature"
+    | extend temp_c = todouble(sensor_value)
+    | extend humidity_pct = 60.0
     | extend SVP_kPa = 0.61078 * exp((17.27 * temp_c) / (temp_c + 237.3))
     | extend vapor_pressure_deficit_kpa = round(SVP_kPa * (1.0 - (humidity_pct / 100.0)), 3)
     | extend temperature_deviation_celsius = round(temp_c - 22.0, 2)
