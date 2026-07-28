@@ -126,6 +126,9 @@ class EquipmentStateManager:
 
         self._states.clear()
 
+        for idx, equipment in enumerate(self._equipment_registry.list_all(), start=1):
+            state = EquipmentState()
+
             # Balanced Multi-Region Equipment Degradation Wear Initializer:
             # - FAC-003 (Metro Manila): High wear on HVAC, Water Pump, LED Panel
             # - FAC-006 (Cebu City): High wear on RO System, PLC Controller, Ventilation Fan
