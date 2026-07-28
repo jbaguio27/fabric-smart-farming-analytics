@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "dataSources": [
       {
-        "id": "1990283d-3ab1-49e5-b188-39fb11ef748a",
+        "id": "835e6409-b22d-4ca5-9ecf-c3fcbc9430c6",
         "clusterUri": "",
         "type": "Fabric",
         "databaseItemId": "a31b9690-0b32-b343-47f1-74045eb138b9"
@@ -14,13 +14,13 @@
         "id": "09326667-d6df-4c63-8bd1-1fbf2bcf08e4",
         "content": "// 1. Executive Operations Overview\nget_facility_operational_overview(window_minutes = 30)\n| project facility_name, region, facility_health_score, health_status, total_power_consumption_kw, active_critical_alerts\n| order by facility_health_score desc;\n\n// 2. Maintenance Equipment Degradation Risk Heatmap\nget_equipment_critical_anomalies(window_minutes = 30)\n| project facility_id, equipment_type, critical_failure_count, equipment_health_score, failure_probability_score, equipment_risk_score\n| order by equipment_risk_score desc;\n\n// 3. Agronomy Crop Biological Stress Distribution\nget_crop_biological_stress_overview(window_minutes = 30)\n| project facility_id, zone_id, crop_type, crop_health_score, daily_growth_rate, biological_stress_index, high_crop_stress_count\n| order by biological_stress_index desc;\n\n// 4. Irrigation Hydraulic Flow & Pressure Audit\nget_irrigation_hydraulic_anomalies(window_minutes = 30)\n| project facility_id, zone_id, anomalous_cycle_count, irrigation_flow_rate_lpm, pump_pressure_kpa\n| order by anomalous_cycle_count desc;\n\n// 5. Photobiology DLI Light Deficit Audit\nget_lighting_dli_deficit(window_minutes = 30)\n| project facility_id, zone_id, photoperiod_deficit_count, daily_light_integral_dli, light_intensity_percentage\n| order by photoperiod_deficit_count desc;\n\n// 6. Maintenance Work Order SLA Resolution\nget_maintenance_sla_breach(window_minutes = 30)\n| project facility_id, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes\n| order by emergency_order_count desc;\n",
         "title": "Dashboard A — Business Operations",
-        "dataSourceId": "1990283d-3ab1-49e5-b188-39fb11ef748a"
+        "dataSourceId": "835e6409-b22d-4ca5-9ecf-c3fcbc9430c6"
       },
       {
-        "id": "4c19e77e-a21f-458d-adc5-86331357ef0d",
+        "id": "36a8b4e0-1143-4cc2-8c94-9cc8351ca944",
         "content": "// 1. Multi-Stream Ingestion SLA & Processing Lag\nget_stream_ingestion_sla(window_minutes = 30)\n| project stream_name, total_ingested_events, avg_processing_lag_sec, max_processing_lag_sec, sla_breach_count, sla_breach_alert;\n\n// 2. Dead-Letter Ingestion Anomaly Queue Rate\nget_dead_letter_anomaly_rate(window_minutes = 30)\n| project event_type, dead_letter_count, alert_required\n| order by dead_letter_count desc;\n\n// 3. Multi-Stream Ingress Data Quality & Schema Integrity Audit\nget_ingress_data_quality_audit(window_minutes = 30)\n| project total_rows, valid_schema_rows, orphan_burst_count, null_facility_count, null_timestamp_count, data_quality_score, dq_violation_alert;\n",
         "title": "Dashboard B — DataOps Observability",
-        "dataSourceId": "1990283d-3ab1-49e5-b188-39fb11ef748a"
+        "dataSourceId": "835e6409-b22d-4ca5-9ecf-c3fcbc9430c6"
       }
     ]
   }
