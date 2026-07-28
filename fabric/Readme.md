@@ -103,79 +103,86 @@ The platform deploys 8 parameterized KQL functions in `SmartFarmingKQLDB` poweri
 
 #### Dashboard A Functions (Business & Operations Viewports):
 
-1. **`GetFacilityOperationalOverview(WindowMinutes)`** *(Executive Operations Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Summarizes facility operational health and power draw for Executive Dashboard") 
-   GetFacilityOperationalOverview(WindowMinutes:int = 15) {
-       FacilityOperations
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | summarize facility_name = take_any(facility_name), region = take_any(region), LatestHealth = round(avg(overall_health), 2), TotalPowerKW = round(avg(power_draw_kw), 2), ActiveAlerts = max(active_critical_alerts) by facility_id
-       | extend HealthStatus = case(LatestHealth >= 85.0, "OPTIMAL", LatestHealth >= 70.0, "DEGRADED", "CRITICAL")
-   }
-   ```
+// 1. get_facility_operational_overview
+.create-or-alter function with (docstring = "Summarizes facility operational health using materialized_view_facility_summary") 
+get_facility_operational_overview(window_minutes:int = 15) {
+    materialized_view_facility_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | extend facility_health_score = round(raw_facility_health_score, 2), total_power_consumption_kw = round(raw_total_power_consumption_kw, 2)
+    | extend health_status = case(facility_health_score >= 85.0, "OPTIMAL", facility_health_score >= 70.0, "DEGRADED", "CRITICAL")
+    | project facility_id, facility_name, region, facility_health_score, total_power_consumption_kw, active_critical_alerts, health_status, last_updated_timestamp
+}
 
-2. **`GetEquipmentCriticalAnomalies(WindowMinutes)`** *(Maintenance Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Monitors critical equipment health and failure probabilities for Maintenance Dashboard") 
-   GetEquipmentCriticalAnomalies(WindowMinutes:int = 15) {
-       EquipmentTelemetry
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | where health < 60.0 or failure_probability > 0.35
-       | summarize CriticalCount = count(), AvgHealth = round(avg(health), 2), MaxFailureProb = round(max(failure_probability), 4) by facility_id, equipment_type
-       | extend AlertRequired = (CriticalCount > 0)
-   }
-   ```
+// 2. get_equipment_critical_anomalies (Enriched with facility_name)
+.create-or-alter function with (docstring = "Monitors critical equipment risk using materialized_view_equipment_risk") 
+get_equipment_critical_anomalies(window_minutes:int = 15) {
+    materialized_view_equipment_risk
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where critical_failure_count > 0
+    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend equipment_health_score = round(raw_equipment_health_score, 2), failure_probability_score = round(raw_failure_probability_score, 4), equipment_risk_score = round(raw_equipment_risk_score, 2)
+    | extend alert_required = (critical_failure_count > 0)
+    | project facility_id, facility_name, equipment_type, critical_failure_count, equipment_health_score, failure_probability_score, equipment_risk_score, alert_required, last_updated_timestamp
+}
 
-3. **`GetEnvironmentalStressAnomalies(WindowMinutes)`** *(Agronomy Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Monitors environmental stress index for Agronomy Dashboard") 
-   GetEnvironmentalStressAnomalies(WindowMinutes:int = 15) {
-       CropTelemetry
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | where environmental_stress_index > 0.45 or environmental_stress_index > 45.0
-       | summarize HighStressCount = count(), AvgStressIndex = round(avg(environmental_stress_index), 4) by facility_id, zone_id, crop_type
-       | extend AlertRequired = (HighStressCount > 0)
-   }
-   ```
+// 3. get_environmental_stress_anomalies (Enriched with facility_name)
+.create-or-alter function with (docstring = "Monitors environmental stress using materialized_view_environmental_stress") 
+get_environmental_stress_anomalies(window_minutes:int = 15) {
+    materialized_view_environmental_stress
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where high_stress_event_count > 0
+    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend vapor_pressure_deficit_kpa = round(raw_vapor_pressure_deficit_kpa, 3), temperature_deviation_celsius = round(raw_temperature_deviation_celsius, 2)
+    | extend alert_required = (high_stress_event_count > 0)
+    | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, alert_required, last_updated_timestamp
+}
 
-4. **`GetIrrigationHydraulicAnomalies(WindowMinutes)`** *(Hydraulics Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Monitors low hydraulic flow rate and pressure drops during active irrigation cycles") 
-   GetIrrigationHydraulicAnomalies(WindowMinutes:int = 15) {
-       MaterializedViewIrrigationSummary
-       | where LastUpdated > ago(WindowMinutes * 1m)
-       | where AnomalousCycleCount > 0
-       | extend AvgFlowRate = round(RawAvgFlowRate, 2), AvgPressure = round(RawAvgPressure, 2)
-       | extend AlertRequired = (AnomalousCycleCount > 0)
-       | project facility_id, zone_id, AnomalousCycleCount, AvgFlowRate, AvgPressure, AlertRequired, LastUpdated
-   }
-   ```
+// 4. get_irrigation_hydraulic_anomalies (Enriched with facility_name)
+.create-or-alter function with (docstring = "Monitors hydraulic flow drops using materialized_view_irrigation_summary") 
+get_irrigation_hydraulic_anomalies(window_minutes:int = 15) {
+    materialized_view_irrigation_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where anomalous_cycle_count > 0
+    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend irrigation_flow_rate_lpm = round(raw_irrigation_flow_rate_lpm, 2), pump_pressure_kpa = round(raw_pump_pressure_kpa, 2)
+    | extend alert_required = (anomalous_cycle_count > 0)
+    | project facility_id, facility_name, zone_id, anomalous_cycle_count, irrigation_flow_rate_lpm, pump_pressure_kpa, alert_required, last_updated_timestamp
+}
 
-5. **`GetLightingDLIDeficit(WindowMinutes)`** *(Photobiology Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Monitors DLI photoperiod deficits during active lighting cycles") 
-   GetLightingDLIDeficit(WindowMinutes:int = 15) {
-       MaterializedViewLightingSummary
-       | where LastUpdated > ago(WindowMinutes * 1m)
-       | where DeficitCount > 0
-       | extend AvgDLI = round(RawAvgDLI, 2), AvgIntensity = round(RawAvgIntensity, 2)
-       | extend AlertRequired = (DeficitCount > 0)
-       | project facility_id, zone_id, DeficitCount, AvgDLI, AvgIntensity, AlertRequired, LastUpdated
-   }
-   ```
+// 5. get_lighting_dli_deficit (Enriched with facility_name)
+.create-or-alter function with (docstring = "Monitors DLI light deficits using materialized_view_lighting_summary") 
+get_lighting_dli_deficit(window_minutes:int = 15) {
+    materialized_view_lighting_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where photoperiod_deficit_count > 0
+    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend daily_light_integral_dli = round(raw_daily_light_integral_dli, 2), light_intensity_percentage = round(raw_light_intensity_percentage, 2)
+    | extend alert_required = (photoperiod_deficit_count > 0)
+    | project facility_id, facility_name, zone_id, photoperiod_deficit_count, daily_light_integral_dli, light_intensity_percentage, alert_required, last_updated_timestamp
+}
 
-6. **`GetMaintenanceSLABreach(WindowMinutes)`** *(Maintenance Work Orders Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Monitors emergency maintenance work orders using MaterializedViewMaintenanceWorkOrders") 
-   GetMaintenanceSLABreach(WindowMinutes:int = 15) {
-       MaterializedViewMaintenanceWorkOrders
-       | where LastUpdated > ago(WindowMinutes * 1m)
-       | where EmergencyOrderCount > 0 or PendingOrderCount > 0
-       | extend AvgResolutionTimeMin = round(RawAvgResolutionTimeMin, 2)
-       | extend AlertRequired = (EmergencyOrderCount > 0)
-       | project facility_id, equipment_id, maintenance_type, EmergencyOrderCount, PendingOrderCount, AvgResolutionTimeMin, AlertRequired, LastUpdated
-   }
-   ```
+// 6. get_maintenance_sla_breach (Enriched with facility_name)
+.create-or-alter function with (docstring = "Monitors emergency maintenance work orders using materialized_view_maintenance_work_orders") 
+get_maintenance_sla_breach(window_minutes:int = 15) {
+    materialized_view_maintenance_work_orders
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where emergency_order_count > 0 or pending_order_count > 0
+    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend avg_work_order_resolution_minutes = round(raw_avg_work_order_resolution_minutes, 2)
+    | extend alert_required = (emergency_order_count > 0)
+    | project facility_id, facility_name, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes, alert_required, last_updated_timestamp
+}
+
+// 7. get_crop_biological_stress_overview (Enriched with facility_name)
+.create-or-alter function with (docstring = "Summarizes crop biological health, stress, and growth rates using materialized_view_crop_biological_stress") 
+get_crop_biological_stress_overview(window_minutes:int = 15) {
+    materialized_view_crop_biological_stress
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_index = round(raw_biological_stress_index, 3)
+    | extend alert_required = (high_crop_stress_count > 0 or biological_stress_index > 0.45)
+    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate, total_biomass_grams, biological_stress_index, high_crop_stress_count, alert_required, last_updated_timestamp
+}
 
 #### Dashboard B Functions (DataOps & Platform Observability Viewports):
 
