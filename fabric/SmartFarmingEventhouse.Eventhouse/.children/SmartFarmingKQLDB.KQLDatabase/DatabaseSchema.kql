@@ -11,81 +11,187 @@
 .create-merge table MaintenanceActivity (event_id:string, event_type:string, facility_id:string, zone_id:string, equipment_id:string, work_order_id:string, priority:string, assigned_technician:string, maintenance_type:string, maintenance_status:string, estimated_duration_minutes:long, remaining_duration_minutes:long, completion_percent:real, health_restored:real, technician_notes:string, operator_contact:string, operator_phone:string, timestamp:datetime, schema_version:string, IngestionTime:datetime) 
 .create-merge table FacilityOperations (event_id:string, event_type:string, facility_id:string, facility_name:string, operating_status:string, active_zones_count:long, total_equipment_count:long, overall_health:real, power_draw_kw:real, water_circulation_lph:real, active_critical_alerts:long, region:string, city:string, latitude:real, longitude:real, elevation_m:real, climate_zone:string, water_source:string, power_grid_redundancy:string, max_zone_capacity:long, operator_contact:string, operator_phone:string, timestamp:datetime, schema_version:string, IngestionTime:datetime) 
 .create-merge table DeadLetterTelemetry (event_id:string, event_type:string, facility_id:string, zone_id:string, equipment_id:string, equipment_type:string, operating_status:string, health:string, current_load:string, failure_probability:string, runtime_hours:string, vibration_vps:string, operating_temperature_c:string, power_consumption_kw:string, sensor_type:string, sensor_value:string, unit:string, sensor_status:string, weather:string, is_daytime:string, crop_batch_id:string, crop_type:string, lifecycle_stage:string, age_days:string, health_score:string, growth_rate:string, biomass_grams:string, harvest_cycle_days:string, target_biomass_g:string, water_consumption_liters:string, nutrient_consumption_grams:string, environmental_stress_index:string, ambient_temperature_celsius:string, ambient_humidity_percent:string, irrigation_active:string, flow_rate_liters_per_minute:string, pressure_kpa:string, irrigation_duration_seconds:string, water_delivered_liters:string, nutrient_solution_delivered_liters:string, lighting_enabled:string, lighting_intensity_percent:string, photoperiod_hours:string, daily_light_integral:string, work_order_id:string, priority:string, assigned_technician:string, maintenance_type:string, maintenance_status:string, estimated_duration_minutes:string, remaining_duration_minutes:string, completion_percent:string, technician_notes:string, health_restored:string, overall_health:real, active_critical_alerts:long, power_draw_kw:real, water_circulation_lph:real, facility_name:string, region:string, city:string, latitude:real, longitude:real, elevation_m:real, climate_zone:string, water_source:string, power_grid_redundancy:string, max_zone_capacity:long, manufacturer:string, model_number:string, operator_contact:string, operator_phone:string, timestamp:string, schema_version:string, source:string, active_zones_count:long, total_equipment_count:long, EventProcessedUtcTime:datetime, PartitionId:long, EventEnqueuedUtcTime:datetime, IngestionTime:datetime) 
-.create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for Data Engineering Activator alerts", skipvalidation = "true") GetDeadLetterAnomalyRate(WindowMinutes:int=15) {
+.create-merge table EnvironmentalEnriched (event_id:string, facility_id:string, zone_id:string, sensor_type:string, sensor_value:real, weather:string, is_daytime:string, vapor_pressure_deficit_kpa:real, temperature_deviation_celsius:real, timestamp:datetime, ingestion_timestamp:datetime) 
+.create-merge table EquipmentRiskEnriched (equipment_id:string, facility_id:string, zone_id:string, equipment_type:string, operating_status:string, health:real, failure_probability:real, equipment_risk_score:real, timestamp:datetime, ingestion_timestamp:datetime) 
+.create-or-alter function with (docstring = "Calculates inline vapor_pressure_deficit_kpa, temperature_deviation_celsius, and ingestion_timestamp during ingestion", skipvalidation = "true") transform_environmental_enriched() {
+    EnvironmentalTelemetry
+    | extend 
+        SVP_kPa = 0.61078 * exp((17.27 * todouble(sensor_value)) / (todouble(sensor_value) + 237.3)),
+        temperature_deviation_celsius = round(todouble(sensor_value) - 22.0, 2)
+    | extend vapor_pressure_deficit_kpa = round(SVP_kPa * (1.0 - 0.70), 3)
+    | project 
+        event_id = tostring(event_id), 
+        facility_id = toupper(tostring(facility_id)), 
+        zone_id = tostring(zone_id), 
+        sensor_type = tostring(sensor_type), 
+        sensor_value = todouble(sensor_value), 
+        weather = tostring(weather), 
+        is_daytime = tostring(is_daytime), 
+        vapor_pressure_deficit_kpa = todouble(vapor_pressure_deficit_kpa), 
+        temperature_deviation_celsius = todouble(temperature_deviation_celsius), 
+        timestamp = todatetime(timestamp), 
+        ingestion_timestamp = ingestion_time()
+}
+.create-or-alter function with (docstring = "Calculates inline equipment degradation risk score, trims _ORPHAN suffixes, and records ingestion_timestamp during ingestion", skipvalidation = "true") transform_equipment_risk_enriched() {
+    EquipmentTelemetry
+    | extend equipment_id_clean = replace_regex(tostring(equipment_id), @"_ORPHAN$", "")
+    | extend equipment_risk_score = round(todouble(failure_probability) * (100.0 - todouble(health)), 2)
+    | project 
+        equipment_id = tostring(equipment_id_clean), 
+        facility_id = toupper(tostring(facility_id)), 
+        zone_id = tostring(zone_id), 
+        equipment_type = tostring(equipment_type), 
+        operating_status = tostring(operating_status), 
+        health = todouble(health), 
+        failure_probability = todouble(failure_probability), 
+        equipment_risk_score = todouble(equipment_risk_score), 
+        timestamp = todatetime(timestamp), 
+        ingestion_timestamp = ingestion_time()
+}
+.create-or-alter function with (docstring = "Summarizes facility operational health using materialized_view_facility_summary", skipvalidation = "true") get_facility_operational_overview(window_minutes:int=15) {
+    materialized_view_facility_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | extend facility_health_score = round(raw_facility_health_score, 2), total_power_consumption_kw = round(raw_total_power_consumption_kw, 2)
+    | extend health_status = case(facility_health_score >= 85.0, "OPTIMAL", facility_health_score >= 70.0, "DEGRADED", "CRITICAL")
+    | project facility_id, facility_name, region, facility_health_score, total_power_consumption_kw, active_critical_alerts, health_status, last_updated_timestamp
+}
+.create-or-alter function with (docstring = "Monitors critical equipment risk using materialized_view_equipment_risk", skipvalidation = "true") get_equipment_critical_anomalies(window_minutes:int=15) {
+    materialized_view_equipment_risk
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where critical_failure_count > 0
+    | extend equipment_health_score = round(raw_equipment_health_score, 2), failure_probability_score = round(raw_failure_probability_score, 4), equipment_risk_score = round(raw_equipment_risk_score, 2)
+    | extend alert_required = (critical_failure_count > 0)
+    | project facility_id, equipment_type, critical_failure_count, equipment_health_score, failure_probability_score, equipment_risk_score, alert_required, last_updated_timestamp
+}
+.create-or-alter function with (docstring = "Monitors environmental stress using materialized_view_environmental_stress", skipvalidation = "true") get_environmental_stress_anomalies(window_minutes:int=15) {
+    materialized_view_environmental_stress
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where high_stress_event_count > 0
+    | extend vapor_pressure_deficit_kpa = round(raw_vapor_pressure_deficit_kpa, 3), temperature_deviation_celsius = round(raw_temperature_deviation_celsius, 2)
+    | extend alert_required = (high_stress_event_count > 0)
+    | project facility_id, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, alert_required, last_updated_timestamp
+}
+.create-or-alter function with (docstring = "Monitors hydraulic flow drops using materialized_view_irrigation_summary", skipvalidation = "true") get_irrigation_hydraulic_anomalies(window_minutes:int=15) {
+    materialized_view_irrigation_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where anomalous_cycle_count > 0
+    | extend irrigation_flow_rate_lpm = round(raw_irrigation_flow_rate_lpm, 2), pump_pressure_kpa = round(raw_pump_pressure_kpa, 2)
+    | extend alert_required = (anomalous_cycle_count > 0)
+    | project facility_id, zone_id, anomalous_cycle_count, irrigation_flow_rate_lpm, pump_pressure_kpa, alert_required, last_updated_timestamp
+}
+.create-or-alter function with (docstring = "Monitors DLI light deficits using materialized_view_lighting_summary", skipvalidation = "true") get_lighting_dli_deficit(window_minutes:int=15) {
+    materialized_view_lighting_summary
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where photoperiod_deficit_count > 0
+    | extend daily_light_integral_dli = round(raw_daily_light_integral_dli, 2), light_intensity_percentage = round(raw_light_intensity_percentage, 2)
+    | extend alert_required = (photoperiod_deficit_count > 0)
+    | project facility_id, zone_id, photoperiod_deficit_count, daily_light_integral_dli, light_intensity_percentage, alert_required, last_updated_timestamp
+}
+.create-or-alter function with (docstring = "Monitors emergency maintenance work orders using materialized_view_maintenance_work_orders", skipvalidation = "true") get_maintenance_sla_breach(window_minutes:int=15) {
+    materialized_view_maintenance_work_orders
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where emergency_order_count > 0 or pending_order_count > 0
+    | extend avg_work_order_resolution_minutes = round(raw_avg_work_order_resolution_minutes, 2)
+    | extend alert_required = (emergency_order_count > 0)
+    | project facility_id, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes, alert_required, last_updated_timestamp
+}
+.create-or-alter function with (docstring = "Summarizes crop biological health, stress, and growth rates using materialized_view_crop_biological_stress", skipvalidation = "true") get_crop_biological_stress_overview(window_minutes:int=15) {
+    materialized_view_crop_biological_stress
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_index = round(raw_biological_stress_index, 3)
+    | extend alert_required = (high_crop_stress_count > 0 or biological_stress_index > 0.45)
+    | project facility_id, zone_id, crop_type, crop_health_score, daily_growth_rate, total_biomass_grams, biological_stress_index, high_crop_stress_count, alert_required, last_updated_timestamp
+}
+.create-or-alter function with (docstring = "Calculates stream ingestion throughput and processing lag across all 5 operational streams", skipvalidation = "true") get_stream_ingestion_sla(window_minutes:int=15) {
+    union 
+        (EquipmentTelemetry | extend stream_name = "EquipmentTelemetry"),
+        (EnvironmentalTelemetry | extend stream_name = "EnvironmentalTelemetry"),
+        (CropTelemetry | extend stream_name = "CropTelemetry"),
+        (IrrigationTelemetry | extend stream_name = "IrrigationTelemetry"),
+        (LightingTelemetry | extend stream_name = "LightingTelemetry")
+    | where ingestion_time() > ago(window_minutes * 1m)
+    | extend processing_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+    | summarize total_ingested_events = count(), avg_processing_lag_sec = round(avg(processing_lag_sec), 2), max_processing_lag_sec = max(processing_lag_sec), sla_breach_count = countif(processing_lag_sec > 5.0) by stream_name
+    | extend sla_breach_alert = (sla_breach_count > 0 or avg_processing_lag_sec > 5.0)
+}
+.create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for DataOps Dashboard and Activator alerts", skipvalidation = "true") get_dead_letter_anomaly_rate(window_minutes:int=15) {
     DeadLetterTelemetry
-    | where ingestion_time() > ago(WindowMinutes * 1m)
-    | summarize DeadLetterCount = count()
-    | extend AlertRequired = (DeadLetterCount > 5)
+    | where ingestion_time() > ago(window_minutes * 1m)
+    | summarize dead_letter_count = count() by event_type
+    | extend alert_required = (dead_letter_count > 5)
 }
-.create-or-alter function with (docstring = "Monitors critical equipment health for Maintenance Activator alerts", skipvalidation = "true") GetEquipmentCriticalAnomalies(WindowMinutes:int=15) {
+.create-or-alter function with (docstring = "Audits ingress schema completeness, null compliance, and orphan bursts across operational streams", skipvalidation = "true") get_ingress_data_quality_audit(window_minutes:int=15) {
     EquipmentTelemetry
-    | where ingestion_time() > ago(WindowMinutes * 1m)
-    | where health < 60.0 or failure_probability > 0.35
+    | where ingestion_time() > ago(window_minutes * 1m)
     | summarize 
-        CriticalCount = count(),
-        AvgHealth = round(avg(health), 2),
-        MaxFailureProb = round(max(failure_probability), 4)
-        by facility_id, equipment_type
-    | extend AlertRequired = (CriticalCount > 0)
+        total_rows = count(), 
+        valid_schema_rows = countif(schema_version == "1.0"),
+        orphan_burst_count = countif(tostring(equipment_id) contains "ORPHAN" or tostring(equipment_id) contains "99999"),
+        null_facility_count = countif(isnull(facility_id)), 
+        null_timestamp_count = countif(isnull(timestamp)) 
+    | extend data_quality_score = round((todouble(valid_schema_rows - orphan_burst_count - null_facility_count) / total_rows) * 100.0, 2)
+    | extend dq_violation_alert = (data_quality_score < 98.0 or orphan_burst_count > 0)
 }
-.create-or-alter function with (docstring = "Monitors environmental stress index for Agronomist Activator alerts", skipvalidation = "true") GetEnvironmentalStressAnomalies(WindowMinutes:int=15) {
-    CropTelemetry
-    | where ingestion_time() > ago(WindowMinutes * 1m)
-    | where environmental_stress_index > 75.0
+.create-or-alter materialized-view  materialized_view_facility_summary on table FacilityOperations { FacilityOperations
+    | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
     | summarize 
-        HighStressCount = count(),
-        AvgStressIndex = round(avg(environmental_stress_index), 2)
-        by facility_id, zone_id, crop_type
-    | extend AlertRequired = (HighStressCount > 0)
-}
-.create-or-alter function with (docstring = "Summarizes facility operational health and power draw for Executive Dashboard", skipvalidation = "true") GetFacilityOperationalOverview(WindowMinutes:int=15) {
-    FacilityOperations
-    | where ingestion_time() > ago(WindowMinutes * 1m)
+        raw_facility_health_score = avg(overall_health),
+        raw_total_power_consumption_kw = avg(power_draw_kw),
+        active_critical_alerts = max(active_critical_alerts),
+        last_updated_timestamp = max(ingestion_time())
+        by facility_id = toupper(facility_id), facility_name, region }
+.create-or-alter materialized-view  materialized_view_equipment_risk on table EquipmentRiskEnriched { EquipmentRiskEnriched
+    | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
+    | where isnotempty(equipment_type) and equipment_type !in ("Unknown", "N/A", "null", "NULL")
     | summarize 
-        facility_name = take_any(facility_name),
-        region = take_any(region),
-        LatestHealth = round(avg(overall_health), 2),
-        TotalPowerKW = round(avg(power_draw_kw), 2),
-        ActiveAlerts = max(active_critical_alerts) by facility_id
-    | extend HealthStatus = case(LatestHealth >= 85.0, "OPTIMAL", LatestHealth >= 70.0, "DEGRADED", "CRITICAL")
-}
-.create-or-alter function with (docstring = "Calculates stream ingestion throughput and cluster processing lag for DataOps Observability Dashboard", skipvalidation = "true") GetStreamIngestionSLA(WindowMinutes:int=15) {
-    MaintenanceActivity
-    | where ingestion_time() > ago(WindowMinutes * 1m)
-    | extend ProcessingLag = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+        critical_failure_count = countif(health < 60.0 or failure_probability > 0.35),
+        raw_equipment_health_score = avg(health),
+        raw_failure_probability_score = max(failure_probability),
+        raw_equipment_risk_score = avg(equipment_risk_score),
+        last_updated_timestamp = max(ingestion_timestamp)
+        by facility_id = toupper(facility_id), equipment_type }
+.create-or-alter materialized-view  materialized_view_environmental_stress on table EnvironmentalEnriched { EnvironmentalEnriched
+    | where isnotempty(sensor_type) and sensor_type !in ("Unknown", "N/A", "null", "NULL")
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
     | summarize 
-        TotalIngestedEvents = count(),
-        AvgProcessingLagSec = round(avg(ProcessingLag), 2),
-        MaxProcessingLagSec = max(ProcessingLag),
-        SLABreachCount = countif(ProcessingLag > 5.0)
-}
-.create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance for DataOps Observability Dashboard", skipvalidation = "true") GetIngressDataQualityAudit(WindowMinutes:int=15) {
-    EquipmentTelemetry
-    | where ingestion_time() > ago(WindowMinutes * 1m)
+        high_stress_event_count = countif(vapor_pressure_deficit_kpa < 0.4 or temperature_deviation_celsius > 3.0),
+        raw_vapor_pressure_deficit_kpa = avg(vapor_pressure_deficit_kpa),
+        raw_temperature_deviation_celsius = avg(temperature_deviation_celsius),
+        last_updated_timestamp = max(ingestion_timestamp)
+        by facility_id = toupper(facility_id), zone_id, sensor_type }
+.create-or-alter materialized-view  materialized_view_irrigation_summary on table IrrigationTelemetry { IrrigationTelemetry
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
     | summarize 
-        TotalRows = count(),
-        ValidSchemaRows = countif(schema_version  == "1.0"),
-        NullFacilityCount = countif(isnull(facility_id)),
-        NullTimestampCount = countif(isnull(timestamp))
-    | extend DataQualityScore = round((todouble(ValidSchemaRows) / TotalRows) * 100.0, 2)
-}
-.create-or-alter function with (docstring = "Monitors low hydraulic flow rate and pressure drops during active irrigation cycles for Dashboard A and Activator Alerts", skipvalidation = "true") GetIrrigationHydraulicAnomalies(WindowMinutes:int=15) {
-    IrrigationTelemetry
-    | where ingestion_time() > ago(WindowMinutes * 1m)
-    | where irrigation_active == true and (flow_rate_liters_per_minute  < 5.0 or pressure_kpa < 100.0)
+        anomalous_cycle_count = countif(irrigation_active == true and (flow_rate_liters_per_minute < 5.0 or pressure_kpa < 100.0)),
+        raw_irrigation_flow_rate_lpm = avg(flow_rate_liters_per_minute),
+        raw_pump_pressure_kpa = avg(pressure_kpa),
+        last_updated_timestamp = max(ingestion_time())
+        by facility_id = toupper(facility_id), zone_id }
+.create-or-alter materialized-view  materialized_view_lighting_summary on table LightingTelemetry { LightingTelemetry
+    | where isnotempty(zone_id) and zone_id !in ("Unknown", "N/A", "null", "NULL")
     | summarize 
-        AnomalousCycleCount = count(),
-        AvgFlowRate = round(avg(flow_rate_liters_per_minute), 2),
-        AvgPressure = round(avg(pressure_kpa), 2) by facility_id, zone_id
-    | extend AlertRequired = (AnomalousCycleCount > 0)
-}
-.create-or-alter function with (docstring = "Monitors DLI photoperiod deficits during active lighting cycles for Dashboard A and Activator alerts", skipvalidation = "true") GetLightingDLIDeficit(WindowMinutes:int=15) {
-    LightingTelemetry
-    | where ingestion_time() > ago(WindowMinutes * 1m)
-    | where lighting_enabled == true and daily_light_integral < 14.0
+        photoperiod_deficit_count = countif(lighting_enabled == true and daily_light_integral < 14.0),
+        raw_daily_light_integral_dli = avg(daily_light_integral),
+        raw_light_intensity_percentage = avg(lighting_intensity_percent),
+        last_updated_timestamp = max(ingestion_time())
+        by facility_id = toupper(facility_id), zone_id }
+.create-or-alter materialized-view  materialized_view_maintenance_work_orders on table MaintenanceActivity { MaintenanceActivity
+    | where isnotempty(equipment_id) and equipment_id !in ("Unknown", "N/A", "null", "NULL")
     | summarize 
-        DeficitCount = count(),
-        AvgDLI = round(avg(daily_light_integral), 2),
-        AvgIntensity = round(avg(lighting_intensity_percent), 2) by facility_id, zone_id
-    | extend AlertRequired = (DeficitCount > 0)
-}
+        emergency_order_count = countif(maintenance_type == "EMERGENCY_REPAIR"),
+        pending_order_count = countif(maintenance_status != "COMPLETED"),
+        raw_avg_work_order_resolution_minutes = avg(estimated_duration_minutes),
+        last_updated_timestamp = max(ingestion_time())
+        by facility_id = toupper(facility_id), equipment_id, maintenance_type }
+.create-or-alter materialized-view  materialized_view_crop_biological_stress on table CropTelemetry { CropTelemetry
+    | where isnotempty(crop_type) and crop_type !in ("Unknown", "N/A", "null", "NULL")
+    | summarize 
+        raw_crop_health_score = avg(health_score),
+        raw_growth_rate = avg(growth_rate),
+        raw_total_biomass_grams = sum(biomass_grams),
+        raw_biological_stress_index = avg(environmental_stress_index),
+        high_crop_stress_count = countif(environmental_stress_index > 0.45),
+        last_updated_timestamp = max(ingestion_time())
+        by facility_id = toupper(facility_id), zone_id, crop_type }
+.alter table EnvironmentalEnriched policy update "[{\"IsEnabled\":true,\"Source\":\"EnvironmentalTelemetry\",\"Query\":\"transform_environmental_enriched()\",\"IsTransactional\":false,\"PropagateIngestionProperties\":false,\"ManagedIdentity\":null}]"
+.alter table EquipmentRiskEnriched policy update "[{\"IsEnabled\":true,\"Source\":\"EquipmentTelemetry\",\"Query\":\"transform_equipment_risk_enriched()\",\"IsTransactional\":false,\"PropagateIngestionProperties\":false,\"ManagedIdentity\":null}]"

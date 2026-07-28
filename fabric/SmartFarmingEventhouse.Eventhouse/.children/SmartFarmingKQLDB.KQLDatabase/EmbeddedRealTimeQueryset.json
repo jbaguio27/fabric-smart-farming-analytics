@@ -11,9 +11,9 @@
     ],
     "tabs": [
       {
-        "id": "3e239f70-b472-4a25-a218-a08364ba6aef",
-        "content": "\n\n// Use 'take' to view a sample number of records in the table and check the data.\nCropLifecycle\n| take 100\n| project IngestionTime\n",
-        "title": "Tab",
+        "id": "3e23d41f-1dcf-4528-aba8-35593d09ae7c",
+        "content": "",
+        "title": "",
         "dataSourceId": "7e5d1dd6-d10d-4fe6-af14-aaceb69ebafd"
       }
     ],
