@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "KQLDashboard",
+    "displayName": "SmartFarming_DataOpsObservability_Dashboard",
+    "description": "SmartFarming_DataOpsObservability_Dashboard"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "0f6ea010-8aaf-b2d1-47c5-5fdd51fa183b"
+  }
+}

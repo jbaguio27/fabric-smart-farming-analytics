@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "KQLDashboard",
+    "displayName": "SmartFarming_BusinessOperations_Dashboard",
+    "description": "SmartFarming_BusinessOperations_Dashboard"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "070574d3-fb59-91c8-44be-73959aabdda1"
+  }
+}

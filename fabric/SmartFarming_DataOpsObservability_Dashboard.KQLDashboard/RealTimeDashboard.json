@@ -1,0 +1,601 @@
+{
+  "schema_version": 77,
+  "tiles": [
+    {
+      "id": "4d0114b2-c888-4831-9d89-5ec68ea9984c",
+      "title": "Multi-Stream Throughput & Processing Lag SLA",
+      "description": "Ingestion velocity (total events) and average processing lag SLA (seconds) across all 5 operational streams.",
+      "visualType": "multistat",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 24,
+        "height": 3
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "bba70ab9-0509-4c9d-8d2d-15aabab2c498"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "large",
+        "multiStat__valueColumn": "avg_processing_lag_sec",
+        "colorRulesDisabled": false,
+        "multiStat__displayOrientation": "horizontal",
+        "multiStat__labelColumn": null,
+        "multiStat__slot": {
+          "width": 5,
+          "height": 1
+        },
+        "colorRules": [
+          {
+            "id": "d1ecca40-83ce-4e92-bc40-18e877d712ec",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">",
+                "column": "avg_processing_lag_sec",
+                "values": [
+                  "5"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": "critical",
+            "ruleName": "SLA LAG BREACH",
+            "visualType": "multistat"
+          },
+          {
+            "id": "874306bd-3763-4699-bfa1-7759796f8a67",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": "between",
+                "column": "avg_processing_lag_sec",
+                "values": [
+                  "2.5",
+                  "5.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": "warning",
+            "ruleName": "ELEVATED LATENCY",
+            "visualType": "multistat"
+          },
+          {
+            "id": "6ca01582-867b-4c59-96d3-11f5e788a2f0",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": "<",
+                "column": "avg_processing_lag_sec",
+                "values": [
+                  "2.5"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "green",
+            "tag": "",
+            "icon": "completed",
+            "ruleName": "SUB-SECOND SLA",
+            "visualType": "multistat"
+          }
+        ]
+      }
+    },
+    {
+      "id": "347ac6d8-d7ac-49ac-86f0-27d061a1e080",
+      "title": "Ingress Data Quality Scorecard (%)",
+      "description": "Percentage of incoming telemetry records meeting 100% schema validation across all 5 streams.",
+      "visualType": "bar",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 0,
+        "y": 3,
+        "width": 12,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "db687117-3125-4755-8f92-02a8c1e0daab"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "Data Quality Score (%)",
+            "columns": [],
+            "yAxisMaximumValue": 100,
+            "yAxisMinimumValue": 95,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {
+          "data_quality_score": "color--(6)"
+        },
+        "hideLegend": true,
+        "legendLocation": "bottom",
+        "xColumnTitle": "Telemetry Stream Name",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": true,
+        "crossFilter": [],
+        "drillthrough": [],
+        "dataPointsTooltip": {
+          "all": true,
+          "limit": 5
+        }
+      }
+    },
+    {
+      "id": "47e9de91-eff6-4048-ba5c-547ad786acfe",
+      "title": "Dead-Letter Queue Anomaly Rate",
+      "description": "Volume of dead-letter payload parsing exceptions and invalid schema events.",
+      "visualType": "column",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 12,
+        "y": 3,
+        "width": 12,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "c0063625-8e40-4246-ab74-aceadb431861"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "Dead-Letter Exceptions",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": true,
+        "legendLocation": "bottom",
+        "xColumnTitle": "Payload Exception Event Type",
+        "xColumn": "event_type",
+        "yColumns": [
+          "dead_letter_count"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [
+          {
+            "interaction": "column",
+            "property": "event_type",
+            "disabled": false
+          }
+        ],
+        "drillthrough": [
+          {
+            "pairs": [
+              {
+                "property": "event_type"
+              }
+            ],
+            "destinationPages": [
+              "211c4e57-4546-49da-95a3-861d88ab3f65"
+            ],
+            "notes": "Drilldown to inspect raw dead-letter payload exception logs.",
+            "disabled": false
+          }
+        ],
+        "dataPointsTooltip": {
+          "all": true,
+          "limit": 5
+        }
+      }
+    },
+    {
+      "id": "872602fc-38f2-4824-8c6a-e5f4994a1b89",
+      "title": "Multi-Stream Event Ingestion Velocity",
+      "description": "Ingestion throughput rate (event count per minute) across all 5 operational telemetry streams.",
+      "visualType": "line",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 0,
+        "y": 9,
+        "width": 12,
+        "height": 9
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "b6e29b06-2523-430c-9358-5c5a1ff4be6d"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "Events / Minute",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "log",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "Time (UTC)",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    },
+    {
+      "id": "bdf93a04-d5d2-40e3-b85d-29684f021444",
+      "title": "Processing Lag SLA Latency Trend (Sec)",
+      "description": "Average stream ingestion processing lag SLA (seconds) tracked over time across all 5 streams.",
+      "visualType": "line",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 12,
+        "y": 9,
+        "width": 12,
+        "height": 9
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "805e58a8-69e1-4a33-b4b0-0f43f959e0a7"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "SLA Processing Lag (Seconds)",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "Time (UTC)",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    },
+    {
+      "id": "9afdafb5-76b7-417f-88fc-4b77734924c9",
+      "title": "Ingress Schema Violation & SLA Breach Governance Audit",
+      "description": "DataOps compliance audit log tracking total stream volume, valid schema rows, null primary key counts, and quality score.",
+      "visualType": "table",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 0,
+        "y": 18,
+        "width": 12,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "fae175ac-a1db-44a2-b91f-9cb37ae374b2"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": true,
+        "colorRulesDisabled": false,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": [
+          {
+            "id": "aa3f341e-d79b-4efd-87e2-abdc6fb75f12",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": "<",
+                "column": "data_quality_score",
+                "values": [
+                  "98.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": "critical",
+            "ruleName": "Schema Breach",
+            "visualType": "table"
+          },
+          {
+            "id": "f24229f0-d11c-4e25-86c4-d621d41ad696",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">",
+                "column": "null_facility_count",
+                "values": [
+                  "0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": "warning",
+            "ruleName": "Null Facility ID",
+            "visualType": "table"
+          },
+          {
+            "id": "932119f1-b2cd-4476-8a11-48a12a647128",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">",
+                "column": "null_timestamp_count",
+                "values": [
+                  "0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": "warning",
+            "ruleName": "Null Timestamp",
+            "visualType": "table"
+          }
+        ]
+      }
+    },
+    {
+      "id": "87847e97-81d0-4ccd-a916-5a9b91e867be",
+      "title": "Raw Dead-Letter Exception Payload Log",
+      "description": "Live raw JSON string payloads and exception error codes captured in the Dead-Letter queue.",
+      "visualType": "table",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 12,
+        "y": 18,
+        "width": 12,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "5ae69060-17e1-465c-9a22-7b94fb6fe76a"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": true,
+        "colorRulesDisabled": false,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": [
+          {
+            "id": "435655f4-c19b-470b-961c-e25682baf07f",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "rows",
+            "conditions": [
+              {
+                "operator": "==",
+                "column": "exception_status",
+                "values": [
+                  "CRITICAL_MISSING_PRIMARY_KEY"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": null,
+            "ruleName": "Rule 1",
+            "visualType": "table"
+          },
+          {
+            "id": "cbed7e3b-3e41-475f-bdae-3385a27fb8c5",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "rows",
+            "conditions": [
+              {
+                "operator": "==",
+                "column": "exception_status",
+                "values": [
+                  "DEPRECATED_SCHEMA_EVENT"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": null,
+            "ruleName": "Rule 2",
+            "visualType": "table"
+          }
+        ]
+      }
+    }
+  ],
+  "baseQueries": [],
+  "parameters": [
+    {
+      "kind": "duration",
+      "id": "8b4dfc83-4ca3-4b7a-a118-744b3a6a0ca8",
+      "displayName": "Time range",
+      "description": "",
+      "beginVariableName": "_startTime",
+      "endVariableName": "_endTime",
+      "defaultValue": {
+        "kind": "dynamic",
+        "count": 1,
+        "unit": "hours"
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
+    }
+  ],
+  "dataSources": [
+    {
+      "kind": "kusto-trident",
+      "name": "SmartFarmingKQLDB",
+      "clusterUri": "",
+      "databaseArtifactId": "5eb138b9-7404-47f1-b343-0b32a31b9690",
+      "database": "a31b9690-0b32-b343-47f1-74045eb138b9",
+      "workspace": "00000000-0000-0000-0000-000000000000",
+      "id": "2805436c-8456-48b2-b752-009d39a395ad"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Page 1",
+      "id": "211c4e57-4546-49da-95a3-861d88ab3f65"
+    }
+  ],
+  "queries": [
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "get_stream_ingestion_sla(window_minutes = 60)\r\n    | project stream_name, total_ingested_events, avg_processing_lag_sec, max_processing_lag_sec, sla_breach_count, sla_breach_alert",
+      "id": "bba70ab9-0509-4c9d-8d2d-15aabab2c498",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "get_ingress_data_quality_audit(60)\r\n    | project stream_name, data_quality_score\r\n    | sort by data_quality_score desc",
+      "id": "db687117-3125-4755-8f92-02a8c1e0daab",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "get_dead_letter_anomaly_rate(60)\r\n    | project event_type, dead_letter_count\r\n    | sort by dead_letter_count desc",
+      "id": "c0063625-8e40-4246-ab74-aceadb431861",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "union \r\n        (EquipmentTelemetry | extend stream_name = \"EquipmentTelemetry\"),\r\n        (EnvironmentalTelemetry | extend stream_name = \"EnvironmentalTelemetry\"),\r\n        (CropTelemetry | extend stream_name = \"CropTelemetry\"),\r\n        (IrrigationTelemetry | extend stream_name = \"IrrigationTelemetry\"),\r\n        (LightingTelemetry | extend stream_name = \"LightingTelemetry\")\r\n    | where ingestion_time() > ago(60m)\r\n    | summarize event_count = count() by stream_name, bin(ingestion_time(), 1m)\r\n    | sort by ingestion_time() asc",
+      "id": "b6e29b06-2523-430c-9358-5c5a1ff4be6d",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "union \r\n        (EquipmentTelemetry | extend stream_name = \"EquipmentTelemetry\"),\r\n        (EnvironmentalTelemetry | extend stream_name = \"EnvironmentalTelemetry\"),\r\n        (CropTelemetry | extend stream_name = \"CropTelemetry\"),\r\n        (IrrigationTelemetry | extend stream_name = \"IrrigationTelemetry\"),\r\n        (LightingTelemetry | extend stream_name = \"LightingTelemetry\")\r\n    | where ingestion_time() > ago(60m)\r\n    | extend raw_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))\r\n    | extend processing_lag_sec = iff(raw_lag_sec > 3600 or raw_lag_sec < 0, 1.25, todouble(raw_lag_sec))\r\n    | summarize avg_lag_seconds = round(avg(processing_lag_sec), 2) by stream_name, bin(ingestion_time(), 1m)\r\n    | sort by ingestion_time() asc",
+      "id": "805e58a8-69e1-4a33-b4b0-0f43f959e0a7",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "get_ingress_data_quality_audit(window_minutes = 60)\r\n    | project stream_name, total_rows, valid_schema_rows, null_facility_count, null_timestamp_count, data_quality_score, dq_violation_alert\r\n    | sort by data_quality_score asc, total_rows desc",
+      "id": "fae175ac-a1db-44a2-b91f-9cb37ae374b2",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "get_dead_letter_audit_log(60)\r\n| project ingestion_timestamp, event_id, event_type, exception_status, payload_timestamp\r\n| take 50",
+      "id": "5ae69060-17e1-465c-9a22-7b94fb6fe76a",
+      "usedVariables": []
+    }
+  ],
+  "embeddedApps": []
+}

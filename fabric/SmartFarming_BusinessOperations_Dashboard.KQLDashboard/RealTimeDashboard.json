@@ -1,0 +1,467 @@
+{
+  "schema_version": 77,
+  "tiles": [
+    {
+      "id": "2e36e30e-0800-41e9-996a-5df4685cd9bb",
+      "title": "Executive Facility Operational Overview",
+      "visualType": "multistat",
+      "pageId": "8d40e0a8-9bb7-4fbe-a8d1-b2d272b3c180",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 24,
+        "height": 6
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "5d39f708-57fa-47b6-9360-b2072f8c36a7"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "large",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "multiStat__displayOrientation": "vertical",
+        "multiStat__labelColumn": null,
+        "multiStat__slot": {
+          "width": 4,
+          "height": 2
+        },
+        "colorRules": [
+          {
+            "id": "078004b0-68c3-43a3-a0b2-c1fed3ba1fdf",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": "<",
+                "column": "facility_health_score",
+                "values": [
+                  "65.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": "critical",
+            "ruleName": "Critical",
+            "visualType": "multistat"
+          },
+          {
+            "id": "db394890-5cac-438c-ae92-8fad36f0dd03",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": "between",
+                "column": "facility_health_score",
+                "values": [
+                  "65.0",
+                  "80.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": "warning",
+            "ruleName": "Degraded",
+            "visualType": "multistat"
+          },
+          {
+            "id": "47c4603c-5f89-4f4b-a761-253950cd9f4b",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">=",
+                "column": "facility_health_score",
+                "values": [
+                  "80.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "green",
+            "tag": "",
+            "icon": "world",
+            "ruleName": "Optimal",
+            "visualType": "multistat"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a0907d5f-9451-4cd3-8d49-52efbcd17cbe",
+      "title": "Facility Power Draw (kW) & Active Alert Badges",
+      "visualType": "bar",
+      "pageId": "8d40e0a8-9bb7-4fbe-a8d1-b2d272b3c180",
+      "layout": {
+        "x": 0,
+        "y": 6,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "bcc87423-806f-4730-a52f-15b353088bda"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "Total Power Consumption Kw",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {
+          "total_power_consumption_kw": "color--(1)"
+        },
+        "hideLegend": true,
+        "legendLocation": "bottom",
+        "xColumnTitle": "Facility Name",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "65d3fc3d-94b9-466d-b930-53ee2c95cb69",
+      "title": "Equipment Degradation Heatmap",
+      "visualType": "heatmap",
+      "pageId": "8d40e0a8-9bb7-4fbe-a8d1-b2d272b3c180",
+      "layout": {
+        "x": 12,
+        "y": 6,
+        "width": 12,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "9ad5b6fb-c6a2-40c2-aede-aab77af0ac6d"
+      },
+      "visualOptions": {
+        "xColumn": "equipment_type",
+        "yColumn": "facility_name",
+        "xColumnTitle": "",
+        "yColumnTitle": "Facility Name",
+        "heatMap__dataColumn": null,
+        "heatMap__colorPaletteKey": "blue"
+      }
+    },
+    {
+      "id": "28877562-740c-4653-9de3-28c41492b6e5",
+      "title": "Micro-Climate Stability Monitoring",
+      "visualType": "line",
+      "pageId": "8d40e0a8-9bb7-4fbe-a8d1-b2d272b3c180",
+      "layout": {
+        "x": 0,
+        "y": 13,
+        "width": 10,
+        "height": 10
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "274d956e-7c29-4b47-bbd5-bd93b26e8b6f"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "Atmospheric Stability (%)",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "right",
+        "xColumnTitle": "Hydroponic Growing Room",
+        "xColumn": "zone_id",
+        "yColumns": [
+          "microclimate_stability_score"
+        ],
+        "seriesColumns": [
+          "facility_name"
+        ],
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": true,
+        "crossFilter": [],
+        "drillthrough": [],
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    },
+    {
+      "id": "6dc0cab4-ceff-4c7e-9334-a0adeb83f64b",
+      "title": "Crop Biological Stress Index & Daily Growth Rate",
+      "visualType": "table",
+      "pageId": "8d40e0a8-9bb7-4fbe-a8d1-b2d272b3c180",
+      "layout": {
+        "x": 10,
+        "y": 13,
+        "width": 14,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "85c1c7b5-e525-4ec5-aa75-c7166edcc17e"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": true,
+        "colorRulesDisabled": false,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": [
+          {
+            "id": "b34b709b-d358-4797-8a44-437c5b20d9ab",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": "<",
+                "column": "crop_health_score",
+                "values": [
+                  "75.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": "critical",
+            "ruleName": "Crop Health Score",
+            "visualType": "table"
+          },
+          {
+            "id": "410f42b9-7d89-4238-b3c3-6a352cd9d685",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">",
+                "column": "biological_stress_pct",
+                "values": [
+                  "40.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": "warning",
+            "ruleName": "Biological Stress Index",
+            "visualType": "table"
+          }
+        ]
+      }
+    },
+    {
+      "id": "87fef958-03d5-49a1-a69c-80128173ad62",
+      "title": "Emergency Maintenance Work Order SLA Resolution",
+      "visualType": "table",
+      "pageId": "8d40e0a8-9bb7-4fbe-a8d1-b2d272b3c180",
+      "layout": {
+        "x": 10,
+        "y": 18,
+        "width": 14,
+        "height": 5
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "05a00001-f31d-4f71-90a1-08348c0a17de"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": true,
+        "colorRulesDisabled": false,
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": [
+          {
+            "id": "2ee0e51e-b683-482d-be97-9dba82d6d3eb",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">",
+                "column": "emergency_order_count",
+                "values": [
+                  "0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "red",
+            "tag": "",
+            "icon": "critical",
+            "ruleName": "emergency_order_count",
+            "visualType": "table"
+          },
+          {
+            "id": "2ea2e5d0-9ad3-47cf-91c9-cbd9fde5550a",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">",
+                "column": "avg_work_order_resolution_minutes",
+                "values": [
+                  "120.0"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": "warning",
+            "ruleName": "avg_work_order_resolution_minutes ",
+            "visualType": "table"
+          }
+        ]
+      }
+    }
+  ],
+  "baseQueries": [],
+  "parameters": [
+    {
+      "kind": "duration",
+      "id": "8eaf452b-ce56-4211-8bc9-3437c1607c69",
+      "displayName": "Time range",
+      "description": "",
+      "beginVariableName": "_startTime",
+      "endVariableName": "_endTime",
+      "defaultValue": {
+        "kind": "dynamic",
+        "count": 1,
+        "unit": "hours"
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
+    }
+  ],
+  "dataSources": [
+    {
+      "kind": "kusto-trident",
+      "name": "SmartFarmingKQLDB",
+      "clusterUri": "",
+      "databaseArtifactId": "5eb138b9-7404-47f1-b343-0b32a31b9690",
+      "database": "a31b9690-0b32-b343-47f1-74045eb138b9",
+      "workspace": "00000000-0000-0000-0000-000000000000",
+      "id": "dd79974c-faa7-4a2e-b6c5-d47c8999faae"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Page 1",
+      "id": "8d40e0a8-9bb7-4fbe-a8d1-b2d272b3c180"
+    }
+  ],
+  "queries": [
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "dd79974c-faa7-4a2e-b6c5-d47c8999faae"
+      },
+      "text": "get_facility_operational_overview(60)\r\n| project facility_name, region, facility_health_score, total_power_consumption_kw, active_critical_alerts, health_status",
+      "id": "5d39f708-57fa-47b6-9360-b2072f8c36a7",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "dd79974c-faa7-4a2e-b6c5-d47c8999faae"
+      },
+      "text": "get_facility_operational_overview(60)\r\n| project facility_name, total_power_consumption_kw\r\n| sort by total_power_consumption_kw desc\r\n",
+      "id": "bcc87423-806f-4730-a52f-15b353088bda",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "dd79974c-faa7-4a2e-b6c5-d47c8999faae"
+      },
+      "text": "get_equipment_critical_anomalies(60)\r\n| extend clean_equipment_type = replace_regex(equipment_type, \"_\", \" \")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bplc controller\\b\", \"PLC Controller\")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bro system\\b\", \"RO System\")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bwater pump\\b\", \"Water Pump\")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bled panel\\b\", \"LED Panel\")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bco2 injector\\b\", \"CO2 Injector\")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bhvac\\b\", \"HVAC Unit\")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bnutrient pump\\b\", \"Nutrient Pump\")\r\n| extend clean_equipment_type = replace_regex(clean_equipment_type, @\"(?i)\\bventilation fan\\b\", \"Ventilation Fan\")\r\n| project facility_name, equipment_type = clean_equipment_type, equipment_risk_score\r\n",
+      "id": "9ad5b6fb-c6a2-40c2-aede-aab77af0ac6d",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "dd79974c-faa7-4a2e-b6c5-d47c8999faae"
+      },
+      "text": "get_environmental_stress_anomalies(60)\r\n| project facility_name, zone_id, microclimate_stability_score\r\n",
+      "id": "274d956e-7c29-4b47-bbd5-bd93b26e8b6f",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "dd79974c-faa7-4a2e-b6c5-d47c8999faae"
+      },
+      "text": "get_crop_biological_stress_overview(60)\r\n| project facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate_g_day, biological_stress_pct\r\n| sort by facility_name asc, zone_id asc\r\n",
+      "id": "85c1c7b5-e525-4ec5-aa75-c7166edcc17e",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "dd79974c-faa7-4a2e-b6c5-d47c8999faae"
+      },
+      "text": "get_maintenance_sla_breach(60)\r\n| project facility_name, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes, alert_required\r\n| sort by emergency_order_count desc, avg_work_order_resolution_minutes desc\r\n",
+      "id": "05a00001-f31d-4f71-90a1-08348c0a17de",
+      "usedVariables": []
+    }
+  ],
+  "embeddedApps": []
+}
