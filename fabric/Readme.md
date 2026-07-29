@@ -250,8 +250,10 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
        | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on $left.facility_id_str == $right.facility_id
        | extend facility_label = coalesce(facility_name, facility_id_str)
        | extend exception_status = iff(facility_id_str == "NULL_FACILITY_ID", "CRITICAL_MISSING_PRIMARY_KEY", "DEPRECATED_SCHEMA_EVENT")
-       | project ingestion_timestamp = ingestion_time(), event_id, event_type, facility_label, exception_status, timestamp
-       | sort by ingestion_timestamp desc
+       | extend ingestion_time_str = format_datetime(ingestion_time(), 'yyyy-MM-dd HH:mm:ss')
+       | extend payload_time_str = iff(isnull(timestamp) or isempty(tostring(timestamp)), "N/A", format_datetime(todatetime(timestamp), 'yyyy-MM-dd HH:mm:ss'))
+       | project ingestion_time_str, event_id, event_type, facility_label, exception_status, payload_time_str
+       | sort by ingestion_time_str desc
    }
    ```
 
@@ -330,7 +332,7 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
 10. **Technical Workload 4 — Raw Dead-Letter Exception Payload Log**:
    ```kql
    get_dead_letter_audit_log(window_minutes = 60)
-   | project ingestion_timestamp, event_id, event_type, facility_label, exception_status, timestamp
+   | project ingestion_time_str, event_id, event_type, facility_label, exception_status, payload_time_str
    | take 50
    ```
 
