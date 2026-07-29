@@ -245,7 +245,7 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
    .create-or-alter function with (docstring = "Formats dead-letter telemetry exception logs with coalesce facility fallback for DataOps Observability Dashboard") 
    get_dead_letter_audit_log(window_minutes:int = 60) {
        DeadLetterTelemetry
-       | where ingestion_time() > ago(window_minutes * 1m) or timestamp > ago(window_minutes * 1m)
+       | where ingestion_time() > ago(window_minutes * 1m) or todatetime(timestamp) > ago(window_minutes * 1m)
        | extend facility_id_str = iff(isempty(tostring(facility_id)) or isnull(facility_id), "NULL_FACILITY_ID", toupper(tostring(facility_id)))
        | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on $left.facility_id_str == $right.facility_id
        | extend facility_label = coalesce(facility_name, facility_id_str)
