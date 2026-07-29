@@ -50,7 +50,7 @@ get_ingress_data_quality_audit(window_minutes = 15)
 | where dq_violation_alert == true
 | project stream_name, total_rows, valid_schema_rows, null_facility_count, null_timestamp_count, data_quality_score, target_persona = "Data Quality Steward", notification_channel = "Teams: Ingress DQ Governance Alert";
 
-// Hook 9: Dead-Letter Queue Exception Burst Rate (Teams: DataOps Incidents)
+// Hook 9: Dead-Letter Queue Anomaly Burst Rate (Teams: DataOps Incidents)
 get_dead_letter_anomaly_rate(window_minutes = 15)
 | where alert_required == true
 | project event_type, dead_letter_count, target_persona = "Data Engineer", notification_channel = "Teams: DataOps Incidents";
