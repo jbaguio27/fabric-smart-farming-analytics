@@ -563,10 +563,11 @@ get_lighting_dli_deficit(window_minutes:int = 15) {
 get_maintenance_sla_breach(window_minutes:int = 15) {
     materialized_view_maintenance_work_orders
     | where last_updated_timestamp > ago(window_minutes * 1m)
+    | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
     | where emergency_order_count > 0 or pending_order_count > 0
     | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
-    | extend avg_work_order_resolution_minutes = round(raw_avg_work_order_resolution_minutes, 2)
+    | extend avg_work_order_resolution_minutes = round(raw_avg_work_order_resolution_minutes, 1)
     | extend alert_required = (emergency_order_count > 0)
     | project facility_id, facility_name, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes, alert_required, last_updated_timestamp
 }
