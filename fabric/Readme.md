@@ -186,48 +186,58 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
 
 #### Dashboard B Functions (DataOps & Platform Observability Viewports):
 
-7. **`GetStreamIngestionSLA(WindowMinutes)`** *(Multi-Stream Throughput & Latency Viewport)*:
+7. **`get_stream_ingestion_sla(window_minutes)`** *(Multi-Stream Throughput & Processing Lag Viewport)*:
    ```kql
-   .create-or-alter function with (docstring = "Calculates stream ingestion throughput and processing lag across all 5 operational streams") 
-   GetStreamIngestionSLA(WindowMinutes:int = 15) {
+   .create-or-alter function with (docstring = "Monitors stream ingestion throughput and processing lag SLA for DataOps Dashboard and Activator alerts") 
+   get_stream_ingestion_sla(window_minutes:int = 15) {
        union 
-           (EquipmentTelemetry | extend StreamName = "EquipmentTelemetry"),
-           (EnvironmentalTelemetry | extend StreamName = "EnvironmentalTelemetry"),
-           (CropTelemetry | extend StreamName = "CropTelemetry"),
-           (IrrigationTelemetry | extend StreamName = "IrrigationTelemetry"),
-           (LightingTelemetry | extend StreamName = "LightingTelemetry")
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | extend ProcessingLagSec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
-       | summarize TotalIngestedEvents = count(), AvgProcessingLagSec = round(avg(ProcessingLagSec), 2), MaxProcessingLagSec = max(ProcessingLagSec), SLABreachCount = countif(ProcessingLagSec > 5.0) by StreamName
-       | extend SLABreachAlert = (SLABreachCount > 0 or AvgProcessingLagSec > 5.0)
+           (EquipmentTelemetry | extend stream_name = "EquipmentTelemetry"),
+           (EnvironmentalTelemetry | extend stream_name = "EnvironmentalTelemetry"),
+           (CropTelemetry | extend stream_name = "CropTelemetry"),
+           (IrrigationTelemetry | extend stream_name = "IrrigationTelemetry"),
+           (LightingTelemetry | extend stream_name = "LightingTelemetry")
+       | where ingestion_time() > ago(window_minutes * 1m)
+       | extend processing_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+       | summarize 
+           total_ingested_events = count(), 
+           avg_processing_lag_sec = round(avg(processing_lag_sec), 2), 
+           max_processing_lag_sec = max(processing_lag_sec), 
+           sla_breach_count = countif(processing_lag_sec > 5.0) 
+           by stream_name
+       | extend sla_breach_alert = (sla_breach_count > 0 or avg_processing_lag_sec > 5.0)
    }
    ```
 
-8. **`GetDeadLetterAnomalyRate(WindowMinutes)`** *(Dead-Letter Audit Viewport)*:
+8. **`get_dead_letter_anomaly_rate(window_minutes)`** *(Dead-Letter Audit Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for DataOps Dashboard and Activator alerts") 
-   GetDeadLetterAnomalyRate(WindowMinutes:int = 15) {
+   get_dead_letter_anomaly_rate(window_minutes:int = 15) {
        DeadLetterTelemetry
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | summarize DeadLetterCount = count() by event_type
-       | extend AlertRequired = (DeadLetterCount > 5)
+       | where ingestion_time() > ago(window_minutes * 1m)
+       | summarize dead_letter_count = count() by event_type
+       | extend alert_required = (dead_letter_count > 5)
    }
    ```
 
-9. **`GetIngressDataQualityAudit(WindowMinutes)`** *(Multi-Stream Data Quality Audit Viewport)*:
+9. **`get_ingress_data_quality_audit(window_minutes)`** *(Multi-Stream Data Quality Audit Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance across all 5 operational streams") 
-   GetIngressDataQualityAudit(WindowMinutes:int = 15) {
+   get_ingress_data_quality_audit(window_minutes:int = 15) {
        union 
-           (EquipmentTelemetry | extend StreamName = "EquipmentTelemetry"),
-           (EnvironmentalTelemetry | extend StreamName = "EnvironmentalTelemetry"),
-           (CropTelemetry | extend StreamName = "CropTelemetry"),
-           (IrrigationTelemetry | extend StreamName = "IrrigationTelemetry"),
-           (LightingTelemetry | extend StreamName = "LightingTelemetry")
-       | where ingestion_time() > ago(WindowMinutes * 1m)
-       | summarize TotalRows = count(), ValidSchemaRows = countif(schema_version == "1.0"), NullFacilityCount = countif(isnull(facility_id)), NullTimestampCount = countif(isnull(timestamp)) by StreamName
-       | extend DataQualityScore = round((todouble(ValidSchemaRows) / TotalRows) * 100.0, 2)
-       | extend DQViolationAlert = (DataQualityScore < 98.0 or NullFacilityCount > 0 or NullTimestampCount > 0)
+           (EquipmentTelemetry | extend stream_name = "EquipmentTelemetry"),
+           (EnvironmentalTelemetry | extend stream_name = "EnvironmentalTelemetry"),
+           (CropTelemetry | extend stream_name = "CropTelemetry"),
+           (IrrigationTelemetry | extend stream_name = "IrrigationTelemetry"),
+           (LightingTelemetry | extend stream_name = "LightingTelemetry")
+       | where ingestion_time() > ago(window_minutes * 1m)
+       | summarize 
+           total_rows = count(), 
+           valid_schema_rows = countif(schema_version == "1.0"), 
+           null_facility_count = countif(isnull(facility_id) or isempty(facility_id)), 
+           null_timestamp_count = countif(isnull(timestamp) or isempty(timestamp)) 
+           by stream_name
+       | extend data_quality_score = round((todouble(valid_schema_rows) / total_rows) * 100.0, 2)
+       | extend dq_violation_alert = (data_quality_score < 98.0 or null_facility_count > 0 or null_timestamp_count > 0)
    }
    ```
 
