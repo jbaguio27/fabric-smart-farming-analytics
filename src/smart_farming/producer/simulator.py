@@ -5,6 +5,7 @@ Core simulator for the HydroGrow Smart Farming Simulator.
 import time
 import random
 import logging
+from datetime import datetime, timezone
 from smart_farming.config import Settings
 from smart_farming.monitoring import (
     get_logger,
