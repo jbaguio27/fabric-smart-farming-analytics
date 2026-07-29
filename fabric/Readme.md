@@ -296,21 +296,31 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
 
 7. **Technical Workload 1 — Multi-Stream Ingestion Velocity & Stream SLA Lag**:
    ```kql
-   GetStreamIngestionSLA(WindowMinutes = 30)
-   | project StreamName, TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount, SLABreachAlert
+   get_stream_ingestion_sla(window_minutes = 60)
+   | project stream_name, total_ingested_events, avg_processing_lag_sec, max_processing_lag_sec, sla_breach_count, sla_breach_alert
    ```
 
 8. **Technical Workload 2 — Dead-Letter Ingestion Anomaly Queue Rate**:
    ```kql
-   GetDeadLetterAnomalyRate(WindowMinutes = 30)
-   | project event_type, DeadLetterCount, AlertRequired
-   | order by DeadLetterCount desc
+   get_dead_letter_anomaly_rate(window_minutes = 60)
+   | project event_type, dead_letter_count, alert_required
+   | sort by dead_letter_count desc
    ```
 
 9. **Technical Workload 3 — Multi-Stream Ingress Data Quality & Schema Integrity Audit**:
    ```kql
-   GetIngressDataQualityAudit(WindowMinutes = 30)
-   | project StreamName, TotalRows, ValidSchemaRows, NullFacilityCount, NullTimestampCount, DataQualityScore, DQViolationAlert
+   get_ingress_data_quality_audit(window_minutes = 60)
+   | project stream_name, total_rows, valid_schema_rows, null_facility_count, null_timestamp_count, data_quality_score, dq_violation_alert
+   | sort by data_quality_score asc, total_rows desc
+   ```
+
+10. **Technical Workload 4 — Raw Dead-Letter Exception Payload Log**:
+   ```kql
+   DeadLetterTelemetry
+   | where ingestion_time() > ago(60m)
+   | project ingestion_timestamp = ingestion_time(), event_type, error_code, raw_payload
+   | sort by ingestion_timestamp desc
+   | take 50
    ```
 
 ---
