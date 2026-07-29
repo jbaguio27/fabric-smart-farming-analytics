@@ -292,34 +292,40 @@ Displays:
 
 ---
 
-# Alerting Strategy
+# Alerting Strategy (Fabric Activator 10-Hook Engine)
 
-Alerts are classified into three severity levels.
+The platform deploys 10 production Fabric Activator alert hooks across 4 severity levels:
 
-| Severity | Description | Examples |
-|----------|-------------|----------|
-| Sev 1 | Critical platform failures | Pipeline failure, Warehouse unavailable |
-| Sev 2 | Performance degradation | Increased latency, Data Quality decline |
-| Sev 3 | Informational | Long-running notebook, Capacity warning |
+| Hook # | Alert Name | Target Persona | Severity | Trigger Condition & Threshold | Notification Channel | Remediation Action |
+| :--- | :--- | :--- | :---: | :--- | :--- | :--- |
+| **Hook 1** | **Executive Facility Emergency** | Executive / Ops Lead | 🟥 `EMERGENCY` | `facility_health_score < 65.0` OR `active_critical_alerts > 0` | Teams + SMS | Trigger emergency operational response; inspect primary facility power and HVAC systems. |
+| **Hook 2** | **Facility Power Surge SLA** | Operations / Energy | 🟧 `CRITICAL` | `total_power_consumption_kw > 450.0` | Teams + Email | Load-shed non-critical lighting or secondary pumps to avoid electrical grid penalties. |
+| **Hook 3** | **Critical Equipment Failure Imminent** | Maintenance / Reliability | 🟥 `EMERGENCY` | `equipment_risk_score > 75.0` OR `critical_failure_count > 0` | Email + PagerDuty | Immediately dispatch field technician to inspect failing water pump or HVAC compressor. |
+| **Hook 4** | **Micro-Climate Instability** | Agronomist / Greenhouse | 🟨 `WARNING` | `microclimate_stability_score < 70.0%` OR `abs(avg_temp_drift_c) > 3.0` | Teams | Adjust HVAC setpoints and ventilation fan speeds in affected growing zones. |
+| **Hook 5** | **Crop Biological Stress Spike** | Chief Agronomist | 🟧 `CRITICAL` | `biological_stress_pct > 40.0%` OR `crop_health_score < 70.0` | Teams + Email | Inspect hydroponic nutrient EC/pH dosing pumps and check for root rot or tip-burn. |
+| **Hook 6** | **Work Order Resolution SLA Breach** | Maintenance Lead | 🟨 `WARNING` | `emergency_order_count > 0` AND `avg_resolution_minutes > 120.0` | Teams | Re-assign pending high-priority work orders to available field technicians. |
+| **Hook 7** | **Stream Processing Lag SLA Breach** | DataOps Lead / Streaming | 🟥 `CRITICAL` | `avg_processing_lag_sec > 5.0s` OR `sla_breach_count > 0` | PagerDuty + Teams | Investigate Eventstream HTTP ingestion bottleneck or KQL update policy execution. |
+| **Hook 8** | **Ingress Schema Quality Breach** | Data Quality Steward | 🟨 `WARNING` | `data_quality_score < 98.0%` OR `null_facility_count > 0` | Teams + Email | Inspect IoT edge gateway payload serialization for missing `facility_id` fields. |
+| **Hook 9** | **Dead-Letter Queue Exception Burst** | Platform Architect | 🟧 `CRITICAL` | `dead_letter_count > 5` per 15 minutes | Teams | Review `DeadLetterTelemetry` payload exception logs for deprecated schema events. |
+| **Hook 10** | **Critical Missing Primary Key Ingress**| Edge IoT Engineer | 🟥 `EMERGENCY` | `exception_status == "CRITICAL_MISSING_PRIMARY_KEY"` count `> 0` | PagerDuty + Teams | Audit edge gateway firmware and re-issue facility identifier tokens. |
 
 ---
 
-# Alert Destinations
+# Alert Fatigue Prevention & Cooldown Policies
+
+To prevent notification spamming in real-time streaming environments:
+- **Deduplication Cooldown Window**: 15 minutes per facility / stream.
+- **Alert Suppression**: Once an alert triggers, subsequent identical events within the 15-minute window are suppressed.
+- **Auto-Resolution**: When metrics return below warning thresholds for 2 consecutive cycles, an `RESOLVED` heartbeat notice is dispatched to Teams.
+
+---
+
+# Alert Destinations & Channel Routing
 
 Critical alerts are routed to:
-
-- Microsoft Teams
-- Email
-- Fabric Monitoring Hub
-
-Alerts include:
-
-- Pipeline failures
-- Notebook failures
-- Warehouse failures
-- Data Quality degradation
-- Eventhouse latency
-- Capacity thresholds
+- **Microsoft Teams**: `#ops-emergency-escalation`, `#agronomy-alerts`, `#dataops-alerts`
+- **Email**: `field-dispatch@hydrogrow.com`, `agronomy-leads@hydrogrow.com`
+- **PagerDuty**: Critical stream SLA lag breaches and edge primary key missing incidents.
 
 ---
 

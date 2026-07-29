@@ -338,70 +338,77 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
 
 ### 7. Sub-Task 1.6.4: Multi-Persona Fabric Activator Alert Hooks
 
-The platform establishes 8 1-to-1 Activator Trigger Hooks driving automated notification routing:
+The platform establishes 10 1-to-1 Activator Trigger Hooks driving automated notification routing across Business and Technical Personas:
 
-1. **Executive Operations Hook** *(Teams: Operations Emergency Escalation)*:
+1. **Executive Operations Emergency Hook** *(Teams: Operations Emergency Escalation)*:
    ```kql
-   GetFacilityOperationalOverview(WindowMinutes = 15)
-   | where HealthStatus == "CRITICAL" or ActiveAlerts > 0
-   | project facility_name, region, LatestHealth, HealthStatus, ActiveAlerts, TargetPersona = "Executive Operations Lead", NotificationChannel = "Teams: Operations Emergency Escalation"
+   get_facility_operational_overview(window_minutes = 15)
+   | where health_status == "CRITICAL" or active_critical_alerts > 0
+   | project facility_name, region, facility_health_score, active_critical_alerts, health_status, target_persona = "Executive Operations Lead", notification_channel = "Teams: Operations Emergency Escalation"
    ```
 
-2. **Maintenance Specialist Hook** *(Email: Work Order Dispatch)*:
+2. **Facility Power Surge SLA Hook** *(Teams: Energy & Power Monitoring)*:
    ```kql
-   GetEquipmentCriticalAnomalies(WindowMinutes = 15)
-   | where AlertRequired == true
-   | project facility_id, equipment_type, CriticalCount, AvgHealth, MaxFailureProb, TargetPersona = "Maintenance Specialist", NotificationChannel = "Email: Work Order Dispatch"
+   get_facility_operational_overview(window_minutes = 15)
+   | where total_power_consumption_kw > 450.0
+   | project facility_name, total_power_consumption_kw, target_persona = "Energy Steward", notification_channel = "Teams: Energy & Power Monitoring"
    ```
 
-3. **Crop Agronomist Hook** *(Teams: Agronomy Action)*:
+3. **Critical Equipment Failure Hook** *(Email & PagerDuty: Emergency Work Order)*:
    ```kql
-   GetEnvironmentalStressAnomalies(WindowMinutes = 15)
-   | where AlertRequired == true
-   | project facility_id, zone_id, sensor_type, HighStressCount, AvgVPD, AvgTempDeviation, TargetPersona = "Crop Agronomist", NotificationChannel = "Teams: Agronomy Action"
+   get_equipment_critical_anomalies(window_minutes = 15)
+   | where alert_required == true
+   | project facility_name, equipment_type, critical_failure_count, equipment_risk_score, target_persona = "Maintenance Supervisor", notification_channel = "PagerDuty: Emergency Work Order"
    ```
 
-4. **Irrigation Specialist Hook** *(Teams: Irrigation Audit)*:
+4. **Micro-Climate Instability Hook** *(Teams: Agronomy Action)*:
    ```kql
-   GetIrrigationHydraulicAnomalies(WindowMinutes = 15)
-   | where AlertRequired == true
-   | project facility_id, zone_id, AnomalousCycleCount, AvgFlowRate, AvgPressure, TargetPersona = "Irrigation Specialist", NotificationChannel = "Teams: Irrigation Audit"
+   get_environmental_stress_anomalies(window_minutes = 15)
+   | where alert_required == true
+   | project facility_name, zone_id, microclimate_stability_score, avg_temp_drift_c, target_persona = "Crop Agronomist", notification_channel = "Teams: Agronomy Action"
    ```
 
-5. **Photobiology Specialist Hook** *(Teams: Lighting Action)*:
+5. **Crop Biological Stress Spike Hook** *(Teams & Email: Crop Health Emergency)*:
    ```kql
-   GetLightingDLIDeficit(WindowMinutes = 15)
-   | where AlertRequired == true
-   | project facility_id, zone_id, DeficitCount, AvgDLI, AvgIntensity, TargetPersona = "Photobiology Specialist", NotificationChannel = "Teams: Lighting Action"
+   get_crop_biological_stress_overview(window_minutes = 15)
+   | where alert_required == true
+   | project facility_name, zone_id, crop_type, crop_health_score, biological_stress_pct, target_persona = "Chief Agronomist", notification_channel = "Teams: Crop Health Emergency"
    ```
 
-6. **Maintenance Dispatch Hook** *(Email: Emergency Work Order)*:
+6. **Work Order Resolution SLA Breach Hook** *(Teams: Maintenance Dispatch)*:
    ```kql
-   GetMaintenanceSLABreach(WindowMinutes = 15)
-   | where AlertRequired == true
-   | project facility_id, equipment_id, maintenance_type, EmergencyOrderCount, PendingOrderCount, TargetPersona = "Maintenance Dispatch", NotificationChannel = "Email: Emergency Work Order"
+   get_maintenance_sla_breach(window_minutes = 15)
+   | where alert_required == true
+   | project facility_name, equipment_id, maintenance_type, emergency_order_count, avg_work_order_resolution_minutes, target_persona = "Maintenance Lead", notification_channel = "Teams: Maintenance Dispatch"
    ```
 
-7. **DataOps Dead-Letter Hook** *(Teams: DataOps Incidents)*:
+7. **DataOps Stream Ingestion SLA Hook** *(PagerDuty: Stream SLA Incident)*:
    ```kql
-   GetDeadLetterAnomalyRate(WindowMinutes = 15)
-   | where AlertRequired == true
-   | project event_type, DeadLetterCount, AlertTimestamp = now(), TargetPersona = "Data Engineer", NotificationChannel = "Teams: DataOps Incidents"
+   get_stream_ingestion_sla(window_minutes = 15)
+   | where sla_breach_alert == true
+   | project stream_name, total_ingested_events, avg_processing_lag_sec, max_processing_lag_sec, sla_breach_count, target_persona = "DataOps Lead", notification_channel = "PagerDuty: Stream SLA Incident"
    ```
 
-8. **DataOps Stream SLA Hook** *(PagerDuty: Stream SLA Incident)*:
+8. **Data Quality Steward Hook** *(Teams: Ingress DQ Governance Alert)*:
    ```kql
-   GetStreamIngestionSLA(WindowMinutes = 15)
-   | where SLABreachAlert == true
-   | project StreamName, TotalIngestedEvents, AvgProcessingLagSec, MaxProcessingLagSec, SLABreachCount, TargetPersona = "DataOps Lead", NotificationChannel = "PagerDuty: Stream SLA Incident"
+   get_ingress_data_quality_audit(window_minutes = 15)
+   | where dq_violation_alert == true
+   | project stream_name, total_rows, valid_schema_rows, null_facility_count, null_timestamp_count, data_quality_score, target_persona = "Data Quality Steward", notification_channel = "Teams: Ingress DQ Governance Alert"
    ```
 
-9. **Data Quality Steward Hook** *(Teams: Ingress DQ Governance Alert)*:
+9. **Dead-Letter Queue Anomaly Burst Hook** *(Teams: DataOps Incidents)*:
    ```kql
-   GetIngressDataQualityAudit(WindowMinutes = 15)
-   | where DQViolationAlert == true
-   | project StreamName, TotalRows, ValidSchemaRows, NullFacilityCount, DataQualityScore, TargetPersona = "Data Quality Steward", NotificationChannel = "Teams: Ingress DQ Governance Alert"
+   get_dead_letter_anomaly_rate(window_minutes = 15)
+   | where alert_required == true
+   | project event_type, dead_letter_count, target_persona = "Data Engineer", notification_channel = "Teams: DataOps Incidents"
    ```
+
+10. **Critical Missing Primary Key Ingress Hook** *(PagerDuty: Edge Ingress Emergency)*:
+    ```kql
+    get_dead_letter_audit_log(window_minutes = 15)
+    | where exception_status == "CRITICAL_MISSING_PRIMARY_KEY"
+    | project ingestion_timestamp, event_id, event_type, facility_label, exception_status, target_persona = "Edge IoT Engineer", notification_channel = "PagerDuty: Edge Ingress Emergency"
+    ```
 
 ---
 
