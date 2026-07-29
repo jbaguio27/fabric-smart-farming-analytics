@@ -469,9 +469,15 @@ transform_equipment_risk_enriched() {
 // 6. materialized_view_maintenance_work_orders
 .create-or-alter materialized-view with (backfill = true) materialized_view_maintenance_work_orders on table MaintenanceActivity {
     MaintenanceActivity
+    | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
     | where isnotempty(facility_id) and facility_id !in ("Unknown", "N/A", "null", "NULL")
     | where isnotempty(equipment_id) and equipment_id !in ("Unknown", "N/A", "null", "NULL")
-    | summarize emergency_order_count = countif(maintenance_type == "EMERGENCY_REPAIR"), pending_order_count = countif(maintenance_status != "COMPLETED"), raw_avg_work_order_resolution_minutes = avg(estimated_duration_minutes), last_updated_timestamp = max(ingestion_time()) by facility_id = toupper(facility_id), equipment_id, maintenance_type
+    | summarize 
+        emergency_order_count = countif(maintenance_type == "EMERGENCY_REPAIR"),
+        pending_order_count = countif(maintenance_status != "COMPLETED"),
+        raw_avg_work_order_resolution_minutes = avg(estimated_duration_minutes),
+        last_updated_timestamp = max(ingestion_time())
+        by facility_id = toupper(facility_id), equipment_id, maintenance_type
 }
 
 // 7. materialized_view_crop_biological_stress
@@ -566,15 +572,15 @@ get_maintenance_sla_breach(window_minutes:int = 15) {
 }
 
 // 7. get_crop_biological_stress_overview (Dynamic FacilityOperations Lookup)
-.create-or-alter function with (docstring = "Summarizes crop biological health, stress, and growth rates using materialized_view_crop_biological_stress") 
+.create-or-alter function with (docstring = "Summarizes crop biological health, stress percentage, and growth rates using materialized_view_crop_biological_stress") 
 get_crop_biological_stress_overview(window_minutes:int = 15) {
     materialized_view_crop_biological_stress
     | where last_updated_timestamp > ago(window_minutes * 1m)
     | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
-    | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_index = round(raw_biological_stress_index, 3)
-    | extend alert_required = (high_crop_stress_count > 0 or biological_stress_index > 0.45)
-    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate, total_biomass_grams, biological_stress_index, high_crop_stress_count, alert_required, last_updated_timestamp
+    | extend crop_health_score = round(raw_crop_health_score, 1), daily_growth_rate_g_day = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_pct = round(raw_biological_stress_index, 1)
+    | extend alert_required = (high_crop_stress_count > 0 or biological_stress_pct > 40.0)
+    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate_g_day, total_biomass_grams, biological_stress_pct, high_crop_stress_count, alert_required, last_updated_timestamp
 }
 ```
 
