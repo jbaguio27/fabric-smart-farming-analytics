@@ -240,6 +240,19 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
        | extend data_quality_score = round((todouble(valid_schema_rows) / total_rows) * 100.0, 2)
        | extend dq_violation_alert = (data_quality_score < 98.0 or null_facility_count > 0 or null_timestamp_count > 0)
    }
+10. **`get_dead_letter_audit_log(window_minutes)`** *(Dead-Letter Raw Exception Log Viewport)*:
+   ```kql
+   .create-or-alter function with (docstring = "Formats dead-letter telemetry exception logs with coalesce facility fallback for DataOps Observability Dashboard") 
+   get_dead_letter_audit_log(window_minutes:int = 60) {
+       DeadLetterTelemetry
+       | where ingestion_time() > ago(window_minutes * 1m)
+       | extend facility_id_str = iff(isempty(tostring(facility_id)) or isnull(facility_id), "NULL_FACILITY_ID", toupper(tostring(facility_id)))
+       | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on $left.facility_id_str == $right.facility_id
+       | extend facility_label = coalesce(facility_name, facility_id_str)
+       | extend exception_status = iff(facility_id_str == "NULL_FACILITY_ID", "CRITICAL_MISSING_PRIMARY_KEY", "DEPRECATED_SCHEMA_EVENT")
+       | project ingestion_timestamp = ingestion_time(), event_id, event_type, facility_label, exception_status, timestamp
+       | sort by ingestion_timestamp desc
+   }
    ```
 
 ---
@@ -316,10 +329,8 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
 
 10. **Technical Workload 4 — Raw Dead-Letter Exception Payload Log**:
    ```kql
-   DeadLetterTelemetry
-   | where ingestion_time() > ago(60m)
-   | project ingestion_timestamp = ingestion_time(), event_id, event_type, facility_id, timestamp
-   | sort by ingestion_timestamp desc
+   get_dead_letter_audit_log(window_minutes = 60)
+   | project ingestion_timestamp, event_id, event_type, facility_label, exception_status, timestamp
    | take 50
    ```
 
