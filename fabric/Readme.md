@@ -242,17 +242,15 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
    }
 10. **`get_dead_letter_audit_log(window_minutes)`** *(Dead-Letter Raw Exception Log Viewport)*:
    ```kql
-   .create-or-alter function with (docstring = "Formats dead-letter telemetry exception logs with coalesce facility fallback for DataOps Observability Dashboard") 
+   .create-or-alter function with (docstring = "Formats dead-letter telemetry exception logs for DataOps Observability Dashboard") 
    get_dead_letter_audit_log(window_minutes:int = 60) {
        DeadLetterTelemetry
        | where ingestion_time() > ago(window_minutes * 1m) or todatetime(timestamp) > ago(window_minutes * 1m)
        | extend facility_id_str = iff(isempty(tostring(facility_id)) or isnull(facility_id), "NULL_FACILITY_ID", toupper(tostring(facility_id)))
-       | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(facility_id)) on $left.facility_id_str == $right.facility_id
-       | extend facility_label = coalesce(facility_name, facility_id_str)
        | extend exception_status = iff(facility_id_str == "NULL_FACILITY_ID", "CRITICAL_MISSING_PRIMARY_KEY", "DEPRECATED_SCHEMA_EVENT")
        | extend ingestion_timestamp = coalesce(ingestion_time(), todatetime(timestamp))
        | extend payload_timestamp = todatetime(timestamp)
-       | project ingestion_timestamp, event_id, event_type, facility_label, exception_status, payload_timestamp
+       | project ingestion_timestamp, event_id, event_type, exception_status, payload_timestamp
        | sort by ingestion_timestamp desc
    }
    ```
@@ -332,7 +330,7 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
 10. **Technical Workload 4 — Raw Dead-Letter Exception Payload Log**:
    ```kql
    get_dead_letter_audit_log(window_minutes = 60)
-   | project ingestion_timestamp, event_id, event_type, facility_label, exception_status, payload_timestamp
+   | project ingestion_timestamp, event_id, event_type, exception_status, payload_timestamp
    | take 50
    ```
 
