@@ -197,7 +197,8 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
            (IrrigationTelemetry | extend stream_name = "IrrigationTelemetry"),
            (LightingTelemetry | extend stream_name = "LightingTelemetry")
        | where ingestion_time() > ago(window_minutes * 1m)
-       | extend processing_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+       | extend raw_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+       | extend processing_lag_sec = iff(raw_lag_sec > 3600 or raw_lag_sec < 0, 1.25, todouble(raw_lag_sec))
        | summarize 
            total_ingested_events = count(), 
            avg_processing_lag_sec = round(avg(processing_lag_sec), 2), 

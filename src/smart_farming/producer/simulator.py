@@ -156,6 +156,7 @@ class Simulator:
         environment = (
             self.environment_manager.get_current_state()
         )
+        environment.timestamp = datetime.now(timezone.utc)
 
         self.logger.info(
             (
