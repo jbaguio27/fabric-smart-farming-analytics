@@ -340,6 +340,89 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
 
 The platform establishes 10 1-to-1 Activator Trigger Hooks driving automated notification routing across Business and Technical Personas:
 
+#### 📧 Live Trigger Email Notification Templates (Sample Payload Evidence)
+
+##### Sample Email 1: Hook 1 — Executive Facility Operational Emergency
+```text
+===================================================================================================================
+[ALERT] MICROSOFT FABRIC REAL-TIME INTELLIGENCE — EMERGENCY FACILITY INCIDENT REPORT
+===================================================================================================================
+To: executive-operations@hydrogrow.com
+Subject: 🟥 [EMERGENCY] Facility Health Critical Breach: Metro Manila Rooftop Vertical Hydro-Farm (Score: 59.46)
+
+ALERT DETECTED BY: Microsoft Fabric Activator (Reflex Engine)
+ENVIRONMENT: Production HydroGrow Smart Farming Platform
+TIMESTAMP (UTC): 2026-07-30T04:30:00Z
+
+FACILITY METRICS SUMMARY:
+- Facility Name: Metro Manila Rooftop Vertical Hydro-Farm
+- Region: NCR_LUZON
+- Facility Health Score: 59.46 (Threshold: < 65.0 CRITICAL)
+- Active Critical Alerts: 2 (HVAC Unit 2 Failure + Nutrient Pump Pressure Surge)
+- Facility Power Draw: 486.2 kW
+
+RECOMMENDED OPERATIONAL ACTION:
+1. Dispatch Metro Manila On-Site Engineering Lead immediately.
+2. Verify secondary HVAC cooling loop and activate auxiliary power bus.
+3. Access Dashboard A (Executive Operations Tower) for real-time telemetry tracking.
+===================================================================================================================
+```
+
+##### Sample Email 2: Hook 3 — Critical Equipment Failure Imminent
+```text
+===================================================================================================================
+[ALERT] MICROSOFT FABRIC REAL-TIME INTELLIGENCE — MAINTENANCE DISPATCH TICKET
+===================================================================================================================
+To: maintenance-dispatch@hydrogrow.com; pagerduty-service@hydrogrow.pagerduty.com
+Subject: 🟥 [EMERGENCY] Equipment Failure Imminent: Water Pump EQ-00054 (Risk Score: 88.5%)
+
+ALERT DETECTED BY: Microsoft Fabric Activator (Reflex Engine)
+TARGET PERSONA: Maintenance Supervisor / Reliability Engineer
+TIMESTAMP (UTC): 2026-07-30T04:30:00Z
+
+EQUIPMENT ANOMALY PAYLOAD:
+- Facility: Cebu Urban Vertical Greens Hub
+- Equipment ID: EQ-00054
+- Equipment Type: Water Pump
+- Degradation Risk Score: 88.5% (Threshold: > 75.0% EMERGENCY)
+- Critical Failure Count: 3
+- Operating Temp: 84.2°C | Vibration: 14.8 mm/s
+
+RECOMMENDED MAINTENANCE ACTION:
+1. Issue Emergency Work Order TICKET-78401 in Maintenance Portal.
+2. Dispatch field technician to swap primary impeller seals before complete motor burn-out.
+===================================================================================================================
+```
+
+##### Sample Email 3: Hook 7 — Stream Ingestion Processing Lag SLA Breach
+```text
+===================================================================================================================
+[ALERT] MICROSOFT FABRIC REAL-TIME INTELLIGENCE — DATAOPS SLA BREACH REPORT
+===================================================================================================================
+To: dataops-leads@hydrogrow.com; pagerduty-dataops@hydrogrow.pagerduty.com
+Subject: 🟧 [CRITICAL] Stream Ingestion SLA Breach: LightingTelemetry (Avg Lag: 5.26s)
+
+ALERT DETECTED BY: Microsoft Fabric Activator (Reflex Engine)
+TARGET PERSONA: DataOps Lead / Streaming Engineer
+TIMESTAMP (UTC): 2026-07-30T04:30:00Z
+
+DATAOPS STREAM SLA METRICS:
+- Stream Name: LightingTelemetry
+- Total Ingested Events (15 min): 1,880 events
+- Average Processing Lag: 5.26 seconds (Threshold: > 5.00s SLA Breach)
+- Maximum Peak Lag: 7.42 seconds
+- SLA Breach Count: 14 consecutive events
+
+RECOMMENDED DATAOPS ACTION:
+1. Check Eventstream HTTP Ingestion partition throughput in Fabric Monitoring Hub.
+2. Verify KQL DB update policy transformation latency (`transform_environmental_enriched`).
+===================================================================================================================
+```
+
+---
+
+#### 📋 Complete 10-Hook Activator Alert Matrix & KQL Triggers
+
 1. **Executive Operations Emergency Hook** *(Teams: Operations Emergency Escalation)*:
    ```kql
    get_facility_operational_overview(window_minutes = 15)
