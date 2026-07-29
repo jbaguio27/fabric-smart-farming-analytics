@@ -77,6 +77,7 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
 
         self.equipment_registry = equipment_registry
         self.equipment_state_manager = equipment_state_manager
+        self._cycle_counter = 0
 
         self.logger = get_logger(__name__)
 
@@ -126,12 +127,6 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
             raise TelemetryGenerationError(
                 "Environment state manager has not been initialized."
             )
-
-        self._settings = settings
-        self._equipment_registry = equipment_registry
-        self._equipment_state_manager = equipment_state_manager
-        self._environment_manager = environment_manager
-        self._cycle_counter = 0
 
     def generate(self) -> list[EquipmentTelemetryEvent]:
         """
