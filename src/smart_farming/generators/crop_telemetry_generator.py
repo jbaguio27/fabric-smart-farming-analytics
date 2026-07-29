@@ -69,6 +69,7 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
         self._environment_manager = environment_manager
         self._crop_registry = crop_registry
         self._crop_state_manager = crop_state_manager
+        self._cycle_counter = 0
 
     def generate(
         self,
@@ -77,12 +78,17 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
         Generate crop telemetry events.
 
         One immutable telemetry event is produced for every active crop.
+        Sampling cadence is 60 seconds (every 12 simulation cycles).
 
         Returns
         -------
         list[CropTelemetryEvent]
             Continuous crop telemetry.
         """
+
+        self._cycle_counter += 1
+        if self._cycle_counter % 12 != 0:
+            return []
 
         events: list[CropTelemetryEvent] = []
 

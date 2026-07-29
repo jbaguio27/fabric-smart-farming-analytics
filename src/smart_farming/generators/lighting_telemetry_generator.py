@@ -48,16 +48,22 @@ class LightingTelemetryGenerator(BaseTelemetryGenerator):
         self._lighting_state_manager = (
             lighting_state_manager
         )
+        self._cycle_counter = 0
 
     def generate(
         self,
     ) -> list[LightingTelemetryEvent]:
         """
         Generate lighting telemetry events.
+        Sampling cadence is 30 seconds (every 6 simulation cycles).
 
         Returns:
             Normalized lighting telemetry events.
         """
+
+        self._cycle_counter += 1
+        if self._cycle_counter % 6 != 0:
+            return []
 
         return [
             self._build_event(state)

@@ -57,16 +57,22 @@ class IrrigationTelemetryGenerator(
         self._irrigation_state_manager = (
             irrigation_state_manager
         )
+        self._cycle_counter = 0
 
     def generate(
         self,
     ) -> list[IrrigationTelemetryEvent]:
         """
         Generate irrigation telemetry events.
+        Sampling cadence is 15 seconds (every 3 simulation cycles).
 
         Returns:
             One telemetry event per growing zone.
         """
+
+        self._cycle_counter += 1
+        if self._cycle_counter % 3 != 0:
+            return []
 
         timestamp = (
             self._environment_manager

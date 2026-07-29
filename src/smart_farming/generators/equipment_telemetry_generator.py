@@ -127,17 +127,21 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
                 "Environment state manager has not been initialized."
             )
 
+        self._settings = settings
+        self._equipment_registry = equipment_registry
+        self._equipment_state_manager = equipment_state_manager
+        self._environment_manager = environment_manager
+        self._cycle_counter = 0
+
     def generate(self) -> list[EquipmentTelemetryEvent]:
         """
-        Generate telemetry events for every registered equipment asset.
-
-        Returns:
-            Collection of generated equipment telemetry events.
-
-        Raises:
-            TelemetryGenerationError:
-                Raised when telemetry generation fails.
+        Generate telemetry events for registered equipment assets.
+        Sampling cadence is 10 seconds (every 2 simulation cycles).
         """
+
+        self._cycle_counter += 1
+        if self._cycle_counter % 2 != 0:
+            return []
 
         self._validate_generation_prerequisites()
         
