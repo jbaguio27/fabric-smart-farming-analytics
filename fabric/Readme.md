@@ -318,7 +318,7 @@ The platform defines 8 production workload queries powering **Dashboard A (Busin
    ```kql
    DeadLetterTelemetry
    | where ingestion_time() > ago(60m)
-   | project ingestion_timestamp = ingestion_time(), event_type, error_code, raw_payload
+   | project ingestion_timestamp = ingestion_time(), event_id, event_type, facility_id, timestamp
    | sort by ingestion_timestamp desc
    | take 50
    ```
