@@ -155,7 +155,9 @@ get_lighting_dli_deficit(window_minutes:int = 15) {
     materialized_view_lighting_summary
     | where last_updated_timestamp > ago(window_minutes * 1m)
     | where photoperiod_deficit_count > 0
-    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_id_upper = toupper(tostring(facility_id))
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
     | extend daily_light_integral_dli = round(raw_daily_light_integral_dli, 2), light_intensity_percentage = round(raw_light_intensity_percentage, 2)
     | extend alert_required = (photoperiod_deficit_count > 0)
     | project facility_id, facility_name, zone_id, photoperiod_deficit_count, daily_light_integral_dli, light_intensity_percentage, alert_required, last_updated_timestamp
@@ -167,7 +169,10 @@ get_maintenance_sla_breach(window_minutes:int = 15) {
     materialized_view_maintenance_work_orders
     | where last_updated_timestamp > ago(window_minutes * 1m)
     | where emergency_order_count > 0 or pending_order_count > 0
-    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
+    | extend facility_id_upper = toupper(tostring(facility_id))
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
     | extend avg_work_order_resolution_minutes = round(raw_avg_work_order_resolution_minutes, 2)
     | extend alert_required = (emergency_order_count > 0)
     | project facility_id, facility_name, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes, alert_required, last_updated_timestamp
@@ -178,10 +183,14 @@ get_maintenance_sla_breach(window_minutes:int = 15) {
 get_crop_biological_stress_overview(window_minutes:int = 15) {
     materialized_view_crop_biological_stress
     | where last_updated_timestamp > ago(window_minutes * 1m)
-    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_id_upper = toupper(tostring(facility_id))
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
     | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_index = round(raw_biological_stress_index, 3)
+    | extend biological_stress_pct = strcat(tostring(round(raw_biological_stress_index * 100.0, 1)), "%")
+    | extend daily_growth_rate_g_day = strcat(tostring(round(raw_growth_rate, 3)), " g/day")
     | extend alert_required = (high_crop_stress_count > 0 or biological_stress_index > 0.45)
-    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate, total_biomass_grams, biological_stress_index, high_crop_stress_count, alert_required, last_updated_timestamp
+    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate_g_day, biological_stress_pct, high_crop_stress_count, alert_required, last_updated_timestamp
 }
 
 #### Dashboard B Functions (DataOps & Platform Observability Viewports):
@@ -430,8 +439,7 @@ RECOMMENDED DATAOPS ACTION:
    | project facility_name, region, facility_health_score, active_critical_alerts, health_status, target_persona = "Executive Operations Lead", notification_channel = "Teams: Operations Emergency Escalation"
    ```
    > 📸 **Snipped Notification Evidence**:  
-   > *(Save image to `fabric/media/hook1_activator_alert.png` or paste below)*  
-   > `![Hook 1 Alert Notification](media/hook1_activator_alert.png)`
+   ![Hook 1 Alert Notification](media/hook1_activator_alert.png)
 
 2. **Facility Power Surge SLA Hook** *(Teams: Energy & Power Monitoring)*:
    ```kql
