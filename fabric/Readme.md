@@ -138,6 +138,7 @@ get_environmental_stress_anomalies(window_minutes:int = 15) {
     | extend microclimate_stability_score = round(max_of(0.0, 100.0 - (abs(temperature_deviation_celsius) * 5.0)), 2)
     | extend alert_required = (high_stress_event_count > 0)
     | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, microclimate_stability_score, alert_required, last_updated_timestamp
+    | order by zone_id asc
 }
 
 // 4. get_crop_biological_stress_overview (Enriched with facility_name)
