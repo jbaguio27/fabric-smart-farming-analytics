@@ -224,12 +224,7 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
    ```kql
    .create-or-alter function with (docstring = "Monitors stream ingestion throughput and processing lag SLA for DataOps Dashboard and Activator alerts") 
    get_stream_ingestion_sla(window_minutes:int = 15) {
-       union 
-           (EquipmentTelemetry | extend stream_name = "EquipmentTelemetry"),
-           (EnvironmentalTelemetry | extend stream_name = "EnvironmentalTelemetry"),
-           (CropTelemetry | extend stream_name = "CropTelemetry"),
-           (IrrigationTelemetry | extend stream_name = "IrrigationTelemetry"),
-           (LightingTelemetry | extend stream_name = "LightingTelemetry")
+       union withsource = stream_name EquipmentTelemetry, EnvironmentalTelemetry, CropTelemetry, IrrigationTelemetry, LightingTelemetry
        | where ingestion_time() > ago(window_minutes * 1m)
        | extend raw_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
        | extend processing_lag_sec = iff(raw_lag_sec > 3600 or raw_lag_sec < 0, 1.25, todouble(raw_lag_sec))
@@ -258,12 +253,7 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
    ```kql
    .create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance across all 5 operational streams") 
    get_ingress_data_quality_audit(window_minutes:int = 15) {
-       union 
-           (EquipmentTelemetry | extend stream_name = "EquipmentTelemetry"),
-           (EnvironmentalTelemetry | extend stream_name = "EnvironmentalTelemetry"),
-           (CropTelemetry | extend stream_name = "CropTelemetry"),
-           (IrrigationTelemetry | extend stream_name = "IrrigationTelemetry"),
-           (LightingTelemetry | extend stream_name = "LightingTelemetry")
+       union withsource = stream_name EquipmentTelemetry, EnvironmentalTelemetry, CropTelemetry, IrrigationTelemetry, LightingTelemetry
        | where ingestion_time() > ago(window_minutes * 1m)
        | summarize 
            total_rows = count(), 
