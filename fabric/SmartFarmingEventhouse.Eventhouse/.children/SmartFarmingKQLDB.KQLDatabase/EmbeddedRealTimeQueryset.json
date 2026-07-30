@@ -12,7 +12,7 @@
     "tabs": [
       {
         "id": "3e23d41f-1dcf-4528-aba8-35593d09ae7c",
-        "content": "",
+        "content": ".create-or-alter function with (docstring = \"Monitors critical equipment risk using materialized_view_equipment_risk\") \nget_equipment_critical_anomalies(window_minutes:int = 15) {\n    materialized_view_equipment_risk\n    | where last_updated_timestamp > ago(window_minutes * 1m)\n    | where critical_failure_count > 0\n    | extend facility_id_upper = toupper(tostring(facility_id))\n    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id\n    | extend facility_name = coalesce(facility_name, facility_id)\n    | extend equipment_health_score = round(raw_equipment_health_score, 2), failure_probability_score = round(raw_failure_probability_score, 4), equipment_risk_score = round(raw_equipment_risk_score, 2)\n    | extend alert_required = (critical_failure_count > 0)\n    | project facility_id, facility_name, equipment_type, critical_failure_count, equipment_health_score, failure_probability_score, equipment_risk_score, alert_required, last_updated_timestamp\n}",
         "title": "",
         "dataSourceId": "7e5d1dd6-d10d-4fe6-af14-aaceb69ebafd"
       }
