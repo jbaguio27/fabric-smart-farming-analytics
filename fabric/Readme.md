@@ -119,7 +119,8 @@ get_equipment_critical_anomalies(window_minutes:int = 15) {
     materialized_view_equipment_risk
     | where last_updated_timestamp > ago(window_minutes * 1m)
     | where critical_failure_count > 0
-    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id == $right.facility_id
+    | extend facility_id_upper = toupper(tostring(facility_id))
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
     | extend equipment_health_score = round(raw_equipment_health_score, 2), failure_probability_score = round(raw_failure_probability_score, 4), equipment_risk_score = round(raw_equipment_risk_score, 2)
     | extend alert_required = (critical_failure_count > 0)
@@ -462,9 +463,8 @@ RECOMMENDED DATAOPS ACTION:
    | where total_power_consumption_kw > 300.0
    | project facility_name, total_power_consumption_kw, target_persona = "Energy Steward", notification_channel = "Teams: Energy & Power Monitoring"
    ```
-   > 📸 **Snipped Notification Evidence**:  
-   > *(Save image to `fabric/media/hook2_activator_alert.png` or paste below)*  
-   > `![Hook 2 Alert Notification](media/hook2_activator_alert.png)`
+   > 📸 **Snipped Notification Evidence**:    
+   ![Hook 2 Alert Notification](media/hook2_activator_alert.png)
 
 3. **Critical Equipment Failure Hook** *(Email & PagerDuty: Emergency Work Order)*:
    ```kql
