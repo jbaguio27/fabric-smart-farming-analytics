@@ -1,0 +1,119 @@
+[
+  {
+    "name": "MaintenanceActivity",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/MaintenanceActivity",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "LightingTelemetry",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/LightingTelemetry",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "IrrigationTelemetry",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/IrrigationTelemetry",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "FacilityOperations",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/FacilityOperations",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "EquipmentTelemetry",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/EquipmentTelemetry",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "EnvironmentalTelemetry",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/EnvironmentalTelemetry",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "DeadLetterTelemetry",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/DeadLetterTelemetry",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "CropTelemetry",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/CropTelemetry",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  },
+  {
+    "name": "CropLifecycle",
+    "path": "/Files",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/CropLifecycle",
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "artifactType": "KustoDatabase"
+      }
+    }
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "SmartFarming_Lakehouse"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "4c9b22c3-3477-9303-4ddc-6e3b54fb63f8"
+  }
+}
