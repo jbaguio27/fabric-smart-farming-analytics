@@ -429,6 +429,9 @@ RECOMMENDED DATAOPS ACTION:
    | where health_status == "CRITICAL" or active_critical_alerts > 0
    | project facility_name, region, facility_health_score, active_critical_alerts, health_status, target_persona = "Executive Operations Lead", notification_channel = "Teams: Operations Emergency Escalation"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook1_activator_alert.png` or paste below)*  
+   > `![Hook 1 Alert Notification](media/hook1_activator_alert.png)`
 
 2. **Facility Power Surge SLA Hook** *(Teams: Energy & Power Monitoring)*:
    ```kql
@@ -436,6 +439,9 @@ RECOMMENDED DATAOPS ACTION:
    | where total_power_consumption_kw > 450.0
    | project facility_name, total_power_consumption_kw, target_persona = "Energy Steward", notification_channel = "Teams: Energy & Power Monitoring"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook2_activator_alert.png` or paste below)*  
+   > `![Hook 2 Alert Notification](media/hook2_activator_alert.png)`
 
 3. **Critical Equipment Failure Hook** *(Email & PagerDuty: Emergency Work Order)*:
    ```kql
@@ -443,6 +449,9 @@ RECOMMENDED DATAOPS ACTION:
    | where alert_required == true
    | project facility_name, equipment_type, critical_failure_count, equipment_risk_score, target_persona = "Maintenance Supervisor", notification_channel = "PagerDuty: Emergency Work Order"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook3_activator_alert.png` or paste below)*  
+   > `![Hook 3 Alert Notification](media/hook3_activator_alert.png)`
 
 4. **Micro-Climate Instability Hook** *(Teams: Agronomy Action)*:
    ```kql
@@ -450,6 +459,9 @@ RECOMMENDED DATAOPS ACTION:
    | where alert_required == true
    | project facility_name, zone_id, microclimate_stability_score, avg_temp_drift_c, target_persona = "Crop Agronomist", notification_channel = "Teams: Agronomy Action"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook4_activator_alert.png` or paste below)*  
+   > `![Hook 4 Alert Notification](media/hook4_activator_alert.png)`
 
 5. **Crop Biological Stress Spike Hook** *(Teams & Email: Crop Health Emergency)*:
    ```kql
@@ -457,6 +469,9 @@ RECOMMENDED DATAOPS ACTION:
    | where alert_required == true
    | project facility_name, zone_id, crop_type, crop_health_score, biological_stress_pct, target_persona = "Chief Agronomist", notification_channel = "Teams: Crop Health Emergency"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook5_activator_alert.png` or paste below)*  
+   > `![Hook 5 Alert Notification](media/hook5_activator_alert.png)`
 
 6. **Work Order Resolution SLA Breach Hook** *(Teams: Maintenance Dispatch)*:
    ```kql
@@ -464,6 +479,9 @@ RECOMMENDED DATAOPS ACTION:
    | where alert_required == true
    | project facility_name, equipment_id, maintenance_type, emergency_order_count, avg_work_order_resolution_minutes, target_persona = "Maintenance Lead", notification_channel = "Teams: Maintenance Dispatch"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook6_activator_alert.png` or paste below)*  
+   > `![Hook 6 Alert Notification](media/hook6_activator_alert.png)`
 
 7. **DataOps Stream Ingestion SLA Hook** *(PagerDuty: Stream SLA Incident)*:
    ```kql
@@ -471,6 +489,9 @@ RECOMMENDED DATAOPS ACTION:
    | where sla_breach_alert == true
    | project stream_name, total_ingested_events, avg_processing_lag_sec, max_processing_lag_sec, sla_breach_count, target_persona = "DataOps Lead", notification_channel = "PagerDuty: Stream SLA Incident"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook7_activator_alert.png` or paste below)*  
+   > `![Hook 7 Alert Notification](media/hook7_activator_alert.png)`
 
 8. **Data Quality Steward Hook** *(Teams: Ingress DQ Governance Alert)*:
    ```kql
@@ -478,6 +499,9 @@ RECOMMENDED DATAOPS ACTION:
    | where dq_violation_alert == true
    | project stream_name, total_rows, valid_schema_rows, null_facility_count, null_timestamp_count, data_quality_score, target_persona = "Data Quality Steward", notification_channel = "Teams: Ingress DQ Governance Alert"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook8_activator_alert.png` or paste below)*  
+   > `![Hook 8 Alert Notification](media/hook8_activator_alert.png)`
 
 9. **Dead-Letter Queue Anomaly Burst Hook** *(Teams: DataOps Incidents)*:
    ```kql
@@ -485,6 +509,9 @@ RECOMMENDED DATAOPS ACTION:
    | where alert_required == true
    | project event_type, dead_letter_count, target_persona = "Data Engineer", notification_channel = "Teams: DataOps Incidents"
    ```
+   > 📸 **Snipped Notification Evidence**:  
+   > *(Save image to `fabric/media/hook9_activator_alert.png` or paste below)*  
+   > `![Hook 9 Alert Notification](media/hook9_activator_alert.png)`
 
 10. **Critical Missing Primary Key Ingress Hook** *(PagerDuty: Edge Ingress Emergency)*:
     ```kql
@@ -492,6 +519,9 @@ RECOMMENDED DATAOPS ACTION:
     | where exception_status == "CRITICAL_MISSING_PRIMARY_KEY"
     | project ingestion_timestamp, event_id, event_type, facility_label, exception_status, target_persona = "Edge IoT Engineer", notification_channel = "PagerDuty: Edge Ingress Emergency"
     ```
+    > 📸 **Snipped Notification Evidence**:  
+    > *(Save image to `fabric/media/hook10_activator_alert.png` or paste below)*  
+    > `![Hook 10 Alert Notification](media/hook10_activator_alert.png)`
 
 ---
 
