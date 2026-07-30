@@ -804,3 +804,11 @@ The platform provisions 9 Zero-Copy OneLake Shortcuts linking `SmartFarmingKQLDB
 7. `IrrigationTelemetry` (Raw hydraulic flow telemetry)
 8. `LightingTelemetry` (Raw photoperiod telemetry)
 9. `MaintenanceActivity` (Emergency work order logs)
+
+---
+
+### 12. Milestone 5.2: Enterprise Data Dictionary & DataOps Governance Framework
+
+The platform documents the complete attribute dictionary and exception handling workflow:
+- **Telemetry Attribute Dictionary**: [`docs/architecture/telemetry-attribute-dictionary.md`](../docs/architecture/telemetry-attribute-dictionary.md) (Physical representations, business value, persona consumers, derived KPIs, and analytics capabilities for all 8 datasets).
+- **Dead-Letter Remediation Framework**: [`docs/architecture/dead-letter-remediation-architecture.md`](../docs/architecture/dead-letter-remediation-architecture.md) (4-tier failure classification: `CRITICAL_MISSING_PRIMARY_KEY`, `DEPRECATED_SCHEMA_EVENT`, `SERDES_PARSE_FAILURE`, `OUT_OF_BOUNDS_ANOMALY`).

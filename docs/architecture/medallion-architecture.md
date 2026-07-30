@@ -50,13 +50,17 @@ The following components are documented separately:
 
 # Architecture Overview
 
-The Smart Farming Analytics Platform adopts the Medallion Architecture to progressively improve the quality and business value of incoming telemetry.
+The Smart Farming Analytics Platform adopts the Medallion Architecture within **`SmartFarming_Lakehouse`** using **Microsoft Fabric Custom Schemas (`bronze`, `silver`, `gold`)** to progressively improve the quality and business value of incoming telemetry.
 
-The architecture consists of three logical layers:
+The architecture consists of three custom schema layers:
 
-- Bronze
-- Silver
-- Gold
+- **`bronze` Schema**: Raw, append-only immutable Delta tables populated directly from 9 Zero-Copy OneLake Shortcuts (`Files/`).
+- **`silver` Schema**: Cleansed, deduplicated, schema-enforced, and enriched with Philippine facility master data (`FacilityOperations`).
+- **`gold` Schema**: Production Kimball Star Schema (Fact and Dimension Delta tables for Direct Lake Power BI modeling).
+
+For detailed attribute mappings and DataOps exception handling, see:
+- [Telemetry Attribute Dictionary & Business Value Mapping](telemetry-attribute-dictionary.md)
+- [Enterprise Dead-Letter Remediation & DataOps Governance Architecture](dead-letter-remediation-architecture.md)
 
 Each layer has a single responsibility and is transformed using dedicated Spark Notebooks.
 
