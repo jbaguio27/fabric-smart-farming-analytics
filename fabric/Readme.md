@@ -138,6 +138,7 @@ get_environmental_stress_anomalies(window_minutes:int = 15) {
     | extend avg_temp_drift_c = temperature_deviation_celsius
     | extend alert_required = (high_stress_event_count > 0 or microclimate_stability_score < 70.0)
     | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, microclimate_stability_score, avg_temp_drift_c, alert_required, last_updated_timestamp
+    | order by zone_id asc
 }
 
 // 4. get_irrigation_hydraulic_anomalies (Enriched with facility_name)
