@@ -58,4 +58,4 @@ get_dead_letter_anomaly_rate(window_minutes = 15)
 // Hook 10: Critical Missing Primary Key Ingress (PagerDuty: Edge Ingress Emergency)
 get_dead_letter_audit_log(window_minutes = 15)
 | where exception_status == "CRITICAL_MISSING_PRIMARY_KEY"
-| project ingestion_timestamp, event_id, event_type, facility_label, exception_status, target_persona = "Edge IoT Engineer", notification_channel = "PagerDuty: Edge Ingress Emergency";
+| project ingestion_timestamp, event_id, event_type, payload_timestamp, exception_status, target_persona = "Edge IoT Engineer", notification_channel = "PagerDuty: Edge Ingress Emergency";
