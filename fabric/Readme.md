@@ -133,21 +133,35 @@ get_environmental_stress_anomalies(window_minutes:int = 15) {
     | extend facility_id_upper = toupper(tostring(facility_id))
     | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
-    | extend raw_stability = round(max_of(0.0, 100.0 - (abs(raw_temperature_deviation_celsius) * 5.0)), 2)
     | summarize 
         high_stress_event_count = sum(high_stress_event_count),
         vapor_pressure_deficit_kpa = round(avg(raw_vapor_pressure_deficit_kpa), 3),
         temperature_deviation_celsius = round(avg(raw_temperature_deviation_celsius), 2),
-        microclimate_stability_score = round(avg(raw_stability), 2),
-        avg_temp_drift_c = round(avg(raw_temperature_deviation_celsius), 2),
         last_updated_timestamp = max(last_updated_timestamp)
         by facility_id, facility_name, zone_id
-    | extend alert_required = (high_stress_event_count > 0 or microclimate_stability_score < 70.0)
+    | extend microclimate_stability_score = round(max_of(65.0, 100.0 - (abs(temperature_deviation_celsius) * 2.5)), 1)
+    | extend avg_temp_drift_c = temperature_deviation_celsius
+    | extend alert_required = (high_stress_event_count > 0 or microclimate_stability_score < 75.0)
     | project facility_id, facility_name, zone_id, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, microclimate_stability_score, avg_temp_drift_c, alert_required, last_updated_timestamp
     | order by zone_id asc
 }
 
-// 4. get_irrigation_hydraulic_anomalies (Enriched with facility_name)
+// 4. get_crop_biological_stress_overview (Enriched with facility_name)
+.create-or-alter function with (docstring = "Summarizes crop biological health, stress, and growth rates using materialized_view_crop_biological_stress") 
+get_crop_biological_stress_overview(window_minutes:int = 15) {
+    materialized_view_crop_biological_stress
+    | where last_updated_timestamp > ago(window_minutes * 1m)
+    | extend facility_id_upper = toupper(tostring(facility_id))
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend crop_health_score = round(raw_crop_health_score, 1), raw_stress = iff(raw_biological_stress_index > 1.0, raw_biological_stress_index, raw_biological_stress_index * 100.0)
+    | extend biological_stress_pct = strcat(tostring(round(min_of(100.0, max_of(0.0, raw_stress)), 1)), "%")
+    | extend daily_growth_rate_g_day = strcat(tostring(round(raw_growth_rate, 3)), " g/day")
+    | extend alert_required = (high_crop_stress_count > 0 or raw_stress > 40.0)
+    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate_g_day, biological_stress_pct, high_crop_stress_count, alert_required, last_updated_timestamp
+}
+
+// 5. get_irrigation_hydraulic_anomalies (Enriched with facility_name)
 .create-or-alter function with (docstring = "Monitors hydraulic flow drops using materialized_view_irrigation_summary") 
 get_irrigation_hydraulic_anomalies(window_minutes:int = 15) {
     materialized_view_irrigation_summary
