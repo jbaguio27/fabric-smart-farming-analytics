@@ -1,0 +1,703 @@
+[
+  {
+    "uniqueIdentifier": "5b80c054-e71a-4434-a284-dcdb13a6431d",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "32349afc-25a6-4743-b05f-19bfdb946dfc",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 300
+      },
+      "query": {
+        "queryString": "get_facility_operational_overview(window_minutes = 15)\r\n| where health_status == \"CRITICAL\" or active_critical_alerts > 0\r\n| project facility_name, region, facility_health_score, active_critical_alerts, health_status, target_persona = \"Executive Operations Lead\", notification_channel = \"Teams: Operations Emergency Escalation\"\r\n"
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "3720a6c7-89e5-4d14-a115-a8b61e0e5ad3"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "5b80c054-e71a-4434-a284-dcdb13a6431d"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "8899d38c-f9dc-477e-a014-698c0aeda32d",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "5b80c054-e71a-4434-a284-dcdb13a6431d"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"633e1a4e-aada-40a6-a68c-3f0ab69c0604\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"32349afc-25a6-4743-b05f-19bfdb946dfc\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "24057853-6023-497f-941d-02bbde873199",
+    "payload": {
+      "name": "Executive Facility Operational Emergency",
+      "parentContainer": {
+        "targetUniqueIdentifier": "5b80c054-e71a-4434-a284-dcdb13a6431d"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"02a1c4f2-3a39-4dbd-be04-2eabfd066720\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"8899d38c-f9dc-477e-a014-698c0aeda32d\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"28802e7b-2621-42e3-a4bc-87cafb161daa\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"08f19acb-ee15-442c-9bb6-3ff418d131ba\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[EMERGENCY] Facility Health Critical Breach: Executive Operational Alert\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Facility Health Dropped Below Critical 65.0 Threshold\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Microsoft Fabric Real-Time Intelligence has detected critical facility health degradation. Immediate on-site engineering dispatch required for facility inspection.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"facility_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"facility_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"region\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"region\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"facility_health_score\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"facility_health_score\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"health_status\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"health_status\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"active_critical_alerts\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"active_critical_alerts\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "90f8dfb7-bc4f-4b66-b538-b400476255da",
+    "payload": {
+      "name": "Send Executive Emergency Maildrop",
+      "parameters": [
+        {
+          "key": "facility_name"
+        },
+        {
+          "key": "facility_health_score"
+        },
+        {
+          "key": "health_status"
+        },
+        {
+          "key": "recipient_email"
+        }
+      ]
+    },
+    "type": "powerAutomateFlowAction-v1"
+  },
+  {
+    "uniqueIdentifier": "7cf00d3b-4ad5-46ea-941a-76cbe539d31b",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "226bb080-b8f6-42e3-ba84-7fbc3396a433",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 300
+      },
+      "query": {
+        "queryString": "get_facility_operational_overview(window_minutes = 15)\r\n| where total_power_consumption_kw > 300.0\r\n| project facility_name, total_power_consumption_kw, target_persona = \"Energy Steward\", notification_channel = \"Teams: Energy & Power Monitoring\"\r\n"
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "cf1e4b33-a97c-4b95-963a-f7f2565d9e1f"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "7cf00d3b-4ad5-46ea-941a-76cbe539d31b"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "dba1c5d5-d37a-466a-94c9-51fcaace36b0",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "7cf00d3b-4ad5-46ea-941a-76cbe539d31b"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"e235a8a4-8ecd-4f24-951e-15d3c87f40d8\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"226bb080-b8f6-42e3-ba84-7fbc3396a433\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "adba3cc0-e346-4c3d-9fe4-a3c2ae802044",
+    "payload": {
+      "name": "Facility Power Surge SLA",
+      "parentContainer": {
+        "targetUniqueIdentifier": "7cf00d3b-4ad5-46ea-941a-76cbe539d31b"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"749686d3-3ae2-4326-9e52-2ec2da0d508e\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"dba1c5d5-d37a-466a-94c9-51fcaace36b0\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"41920a18-0b7c-4073-a6cc-cfc67aebb198\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"70fc1443-af9b-474c-b5d0-a0aa1e22f7d2\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[CRITICAL] Facility Power Consumption Surge Warning\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Facility Power Consumption Exceeded 300 kW Limit\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Energy Alert: Total facility power consumption exceeded the 450 kW SLA limit. Shed non-critical LED lighting banks.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"facility_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"facility_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"total_power_consumption_kw\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"total_power_consumption_kw\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "7dc3907b-aa7a-43e0-ab04-0182f9354d14",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "e95e2e2d-5d7c-4999-acb0-6ffa5163eab2",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 300
+      },
+      "query": {
+        "queryString": "get_equipment_critical_anomalies(window_minutes = 15)\n| where alert_required == true\n| project facility_name, equipment_type, critical_failure_count, equipment_risk_score, target_persona = \"Maintenance Supervisor\", notification_channel = \"PagerDuty: Emergency Work Order\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "1b06c869-ef47-4979-a6b6-82f4fe50a485"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "7dc3907b-aa7a-43e0-ab04-0182f9354d14"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "254b33ee-1eb3-4f95-a586-a674e228e115",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "7dc3907b-aa7a-43e0-ab04-0182f9354d14"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"7ea0c2a7-f3d6-4b9a-947d-b49b5016105f\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"e95e2e2d-5d7c-4999-acb0-6ffa5163eab2\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "550c8c78-586c-4659-924d-7f8193a37d21",
+    "payload": {
+      "name": "Critical Equipment Failure Imminent",
+      "parentContainer": {
+        "targetUniqueIdentifier": "7dc3907b-aa7a-43e0-ab04-0182f9354d14"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"50b9938f-9009-4d19-8d75-792c273c34fb\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"254b33ee-1eb3-4f95-a586-a674e228e115\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"cee4fb62-c72e-4383-bafa-e6991ca9c587\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"032f2d71-acdc-472b-9146-8368cd924732\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[EMERGENCY] Equipment Failure Imminent: High Risk Score\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Equipment Degradation Risk Exceeded 75.0% Threshold\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Maintenance Alert: Water pump/HVAC degradation risk score exceeded 75.0% threshold. Immediate field technician dispatch required.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"facility_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"facility_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"equipment_type\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"equipment_type\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"critical_failure_count\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"critical_failure_count\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"equipment_risk_score\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"equipment_risk_score\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "879caeb3-2f36-4fb7-8046-c8c811ec0f17",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "a91089fe-c6e2-4ba1-9a0a-f17625019dbc",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 900
+      },
+      "query": {
+        "queryString": "get_environmental_stress_anomalies(window_minutes = 15)\r\n| where alert_required == true\r\n| project facility_name, zone_id, microclimate_stability_score, avg_temp_drift_c, target_persona = \"Crop Agronomist\", notification_channel = \"Teams: Agronomy Action\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "70ac1807-9f31-4823-b8b7-d8d18e2a6259"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "879caeb3-2f36-4fb7-8046-c8c811ec0f17"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "a91b8953-7ae2-4bd5-995c-93bc8ac92e14",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "879caeb3-2f36-4fb7-8046-c8c811ec0f17"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"c6f6d824-b380-4415-a0dc-0ba9ce4de72b\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"a91089fe-c6e2-4ba1-9a0a-f17625019dbc\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "27885478-b147-405e-8fee-34cfbfcceea2",
+    "payload": {
+      "name": "Micro-Climate Instability & Thermal Drift",
+      "parentContainer": {
+        "targetUniqueIdentifier": "879caeb3-2f36-4fb7-8046-c8c811ec0f17"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"e10e8373-2959-448d-b8b4-d3f3ef510cce\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"a91b8953-7ae2-4bd5-995c-93bc8ac92e14\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"9bb40229-e679-488b-ad09-c9d36cc1d67f\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"7fa4c5a1-3f50-4632-b4bd-bbd0ac96f2ec\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[WARNING] Micro-Climate Stability Drift Detected\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Zone Micro-Climate Stability Dropped Below 70.0%\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Agronomy Alert: Atmospheric stability score dropped below 70.0%. Adjust ventilation fan speeds and fogger misting cycle.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"facility_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"facility_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"zone_id\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"zone_id\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"microclimate_stability_score\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"microclimate_stability_score\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"avg_temp_drift_c\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"avg_temp_drift_c\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "7c2347f2-64e6-4a47-822e-278b8a07dcb4",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "334de0d6-a5db-4e62-a17c-cdf6557108a7",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 900
+      },
+      "query": {
+        "queryString": "get_crop_biological_stress_overview(window_minutes = 15)\r\n| where alert_required == true\r\n| project facility_name, zone_id, crop_type, crop_health_score, biological_stress_pct, target_persona = \"Chief Agronomist\", notification_channel = \"Teams: Crop Health Emergency\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "15de59bc-cb8b-4f24-872c-9bcbaffadede"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "7c2347f2-64e6-4a47-822e-278b8a07dcb4"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "793210f0-9dee-4e0e-aea3-36572edfef0a",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "7c2347f2-64e6-4a47-822e-278b8a07dcb4"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"b34fa365-ae50-44c2-bd59-75a981670c4f\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"334de0d6-a5db-4e62-a17c-cdf6557108a7\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "da1be70b-4cf0-4c2d-b52c-ec8880372883",
+    "payload": {
+      "name": "Crop Biological Stress Spike",
+      "parentContainer": {
+        "targetUniqueIdentifier": "7c2347f2-64e6-4a47-822e-278b8a07dcb4"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"4a8ee069-1954-4a7d-b8d1-7b6928a279f2\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"793210f0-9dee-4e0e-aea3-36572edfef0a\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"190b87a1-e34e-490f-bb63-2ac4cebfe641\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"2959c5bc-fd9e-4a37-a210-bec980202c10\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[CRITICAL] Crop Biological Stress Percentage Spike\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Crop Biological Stress Exceeded 40.0% Threshold\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Chief Agronomist Alert: Crop stress index exceeded 40.0%. Inspect hydroponic nutrient solution EC/pH dosing manifolds.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"facility_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"facility_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"zone_id\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"zone_id\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"crop_type\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"crop_type\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"crop_health_score\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"crop_health_score\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"biological_stress_pct\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"biological_stress_pct\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "0b94ce52-9a6b-4267-a74b-649e1b0e2c0d",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "b74a6565-5841-402d-93b2-46b1f4c5f72b",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 900
+      },
+      "query": {
+        "queryString": "get_maintenance_sla_breach(window_minutes = 15)\r\n| where alert_required == true\r\n| project facility_name, equipment_id, maintenance_type, emergency_order_count, avg_work_order_resolution_minutes, target_persona = \"Maintenance Lead\", notification_channel = \"Teams: Maintenance Dispatch\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "8a539885-1785-4290-aa36-79feace8714b"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "0b94ce52-9a6b-4267-a74b-649e1b0e2c0d"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "4b5ae1ec-e17b-49c2-ac5b-bf109726264e",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "0b94ce52-9a6b-4267-a74b-649e1b0e2c0d"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"96421b04-a042-4fcc-9500-95a29491f4cb\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"b74a6565-5841-402d-93b2-46b1f4c5f72b\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "266e0dce-e784-4ffc-9a94-3d11593397fd",
+    "payload": {
+      "name": "Work Order Resolution SLA Breach",
+      "parentContainer": {
+        "targetUniqueIdentifier": "0b94ce52-9a6b-4267-a74b-649e1b0e2c0d"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"a26b9cb9-b013-40eb-af21-1b8a1ba9dff9\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"4b5ae1ec-e17b-49c2-ac5b-bf109726264e\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"8cb61941-d15f-4f90-af16-c9140b41f321\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"195c89c2-ea4a-49d3-9035-ec2496ab9b45\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[WARNING] Emergency Work Order Resolution SLA Breach\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Average Resolution Time Exceeded 120 Minutes\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Dispatch Alert: Average work order resolution time exceeded 120 minutes. Re-assign pending tickets to Tier 1 technicians.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"facility_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"facility_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"equipment_id\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"equipment_id\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"maintenance_type\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"maintenance_type\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"emergency_order_count\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"emergency_order_count\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"avg_work_order_resolution_minutes\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"avg_work_order_resolution_minutes\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "f6378c11-6e3e-485d-991d-deb7a59fa61d",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "c08488c0-c37d-4fcf-b735-d9532837b6f9",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 300
+      },
+      "query": {
+        "queryString": "get_stream_ingestion_sla(window_minutes = 15)\r\n| where sla_breach_alert == true\r\n| project stream_name, total_ingested_events, avg_processing_lag_sec, max_processing_lag_sec, sla_breach_count, target_persona = \"DataOps Lead\", notification_channel = \"PagerDuty: Stream SLA Incident\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "64249c1d-b658-4c9d-9593-87b792013b02"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "f6378c11-6e3e-485d-991d-deb7a59fa61d"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "3fc05787-d11c-4a28-b5ce-a3659de934bd",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "f6378c11-6e3e-485d-991d-deb7a59fa61d"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"77153847-9e7b-4424-8ac2-692a3caca1ec\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"c08488c0-c37d-4fcf-b735-d9532837b6f9\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "5dacf0ae-4b6c-451e-aac8-c796cabd9b90",
+    "payload": {
+      "name": "Stream Processing Lag SLA Breach",
+      "parentContainer": {
+        "targetUniqueIdentifier": "f6378c11-6e3e-485d-991d-deb7a59fa61d"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"30152869-9dd0-4532-9cd5-8fcdd1b00a91\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"3fc05787-d11c-4a28-b5ce-a3659de934bd\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"8d270c5e-f281-414d-bca7-7843f93bccaf\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"dafac07d-9371-4896-ac12-52942b419f34\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[CRITICAL] DataOps Ingestion Processing Lag SLA Breach\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Stream Ingestion Latency Exceeded 5.0 Seconds SLA Limit\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"DataOps Alert: Stream ingestion processing lag exceeded 5.0 seconds. Verify Eventstream HTTP partition throughput.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"stream_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"stream_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"total_ingested_events\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"total_ingested_events\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"avg_processing_lag_sec\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"avg_processing_lag_sec\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"max_processing_lag_sec\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"max_processing_lag_sec\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"sla_breach_count\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"sla_breach_count\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "92e11e5a-23f2-4dad-8f64-3c1511de9063",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "f4f4b9b9-47a2-4dc9-a932-b75b20961e29",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 900
+      },
+      "query": {
+        "queryString": "get_ingress_data_quality_audit(window_minutes = 15)\r\n| where dq_violation_alert == true\r\n| project stream_name, total_rows, valid_schema_rows, null_facility_count, null_timestamp_count, data_quality_score, target_persona = \"Data Quality Steward\", notification_channel = \"Teams: Ingress DQ Governance Alert\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "48b4dc7e-578f-40e3-9503-b52b3ec06ed3"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "92e11e5a-23f2-4dad-8f64-3c1511de9063"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "dfaa8d9d-d511-4c42-a187-dc1c5ead4d17",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "92e11e5a-23f2-4dad-8f64-3c1511de9063"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"2328f32a-dbcd-4c4d-b09d-ccf4128088a2\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"f4f4b9b9-47a2-4dc9-a932-b75b20961e29\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "1eed9be2-c18c-4f71-a019-ccb02e90ef2e",
+    "payload": {
+      "name": "Ingress Schema Data Quality Breach",
+      "parentContainer": {
+        "targetUniqueIdentifier": "92e11e5a-23f2-4dad-8f64-3c1511de9063"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"79b08593-af22-4120-b2df-e890f46e4426\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"dfaa8d9d-d511-4c42-a187-dc1c5ead4d17\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"a9ca238e-ea97-422a-8ce3-77ba90eeb8c0\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"bb20cbf4-cd39-437d-8cf7-3bc9df436628\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[WARNING] Ingress Data Quality Schema Audit Breach\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Data Quality Schema Violation Detected\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Data Quality Alert: Ingress payload contained null facility or null timestamp fields. Inspect edge gateway serialization.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"stream_name\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"stream_name\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"total_rows\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"total_rows\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"valid_schema_rows\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"valid_schema_rows\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"null_facility_count\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"null_facility_count\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"null_timestamp_count\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"null_timestamp_count\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"data_quality_score\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"data_quality_score\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "41fa6d23-a14b-425d-bae7-dab2246984e6",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "3a30ded9-4aed-4e26-bb1d-eb3ab9e67f1d",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 900
+      },
+      "query": {
+        "queryString": "get_dead_letter_anomaly_rate(window_minutes = 15)\r\n| where alert_required == true\r\n| project event_type, dead_letter_count, target_persona = \"Data Engineer\", notification_channel = \"Teams: DataOps Incidents\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "227357ce-3bdb-4ca1-8435-12c6a3a5c6d1"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "41fa6d23-a14b-425d-bae7-dab2246984e6"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "efa4979c-8c4d-4dfc-9bfd-e3bf5b4c0c5b",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "41fa6d23-a14b-425d-bae7-dab2246984e6"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"4769ebba-63d4-46a7-93f5-c899dc0c5edd\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"3a30ded9-4aed-4e26-bb1d-eb3ab9e67f1d\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "e02ed774-df69-493f-9241-f90340edfb3f",
+    "payload": {
+      "name": "Dead-Letter Queue Anomaly Burst Rate",
+      "parentContainer": {
+        "targetUniqueIdentifier": "41fa6d23-a14b-425d-bae7-dab2246984e6"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"b3d7a181-6d88-41a2-b155-6f07eeac4384\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"efa4979c-8c4d-4dfc-9bfd-e3bf5b4c0c5b\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"17e087c7-804b-4de9-bcba-74374d04b3ca\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"680fac73-c27a-483e-a0f7-397013a7a135\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[CRITICAL] Dead-Letter Queue Exception Burst Rate Spike\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Dead-Letter Queue Exception Count Exceeded 5 Events Threshold\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Data Engineering Alert: Dead-letter queue received high exception volume. Review DeadLetterTelemetry table for deprecated schema logs.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"event_type\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"event_type\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"dead_letter_count\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"dead_letter_count\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "baafc889-7353-4e94-8766-0cadfae416b5",
+    "payload": {
+      "name": "SmartFarming_Operational_Queryset",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "de5ba6da-21df-44c8-98b5-4c6afa054f96",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 300
+      },
+      "query": {
+        "queryString": "get_dead_letter_audit_log(window_minutes = 15)\r\n| where exception_status == \"CRITICAL_MISSING_PRIMARY_KEY\"\r\n| project ingestion_timestamp, event_id, event_type, payload_timestamp, exception_status, target_persona = \"Edge IoT Engineer\", notification_channel = \"PagerDuty: Edge Ingress Emergency\""
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "b4482b92-7e43-4238-b301-b682bf126392",
+        "queryId": "33e69114-f2c8-4e7b-bf86-f1b805481903"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "baafc889-7353-4e94-8766-0cadfae416b5"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "9175325f-0c05-4b0a-b7e1-1614818713e5",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "baafc889-7353-4e94-8766-0cadfae416b5"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"7708f831-7f72-4d0f-af54-df99f5fd989c\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"de5ba6da-21df-44c8-98b5-4c6afa054f96\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "3294a997-ce3c-4112-8345-cdfad3c4f3e8",
+    "payload": {
+      "name": "Critical Missing Primary Key Ingress",
+      "parentContainer": {
+        "targetUniqueIdentifier": "baafc889-7353-4e94-8766-0cadfae416b5"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"23c4f7ad-2d36-4799-93e0-f4839e2a06ea\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"9175325f-0c05-4b0a-b7e1-1614818713e5\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"d470a5d9-64f4-4d27-bf65-e93a2b705b1e\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"d5c9bed0-2299-492e-a95f-5d7d6ed9f34a\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"iosefb@outlook.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"[EMERGENCY] Edge Ingress Payload Missing Primary Key (NULL_FACILITY_ID)\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Ingress Telemetry Received With Missing Primary Key\"}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Edge IoT Security Alert: Telemetry events ingested with missing or null facility_id primary key. Re-issue edge gateway tokens.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"ingestion_timestamp\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"ingestion_timestamp\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"event_id\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"event_id\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"event_type\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"event_type\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"payload_timestamp\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"payload_timestamp\"}],\"name\":\"reference\"}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"exception_status\"},{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"exception_status\"}],\"name\":\"reference\"}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": false,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  }
+]
