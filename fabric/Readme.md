@@ -536,8 +536,7 @@ RECOMMENDED DATAOPS ACTION:
     | project ingestion_timestamp, event_id, event_type, payload_timestamp, exception_status, target_persona = "Edge IoT Engineer", notification_channel = "PagerDuty: Edge Ingress Emergency"
     ```
     > 📸 **Snipped Notification Evidence**:  
-    > *(Save image to `fabric/media/hook10_activator_alert.png` or paste below)*  
-    > `![Hook 10 Alert Notification](media/hook10_activator_alert.png)`
+    ![Hook 10 Alert Notification](media/hook10_activator_alert.png)
 
 ---
 
