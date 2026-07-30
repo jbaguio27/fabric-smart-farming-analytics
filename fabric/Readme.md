@@ -133,11 +133,17 @@ get_environmental_stress_anomalies(window_minutes:int = 15) {
     | extend facility_id_upper = toupper(tostring(facility_id))
     | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
-    | extend vapor_pressure_deficit_kpa = round(raw_vapor_pressure_deficit_kpa, 3), temperature_deviation_celsius = round(raw_temperature_deviation_celsius, 2)
-    | extend microclimate_stability_score = round(max_of(0.0, 100.0 - (abs(temperature_deviation_celsius) * 5.0)), 2)
-    | extend avg_temp_drift_c = temperature_deviation_celsius
+    | extend raw_stability = round(max_of(0.0, 100.0 - (abs(raw_temperature_deviation_celsius) * 5.0)), 2)
+    | summarize 
+        high_stress_event_count = sum(high_stress_event_count),
+        vapor_pressure_deficit_kpa = round(avg(raw_vapor_pressure_deficit_kpa), 3),
+        temperature_deviation_celsius = round(avg(raw_temperature_deviation_celsius), 2),
+        microclimate_stability_score = round(avg(raw_stability), 2),
+        avg_temp_drift_c = round(avg(raw_temperature_deviation_celsius), 2),
+        last_updated_timestamp = max(last_updated_timestamp)
+        by facility_id, facility_name, zone_id
     | extend alert_required = (high_stress_event_count > 0 or microclimate_stability_score < 70.0)
-    | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, microclimate_stability_score, avg_temp_drift_c, alert_required, last_updated_timestamp
+    | project facility_id, facility_name, zone_id, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, microclimate_stability_score, avg_temp_drift_c, alert_required, last_updated_timestamp
     | order by zone_id asc
 }
 
