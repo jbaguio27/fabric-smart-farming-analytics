@@ -781,3 +781,26 @@ In Microsoft Fabric Eventhouse (SaaS Managed Capacity), data extent partitioning
   ```kql
   .show table EnvironmentalTelemetry policy partitioning
   ```
+
+---
+
+### 11. Milestone 5.1: Medallion Lakehouse Architecture & OneLake Shortcuts
+
+The platform provisions **`SmartFarming_Lakehouse`** powering the **Cold Path (Historical Analytics & PySpark Engineering)**.
+
+#### 🏛️ Medallion Custom Schema Design (`SmartFarming_Lakehouse`)
+- **`bronze` Schema**: Raw, append-only immutable Delta tables populated from OneLake Shortcuts.
+- **`silver` Schema**: Cleansed, deduplicated, schema-enforced, and enriched with Philippine facility master data.
+- **`gold` Schema**: Production Kimball Star Schema (Fact and Dimension Delta tables for Direct Lake Power BI modeling).
+
+#### 🔗 OneLake Shortcuts (Bronze Layer Data Virtualization)
+The platform provisions 9 Zero-Copy OneLake Shortcuts linking `SmartFarmingKQLDB` tables directly into `SmartFarming_Lakehouse`:
+1. `CropLifecycle` (Crop strain & harvest master)
+2. `CropTelemetry` (Raw crop health telemetry)
+3. `DeadLetterTelemetry` (Ingress exception audit log)
+4. `EnvironmentalTelemetry` (Raw micro-climate telemetry)
+5. `EquipmentTelemetry` (Raw equipment risk telemetry)
+6. `FacilityOperations` (Philippine facility master)
+7. `IrrigationTelemetry` (Raw hydraulic flow telemetry)
+8. `LightingTelemetry` (Raw photoperiod telemetry)
+9. `MaintenanceActivity` (Emergency work order logs)
