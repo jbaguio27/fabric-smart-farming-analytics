@@ -459,7 +459,7 @@ RECOMMENDED DATAOPS ACTION:
 2. **Facility Power Surge SLA Hook** *(Teams: Energy & Power Monitoring)*:
    ```kql
    get_facility_operational_overview(window_minutes = 15)
-   | where total_power_consumption_kw > 450.0
+   | where total_power_consumption_kw > 300.0
    | project facility_name, total_power_consumption_kw, target_persona = "Energy Steward", notification_channel = "Teams: Energy & Power Monitoring"
    ```
    > 📸 **Snipped Notification Evidence**:  
