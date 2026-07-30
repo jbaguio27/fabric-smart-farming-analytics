@@ -130,11 +130,14 @@ get_equipment_critical_anomalies(window_minutes:int = 15) {
 get_environmental_stress_anomalies(window_minutes:int = 15) {
     materialized_view_environmental_stress
     | where last_updated_timestamp > ago(window_minutes * 1m)
-    | where high_stress_event_count > 0
-    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | extend facility_id_upper = toupper(tostring(facility_id))
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
     | extend vapor_pressure_deficit_kpa = round(raw_vapor_pressure_deficit_kpa, 3), temperature_deviation_celsius = round(raw_temperature_deviation_celsius, 2)
-    | extend alert_required = (high_stress_event_count > 0)
-    | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, alert_required, last_updated_timestamp
+    | extend microclimate_stability_score = round(max_of(0.0, 100.0 - (abs(temperature_deviation_celsius) * 5.0)), 2)
+    | extend avg_temp_drift_c = temperature_deviation_celsius
+    | extend alert_required = (high_stress_event_count > 0 or microclimate_stability_score < 70.0)
+    | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, microclimate_stability_score, avg_temp_drift_c, alert_required, last_updated_timestamp
 }
 
 // 4. get_irrigation_hydraulic_anomalies (Enriched with facility_name)
