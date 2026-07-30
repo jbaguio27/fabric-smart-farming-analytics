@@ -119,7 +119,8 @@ get_equipment_critical_anomalies(window_minutes:int = 15) {
     materialized_view_equipment_risk
     | where last_updated_timestamp > ago(window_minutes * 1m)
     | where critical_failure_count > 0
-    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_id)
     | extend equipment_health_score = round(raw_equipment_health_score, 2), failure_probability_score = round(raw_failure_probability_score, 4), equipment_risk_score = round(raw_equipment_risk_score, 2)
     | extend alert_required = (critical_failure_count > 0)
     | project facility_id, facility_name, equipment_type, critical_failure_count, equipment_health_score, failure_probability_score, equipment_risk_score, alert_required, last_updated_timestamp
@@ -130,20 +131,12 @@ get_equipment_critical_anomalies(window_minutes:int = 15) {
 get_environmental_stress_anomalies(window_minutes:int = 15) {
     materialized_view_environmental_stress
     | where last_updated_timestamp > ago(window_minutes * 1m)
-    | extend facility_id_upper = toupper(tostring(facility_id))
-    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | where high_stress_event_count > 0
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id == $right.facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
-    | summarize 
-        high_stress_event_count = sum(high_stress_event_count),
-        vapor_pressure_deficit_kpa = round(avg(raw_vapor_pressure_deficit_kpa), 3),
-        temperature_deviation_celsius = round(avg(raw_temperature_deviation_celsius), 2),
-        last_updated_timestamp = max(last_updated_timestamp)
-        by facility_id, facility_name, zone_id
-    | extend microclimate_stability_score = round(max_of(65.0, 100.0 - (abs(temperature_deviation_celsius) * 2.5)), 1)
-    | extend avg_temp_drift_c = temperature_deviation_celsius
-    | extend alert_required = (high_stress_event_count > 0 or microclimate_stability_score < 75.0)
-    | project facility_id, facility_name, zone_id, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, microclimate_stability_score, avg_temp_drift_c, alert_required, last_updated_timestamp
-    | order by zone_id asc
+    | extend vapor_pressure_deficit_kpa = round(raw_vapor_pressure_deficit_kpa, 3), temperature_deviation_celsius = round(raw_temperature_deviation_celsius, 2)
+    | extend alert_required = (high_stress_event_count > 0)
+    | project facility_id, facility_name, zone_id, sensor_type, high_stress_event_count, vapor_pressure_deficit_kpa, temperature_deviation_celsius, alert_required, last_updated_timestamp
 }
 
 // 4. get_crop_biological_stress_overview (Enriched with facility_name)
@@ -151,14 +144,11 @@ get_environmental_stress_anomalies(window_minutes:int = 15) {
 get_crop_biological_stress_overview(window_minutes:int = 15) {
     materialized_view_crop_biological_stress
     | where last_updated_timestamp > ago(window_minutes * 1m)
-    | extend facility_id_upper = toupper(tostring(facility_id))
-    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id == $right.facility_id
     | extend facility_name = coalesce(facility_name, facility_id)
-    | extend crop_health_score = round(raw_crop_health_score, 1), raw_stress = iff(raw_biological_stress_index > 1.0, raw_biological_stress_index, raw_biological_stress_index * 100.0)
-    | extend biological_stress_pct = strcat(tostring(round(min_of(100.0, max_of(0.0, raw_stress)), 1)), "%")
-    | extend daily_growth_rate_g_day = strcat(tostring(round(raw_growth_rate, 3)), " g/day")
-    | extend alert_required = (high_crop_stress_count > 0 or raw_stress > 40.0)
-    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate_g_day, biological_stress_pct, high_crop_stress_count, alert_required, last_updated_timestamp
+    | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_index = round(raw_biological_stress_index, 3)
+    | extend alert_required = (high_crop_stress_count > 0 or biological_stress_index > 0.45)
+    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate, total_biomass_grams, biological_stress_index, high_crop_stress_count, alert_required, last_updated_timestamp
 }
 
 // 5. get_irrigation_hydraulic_anomalies (Enriched with facility_name)
