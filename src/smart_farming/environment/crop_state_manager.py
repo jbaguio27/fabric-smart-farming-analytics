@@ -841,17 +841,42 @@ class CropStateManager:
             return CROP_STAGE_HARVESTED
 
         return None
-# ------------------------------------------------------------------
-# Lifecycle simulation methods will be introduced in the next phase.
-#
-# Upcoming responsibilities include:
-#
-#   • Lifecycle stage transitions
-#   • Crop aging
-#   • Environmental influence
-#   • Equipment influence
-#   • Harvest readiness evaluation
-#
-# This phase intentionally introduces no simulation behavior to
-# minimize regression risk.
-# ------------------------------------------------------------------
+
+    def export_state_dict(self) -> dict[str, dict]:
+        """
+        Export current active crop states as a dictionary snapshot for state persistence.
+        """
+        snapshot = {}
+        for batch_id, state in self._states.items():
+            snapshot[batch_id] = {
+                "crop_batch_id": state.crop_batch_id,
+                "zone_id": state.zone_id,
+                "crop_type": state.crop_type,
+                "lifecycle_stage": state.lifecycle_stage,
+                "age_days": state.age_days,
+                "health_score": state.health_score,
+                "growth_rate": state.growth_rate,
+                "biomass_grams": state.biomass_grams,
+                "water_uptake_liters": state.water_uptake_liters,
+                "nutrient_uptake_grams": state.nutrient_uptake_grams,
+                "stress_index": state.stress_index,
+                "is_active": state.is_active,
+            }
+        return snapshot
+
+    def load_state_dict(self, snapshot_data: dict[str, dict]) -> None:
+        """
+        Restore crop states from a dictionary snapshot.
+        """
+        for batch_id, data in snapshot_data.items():
+            if batch_id in self._states:
+                state = self._states[batch_id]
+                state.lifecycle_stage = data.get("lifecycle_stage", state.lifecycle_stage)
+                state.age_days = float(data.get("age_days", state.age_days))
+                state.health_score = float(data.get("health_score", state.health_score))
+                state.growth_rate = float(data.get("growth_rate", state.growth_rate))
+                state.biomass_grams = float(data.get("biomass_grams", state.biomass_grams))
+                state.water_uptake_liters = float(data.get("water_uptake_liters", state.water_uptake_liters))
+                state.nutrient_uptake_grams = float(data.get("nutrient_uptake_grams", state.nutrient_uptake_grams))
+                state.stress_index = float(data.get("stress_index", state.stress_index))
+                state.is_active = bool(data.get("is_active", state.is_active))

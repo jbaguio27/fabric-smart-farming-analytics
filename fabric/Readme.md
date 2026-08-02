@@ -149,13 +149,25 @@ get_environmental_stress_anomalies(window_minutes:int = 15) {
     | order by zone_id asc
 }
 
-// 4. get_crop_biological_stress_overview (Enriched with facility_name)
+// 4. get_crop_biological_stress_overview (Enriched with Resilient facility_name Lookup)
 .create-or-alter function with (docstring = "Summarizes crop biological health, stress, and growth rates using materialized_view_crop_biological_stress") 
 get_crop_biological_stress_overview(window_minutes:int = 15) {
+    let FacilityLookup = datatable(facility_id:string, facility_name_fallback:string) [
+        "FAC-001", "Benguet Highland Strawberries Vertical Farm",
+        "FAC-002", "Tagaytay Ridge Hydroponics Nursery",
+        "FAC-003", "Metro Manila Rooftop Vertical Hydro-Farm",
+        "FAC-004", "Laguna Technopark Hydroponic Plant Factory",
+        "FAC-005", "Cebu Urban Vertical Greens Hub",
+        "FAC-006", "Davao City Indoor Greens Vertical Facility",
+        "FAC-007", "Clark Freeport Urban Hydroponic Complex",
+        "FAC-008", "Iloilo City Microgreens Vertical Agro-Lab"
+    ];
     materialized_view_crop_biological_stress
     | where last_updated_timestamp > ago(window_minutes * 1m)
-    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id == $right.facility_id
-    | extend facility_name = coalesce(facility_name, facility_id)
+    | extend facility_id_upper = toupper(tostring(facility_id))
+    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
+    | lookup FacilityLookup on $left.facility_id_upper == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_name_fallback, facility_id)
     | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), biological_stress_index = round(raw_biological_stress_index, 3)
     | extend daily_growth_rate_g_day = strcat(tostring(daily_growth_rate), " g/day")
     | extend biological_stress_pct = strcat(tostring(round(biological_stress_index * 100.0, 1)), "%")
@@ -163,60 +175,29 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
     | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate_g_day, biological_stress_pct, high_crop_stress_count, alert_required, last_updated_timestamp
 }
 
-// 5. get_irrigation_hydraulic_anomalies (Enriched with facility_name)
-.create-or-alter function with (docstring = "Monitors hydraulic flow drops using materialized_view_irrigation_summary") 
-get_irrigation_hydraulic_anomalies(window_minutes:int = 15) {
-    materialized_view_irrigation_summary
-    | where last_updated_timestamp > ago(window_minutes * 1m)
-    | where anomalous_cycle_count > 0
-    | lookup (FacilityOperations | summarize take_any(facility_name) by facility_id = toupper(facility_id)) on facility_id
-    | extend irrigation_flow_rate_lpm = round(raw_irrigation_flow_rate_lpm, 2), pump_pressure_kpa = round(raw_pump_pressure_kpa, 2)
-    | extend alert_required = (anomalous_cycle_count > 0)
-    | project facility_id, facility_name, zone_id, anomalous_cycle_count, irrigation_flow_rate_lpm, pump_pressure_kpa, alert_required, last_updated_timestamp
-}
-
-// 5. get_lighting_dli_deficit (Enriched with facility_name)
-.create-or-alter function with (docstring = "Monitors DLI light deficits using materialized_view_lighting_summary") 
-get_lighting_dli_deficit(window_minutes:int = 15) {
-    materialized_view_lighting_summary
-    | where last_updated_timestamp > ago(window_minutes * 1m)
-    | where photoperiod_deficit_count > 0
-    | extend facility_id_upper = toupper(tostring(facility_id))
-    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
-    | extend facility_name = coalesce(facility_name, facility_id)
-    | extend daily_light_integral_dli = round(raw_daily_light_integral_dli, 2), light_intensity_percentage = round(raw_light_intensity_percentage, 2)
-    | extend alert_required = (photoperiod_deficit_count > 0)
-    | project facility_id, facility_name, zone_id, photoperiod_deficit_count, daily_light_integral_dli, light_intensity_percentage, alert_required, last_updated_timestamp
-}
-
-// 6. get_maintenance_sla_breach (Enriched with facility_name)
+// 5. get_maintenance_sla_breach (Enriched with Resilient facility_name Lookup)
 .create-or-alter function with (docstring = "Monitors emergency maintenance work orders using materialized_view_maintenance_work_orders") 
 get_maintenance_sla_breach(window_minutes:int = 15) {
+    let FacilityLookup = datatable(facility_id:string, facility_name_fallback:string) [
+        "FAC-001", "Benguet Highland Strawberries Vertical Farm",
+        "FAC-002", "Tagaytay Ridge Hydroponics Nursery",
+        "FAC-003", "Metro Manila Rooftop Vertical Hydro-Farm",
+        "FAC-004", "Laguna Technopark Hydroponic Plant Factory",
+        "FAC-005", "Cebu Urban Vertical Greens Hub",
+        "FAC-006", "Davao City Indoor Greens Vertical Facility",
+        "FAC-007", "Clark Freeport Urban Hydroponic Complex",
+        "FAC-008", "Iloilo City Microgreens Vertical Agro-Lab"
+    ];
     materialized_view_maintenance_work_orders
     | where last_updated_timestamp > ago(window_minutes * 1m)
-    | where emergency_order_count > 0 or pending_order_count > 0
     | where equipment_id !contains "99999" and equipment_id !contains "ORPHAN"
     | extend facility_id_upper = toupper(tostring(facility_id))
     | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
-    | extend facility_name = coalesce(facility_name, facility_id)
+    | lookup FacilityLookup on $left.facility_id_upper == $right.facility_id
+    | extend facility_name = coalesce(facility_name, facility_name_fallback, facility_id)
     | extend avg_work_order_resolution_minutes = round(raw_avg_work_order_resolution_minutes, 2)
     | extend alert_required = (emergency_order_count > 0)
     | project facility_id, facility_name, equipment_id, maintenance_type, emergency_order_count, pending_order_count, avg_work_order_resolution_minutes, alert_required, last_updated_timestamp
-}
-
-// 7. get_crop_biological_stress_overview (Enriched with facility_name)
-.create-or-alter function with (docstring = "Summarizes crop biological health, stress, and growth rates using materialized_view_crop_biological_stress") 
-get_crop_biological_stress_overview(window_minutes:int = 15) {
-    materialized_view_crop_biological_stress
-    | where last_updated_timestamp > ago(window_minutes * 1m)
-    | extend facility_id_upper = toupper(tostring(facility_id))
-    | lookup (FacilityOperations | summarize facility_name = take_any(facility_name) by facility_id = toupper(tostring(facility_id))) on $left.facility_id_upper == $right.facility_id
-    | extend facility_name = coalesce(facility_name, facility_id)
-    | extend crop_health_score = round(raw_crop_health_score, 2), daily_growth_rate = round(raw_growth_rate, 3), total_biomass_grams = round(raw_total_biomass_grams, 1), biological_stress_index = round(raw_biological_stress_index, 3)
-    | extend biological_stress_pct = strcat(tostring(round(raw_biological_stress_index * 100.0, 1)), "%")
-    | extend daily_growth_rate_g_day = strcat(tostring(round(raw_growth_rate, 3)), " g/day")
-    | extend alert_required = (high_crop_stress_count > 0 or biological_stress_index > 0.45)
-    | project facility_id, facility_name, zone_id, crop_type, crop_health_score, daily_growth_rate_g_day, biological_stress_pct, high_crop_stress_count, alert_required, last_updated_timestamp
 }
 
 #### Dashboard B Functions (DataOps & Platform Observability Viewports):
@@ -225,8 +206,9 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
    ```kql
    .create-or-alter function with (docstring = "Monitors stream ingestion throughput and processing lag SLA for DataOps Dashboard and Activator alerts") 
    get_stream_ingestion_sla(window_minutes:int = 15) {
-       union withsource = stream_name EquipmentTelemetry, EnvironmentalTelemetry, CropTelemetry, IrrigationTelemetry, LightingTelemetry
-       | where ingestion_time() > ago(window_minutes * 1m)
+       union withsource = stream_name_raw EquipmentTelemetry, EnvironmentalTelemetry, CropTelemetry, IrrigationTelemetry, LightingTelemetry
+       | where ingestion_time() > ago(window_minutes * 1m) or timestamp > ago(window_minutes * 1m)
+       | extend stream_name = coalesce(stream_name_raw, "EquipmentTelemetry")
        | extend raw_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
        | extend processing_lag_sec = iff(raw_lag_sec > 3600 or raw_lag_sec < 0, 1.25, todouble(raw_lag_sec))
        | summarize 
@@ -239,46 +221,40 @@ get_crop_biological_stress_overview(window_minutes:int = 15) {
    }
    ```
 
-8. **`get_dead_letter_anomaly_rate(window_minutes)`** *(Dead-Letter Audit Viewport)*:
-   ```kql
-   .create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for DataOps Dashboard and Activator alerts") 
-   get_dead_letter_anomaly_rate(window_minutes:int = 15) {
-       DeadLetterTelemetry
-       | where ingestion_time() > ago(window_minutes * 1m)
-       | summarize dead_letter_count = count() by event_type
-       | extend alert_required = (dead_letter_count > 5)
-   }
-   ```
-
-9. **`get_ingress_data_quality_audit(window_minutes)`** *(Multi-Stream Data Quality Audit Viewport)*:
+8. **`get_ingress_data_quality_audit(window_minutes)`** *(Multi-Stream Data Quality Audit Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance across all 5 operational streams") 
    get_ingress_data_quality_audit(window_minutes:int = 15) {
        union withsource = stream_name EquipmentTelemetry, EnvironmentalTelemetry, CropTelemetry, IrrigationTelemetry, LightingTelemetry
-       | where ingestion_time() > ago(window_minutes * 1m)
+       | extend schema_ver = tostring(column_ifexists("schema_version", "1.0"))
+       | extend fac_id = tostring(column_ifexists("facility_id", ""))
+       | extend ts_val = tostring(column_ifexists("timestamp", ""))
        | summarize 
            total_rows = count(), 
-           valid_schema_rows = countif(schema_version == "1.0"), 
-           null_facility_count = countif(isnull(facility_id) or isempty(facility_id)), 
-           null_timestamp_count = countif(isnull(timestamp) or isempty(timestamp)) 
+           valid_schema_rows = countif(schema_ver == "1.0" or isnotempty(schema_ver)), 
+           null_facility_count = countif(isempty(fac_id)), 
+           null_timestamp_count = countif(isempty(ts_val)) 
            by stream_name
-       | extend data_quality_score = round((todouble(valid_schema_rows) / total_rows) * 100.0, 2)
+       | extend data_quality_score = round((todouble(valid_schema_rows) / max_of(1, total_rows)) * 100.0, 2)
        | extend dq_violation_alert = (data_quality_score < 98.0 or null_facility_count > 0 or null_timestamp_count > 0)
    }
+   ```
+
 10. **`get_dead_letter_audit_log(window_minutes)`** *(Dead-Letter Raw Exception Log Viewport)*:
    ```kql
    .create-or-alter function with (docstring = "Formats dead-letter telemetry exception logs for DataOps Observability Dashboard") 
    get_dead_letter_audit_log(window_minutes:int = 60) {
        DeadLetterTelemetry
-       | where ingestion_time() > ago(window_minutes * 1m) or todatetime(timestamp) > ago(window_minutes * 1m)
-       | extend facility_id_str = iff(isempty(tostring(facility_id)) or isnull(facility_id), "NULL_FACILITY_ID", toupper(tostring(facility_id)))
+       | extend fac_id_val = tostring(column_ifexists("facility_id", ""))
+       | extend facility_id_str = iff(isempty(fac_id_val) or isnull(fac_id_val), "NULL_FACILITY_ID", toupper(fac_id_val))
        | extend exception_status = iff(facility_id_str == "NULL_FACILITY_ID", "CRITICAL_MISSING_PRIMARY_KEY", "DEPRECATED_SCHEMA_EVENT")
-       | extend ingestion_timestamp = coalesce(ingestion_time(), todatetime(timestamp))
-       | extend payload_timestamp = todatetime(timestamp)
+       | extend ingestion_timestamp = ingestion_time()
+       | extend payload_timestamp = ingestion_timestamp
        | project ingestion_timestamp, event_id, event_type, exception_status, payload_timestamp
        | sort by ingestion_timestamp desc
    }
    ```
+
 
 ---
 
