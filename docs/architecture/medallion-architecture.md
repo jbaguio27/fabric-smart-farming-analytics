@@ -2,15 +2,15 @@
 
 ## Document Information
 
-| Attribute | Value |
-|-----------|--------|
-| Project | Microsoft Fabric Smart Farming Analytics Platform |
-| Company | HydroGrow Solutions |
-| Epic | Epic 1 – Project Planning & Solution Architecture |
-| Version | 1.0 |
-| Status | Approved |
-| Author | Joseph Baguio |
-| Last Updated | 2026-07-12 |
+| Attribute    | Value                                             |
+| ------------ | ------------------------------------------------- |
+| Project      | Microsoft Fabric Smart Farming Analytics Platform |
+| Company      | HydroGrow Solutions                               |
+| Epic         | Epic 1 – Project Planning & Solution Architecture |
+| Version      | 1.0                                               |
+| Status       | Approved                                          |
+| Author       | Joseph Baguio                                     |
+| Last Updated | 2026-07-12                                        |
 
 ---
 
@@ -200,6 +200,10 @@ This layer implements the Kimball dimensional model adopted throughout the Smart
 - Support historical reporting.
 - Provide semantic datasets for Power BI.
 
+## Gold Layer Star Constellation ERD
+
+![Gold Star Constellation Schema ERD](../../architecture/diagrams/gold_star_schema_erd.png)
+
 ## Fact Tables
 
 - fact_sensor_telemetry
@@ -249,22 +253,22 @@ The Warehouse provides optimized SQL access for Power BI and downstream analytic
 
 # Layer Responsibilities
 
-| Layer | Primary Purpose | Transformation | Consumers |
-|--------|-----------------|----------------|-----------|
-| Bronze | Raw telemetry storage | None | Spark Notebooks |
-| Silver | Validated operational data | Cleansing and standardization | Spark Notebooks |
-| Gold | Business-ready analytical data | Business rules and dimensional modeling | Fabric Warehouse |
+| Layer  | Primary Purpose                | Transformation                          | Consumers        |
+| ------ | ------------------------------ | --------------------------------------- | ---------------- |
+| Bronze | Raw telemetry storage          | None                                    | Spark Notebooks  |
+| Silver | Validated operational data     | Cleansing and standardization           | Spark Notebooks  |
+| Gold   | Business-ready analytical data | Business rules and dimensional modeling | Fabric Warehouse |
 
 ---
 
 # Data Ownership
 
-| Layer | Owner | Purpose |
-|--------|--------|----------|
-| Bronze | Data Engineering | Raw telemetry preservation |
-| Silver | Data Engineering | Validated operational datasets |
-| Gold | Analytics Engineering | Business-ready analytical datasets |
-| Fabric Warehouse | BI Team | Enterprise reporting and semantic models |
+| Layer            | Owner                 | Purpose                                  |
+| ---------------- | --------------------- | ---------------------------------------- |
+| Bronze           | Data Engineering      | Raw telemetry preservation               |
+| Silver           | Data Engineering      | Validated operational datasets           |
+| Gold             | Analytics Engineering | Business-ready analytical datasets       |
+| Fabric Warehouse | BI Team               | Enterprise reporting and semantic models |
 
 ---
 
