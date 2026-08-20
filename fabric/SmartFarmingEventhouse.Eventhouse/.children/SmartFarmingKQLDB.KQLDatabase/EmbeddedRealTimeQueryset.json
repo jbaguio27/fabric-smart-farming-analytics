@@ -12,7 +12,7 @@
     "tabs": [
       {
         "id": "3e23d41f-1dcf-4528-aba8-35593d09ae7c",
-        "content": "",
+        "content": ".create-or-alter function with (docstring = \"Formats dead-letter telemetry exception logs for DataOps Observability Dashboard\") \nget_dead_letter_audit_log(window_minutes:int = 60) {\n    DeadLetterTelemetry\n    | extend fac_id_val = tostring(column_ifexists(\"facility_id\", \"\"))\n    | extend facility_id_str = iff(isempty(fac_id_val) or isnull(fac_id_val), \"NULL_FACILITY_ID\", toupper(fac_id_val))\n    | extend exception_status = iff(facility_id_str == \"NULL_FACILITY_ID\", \"CRITICAL_MISSING_PRIMARY_KEY\", \"DEPRECATED_SCHEMA_EVENT\")\n    | extend ingestion_timestamp = ingestion_time()\n    | extend payload_timestamp = ingestion_timestamp\n    | project ingestion_timestamp, event_id, event_type, exception_status, payload_timestamp\n    | sort by ingestion_timestamp desc\n}",
         "title": "",
         "dataSourceId": "7e5d1dd6-d10d-4fe6-af14-aaceb69ebafd"
       }
