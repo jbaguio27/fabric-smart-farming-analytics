@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "SemanticModel_SmartFarming_Gold"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8f81216f-cfef-93d2-4300-d2f6510bca16"
+  }
+}

@@ -1,0 +1,217 @@
+table dim_facility
+	lineageTag: 219f2ddc-ece0-4cfd-9d21-b14e1dab95ef
+	sourceLineageTag: [gold].[dim_facility]
+
+	column facility_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 79eb2652-5b9a-40a1-8cd9-9a3a09f68cc9
+		sourceLineageTag: facility_key
+		summarizeBy: none
+		sourceColumn: facility_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column facility_id
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 546dd172-51a5-4593-96ed-ce939207d733
+		sourceLineageTag: facility_id
+		summarizeBy: none
+		sourceColumn: facility_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column facility_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: a6cd21ca-47ea-4245-b8c5-413a4fcdfcea
+		sourceLineageTag: facility_name
+		summarizeBy: none
+		sourceColumn: facility_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: da4c7cf6-7e61-4bde-a89d-eca9679a3fd5
+		sourceLineageTag: region
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 67d32417-1db6-4c60-a8a2-33bc4453d228
+		sourceLineageTag: city
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column latitude
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 943b44c7-7a59-4c6e-b786-662abd10fd85
+		sourceLineageTag: latitude
+		summarizeBy: sum
+		sourceColumn: latitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column longitude
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 7d7661fd-2d6a-4d08-abf7-adce3a35e10e
+		sourceLineageTag: longitude
+		summarizeBy: sum
+		sourceColumn: longitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column elevation_m
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 79378fcb-ec54-429e-af67-419aef802664
+		sourceLineageTag: elevation_m
+		summarizeBy: sum
+		sourceColumn: elevation_m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column climate_zone
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: a442c5ec-13ef-44a2-b3bc-da5b777cb597
+		sourceLineageTag: climate_zone
+		summarizeBy: none
+		sourceColumn: climate_zone
+
+		annotation SummarizationSetBy = Automatic
+
+	column water_source
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: f3f483af-5e44-4f68-a027-bfe5073c6f73
+		sourceLineageTag: water_source
+		summarizeBy: none
+		sourceColumn: water_source
+
+		annotation SummarizationSetBy = Automatic
+
+	column power_grid_redundancy
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 9dd59c5c-5ddd-4e3f-8b6f-1f526f45dd70
+		sourceLineageTag: power_grid_redundancy
+		summarizeBy: none
+		sourceColumn: power_grid_redundancy
+
+		annotation SummarizationSetBy = Automatic
+
+	column max_zone_capacity
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: adb0cba9-bb23-4977-8de6-73f011979d4d
+		sourceLineageTag: max_zone_capacity
+		summarizeBy: sum
+		sourceColumn: max_zone_capacity
+
+		annotation SummarizationSetBy = Automatic
+
+	column operator_contact
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 651402d2-85db-4335-a630-c24bbcc220ce
+		sourceLineageTag: operator_contact
+		summarizeBy: none
+		sourceColumn: operator_contact
+
+		annotation SummarizationSetBy = Automatic
+
+	column attr_hash
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: c479612d-e550-4045-a673-5e1babcbe894
+		sourceLineageTag: attr_hash
+		summarizeBy: sum
+		sourceColumn: attr_hash
+
+		annotation SummarizationSetBy = Automatic
+
+	column effective_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 8f7053ae-fb55-4b37-9594-0fdc32eafe61
+		sourceLineageTag: effective_date
+		summarizeBy: none
+		sourceColumn: effective_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column expiration_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: c14c7969-1185-4d10-af80-7d4d61d47161
+		sourceLineageTag: expiration_date
+		summarizeBy: none
+		sourceColumn: expiration_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_current
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: 676741dc-b580-42e9-acc2-f584439c9543
+		sourceLineageTag: is_current
+		summarizeBy: none
+		sourceColumn: is_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: fe5e371b-a17c-4592-b245-c830dc0043cb
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 549241c4-e940-4031-aee5-01eb3fd72f77
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_facility = entity
+		mode: directLake
+		source
+			entityName: dim_facility
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,92 @@
+relationship fc04b6d4-bbea-f511-fe88-cddd93e55edf
+	fromColumn: fact_environmental_daily.date_key
+	toColumn: dim_date.date_key
+
+relationship b297ec4d-6ec9-51b1-23a9-eb30c312db5c
+	fromColumn: fact_equipment_telemetry.date_key
+	toColumn: dim_date.date_key
+
+relationship b7529653-a898-2759-82b0-a2f283a44f1d
+	fromColumn: fact_irrigation_daily.date_key
+	toColumn: dim_date.date_key
+
+relationship 3f59e577-f257-0f97-f828-78d9777f1160
+	fromColumn: fact_lighting_dli_daily.date_key
+	toColumn: dim_date.date_key
+
+relationship 53c8a034-7c92-633a-50df-9ad2ae2985e2
+	fromColumn: fact_maintenance_sla.date_key
+	toColumn: dim_date.date_key
+
+relationship 77638a8a-3629-be2c-9eff-37f9b5266b9f
+	fromColumn: fact_dead_letter_governance.date_key
+	toColumn: dim_date.date_key
+
+relationship a9c06f9e-eef5-d719-a760-8d40918f4179
+	fromColumn: fact_environmental_daily.facility_key
+	toColumn: dim_facility.facility_key
+
+relationship 923f8204-b25a-602c-6b82-723572521c0f
+	fromColumn: fact_equipment_telemetry.facility_key
+	toColumn: dim_facility.facility_key
+
+relationship 28fd620b-d255-5d33-8699-9c3eac62e69e
+	fromColumn: fact_crop_yield.facility_key
+	toColumn: dim_facility.facility_key
+
+relationship 30311331-75fc-031f-9c50-0087d81f8cd6
+	fromColumn: fact_irrigation_daily.facility_key
+	toColumn: dim_facility.facility_key
+
+relationship 513d4cb8-dd71-5f0e-a4c2-22be98723999
+	fromColumn: fact_lighting_dli_daily.facility_key
+	toColumn: dim_facility.facility_key
+
+relationship 07bd607b-35c1-468b-0569-c812cd51382d
+	fromColumn: fact_maintenance_sla.facility_key
+	toColumn: dim_facility.facility_key
+
+relationship 02e0e146-e5d0-08ed-6004-d62d1a37c1e8
+	fromColumn: fact_crop_yield.date_key
+	toColumn: dim_date.date_key
+
+relationship 23136fc6-23bc-4fff-ef45-9face5ac6fcf
+	fromColumn: fact_environmental_daily.zone_key
+	toColumn: dim_zone.zone_key
+
+relationship 426c8408-2232-89b5-8adb-e3618bf60032
+	fromColumn: fact_equipment_telemetry.zone_key
+	toColumn: dim_zone.zone_key
+
+relationship e75011c5-b7a6-10a0-a22f-22d657f96739
+	fromColumn: fact_crop_yield.zone_key
+	toColumn: dim_zone.zone_key
+
+relationship bd7dce48-7bd2-8efd-8b19-44f18b53396d
+	fromColumn: fact_irrigation_daily.zone_key
+	toColumn: dim_zone.zone_key
+
+relationship 854cbd47-76f3-16af-84a3-369583e7f40f
+	fromColumn: fact_lighting_dli_daily.zone_key
+	toColumn: dim_zone.zone_key
+
+relationship ddca5372-8a87-21e2-7f2f-31935b4441e2
+	fromColumn: fact_maintenance_sla.zone_key
+	toColumn: dim_zone.zone_key
+
+relationship 8183bc05-8ecd-5fee-f29d-debba149cbb3
+	fromColumn: fact_equipment_telemetry.equipment_key
+	toColumn: dim_equipment.equipment_key
+
+relationship 1f0a2aaa-23e7-8036-bfee-562157dfc9bf
+	fromColumn: fact_maintenance_sla.equipment_key
+	toColumn: dim_equipment.equipment_key
+
+relationship c3ac3b0d-824f-38dd-39e8-14e627e88175
+	fromColumn: fact_crop_yield.crop_key
+	toColumn: dim_crop.crop_key
+
+relationship ae9318ac-fa23-2e1d-ac7a-afc893daf3b7
+	fromColumn: fact_maintenance_sla.technician_key
+	toColumn: dim_technician.technician_key
+

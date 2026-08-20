@@ -1,0 +1,182 @@
+table fact_maintenance_sla
+	lineageTag: 0d0d3e29-5f62-49fc-9dac-ae0c7a94222d
+	sourceLineageTag: [gold].[fact_maintenance_sla]
+
+	column date_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: ca960aaf-2cf5-4e5d-8a64-be99552983a2
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column facility_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 3fb887ea-67c0-4e87-a0be-5b18f00bfc6a
+		sourceLineageTag: facility_key
+		summarizeBy: none
+		sourceColumn: facility_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column zone_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: e16ca000-bfff-4d93-80c4-8480adaeaec1
+		sourceLineageTag: zone_key
+		summarizeBy: none
+		sourceColumn: zone_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column equipment_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: aa2a6450-afaa-46ac-996f-9fd35ea2c7e4
+		sourceLineageTag: equipment_key
+		summarizeBy: none
+		sourceColumn: equipment_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column technician_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 70b6f894-58f7-4791-9f0d-45e8a97dfaff
+		sourceLineageTag: technician_key
+		summarizeBy: none
+		sourceColumn: technician_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column work_order_count
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 3cecc24f-74d3-49a0-9162-429aa3f1c7c0
+		sourceLineageTag: work_order_count
+		summarizeBy: sum
+		sourceColumn: work_order_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column completed_work_orders
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: a335b8d1-574c-4a16-a8f9-99a046c2f172
+		sourceLineageTag: completed_work_orders
+		summarizeBy: sum
+		sourceColumn: completed_work_orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column overdue_work_orders
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 9cf01270-bb86-4e35-b06b-9dc68fa983e9
+		sourceLineageTag: overdue_work_orders
+		summarizeBy: sum
+		sourceColumn: overdue_work_orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column avg_estimated_duration_min
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 8b447123-ef44-4438-aaa9-ab541f405dc3
+		sourceLineageTag: avg_estimated_duration_min
+		summarizeBy: sum
+		sourceColumn: avg_estimated_duration_min
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_actual_duration_min
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 149d5313-360f-4d1b-87b3-7b4a98452756
+		sourceLineageTag: avg_actual_duration_min
+		summarizeBy: sum
+		sourceColumn: avg_actual_duration_min
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_health_restored
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 377515e5-0fa9-4acb-84ab-82a8157f4150
+		sourceLineageTag: total_health_restored
+		summarizeBy: sum
+		sourceColumn: total_health_restored
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column sla_compliance_pct
+		dataType: double
+		sourceProviderType: float
+		lineageTag: d1f5f9a7-3960-438a-a787-eee4f7bbf5cc
+		sourceLineageTag: sla_compliance_pct
+		summarizeBy: sum
+		sourceColumn: sla_compliance_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_sla_met
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: 681ed72b-d69f-4678-900a-e224837a53f7
+		sourceLineageTag: is_sla_met
+		summarizeBy: none
+		sourceColumn: is_sla_met
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: e994e236-ee07-46c0-8e1f-c2ff0ab13fc7
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 7311e7bb-81c6-4f51-bb6c-f8d1e46e0059
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_maintenance_sla = entity
+		mode: directLake
+		source
+			entityName: fact_maintenance_sla
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

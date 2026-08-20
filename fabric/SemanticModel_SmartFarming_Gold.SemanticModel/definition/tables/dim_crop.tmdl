@@ -1,0 +1,166 @@
+table dim_crop
+	lineageTag: 02568497-e4e3-4677-be82-74d667e765a0
+	sourceLineageTag: [gold].[dim_crop]
+
+	measure 'Total Revenue PHP' = SUM('fact_crop_yield'[estimated_revenue_php])
+		lineageTag: f9bec4c5-3c5e-4ef2-9081-9d842b0ceef6
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Harvest kg' = SUM('fact_crop_yield'[total_harvest_kg])
+		lineageTag: 479ac7c8-4bf7-4132-93e5-07b41ad392cc
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Grade A Ratio Pct' = DIVIDE(SUM('fact_crop_yield'[grade_a_harvest_kg]), SUM('fact_crop_yield'[total_harvest_kg]), 0) * 100.0
+		lineageTag: 870f0912-36ef-40d0-b62b-8c1dff24ccdd
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Avg Equipment Health' = AVERAGE('fact_equipment_telemetry'[avg_health_score])
+		lineageTag: ec042e8b-394d-4588-9936-c06dbd4b319c
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Energy kWh' = SUM('fact_equipment_telemetry'[total_energy_kwh])
+		lineageTag: 6d17ef59-5369-4ee2-baae-063aaf3c6757
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Water Liters' = SUM('fact_irrigation_daily'[total_water_delivered_liters])
+		lineageTag: d8615f69-e961-4716-bfa9-23e5da242847
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Nutrient Liters' = SUM('fact_irrigation_daily'[total_nutrient_solution_liters])
+		lineageTag: ab93fc2c-a45e-4ec6-b4bd-c5bcc72490ed
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Avg DLI' = AVERAGE('fact_lighting_dli_daily'[avg_daily_light_integral])
+		lineageTag: a2c82885-e6a8-41d9-b1fa-0e78f469fae0
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'SLA Compliance Pct' = AVERAGE('fact_maintenance_sla'[sla_compliance_pct])
+		lineageTag: 842ca250-a321-4829-b40b-4bec4de17b64
+
+		changedProperty = Name
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column crop_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: ea7aed9d-5aef-4156-b243-7fc8a43b9eb4
+		sourceLineageTag: crop_key
+		summarizeBy: none
+		sourceColumn: crop_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column crop_type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 4d45b4e6-f231-49a0-a5c9-e96381a21754
+		sourceLineageTag: crop_type
+		summarizeBy: none
+		sourceColumn: crop_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column optimal_temperature_celsius
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 91ec35e9-eff1-4444-96cb-966745c0f448
+		sourceLineageTag: optimal_temperature_celsius
+		summarizeBy: none
+		sourceColumn: optimal_temperature_celsius
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column optimal_humidity_percent
+		dataType: double
+		sourceProviderType: float
+		lineageTag: e85f62fc-5f9e-4f16-9f9c-c8df91aba3c2
+		sourceLineageTag: optimal_humidity_percent
+		summarizeBy: none
+		sourceColumn: optimal_humidity_percent
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column target_biomass_g
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 1a255151-f90a-43e1-9a5f-6c9dbe8fd493
+		sourceLineageTag: target_biomass_g
+		summarizeBy: none
+		sourceColumn: target_biomass_g
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column harvest_cycle_days
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 0d50465d-4907-41a6-afdf-324dc6b8cb2a
+		sourceLineageTag: harvest_cycle_days
+		summarizeBy: none
+		sourceColumn: harvest_cycle_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: d1d3a154-0492-4366-9eac-80cca571dd96
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 79b61a8b-bbdc-436d-b701-a0baf533031c
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_crop = entity
+		mode: directLake
+		source
+			entityName: dim_crop
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

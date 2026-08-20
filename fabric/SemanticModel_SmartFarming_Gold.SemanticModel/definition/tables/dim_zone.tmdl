@@ -1,0 +1,142 @@
+table dim_zone
+	lineageTag: ef30a3b3-3705-4387-9e86-f19c0f8b312a
+	sourceLineageTag: [gold].[dim_zone]
+
+	column zone_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 405f5eab-a48d-48ba-91c1-9e8741cda6b4
+		sourceLineageTag: zone_key
+		summarizeBy: none
+		sourceColumn: zone_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column facility_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 894f7b84-1a23-439a-8617-8487971c0216
+		sourceLineageTag: facility_key
+		summarizeBy: sum
+		sourceColumn: facility_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column zone_id
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: cb338b27-c14f-4514-b682-61792d0707e6
+		sourceLineageTag: zone_id
+		summarizeBy: none
+		sourceColumn: zone_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column zone_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: d741955c-a70a-4835-bdb2-4d933d69ac7b
+		sourceLineageTag: zone_name
+		summarizeBy: none
+		sourceColumn: zone_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column section
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 93166134-b307-454d-870b-b1004eb490dc
+		sourceLineageTag: section
+		summarizeBy: none
+		sourceColumn: section
+
+		annotation SummarizationSetBy = Automatic
+
+	column rack_capacity
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 28d0538c-e519-4c5c-80b2-9d7b47adf9ad
+		sourceLineageTag: rack_capacity
+		summarizeBy: sum
+		sourceColumn: rack_capacity
+
+		annotation SummarizationSetBy = Automatic
+
+	column attr_hash
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: dcc4391f-d648-43b5-bf3a-498c6dd17106
+		sourceLineageTag: attr_hash
+		summarizeBy: sum
+		sourceColumn: attr_hash
+
+		annotation SummarizationSetBy = Automatic
+
+	column effective_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: b18db942-7567-4592-83e7-99b9d005b1aa
+		sourceLineageTag: effective_date
+		summarizeBy: none
+		sourceColumn: effective_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column expiration_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: c1e64458-47a9-44ce-a5ce-2e2d1c9a993a
+		sourceLineageTag: expiration_date
+		summarizeBy: none
+		sourceColumn: expiration_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_current
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: dce9b638-c89d-4aee-9e51-13c0ca46eb64
+		sourceLineageTag: is_current
+		summarizeBy: none
+		sourceColumn: is_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: f718b27a-319e-4477-9a35-4a3c55633776
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: eee6c265-bc87-42cb-bebc-81cbfad3cb35
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_zone = entity
+		mode: directLake
+		source
+			entityName: dim_zone
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

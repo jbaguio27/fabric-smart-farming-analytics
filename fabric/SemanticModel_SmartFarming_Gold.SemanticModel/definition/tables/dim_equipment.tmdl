@@ -1,0 +1,163 @@
+table dim_equipment
+	lineageTag: a2145085-f52c-410b-96b9-d7345f98630d
+	sourceLineageTag: [gold].[dim_equipment]
+
+	column equipment_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 461306d6-b0ed-45a7-9b17-3fc14bedcf4d
+		sourceLineageTag: equipment_key
+		summarizeBy: none
+		sourceColumn: equipment_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column facility_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 2dc706d2-970f-474d-b2e3-0ee96f0134ae
+		sourceLineageTag: facility_key
+		summarizeBy: sum
+		sourceColumn: facility_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column zone_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 8d115caa-b698-4a46-94e7-993b30609f08
+		sourceLineageTag: zone_key
+		summarizeBy: sum
+		sourceColumn: zone_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column equipment_id
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 242b1dd4-3f1f-496a-bfab-3911e7f6fd65
+		sourceLineageTag: equipment_id
+		summarizeBy: none
+		sourceColumn: equipment_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column equipment_type
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: e47685f5-5c55-4622-9259-40a5b18f08c3
+		sourceLineageTag: equipment_type
+		summarizeBy: none
+		sourceColumn: equipment_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column manufacturer
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 65f0f303-df42-4da6-9b2b-e35d6c10f718
+		sourceLineageTag: manufacturer
+		summarizeBy: none
+		sourceColumn: manufacturer
+
+		annotation SummarizationSetBy = Automatic
+
+	column model_number
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 2e7d66c6-4263-4875-b7e9-2b7378ddf867
+		sourceLineageTag: model_number
+		summarizeBy: none
+		sourceColumn: model_number
+
+		annotation SummarizationSetBy = Automatic
+
+	column installation_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: c287ede0-c0f2-4907-9f73-6e6fc54daef9
+		sourceLineageTag: installation_date
+		summarizeBy: none
+		sourceColumn: installation_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column attr_hash
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: ce1f4d69-0626-4cdf-8cc9-20025fe06092
+		sourceLineageTag: attr_hash
+		summarizeBy: sum
+		sourceColumn: attr_hash
+
+		annotation SummarizationSetBy = Automatic
+
+	column effective_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 57d8fe35-eca6-4e0e-8d76-56196420ac15
+		sourceLineageTag: effective_date
+		summarizeBy: none
+		sourceColumn: effective_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column expiration_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 7e087251-58ae-415d-aea2-ab3f36a36812
+		sourceLineageTag: expiration_date
+		summarizeBy: none
+		sourceColumn: expiration_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_current
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		sourceProviderType: bit
+		lineageTag: dd037bb1-dba8-4bf1-a96a-d0ea5a66b97e
+		sourceLineageTag: is_current
+		summarizeBy: none
+		sourceColumn: is_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 221b7c34-d53f-42b6-a28c-99b37a9f3024
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 3c0f45eb-1569-411f-a3a6-bc4ed105c4ee
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_equipment = entity
+		mode: directLake
+		source
+			entityName: dim_equipment
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

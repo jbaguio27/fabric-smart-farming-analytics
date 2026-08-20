@@ -1,0 +1,76 @@
+table dim_technician
+	lineageTag: f3e14e1c-5c0a-41c6-8e2a-1c4adc68e6df
+	sourceLineageTag: [gold].[dim_technician]
+
+	column technician_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: e3492bcb-13f7-4c49-a165-9d3dc192a700
+		sourceLineageTag: technician_key
+		summarizeBy: none
+		sourceColumn: technician_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column technician_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 3189b385-330a-4821-95d5-4000af05bc0d
+		sourceLineageTag: technician_name
+		summarizeBy: none
+		sourceColumn: technician_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column phone_number
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 0318cb72-fe06-4268-915e-b9c9158ac26e
+		sourceLineageTag: phone_number
+		summarizeBy: none
+		sourceColumn: phone_number
+
+		annotation SummarizationSetBy = Automatic
+
+	column email
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 56835da4-a157-46b0-8739-d56947091e98
+		sourceLineageTag: email
+		summarizeBy: none
+		sourceColumn: email
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: c8527462-6495-4b35-98bc-1052a2ddae29
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: e0712d07-3588-4b6e-8b9a-b801c6b3eb3a
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_technician = entity
+		mode: directLake
+		source
+			entityName: dim_technician
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

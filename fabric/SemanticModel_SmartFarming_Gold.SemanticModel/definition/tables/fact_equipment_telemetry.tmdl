@@ -1,0 +1,186 @@
+table fact_equipment_telemetry
+	lineageTag: 1221bb3c-3dba-49d4-9618-45f83895df91
+	sourceLineageTag: [gold].[fact_equipment_telemetry]
+
+	column date_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 8a6e301a-b056-496f-b80d-77e17709e508
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column facility_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 8b440164-3f3d-4d14-bfaa-6a783ef45939
+		sourceLineageTag: facility_key
+		summarizeBy: none
+		sourceColumn: facility_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column equipment_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: e3c4811c-3334-4a15-99a0-333170632264
+		sourceLineageTag: equipment_key
+		summarizeBy: none
+		sourceColumn: equipment_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column zone_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 84f3ef4a-acf2-4306-8796-71f11dda9b8f
+		sourceLineageTag: zone_key
+		summarizeBy: none
+		sourceColumn: zone_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column avg_health_score
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 0b59df78-d569-4b79-aea5-6be2416efc9a
+		sourceLineageTag: avg_health_score
+		summarizeBy: sum
+		sourceColumn: avg_health_score
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column max_failure_probability
+		dataType: double
+		sourceProviderType: float
+		lineageTag: b5e618c2-d8eb-48cb-9c0b-9b8144a96c6e
+		sourceLineageTag: max_failure_probability
+		summarizeBy: sum
+		sourceColumn: max_failure_probability
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column daily_runtime_hours
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 03db4b7a-dbb9-42e7-baa0-f8fbb006b955
+		sourceLineageTag: daily_runtime_hours
+		summarizeBy: sum
+		sourceColumn: daily_runtime_hours
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_power_draw_kw
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 9fee95b7-9991-47ee-a5fa-d1495fde5bf0
+		sourceLineageTag: avg_power_draw_kw
+		summarizeBy: sum
+		sourceColumn: avg_power_draw_kw
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_energy_kwh
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 748735d9-c685-4756-b256-79314957e33a
+		sourceLineageTag: total_energy_kwh
+		summarizeBy: sum
+		sourceColumn: total_energy_kwh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_vibration_vps
+		dataType: double
+		sourceProviderType: float
+		lineageTag: ac192aa6-e80b-40d7-a52d-a01c4db73d48
+		sourceLineageTag: avg_vibration_vps
+		summarizeBy: sum
+		sourceColumn: avg_vibration_vps
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_operating_temp_celsius
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 3c16ad28-eaf3-410e-940d-aefc1777d153
+		sourceLineageTag: avg_operating_temp_celsius
+		summarizeBy: sum
+		sourceColumn: avg_operating_temp_celsius
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_load_percent
+		dataType: double
+		sourceProviderType: float
+		lineageTag: e7c07673-b55b-4555-b0af-e43ce617ff4f
+		sourceLineageTag: avg_load_percent
+		summarizeBy: sum
+		sourceColumn: avg_load_percent
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column telemetry_sample_count
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: f05e6620-e9d9-4edf-8060-07bc45993cb2
+		sourceLineageTag: telemetry_sample_count
+		summarizeBy: sum
+		sourceColumn: telemetry_sample_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: afccd8de-b474-4b26-a67a-3fa88cdc65be
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: e2ef136e-22c8-49a8-955d-884b42c3825b
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_equipment_telemetry = entity
+		mode: directLake
+		source
+			entityName: fact_equipment_telemetry
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

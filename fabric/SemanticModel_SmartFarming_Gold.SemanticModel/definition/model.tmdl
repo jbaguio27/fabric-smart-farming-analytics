@@ -1,0 +1,29 @@
+model Model
+	culture: en-US
+	collation: Latin1_General_100_BIN2_UTF8
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["DatabaseQuery"]
+
+annotation PBI_ProTooling = ["WebModelingEdit"]
+
+ref table dim_date
+ref table dim_facility
+ref table dim_crop
+ref table dim_technician
+ref table fact_environmental_daily
+ref table fact_equipment_telemetry
+ref table fact_dead_letter_governance
+ref table dim_equipment
+ref table dim_zone
+ref table fact_irrigation_daily
+ref table fact_lighting_dli_daily
+ref table fact_maintenance_sla
+ref table fact_crop_yield
+

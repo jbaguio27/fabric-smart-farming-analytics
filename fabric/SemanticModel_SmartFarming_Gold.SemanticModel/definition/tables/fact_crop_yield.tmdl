@@ -1,0 +1,186 @@
+table fact_crop_yield
+	lineageTag: a443f0c6-e63f-4180-a65b-01ce33b9c95d
+	sourceLineageTag: [gold].[fact_crop_yield]
+
+	column date_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: f226b745-909f-4f01-b230-76cb82f765a0
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column facility_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 8d77f57d-9488-48bb-9a84-4c68df8a8fda
+		sourceLineageTag: facility_key
+		summarizeBy: none
+		sourceColumn: facility_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column zone_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 63ab09dd-9a2f-4376-b5b7-32445a72ad0c
+		sourceLineageTag: zone_key
+		summarizeBy: none
+		sourceColumn: zone_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column crop_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 1cd4c61a-e99c-430a-9b5d-fb6a94c6e55a
+		sourceLineageTag: crop_key
+		summarizeBy: none
+		sourceColumn: crop_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column target_yield_kg
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 29dd3184-66ea-4c18-ad3b-18eb48440fe6
+		sourceLineageTag: target_yield_kg
+		summarizeBy: sum
+		sourceColumn: target_yield_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_harvest_kg
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 063a44a4-73c1-4489-bc0e-57382aaa3bbc
+		sourceLineageTag: total_harvest_kg
+		summarizeBy: sum
+		sourceColumn: total_harvest_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column grade_a_harvest_kg
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 587e36ee-c5f3-40d6-9889-50c9a94e176c
+		sourceLineageTag: grade_a_harvest_kg
+		summarizeBy: sum
+		sourceColumn: grade_a_harvest_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column grade_b_harvest_kg
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 80aafb52-6d32-4f92-846f-9259eea4f586
+		sourceLineageTag: grade_b_harvest_kg
+		summarizeBy: sum
+		sourceColumn: grade_b_harvest_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column spoilage_waste_kg
+		dataType: double
+		sourceProviderType: float
+		lineageTag: ebd692f1-71e2-4e4e-95d0-ac2679f82660
+		sourceLineageTag: spoilage_waste_kg
+		summarizeBy: sum
+		sourceColumn: spoilage_waste_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column yield_achievement_pct
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 4ebc228c-2159-4cd0-aded-936812cac63e
+		sourceLineageTag: yield_achievement_pct
+		summarizeBy: sum
+		sourceColumn: yield_achievement_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column estimated_revenue_php
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 9c253de3-faf9-48b4-bbeb-ed1c6c5a0283
+		sourceLineageTag: estimated_revenue_php
+		summarizeBy: sum
+		sourceColumn: estimated_revenue_php
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_growth_rate_g_day
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 6722296a-fe2b-41dd-b1dd-4d89abd858e8
+		sourceLineageTag: avg_growth_rate_g_day
+		summarizeBy: sum
+		sourceColumn: avg_growth_rate_g_day
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column harvest_batch_count
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: f96ecfec-ba0c-4381-819d-4247ba442ba3
+		sourceLineageTag: harvest_batch_count
+		summarizeBy: sum
+		sourceColumn: harvest_batch_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: f4d6bd6e-b43e-417d-8e54-df2323ebad2a
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: b5680df0-7369-411c-9d30-9f5646307d44
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_crop_yield = entity
+		mode: directLake
+		source
+			entityName: fact_crop_yield
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+

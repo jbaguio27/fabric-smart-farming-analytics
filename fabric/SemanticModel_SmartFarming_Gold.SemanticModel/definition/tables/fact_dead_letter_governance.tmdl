@@ -1,0 +1,110 @@
+table fact_dead_letter_governance
+	lineageTag: 20eb0c70-ea77-45ba-bf3b-302c18f572b0
+	sourceLineageTag: [gold].[fact_dead_letter_governance]
+
+	column date_key
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: ca5b8c42-f673-4c0f-9148-17dec8393243
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column target_stream_name
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 83683eb1-bdd5-40cb-87ea-f218d1a531af
+		sourceLineageTag: target_stream_name
+		summarizeBy: none
+		sourceColumn: target_stream_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column governance_exception_reason
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 29baa29f-df2d-46b9-815d-0e4d784f3aab
+		sourceLineageTag: governance_exception_reason
+		summarizeBy: none
+		sourceColumn: governance_exception_reason
+
+		annotation SummarizationSetBy = Automatic
+
+	column dead_letter_event_count
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: c46312a9-f009-4c1f-8ac1-c36e2afc91db
+		sourceLineageTag: dead_letter_event_count
+		summarizeBy: sum
+		sourceColumn: dead_letter_event_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column missing_pk_defect_count
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: b453fcf7-e795-4b8d-b73d-1c6fe62fc440
+		sourceLineageTag: missing_pk_defect_count
+		summarizeBy: sum
+		sourceColumn: missing_pk_defect_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column deprecated_schema_defect_count
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 393b34ec-0daf-403e-b224-ddd292c0784a
+		sourceLineageTag: deprecated_schema_defect_count
+		summarizeBy: sum
+		sourceColumn: deprecated_schema_defect_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column formatting_defect_count
+		dataType: int64
+		formatString: 0
+		sourceProviderType: bigint
+		lineageTag: 36f41d26-02e2-45bf-9118-bd6dd9f099ff
+		sourceLineageTag: formatting_defect_count
+		summarizeBy: sum
+		sourceColumn: formatting_defect_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_timestamp
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: datetime2
+		lineageTag: 55588138-9d60-41d1-b26f-ac563393da44
+		sourceLineageTag: created_timestamp
+		summarizeBy: none
+		sourceColumn: created_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pipeline_run_date
+		dataType: dateTime
+		formatString: General Date
+		sourceProviderType: date
+		lineageTag: 949eb560-5323-4543-bca3-e3ff3b80b8ba
+		sourceLineageTag: pipeline_run_date
+		summarizeBy: none
+		sourceColumn: pipeline_run_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_dead_letter_governance = entity
+		mode: directLake
+		source
+			entityName: fact_dead_letter_governance
+			schemaName: gold
+			expressionSource: DatabaseQuery
+
+	annotation PBI_ResultType = Table
+
