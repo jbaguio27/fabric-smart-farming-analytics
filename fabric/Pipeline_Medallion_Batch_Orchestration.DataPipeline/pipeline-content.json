@@ -62,6 +62,49 @@
             ]
           }
         ]
+      },
+      {
+        "type": "Script",
+        "typeProperties": {
+          "scripts": [
+            {
+              "text": {
+                "value": "-- ===================================================================================================================\n-- FABRIC WAREHOUSE GOLD SYNCHRONIZATION SCRIPT\n-- Purpose: Syncs all 13 Gold Star Schema tables from SmartFarming_Lakehouse into SmartFarming_Warehouse.\n-- Workspace Item: SmartFarming_Warehouse\n-- ===================================================================================================================\n\n-- 1. DIMENSION TABLES\nIF OBJECT_ID('dbo.dim_date', 'U') IS NOT NULL DROP TABLE dbo.dim_date;\nCREATE TABLE dbo.dim_date AS SELECT * FROM SmartFarming_Lakehouse.gold.dim_date;\n\nIF OBJECT_ID('dbo.dim_facility', 'U') IS NOT NULL DROP TABLE dbo.dim_facility;\nCREATE TABLE dbo.dim_facility AS SELECT * FROM SmartFarming_Lakehouse.gold.dim_facility;\n\nIF OBJECT_ID('dbo.dim_zone', 'U') IS NOT NULL DROP TABLE dbo.dim_zone;\nCREATE TABLE dbo.dim_zone AS SELECT * FROM SmartFarming_Lakehouse.gold.dim_zone;\n\nIF OBJECT_ID('dbo.dim_equipment', 'U') IS NOT NULL DROP TABLE dbo.dim_equipment;\nCREATE TABLE dbo.dim_equipment AS SELECT * FROM SmartFarming_Lakehouse.gold.dim_equipment;\n\nIF OBJECT_ID('dbo.dim_crop', 'U') IS NOT NULL DROP TABLE dbo.dim_crop;\nCREATE TABLE dbo.dim_crop AS SELECT * FROM SmartFarming_Lakehouse.gold.dim_crop;\n\nIF OBJECT_ID('dbo.dim_technician', 'U') IS NOT NULL DROP TABLE dbo.dim_technician;\nCREATE TABLE dbo.dim_technician AS SELECT * FROM SmartFarming_Lakehouse.gold.dim_technician;\n\n-- 2. FACT TABLES\nIF OBJECT_ID('dbo.fact_environmental_daily', 'U') IS NOT NULL DROP TABLE dbo.fact_environmental_daily;\nCREATE TABLE dbo.fact_environmental_daily AS SELECT * FROM SmartFarming_Lakehouse.gold.fact_environmental_daily;\n\nIF OBJECT_ID('dbo.fact_equipment_telemetry', 'U') IS NOT NULL DROP TABLE dbo.fact_equipment_telemetry;\nCREATE TABLE dbo.fact_equipment_telemetry AS SELECT * FROM SmartFarming_Lakehouse.gold.fact_equipment_telemetry;\n\nIF OBJECT_ID('dbo.fact_crop_yield', 'U') IS NOT NULL DROP TABLE dbo.fact_crop_yield;\nCREATE TABLE dbo.fact_crop_yield AS SELECT * FROM SmartFarming_Lakehouse.gold.fact_crop_yield;\n\nIF OBJECT_ID('dbo.fact_irrigation_daily', 'U') IS NOT NULL DROP TABLE dbo.fact_irrigation_daily;\nCREATE TABLE dbo.fact_irrigation_daily AS SELECT * FROM SmartFarming_Lakehouse.gold.fact_irrigation_daily;\n\nIF OBJECT_ID('dbo.fact_lighting_dli_daily', 'U') IS NOT NULL DROP TABLE dbo.fact_lighting_dli_daily;\nCREATE TABLE dbo.fact_lighting_dli_daily AS SELECT * FROM SmartFarming_Lakehouse.gold.fact_lighting_dli_daily;\n\nIF OBJECT_ID('dbo.fact_maintenance_sla', 'U') IS NOT NULL DROP TABLE dbo.fact_maintenance_sla;\nCREATE TABLE dbo.fact_maintenance_sla AS SELECT * FROM SmartFarming_Lakehouse.gold.fact_maintenance_sla;\n\nIF OBJECT_ID('dbo.fact_dead_letter_governance', 'U') IS NOT NULL DROP TABLE dbo.fact_dead_letter_governance;\nCREATE TABLE dbo.fact_dead_letter_governance AS SELECT * FROM SmartFarming_Lakehouse.gold.fact_dead_letter_governance;",
+                "type": "Expression"
+              },
+              "type": "Query"
+            }
+          ],
+          "scriptBlockExecutionTimeout": "02:00:00"
+        },
+        "linkedService": {
+          "name": "SmartFarming_Warehouse",
+          "properties": {
+            "type": "DataWarehouse",
+            "typeProperties": {
+              "artifactId": "84895265-844b-ac74-4d66-37b2db35439b",
+              "endpoint": "h7ojnr7gb2vejarhyqykawnzkq-joolzeugce7upa4y6gmormlliu.datawarehouse.fabric.microsoft.com",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run_Warehouse_Sync",
+        "dependsOn": [
+          {
+            "activity": "Run_Gold_ETL",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
       }
     ],
     "parameters": {
