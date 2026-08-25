@@ -2080,6 +2080,11 @@ print(f"{'TABLE NAME':<34} | {'TYPE':<18} | {'ROW COUNT':<10} | {'UNKNOWN (-1)':
 print("-" * 92)
 for table_name, table_type, primary_key in gold_tables:
     if spark.catalog.tableExists(table_name):
+        try:
+            spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
+            spark.catalog.refreshTable(table_name)
+        except Exception:
+            pass
         df_tbl = spark.table(table_name)
         rowCount = df_tbl.count()
         total_gold_volume += rowCount
