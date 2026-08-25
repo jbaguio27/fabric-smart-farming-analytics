@@ -2,6 +2,70 @@ table fact_crop_yield
 	lineageTag: a443f0c6-e63f-4180-a65b-01ce33b9c95d
 	sourceLineageTag: [gold].[fact_crop_yield]
 
+	measure 'Total Revenue PHP' = SUM('fact_crop_yield'[estimated_revenue_php])
+		formatString: \₱#,##0.00
+		lineageTag: f9bec4c5-3c5e-4ef2-9081-9d842b0ceef6
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Total Harvest kg' = SUM('fact_crop_yield'[total_harvest_kg])
+		formatString: #,##0.00" kg"
+		lineageTag: 479ac7c8-4bf7-4132-93e5-07b41ad392cc
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Grade A Ratio Pct' =
+			
+			VAR TotalYield = SUM('fact_crop_yield'[total_harvest_kg])
+			VAR GradeAYield = SUM('fact_crop_yield'[grade_a_harvest_kg])
+			VAR RawRatio = IF(TotalYield > 0, GradeAYield / TotalYield, 0)
+			RETURN
+			    MIN(RawRatio, 1.0)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 870f0912-36ef-40d0-b62b-8c1dff24ccdd
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure 'Avg Daily Growth Rate' = AVERAGE('fact_crop_yield'[avg_growth_rate_g_day])
+		formatString: " 0.00"" g/day"""
+		lineageTag: b843acac-dcbe-494d-9a74-7f80dc9105a0
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Grade A Harvest kg' = SUM('fact_crop_yield'[grade_a_harvest_kg])
+		formatString: " #,##0.00"" kg"""
+		lineageTag: 434106bb-1d41-4bce-a35c-59eaf8665ba1
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Total Spoilage Waste kg' = SUM('fact_crop_yield'[spoilage_waste_kg])
+		formatString: " #,##0.00"" kg"""
+		lineageTag: fe7173da-be0e-43b9-8042-f8a0872b8cee
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column date_key
 		dataType: int64
 		formatString: 0
@@ -132,15 +196,18 @@ table fact_crop_yield
 
 	column avg_growth_rate_g_day
 		dataType: double
+		formatString: " 0.0"" g/day"""
 		sourceProviderType: float
 		lineageTag: 6722296a-fe2b-41dd-b1dd-4d89abd858e8
 		sourceLineageTag: avg_growth_rate_g_day
 		summarizeBy: sum
 		sourceColumn: avg_growth_rate_g_day
 
+		changedProperty = FormatString
+
 		annotation SummarizationSetBy = Automatic
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation PBI_FormatHint = {"isCustom":true}
 
 	column harvest_batch_count
 		dataType: int64

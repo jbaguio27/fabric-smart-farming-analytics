@@ -2,6 +2,48 @@ table fact_maintenance_sla
 	lineageTag: 0d0d3e29-5f62-49fc-9dac-ae0c7a94222d
 	sourceLineageTag: [gold].[fact_maintenance_sla]
 
+	measure 'SLA Compliance Pct' =
+			
+			VAR TotalWO = SUM('fact_maintenance_sla'[work_order_count])
+			VAR CompletedWO = SUM('fact_maintenance_sla'[completed_work_orders])
+			VAR RawRatio = IF(TotalWO > 0, CompletedWO / TotalWO, 1.0)
+			RETURN MIN(RawRatio, 1.0)
+		formatString: " 0.0%"
+		lineageTag: 842ca250-a321-4829-b40b-4bec4de17b64
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Health Restored Per Work Order' = ```
+			
+			DIVIDE(
+			    SUM('fact_maintenance_sla'[total_health_restored]), 
+			    SUM('fact_maintenance_sla'[work_order_count]), 
+			    0
+			)
+			```
+		formatString: 0.00" pts
+		lineageTag: df55aaff-2bbd-4214-b174-d7f347616bc3
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Repair Duration Min' = AVERAGE('fact_maintenance_sla'[avg_actual_duration_min])
+		formatString: " 0.00"" min"""
+		lineageTag: c0dc5922-1d7c-44b1-8394-de9b1c9d7e28
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column date_key
 		dataType: int64
 		formatString: 0

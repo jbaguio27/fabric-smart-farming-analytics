@@ -2,6 +2,26 @@ table fact_irrigation_daily
 	lineageTag: 63f99c69-0c1b-4cd8-a5cf-a15a99abad48
 	sourceLineageTag: [gold].[fact_irrigation_daily]
 
+	measure 'Total Water Liters' = SUM('fact_irrigation_daily'[total_water_delivered_liters])
+		formatString: " #,##0.0"" L"""
+		lineageTag: d8615f69-e961-4716-bfa9-23e5da242847
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Total Nutrient Liters' = SUM('fact_irrigation_daily'[total_nutrient_solution_liters])
+		formatString: " #,##0.0"" L"""
+		lineageTag: ab93fc2c-a45e-4ec6-b4bd-c5bcc72490ed
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column date_key
 		dataType: int64
 		formatString: 0

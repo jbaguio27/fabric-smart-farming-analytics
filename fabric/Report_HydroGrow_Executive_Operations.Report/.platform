@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Report_HydroGrow_Executive_Operations"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "cdd989d9-e24c-a976-4dad-70894cc4d2f3"
+  }
+}

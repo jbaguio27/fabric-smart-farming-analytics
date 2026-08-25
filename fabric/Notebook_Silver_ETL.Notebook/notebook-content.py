@@ -984,39 +984,52 @@ df_eq_master.show(10, truncate=False)
 
 # CREATE silver.dead_letter_classified (DATAOPS GOVERNANCE EXCEPTION MATRIX)
 
+import time
+from pyspark.sql import functions as F
+
+cell_start_time = time.time()
+table_name = "silver.dead_letter_classified"
+
 # Read Raw Bronze Table
 df_dl_raw = spark.table("bronze.dead_letter_telemetry")
+source_row_count = df_dl_raw.count()
+raw_cols = df_dl_raw.columns
 
 # Safe Column Resolvers (Schema Agnostic)
 target_stream_col = (
     F.col("target_stream") 
-    if "target_stream" in df_dl_raw.columns 
+    if "target_stream" in raw_cols 
     else F.coalesce(F.col("event_type"), F.lit("ENVIRONMENTAL_TELEMETRY"))
 )
 
 exception_reason_col = (
     F.col("exception_reason") 
-    if "exception_reason" in df_dl_raw.columns 
+    if "exception_reason" in raw_cols 
     else F.lit("MISSING_PRIMARY_KEY: null facility_id")
 )
 
 raw_payload_col = (
     F.col("raw_payload") 
-    if "raw_payload" in df_dl_raw.columns 
+    if "raw_payload" in raw_cols 
     else F.concat(F.lit('{"event_id":"'), F.col("event_id"), F.lit('"}'))
 )
 
 ingestion_ts_col = (
     F.col("ingestion_timestamp") 
-    if "ingestion_timestamp" in df_dl_raw.columns 
+    if "ingestion_timestamp" in raw_cols 
     else F.coalesce(F.col("IngestionTime"), F.current_timestamp())
 )
 
-# Classification Expressions
+# Safe facility_id null check
+fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
+
+# Classification Expressions Across All 6 Exception Categories
 exception_category_calc = (
-    F.when(exception_reason_col.contains("MISSING_PRIMARY_KEY") | F.col("facility_id").isNull(), F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
+    F.when(exception_reason_col.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
      .when(exception_reason_col.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
      .when(exception_reason_col.contains("JSON") | exception_reason_col.contains("SERDES"), F.lit("SERDES_PARSE_FAILURE"))
+     .when(exception_reason_col.contains("CLOCK") | exception_reason_col.contains("SYNC"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
+     .when(exception_reason_col.contains("MAC") | exception_reason_col.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
      .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
 )
 
@@ -1025,7 +1038,7 @@ is_auto_remediable_calc = (
      .otherwise(F.lit(False))
 )
 
-# Step-by-Step Transformation Pipeline
+# Transformation Pipeline
 df_dl_classified = (
     df_dl_raw
     .withColumn("event_id_clean", F.trim(F.col("event_id")))
@@ -1051,11 +1064,10 @@ df_dl_classified = (
 df_dl_classified.write.format("delta") \
                       .mode("overwrite") \
                       .option("overwriteSchema", "true") \
-                      .saveAsTable("silver.dead_letter_classified")
+                      .saveAsTable(table_name)
 
 print(f"✍ Created silver.dead_letter_classified ({df_dl_classified.count()} rows).")
 
-df_dl_classified.show(10, truncate=False)
 
 # METADATA ********************
 

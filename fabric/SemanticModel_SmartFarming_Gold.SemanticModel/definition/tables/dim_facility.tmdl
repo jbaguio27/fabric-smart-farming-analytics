@@ -206,6 +206,16 @@ table dim_facility
 
 		annotation SummarizationSetBy = Automatic
 
+	column short_region
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 1ec75b41-5b87-41a2-8701-44293dcdcfa4
+		sourceLineageTag: short_region
+		summarizeBy: none
+		sourceColumn: short_region
+
+		annotation SummarizationSetBy = Automatic
+
 	partition dim_facility = entity
 		mode: directLake
 		source

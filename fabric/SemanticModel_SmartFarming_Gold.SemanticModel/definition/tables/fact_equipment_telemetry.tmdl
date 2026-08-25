@@ -2,6 +2,24 @@ table fact_equipment_telemetry
 	lineageTag: 1221bb3c-3dba-49d4-9618-45f83895df91
 	sourceLineageTag: [gold].[fact_equipment_telemetry]
 
+	measure 'Avg Equipment Health' = AVERAGE('fact_equipment_telemetry'[avg_health_score])
+		formatString: 0.00
+		lineageTag: ec042e8b-394d-4588-9936-c06dbd4b319c
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure 'Total Energy kWh' = SUM('fact_equipment_telemetry'[total_energy_kwh])
+		formatString: #,##0.0" kWh"
+		lineageTag: 6d17ef59-5369-4ee2-baae-063aaf3c6757
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column date_key
 		dataType: int64
 		formatString: 0

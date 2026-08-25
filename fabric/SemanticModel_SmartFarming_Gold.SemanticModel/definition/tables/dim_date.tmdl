@@ -198,6 +198,40 @@ table dim_date
 
 		annotation SummarizationSetBy = Automatic
 
+	column month_year
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 51dafc3c-a917-4acf-b209-f7db7d84c502
+		sourceLineageTag: month_year
+		summarizeBy: none
+		sourceColumn: month_year
+		sortByColumn: year_month_sort
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column year_month_sort
+		dataType: int64
+		formatString: 0
+		sourceProviderType: int
+		lineageTag: 9b60b700-cc5b-4790-974c-c3c4e6cbab3f
+		sourceLineageTag: year_month_sort
+		summarizeBy: sum
+		sourceColumn: year_month_sort
+
+		annotation SummarizationSetBy = Automatic
+
+	column short_month_year
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 3d17f15a-fac7-48db-9c8a-dffa543fbdfa
+		sourceLineageTag: short_month_year
+		summarizeBy: none
+		sourceColumn: short_month_year
+
+		annotation SummarizationSetBy = Automatic
+
 	partition dim_date = entity
 		mode: directLake
 		source

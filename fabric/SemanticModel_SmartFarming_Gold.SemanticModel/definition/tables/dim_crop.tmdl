@@ -2,69 +2,6 @@ table dim_crop
 	lineageTag: 02568497-e4e3-4677-be82-74d667e765a0
 	sourceLineageTag: [gold].[dim_crop]
 
-	measure 'Total Revenue PHP' = SUM('fact_crop_yield'[estimated_revenue_php])
-		lineageTag: f9bec4c5-3c5e-4ef2-9081-9d842b0ceef6
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'Total Harvest kg' = SUM('fact_crop_yield'[total_harvest_kg])
-		lineageTag: 479ac7c8-4bf7-4132-93e5-07b41ad392cc
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'Grade A Ratio Pct' = DIVIDE(SUM('fact_crop_yield'[grade_a_harvest_kg]), SUM('fact_crop_yield'[total_harvest_kg]), 0) * 100.0
-		lineageTag: 870f0912-36ef-40d0-b62b-8c1dff24ccdd
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'Avg Equipment Health' = AVERAGE('fact_equipment_telemetry'[avg_health_score])
-		lineageTag: ec042e8b-394d-4588-9936-c06dbd4b319c
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'Total Energy kWh' = SUM('fact_equipment_telemetry'[total_energy_kwh])
-		lineageTag: 6d17ef59-5369-4ee2-baae-063aaf3c6757
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'Total Water Liters' = SUM('fact_irrigation_daily'[total_water_delivered_liters])
-		lineageTag: d8615f69-e961-4716-bfa9-23e5da242847
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'Total Nutrient Liters' = SUM('fact_irrigation_daily'[total_nutrient_solution_liters])
-		lineageTag: ab93fc2c-a45e-4ec6-b4bd-c5bcc72490ed
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'Avg DLI' = AVERAGE('fact_lighting_dli_daily'[avg_daily_light_integral])
-		lineageTag: a2c82885-e6a8-41d9-b1fa-0e78f469fae0
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
-	measure 'SLA Compliance Pct' = AVERAGE('fact_maintenance_sla'[sla_compliance_pct])
-		lineageTag: 842ca250-a321-4829-b40b-4bec4de17b64
-
-		changedProperty = Name
-
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
-
 	column crop_key
 		dataType: int64
 		formatString: 0
@@ -154,6 +91,30 @@ table dim_crop
 		sourceColumn: pipeline_run_date
 
 		annotation SummarizationSetBy = Automatic
+
+	column unit_price_grade_a_php
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 41776184-4950-4733-8272-807a1257989d
+		sourceLineageTag: unit_price_grade_a_php
+		summarizeBy: none
+		sourceColumn: unit_price_grade_a_php
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column unit_price_grade_b_php
+		dataType: double
+		sourceProviderType: float
+		lineageTag: 20da2299-2e66-4910-b1d7-80d6f955e07d
+		sourceLineageTag: unit_price_grade_b_php
+		summarizeBy: none
+		sourceColumn: unit_price_grade_b_php
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	partition dim_crop = entity
 		mode: directLake

@@ -2,6 +2,16 @@ table fact_lighting_dli_daily
 	lineageTag: 4ce59644-3bb4-4acb-a5fb-f6c88458c42b
 	sourceLineageTag: [gold].[fact_lighting_dli_daily]
 
+	measure 'Avg DLI' = AVERAGE('fact_lighting_dli_daily'[avg_daily_light_integral])
+		formatString: " 0.0"" mol/m²/d"""
+		lineageTag: a2c82885-e6a8-41d9-b1fa-0e78f469fae0
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column date_key
 		dataType: int64
 		formatString: 0

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "f24c7a38f47fd840193c",
+  "position": {
+    "x": 115.15047291487531,
+    "y": 29.716251074806532,
+    "z": 0,
+    "height": 55,
+    "width": 599.89681857265691,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "HYDROWGROW SMART FARMING",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "18pt",
+                      "color": "#ffffff"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Resource & Hydro-Nutrient Efficiency | Water, Energy & DLI",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#caf0f8"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -2,68 +2,6 @@
   "properties": {
     "activities": [
       {
-        "type": "TridentNotebook",
-        "typeProperties": {
-          "notebookId": "bfac7d41-d000-b8b2-4ccf-44fcbe0fdcfe",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Run_Bronze_Ingestion",
-        "dependsOn": []
-      },
-      {
-        "type": "TridentNotebook",
-        "typeProperties": {
-          "notebookId": "091d4577-2e2a-80c3-4ef9-491db9c996c2",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Run_Silver_ETL",
-        "dependsOn": [
-          {
-            "activity": "Run_Bronze_Ingestion",
-            "dependencyConditions": [
-              "Succeeded"
-            ]
-          }
-        ]
-      },
-      {
-        "type": "TridentNotebook",
-        "typeProperties": {
-          "notebookId": "4de0273a-c6bc-b3fa-49f9-f236b0ba7516",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Run_Gold_ETL",
-        "dependsOn": [
-          {
-            "activity": "Run_Silver_ETL",
-            "dependencyConditions": [
-              "Succeeded"
-            ]
-          }
-        ]
-      },
-      {
         "type": "Script",
         "typeProperties": {
           "scripts": [
@@ -99,23 +37,151 @@
         "name": "Run_Warehouse_Sync",
         "dependsOn": [
           {
-            "activity": "Run_Gold_ETL",
+            "activity": "Notebook_Batch_Master_Orchestrator",
             "dependencyConditions": [
               "Succeeded"
             ]
           }
         ]
+      },
+      {
+        "type": "PBISemanticModelRefresh",
+        "typeProperties": {
+          "method": "POST",
+          "groupId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+          "datasetId": "510bca16-d2f6-4300-93d2-cfef8f81216f",
+          "commitMode": "Transactional",
+          "objects": [
+            {
+              "table": "dim_date"
+            },
+            {
+              "table": "dim_facility"
+            },
+            {
+              "table": "dim_crop"
+            },
+            {
+              "table": "dim_technician"
+            },
+            {
+              "table": "fact_environmental_daily"
+            },
+            {
+              "table": "fact_equipment_telemetry"
+            },
+            {
+              "table": "fact_dead_letter_governance"
+            },
+            {
+              "table": "dim_equipment"
+            },
+            {
+              "table": "dim_zone"
+            },
+            {
+              "table": "fact_irrigation_daily"
+            },
+            {
+              "table": "fact_lighting_dli_daily"
+            },
+            {
+              "table": "fact_maintenance_sla"
+            },
+            {
+              "table": "fact_crop_yield"
+            }
+          ],
+          "waitOnCompletion": true,
+          "operationType": "SemanticModelRefresh"
+        },
+        "externalReferences": {
+          "connection": "0a344ae1-caba-48d0-869c-646f9e153677"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Semantic_Model_Refresh",
+        "dependsOn": [
+          {
+            "activity": "Notebook_Batch_Master_Orchestrator",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Delete",
+        "typeProperties": {
+          "enableLogging": false,
+          "datasetSettings": {
+            "type": "Binary",
+            "typeProperties": {
+              "location": {
+                "type": "LakehouseLocation",
+                "folderPath": "bootstrap_history"
+              }
+            },
+            "linkedService": {
+              "name": "SmartFarming_Lakehouse",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "4c9b22c3-3477-9303-4ddc-6e3b54fb63f8",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Files"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          },
+          "storeSettings": {
+            "type": "AzureBlobStorageReadSettings",
+            "recursive": true,
+            "wildcardFileName": "*.json",
+            "enablePartitionDiscovery": false
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Delete Bootstrap Files",
+        "dependsOn": [
+          {
+            "activity": "Notebook_Batch_Master_Orchestrator",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "684b2f6e-7a52-a987-40eb-3309888dc5a1",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Notebook_Batch_Master_Orchestrator",
+        "dependsOn": []
       }
     ],
-    "parameters": {
-      "PIPELINE_RUN_DATE": {
-        "type": "string",
-        "defaultValue": "2026-08-02"
-      },
-      "FARM_OPERATIONS_START_DATE": {
-        "type": "string",
-        "defaultValue": "2026-07-01"
-      }
-    }
+    "concurrency": 2
   }
 }
