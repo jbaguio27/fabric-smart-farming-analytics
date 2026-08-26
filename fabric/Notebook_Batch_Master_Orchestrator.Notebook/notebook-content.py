@@ -29,6 +29,16 @@
 # Configure Delta Lake OCC Concurrency & Isolation
 spark.conf.set("spark.databricks.delta.properties.defaults.isolationLevel", "WriteSerializable")
 spark.conf.set("spark.databricks.delta.write.concurrentAppendMode.enabled", "true")
+print("⚙️ Delta Lake OCC Concurrency configured (WriteSerializable).")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
 
 %run Notebook_Load_Bronze_History
 
