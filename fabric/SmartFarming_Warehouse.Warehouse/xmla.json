@@ -143,6 +143,42 @@
                 "value": "Automatic"
               }
             ]
+          },
+          {
+            "name": "unit_price_grade_a_php",
+            "dataType": "double",
+            "sourceColumn": "unit_price_grade_a_php",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "unit_price_grade_a_php",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "unit_price_grade_b_php",
+            "dataType": "double",
+            "sourceColumn": "unit_price_grade_b_php",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "unit_price_grade_b_php",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
           }
         ],
         "partitions": [
@@ -249,6 +285,49 @@
             "sourceColumn": "month_name",
             "sourceProviderType": "varchar",
             "sourceLineageTag": "month_name",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "month_year",
+            "dataType": "string",
+            "sourceColumn": "month_year",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "month_year",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "year_month_sort",
+            "dataType": "int64",
+            "sourceColumn": "year_month_sort",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "year_month_sort",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "short_month_year",
+            "dataType": "string",
+            "sourceColumn": "short_month_year",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "short_month_year",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -975,6 +1054,20 @@
                 "value": "Automatic"
               }
             ]
+          },
+          {
+            "name": "short_region",
+            "dataType": "string",
+            "sourceColumn": "short_region",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "short_region",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
           }
         ],
         "partitions": [
@@ -1674,21 +1767,6 @@
             ]
           },
           {
-            "name": "formatting_defect_count",
-            "dataType": "int64",
-            "sourceColumn": "formatting_defect_count",
-            "formatString": "0",
-            "sourceProviderType": "bigint",
-            "sourceLineageTag": "formatting_defect_count",
-            "summarizeBy": "sum",
-            "annotations": [
-              {
-                "name": "SummarizationSetBy",
-                "value": "Automatic"
-              }
-            ]
-          },
-          {
             "name": "created_timestamp",
             "dataType": "dateTime",
             "sourceColumn": "created_timestamp",
@@ -1711,6 +1789,81 @@
             "sourceProviderType": "date",
             "sourceLineageTag": "pipeline_run_date",
             "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "out_of_bounds_defect_count",
+            "dataType": "int64",
+            "sourceColumn": "out_of_bounds_defect_count",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "out_of_bounds_defect_count",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "serdes_parse_defect_count",
+            "dataType": "int64",
+            "sourceColumn": "serdes_parse_defect_count",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "serdes_parse_defect_count",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "timestamp_sync_defect_count",
+            "dataType": "int64",
+            "sourceColumn": "timestamp_sync_defect_count",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "timestamp_sync_defect_count",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "unregistered_hardware_defect_count",
+            "dataType": "int64",
+            "sourceColumn": "unregistered_hardware_defect_count",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "unregistered_hardware_defect_count",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "formatting_defect_count",
+            "dataType": "int64",
+            "sourceColumn": "formatting_defect_count",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "formatting_defect_count",
+            "summarizeBy": "sum",
             "annotations": [
               {
                 "name": "SummarizationSetBy",

@@ -4,6 +4,7 @@ CREATE TABLE [dbo].[dim_facility] (
 	[facility_id] varchar(8000) NULL, 
 	[facility_name] varchar(8000) NULL, 
 	[region] varchar(8000) NULL, 
+	[short_region] varchar(8000) NULL, 
 	[city] varchar(8000) NULL, 
 	[latitude] float NULL, 
 	[longitude] float NULL, 
