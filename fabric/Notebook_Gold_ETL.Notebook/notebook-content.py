@@ -205,7 +205,7 @@ if not spark.catalog.tableExists(table_name):
             F.when(F.col("expiration_date") == "9999-12-31", F.lit(True)).otherwise(F.lit(False))
         )
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), F.col("effective_date").cast("string")))).alias("facility_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), F.col("effective_date").cast("string"), F.col("attr_hash").cast("string")))).alias("facility_key"),
             F.col("facility_id"), 
             F.col("facility_name"), 
             F.col("region"), 
@@ -235,7 +235,7 @@ if not spark.catalog.tableExists(table_name):
         datetime.datetime.now(), PIPELINE_RUN_DATE
     )], schema=dim_fac_initial.schema)
 
-    dim_facility_final = unknown_fac.unionByName(dim_fac_initial)
+    dim_facility_final = unknown_fac.unionByName(dim_fac_initial).drop_duplicates(["facility_key"])
 
     # Inline Delta Write
     dim_facility_final.write.format("delta")\
@@ -254,7 +254,7 @@ else:
     df_new_fac_keys = dim_fac_stg.alias("src").join(target_fac.alias("tgt"), "facility_id", "left_anti")\
                         .select(
                             F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), 
-                            F.lit(PIPELINE_RUN_DATE).cast("string")))).alias("facility_key"),
+                            F.lit(PIPELINE_RUN_DATE).cast("string"), F.col("attr_hash").cast("string")))).alias("facility_key"),
                             F.col("facility_id"), 
                             F.col("facility_name"), 
                             F.col("region"), 
@@ -280,8 +280,8 @@ else:
     df_changed_fac_keys = dim_fac_stg.alias("src").join(target_fac.alias("tgt"), "facility_id")\
                             .filter(F.col("src.attr_hash") != F.col("tgt.attr_hash"))\
                             .select(
-                                F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), 
-                                F.lit(PIPELINE_RUN_DATE).cast("string")))).alias("facility_key"),
+                                F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("src.facility_id"))), 
+                                F.lit(PIPELINE_RUN_DATE).cast("string"), F.col("src.attr_hash").cast("string")))).alias("facility_key"),
                                 F.col("src.facility_id"), 
                                 F.col("src.facility_name"), 
                                 F.col("src.region"), 
@@ -316,7 +316,7 @@ else:
     ).execute()
 
     # Append new keys + new versions of changed keys
-    df_fac_to_append = df_new_fac_keys.unionByName(df_changed_fac_keys).drop_duplicates(["facility_id", "effective_date"])
+    df_fac_to_append = df_new_fac_keys.unionByName(df_changed_fac_keys).drop_duplicates(["facility_key"])
     
     if not df_fac_to_append.isEmpty():
         df_fac_to_append.write.format("delta")\
@@ -499,7 +499,7 @@ if not spark.catalog.tableExists(table_name):
             how="left"
         ) \
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.col("stg.facility_id"), F.col("stg.zone_id"), F.col("stg.effective_date").cast("string")))).alias("zone_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.col("stg.facility_id"), F.col("stg.zone_id"), F.col("stg.effective_date").cast("string"), F.col("stg.attr_hash").cast("string")))).alias("zone_key"),
             F.coalesce(F.col("fac.facility_key"), F.lit(-1)).alias("facility_key"),
             F.col("stg.zone_id"),
             F.col("stg.zone_name"),
@@ -519,7 +519,7 @@ if not spark.catalog.tableExists(table_name):
         datetime.datetime.now(), PIPELINE_RUN_DATE
     )], schema=dim_zone_schema)
     
-    dim_zone_final = unknown_zone.unionByName(dim_zone_initial)
+    dim_zone_final = unknown_zone.unionByName(dim_zone_initial).drop_duplicates(["zone_key"])
     dim_zone_final.write.format("delta") \
         .mode("overwrite") \
         .option("mergeSchema", "true") \
@@ -552,7 +552,7 @@ else:
     df_new_zone_keys = dim_zone_stg_resolved.alias("src") \
         .join(target_zone.alias("tgt"), ["facility_key", "zone_id"], "left_anti") \
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string")))).alias("zone_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string"), F.col("src.attr_hash").cast("string")))).alias("zone_key"),
             F.col("src.facility_key"), F.col("src.zone_id"), F.col("src.zone_name"),
             F.col("src.section"), F.col("src.rack_capacity"), F.col("src.attr_hash"),
             F.col("src.effective_date"), F.lit("9999-12-31").cast("date").alias("expiration_date"),
@@ -565,7 +565,7 @@ else:
         .join(target_zone.alias("tgt"), ["facility_key", "zone_id"]) \
         .filter(F.col("src.attr_hash") != F.col("tgt.attr_hash")) \
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string")))).alias("zone_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string"), F.col("src.attr_hash").cast("string")))).alias("zone_key"),
             F.col("src.facility_key"), F.col("src.zone_id"), F.col("src.zone_name"),
             F.col("src.section"), F.col("src.rack_capacity"), F.col("src.attr_hash"),
             F.col("src.effective_date"), F.lit("9999-12-31").cast("date").alias("expiration_date"),
@@ -584,7 +584,7 @@ else:
             "is_current": F.lit(False)
         }
     ).execute()
-    df_zone_to_append = df_new_zone_keys.unionByName(df_changed_zone_keys).drop_duplicates(["facility_key", "zone_id", "effective_date"])
+    df_zone_to_append = df_new_zone_keys.unionByName(df_changed_zone_keys).drop_duplicates(["zone_key"])
     
     if not df_zone_to_append.isEmpty():
         df_zone_to_append.write.format("delta") \
