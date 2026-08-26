@@ -163,6 +163,8 @@ df_fac_raw = spark.table("silver.facility_master_enriched")
 source_row_count = df_fac_raw.count()
 
 # Prepare staging Dataframe with short_region transformer
+eff_fac_col = F.col("effective_date").cast("date") if "effective_date" in df_fac_raw.columns else F.lit(FARM_OPERATIONS_START_DATE).cast("date")
+
 dim_fac_stg = df_fac_raw.select(
     F.col("facility_id"),
     F.col("facility_name"),
@@ -177,6 +179,7 @@ dim_fac_stg = df_fac_raw.select(
     F.col("power_grid_redundancy"),
     F.col("max_zone_capacity"),
     F.col("operator_contact"),
+    eff_fac_col.alias("effective_date"),
     F.xxhash64(
         F.concat_ws("||", *[F.coalesce(F.col(c).cast("string"), F.lit("NULL")) for c in FACILITY_TRACKED_COLUMNS])
     ).alias("attr_hash")
@@ -185,29 +188,44 @@ dim_fac_stg = df_fac_raw.select(
 # Two-pass SCD Type 2 Processing (Initial Load VS Incremental MERGE)
 
 if not spark.catalog.tableExists(table_name):
-    # Initial Load: Construct baseline dimension with effective_date = FARM_OPERATIONS_START_DATE
-    dim_fac_initial = dim_fac_stg.select(
-        F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), 
-        F.lit(FARM_OPERATIONS_START_DATE).cast("string")))).alias("facility_key"),
-        F.col("facility_id"), 
-        F.col("facility_name"), 
-        F.col("region"), 
-        F.col("short_region"),
-        F.col("city"), 
-        F.col("latitude"), 
-        F.col("longitude"), 
-        F.col("elevation_m"), 
-        F.col("climate_zone"), 
-        F.col("water_source"), 
-        F.col("power_grid_redundancy"), 
-        F.col("max_zone_capacity"), 
-        F.col("operator_contact"), 
-        F.col("attr_hash"),
-        F.lit(FARM_OPERATIONS_START_DATE).cast("date").alias("effective_date"),
-        F.lit("9999-12-31").cast("date").alias("expiration_date"),
-        F.lit(True).alias("is_current"),
-        F.current_timestamp().alias("created_timestamp"),
-        F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    # Initial Load: Support multi-version historical baseline records organically
+    from pyspark.sql.window import Window
+    window_fac = Window.partitionBy("facility_id").orderBy("effective_date")
+
+    dim_fac_initial = (
+        dim_fac_stg
+        .withColumn("lead_eff_date", F.lead("effective_date").over(window_fac))
+        .withColumn(
+            "expiration_date",
+            F.when(F.col("lead_eff_date").isNotNull(), F.date_sub(F.col("lead_eff_date"), 1))
+             .otherwise(F.lit("9999-12-31").cast("date"))
+        )
+        .withColumn(
+            "is_current",
+            F.when(F.col("expiration_date") == "9999-12-31", F.lit(True)).otherwise(F.lit(False))
+        )
+        .select(
+            F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), F.col("effective_date").cast("string")))).alias("facility_key"),
+            F.col("facility_id"), 
+            F.col("facility_name"), 
+            F.col("region"), 
+            F.col("short_region"),
+            F.col("city"), 
+            F.col("latitude"), 
+            F.col("longitude"), 
+            F.col("elevation_m"), 
+            F.col("climate_zone"), 
+            F.col("water_source"), 
+            F.col("power_grid_redundancy"), 
+            F.col("max_zone_capacity"), 
+            F.col("operator_contact"), 
+            F.col("attr_hash"),
+            F.col("effective_date"),
+            F.col("expiration_date"),
+            F.col("is_current"),
+            F.current_timestamp().alias("created_timestamp"),
+            F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+        )
     )
 
     # Unknown (-1) Dimension Member
@@ -680,6 +698,10 @@ df_eq_union = df_master_eq.unionByName(df_risk_eq) \
 source_row_count = df_eq_union.count()
 
 # Select equipment business attributes and compute change detection hash
+eff_eq_col = F.col("effective_date").cast("date") if "effective_date" in df_eq_union.columns else (
+    F.col("installation_date").cast("date") if "installation_date" in df_eq_union.columns else F.lit(FARM_OPERATIONS_START_DATE).cast("date")
+)
+
 dim_eq_stg = df_eq_union.select(
     F.col("equipment_id"),
     F.upper(F.trim(F.col("facility_id"))).alias("facility_id"),
@@ -688,6 +710,7 @@ dim_eq_stg = df_eq_union.select(
     F.coalesce(F.trim(F.col("manufacturer")), F.lit("HydroPump Corp")).alias("manufacturer"),
     F.coalesce(F.trim(F.col("model_number")), F.lit("HP-3000X")).alias("model_number"),
     F.col("installation_date").cast("date").alias("installation_date"),
+    eff_eq_col.alias("effective_date"),
     F.xxhash64(
         F.concat_ws("||", *[F.coalesce(F.col(c).cast("string"), F.lit("NULL")) for c in tracked_cols])
     ).alias("attr_hash")
@@ -708,7 +731,22 @@ dim_zone_bcast = F.broadcast(
 
 # Two-pass SCD Type 2 Processing
 if not spark.catalog.tableExists(table_name):
-    dim_eq_stg_init = dim_eq_stg.withColumn("effective_date", F.lit(FARM_OPERATIONS_START_DATE).cast("date"))
+    # Support multi-version historical baseline records organically
+    from pyspark.sql.window import Window
+    window_eq = Window.partitionBy("equipment_id").orderBy("effective_date")
+
+    dim_eq_stg_init = dim_eq_stg \
+        .withColumn("lead_eff_date", F.lead("effective_date").over(window_eq)) \
+        .withColumn(
+            "expiration_date",
+            F.when(F.col("lead_eff_date").isNotNull(), F.date_sub(F.col("lead_eff_date"), 1))
+             .otherwise(F.lit("9999-12-31").cast("date"))
+        ) \
+        .withColumn(
+            "is_current",
+            F.when(F.col("expiration_date") == "9999-12-31", F.lit(True)).otherwise(F.lit(False))
+        )
+
     dim_eq_initial = dim_eq_stg_init.alias("stg") \
         .join(
             dim_fac_bcast.alias("fac"),
@@ -736,8 +774,8 @@ if not spark.catalog.tableExists(table_name):
             F.col("stg.installation_date"),
             F.col("stg.attr_hash"),
             F.col("stg.effective_date"),
-            F.lit("9999-12-31").cast("date").alias("expiration_date"),
-            F.lit(True).alias("is_current"),
+            F.col("stg.expiration_date"),
+            F.col("stg.is_current"),
             F.current_timestamp().alias("created_timestamp"),
             F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
         )

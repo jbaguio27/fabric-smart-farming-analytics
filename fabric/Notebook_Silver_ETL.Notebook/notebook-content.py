@@ -779,7 +779,7 @@ df_maint.show(10, truncate=False)
 
 # CELL ********************
 
-# Create silver.facility_master_enriched
+# Create silver.facility_master_enriched (SCD Type 2 Multi-Version Preserving)
 
 df_fac_raw = spark.table("bronze.facility_operations")
 
@@ -804,7 +804,9 @@ df_fac_cleaned = (
     .withColumn("active_alerts_clean", F.col("active_critical_alerts").cast("int"))
     .withColumn("contact_clean", F.coalesce(F.trim(F.col("operator_contact")), F.lit("facility.mgr@smartfarm.ph")))
     .withColumn("phone_clean", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
-    .drop_duplicates(["facility_id_clean"])
+    .withColumn("effective_date_clean", F.to_date(F.col("timestamp")))
+    # Retain distinct state changes per facility based on tracked attributes
+    .drop_duplicates(["facility_id_clean", "facility_name_clean", "max_zone_capacity_clean", "contact_clean"])
 )
 
 df_fac_master = df_fac_cleaned.select(
@@ -826,7 +828,8 @@ df_fac_master = df_fac_cleaned.select(
     F.col("water_circ_lph_clean").alias("water_circulation_lph"),
     F.col("active_alerts_clean").alias("active_critical_alerts"),
     F.col("contact_clean").alias("operator_contact"),
-    F.col("phone_clean").alias("operator_phone")
+    F.col("phone_clean").alias("operator_phone"),
+    F.col("effective_date_clean").alias("effective_date")
 )
 
 df_fac_master.write.format("delta")\
@@ -927,40 +930,40 @@ df_crop_master.show(10, truncate=False)
 
 # CELL ********************
 
-# CREATE silver.equipment_master_enriched
-
-from pyspark.sql.window import Window
+# CREATE silver.equipment_master_enriched (SCD Type 2 Multi-Version Preserving)
 
 df_eq_raw = spark.table("bronze.equipment_telemetry")
 contact_clean = F.coalesce(F.trim(F.col("operator_contact")), F.lit("tech.support@smartfarm.ph"))
 phone_clean = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190"))
 
-# Window to pick the latest telemetry record per equipment asset
-window_latest = Window.partitionBy(F.trim(F.col("equipment_id"))).orderBy(F.col("timestamp").desc())
+# Extract all distinct equipment versions based on tracked attributes and their earliest occurrence
 df_eq_master = (
     df_eq_raw
     .withColumn("eq_id_clean", F.trim(F.col("equipment_id")))
     .withColumn("fac_id_clean", F.upper(F.trim(F.col("facility_id"))))
     .withColumn("zone_id_clean", F.trim(F.col("zone_id")))
     .withColumn("eq_type_clean", F.upper(F.trim(F.col("equipment_type"))))
+    .withColumn("mfr_clean", F.coalesce(F.trim(F.col("manufacturer")), F.lit("HydroPump Corp")))
+    .withColumn("model_clean", F.coalesce(F.trim(F.col("model_number")), F.lit("HP-3000X")))
+    .withColumn("effective_date_clean", F.to_date(F.col("timestamp")))
     # 🧹 DATA QUALITY FILTER: Remove corrupt & orphan test keys
     .filter(~F.col("eq_id_clean").contains("ORPHAN"))
     .filter(F.col("eq_id_clean").rlike("^EQ-[0-9]{5}$"))
-    .withColumn("rank", F.row_number().over(window_latest))
-    .filter(F.col("rank") == 1)
+    .drop_duplicates(["eq_id_clean", "mfr_clean", "model_clean"])
     .select(
         F.col("eq_id_clean").alias("equipment_id"),
         F.col("fac_id_clean").alias("facility_id"),
         F.col("zone_id_clean").alias("zone_id"),
         F.col("eq_type_clean").alias("equipment_type"),
-        F.coalesce(F.trim(F.col("manufacturer")), F.lit("HydroPump Corp")).alias("manufacturer"),
-        F.coalesce(F.trim(F.col("model_number")), F.lit("HP-3000X")).alias("model_number"),
-        F.lit("2025-01-15").alias("installation_date"),
+        F.col("mfr_clean").alias("manufacturer"),
+        F.col("model_clean").alias("model_number"),
+        F.col("effective_date_clean").alias("installation_date"),
         F.round(F.col("runtime_hours").cast("double"), 1).alias("cumulative_runtime_hours"),
         F.round(F.col("health").cast("double"), 1).alias("current_health_score"),
         F.col("operating_status"),
         contact_clean.alias("operator_contact"),
-        phone_clean.alias("operator_phone")
+        phone_clean.alias("operator_phone"),
+        F.col("effective_date_clean").alias("effective_date")
     )
 )
 
@@ -969,7 +972,7 @@ df_eq_master.write.format("delta") \
                   .option("overwriteSchema", "true") \
                   .saveAsTable("silver.equipment_master_enriched")
 
-print(f"✍ Created silver.equipment_master_enriched ({df_eq_master.count()} rows.")
+print(f"✍ Created silver.equipment_master_enriched ({df_eq_master.count()} rows)")
 
 df_eq_master.show(10, truncate=False)
 
