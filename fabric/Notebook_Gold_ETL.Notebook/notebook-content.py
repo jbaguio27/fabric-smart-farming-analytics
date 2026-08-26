@@ -305,8 +305,9 @@ else:
 
     # Expire previous active records for changed business keys
     delta_fac = DeltaTable.forName(spark, table_name)
+    df_changed_fac_keys_dedup = df_changed_fac_keys.select("facility_id").distinct()
     delta_fac.alias("target").merge(
-        df_changed_fac_keys.alias("source"),
+        df_changed_fac_keys_dedup.alias("source"),
         "target.facility_id = source.facility_id AND target.is_current = true"
     ).whenMatchedUpdate(
         set={
@@ -575,8 +576,9 @@ else:
         )
         
     delta_zone = DeltaTable.forName(spark, table_name)
+    df_changed_zone_keys_dedup = df_changed_zone_keys.select("facility_key", "zone_id").distinct()
     delta_zone.alias("target").merge(
-        df_changed_zone_keys.alias("source"),
+        df_changed_zone_keys_dedup.alias("source"),
         "target.facility_key = source.facility_key AND target.zone_id = source.zone_id AND target.is_current = true"
     ).whenMatchedUpdate(
         set={
@@ -827,6 +829,19 @@ else:
             F.col("stg.effective_date")
         )
 
+    df_new_eq_keys = dim_eq_stg_resolved.alias("src") \
+        .join(target_eq.alias("tgt"), ["equipment_id"], "left_anti") \
+        .select(
+            F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("src.equipment_id"))), F.col("src.effective_date").cast("string"), F.col("src.attr_hash").cast("string")))).alias("equipment_key"),
+            F.col("src.facility_key"), F.col("src.zone_key"), F.col("src.equipment_id"),
+            F.col("src.equipment_type"), F.col("src.manufacturer"), F.col("src.model_number"),
+            F.col("src.installation_date"), F.col("src.attr_hash"),
+            F.col("src.effective_date"), F.lit("9999-12-31").cast("date").alias("expiration_date"),
+            F.lit(True).alias("is_current"),
+            F.current_timestamp().alias("created_timestamp"),
+            F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+        ).drop_duplicates(["equipment_key"])
+
     df_changed_eq_keys = dim_eq_stg_resolved.alias("src") \
         .join(target_eq.alias("tgt"), ["equipment_id"]) \
         .filter(F.col("src.attr_hash") != F.col("tgt.attr_hash")) \
@@ -842,18 +857,23 @@ else:
         ).drop_duplicates(["equipment_key"])
         
     delta_eq = DeltaTable.forName(spark, table_name)
+    df_changed_eq_keys_dedup = df_changed_eq_keys.select("equipment_id").distinct()
     delta_eq.alias("target").merge(
-        df_changed_eq_keys.alias("source"),
+        df_changed_eq_keys_dedup.alias("source"),
         "target.equipment_id = source.equipment_id AND target.is_current = true"
     ).whenMatchedUpdate(
         set={
-            "expiration_date": "source.effective_date - INTERVAL 1 DAY",
-            "is_current": "false"
+            "expiration_date": F.date_sub(F.lit(PIPELINE_RUN_DATE), 1),
+            "is_current": F.lit(False)
         }
     ).execute()
     
-    df_changed_eq_keys.write.format("delta").mode("append").saveAsTable(table_name)
-    rows_appended_count = df_changed_eq_keys.count()
+    df_eq_to_append = df_new_eq_keys.unionByName(df_changed_eq_keys).drop_duplicates(["equipment_key"])
+    if not df_eq_to_append.isEmpty():
+        df_eq_to_append.write.format("delta").mode("append").saveAsTable(table_name)
+        rows_appended_count = df_eq_to_append.count()
+    else:
+        rows_appended_count = 0
     action_type = f"MERGED SCD TYPE 2 ({rows_appended_count} UPDATES)"
 
 # Compute Table Statistics
