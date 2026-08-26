@@ -420,6 +420,7 @@ df_zone_raw = df_env_zones.unionByName(df_eq_zones) \
     .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
     .filter(
         (F.col("zone_id").rlike("^ZONE-[0-9]{3}$")) &
+        (F.col("zone_id") != "ZONE-000") &
         (F.col("facility_id").isNotNull()) &
         (F.col("facility_id") != "") &
         (F.col("facility_id") != "UNKNOWN_FACILITY")
@@ -428,9 +429,12 @@ df_zone_raw = df_env_zones.unionByName(df_eq_zones) \
 
 source_row_count = df_zone_raw.count()
 
-# Rich Category, Name, and Section Mapping for All 10 Hydroponic Zones
+# Dynamic Category, Name, and Section Mapping with Phase Expansions
 zone_name_calc = (
-    F.when(F.col("zone_id") == "ZONE-001", F.lit("Butterhead & Batavia Lettuce Array"))
+    F.when((F.col("facility_id") == "FAC-001") & (F.col("zone_id") == "ZONE-001"), F.lit("Butterhead & Batavia Lettuce Array (Expanded)"))
+     .when((F.col("facility_id") == "FAC-002") & (F.col("zone_id") == "ZONE-002"), F.lit("Vertical Strawberry Hydro-Towers (Phase 2)"))
+     .when((F.col("facility_id") == "FAC-003") & (F.col("zone_id") == "ZONE-003"), F.lit("Kale & Arugula Canopy Racks (High Yield)"))
+     .when(F.col("zone_id") == "ZONE-001", F.lit("Butterhead & Batavia Lettuce Array"))
      .when(F.col("zone_id") == "ZONE-002", F.lit("Vertical Strawberry Hydro-Towers"))
      .when(F.col("zone_id") == "ZONE-003", F.lit("Kale & Arugula Canopy Racks"))
      .when(F.col("zone_id") == "ZONE-004", F.lit("Genovese Basil & Cilantro Array"))
@@ -458,7 +462,10 @@ section_calc = (
 )
 
 rack_capacity_calc = (
-    F.when(F.col("zone_id") == "ZONE-001", F.lit(24))
+    F.when((F.col("facility_id") == "FAC-001") & (F.col("zone_id") == "ZONE-001"), F.lit(32))
+     .when((F.col("facility_id") == "FAC-002") & (F.col("zone_id") == "ZONE-002"), F.lit(28))
+     .when((F.col("facility_id") == "FAC-003") & (F.col("zone_id") == "ZONE-003"), F.lit(24))
+     .when(F.col("zone_id") == "ZONE-001", F.lit(24))
      .when(F.col("zone_id") == "ZONE-002", F.lit(18))
      .when(F.col("zone_id") == "ZONE-003", F.lit(20))
      .when(F.col("zone_id") == "ZONE-004", F.lit(16))
@@ -604,11 +611,14 @@ else:
         rows_appended_count = 0
     action_type = "INCREMENTAL TWO-PASS MERGE"
 
-# Self-healing primary key deduplication to enforce 100% Direct Lake relational integrity
+# Self-healing primary key deduplication and legacy ZONE-000 purge to enforce 100% Direct Lake relational integrity
 df_zone_heal = spark.table(table_name)
-if df_zone_heal.groupBy("zone_key").count().filter("count > 1").count() > 0:
-    print("⚠️ Detected duplicate surrogate keys in gold.dim_zone. Applying auto-healing deduplication...")
-    df_zone_heal.drop_duplicates(["zone_key"]).write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
+has_zone_000 = df_zone_heal.filter(F.col("zone_id") == "ZONE-000").count() > 0
+has_dupes = df_zone_heal.groupBy("zone_key").count().filter("count > 1").count() > 0
+
+if has_zone_000 or has_dupes:
+    print("⚠️ Purging legacy ZONE-000 and deduplicating gold.dim_zone...")
+    df_zone_heal.filter(F.col("zone_id") != "ZONE-000").drop_duplicates(["zone_key"]).write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
 
 # Compute Table Statistics
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
