@@ -330,6 +330,12 @@ else:
 
     action_type = "INCREMENTAL TWO-PASS MERGE"
 
+# Self-healing primary key deduplication to enforce 100% Direct Lake relational integrity
+df_fac_heal = spark.table(table_name)
+if df_fac_heal.groupBy("facility_key").count().filter("count > 1").count() > 0:
+    print("⚠️ Detected duplicate surrogate keys in gold.dim_facility. Applying auto-healing deduplication...")
+    df_fac_heal.drop_duplicates(["facility_key"]).write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
+
 # Compute Table Statistics
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
@@ -597,6 +603,12 @@ else:
     else:
         rows_appended_count = 0
     action_type = "INCREMENTAL TWO-PASS MERGE"
+
+# Self-healing primary key deduplication to enforce 100% Direct Lake relational integrity
+df_zone_heal = spark.table(table_name)
+if df_zone_heal.groupBy("zone_key").count().filter("count > 1").count() > 0:
+    print("⚠️ Detected duplicate surrogate keys in gold.dim_zone. Applying auto-healing deduplication...")
+    df_zone_heal.drop_duplicates(["zone_key"]).write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
 
 # Compute Table Statistics
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
@@ -875,6 +887,12 @@ else:
     else:
         rows_appended_count = 0
     action_type = f"MERGED SCD TYPE 2 ({rows_appended_count} UPDATES)"
+
+# Self-healing primary key deduplication to enforce 100% Direct Lake relational integrity
+df_eq_heal = spark.table(table_name)
+if df_eq_heal.groupBy("equipment_key").count().filter("count > 1").count() > 0:
+    print("⚠️ Detected duplicate surrogate keys in gold.dim_equipment. Applying auto-healing deduplication...")
+    df_eq_heal.drop_duplicates(["equipment_key"]).write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
 
 # Compute Table Statistics
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
