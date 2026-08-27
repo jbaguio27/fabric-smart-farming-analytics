@@ -283,7 +283,7 @@
             "labelPosition": {
               "expr": {
                 "Literal": {
-                  "Value": "'Above'"
+                  "Value": "'Auto'"
                 }
               }
             },

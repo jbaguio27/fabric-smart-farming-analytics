@@ -1,5 +1,5 @@
 {
-  "schema_version": 78,
+  "schema_version": 81,
   "tiles": [
     {
       "id": "4d0114b2-c888-4831-9d89-5ec68ea9984c",
@@ -494,6 +494,287 @@
           }
         ]
       }
+    },
+    {
+      "id": "7dd7b097-b464-4842-afb3-004cc98a1a80",
+      "title": "Pipeline Run Success Rate",
+      "visualType": "card",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "c6fd8f7c-4f5f-4a1f-88c0-dca629af890c"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "colorRules": []
+      }
+    },
+    {
+      "id": "2a528c61-5c8a-4300-a037-b739fe220128",
+      "title": "Total Volume Processed",
+      "visualType": "card",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 6,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "4cfbcead-e0af-4dd4-96f5-c06fc1c7ce0f"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "colorRules": []
+      }
+    },
+    {
+      "id": "6da3269e-b362-4740-9c00-514b81c19c4a",
+      "title": "End-to-End Batch SLA Duration",
+      "visualType": "card",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 12,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "8e660130-a1a2-49cc-93d7-b23f3ce3a5c4"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "colorRules": []
+      }
+    },
+    {
+      "id": "732b23b7-1f04-4bb2-85bd-d9ab82170ecf",
+      "title": "Ingress Defect Rate",
+      "visualType": "card",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 18,
+        "y": 0,
+        "width": 6,
+        "height": 4
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "1064e908-3b9f-4a6c-985e-1fca74eea347"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "auto",
+        "multiStat__valueColumn": null,
+        "colorRulesDisabled": false,
+        "colorRules": []
+      }
+    },
+    {
+      "id": "86d38ab2-885b-48a0-a131-ae8664b0dd17",
+      "title": "Stage Execution Duration (Seconds)",
+      "visualType": "column",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 0,
+        "y": 5,
+        "width": 8,
+        "height": 10
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "7c73d831-f996-48b5-9355-4fbbf69556f0"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {
+          "AvgDurationSec": "color--(4)"
+        },
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": "StageName",
+        "yColumns": [
+          "AvgDurationSec"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilter": [],
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "f83d728c-75d5-4db2-8ed3-dcfc180eea10",
+      "title": "Volume Processed per Stage",
+      "visualType": "bar",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 8,
+        "y": 5,
+        "width": 8,
+        "height": 10
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "e9cceb56-fb3e-4eba-bdd0-85b2eaf43913"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": "StageName",
+        "yColumns": [
+          "RowsProcessed"
+        ],
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilter": [],
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "fdb0a800-092e-4ed9-899b-1e2850d2dd2e",
+      "title": "Medallion Pipeline Trace & Execution History",
+      "visualType": "table",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 0,
+        "y": 7,
+        "width": 12,
+        "height": 11
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "e8f1772a-6a14-4a5b-9f2b-8606bc85d1d1"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": true,
+        "colorRulesDisabled": true,
+        "crossFilter": [],
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": []
+      }
+    },
+    {
+      "id": "6ef15143-3882-413c-b3b7-28c7b2f0a766",
+      "title": "Data Quality Gate & SLA Compliance Audit",
+      "visualType": "table",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 12,
+        "y": 15,
+        "width": 12,
+        "height": 11
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "4441e90c-eea5-4473-be02-91cc6d3d231b"
+      },
+      "visualOptions": {
+        "table__enableRenderLinks": true,
+        "colorRulesDisabled": true,
+        "crossFilter": [],
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "drillthrough": [],
+        "table__renderLinks": [],
+        "colorRules": []
+      }
+    },
+    {
+      "id": "e55c4851-9a27-452e-99df-92334d3d42f6",
+      "title": "Streaming Ingestion Lag Percentiles (SLA < 3.0s)",
+      "visualType": "column",
+      "pageId": "185c1096-4a37-476c-a2d6-be34e558ba62",
+      "layout": {
+        "x": 16,
+        "y": 4,
+        "width": 8,
+        "height": 10
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "45316fb6-fb27-4bd9-9b27-0f0fc360b890"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilter": [],
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "drillthrough": []
+      }
     }
   ],
   "baseQueries": [],
@@ -524,12 +805,25 @@
       "database": "a31b9690-0b32-b343-47f1-74045eb138b9",
       "workspace": "00000000-0000-0000-0000-000000000000",
       "id": "2805436c-8456-48b2-b752-009d39a395ad"
+    },
+    {
+      "kind": "kusto-trident",
+      "clusterUri": "",
+      "name": "SmartFarmingKQLDB-2",
+      "databaseArtifactId": "5eb138b9-7404-47f1-b343-0b32a31b9690",
+      "database": "a31b9690-0b32-b343-47f1-74045eb138b9",
+      "workspace": "00000000-0000-0000-0000-000000000000",
+      "id": "00ad32a7-db1c-4c8f-8570-343f1f32b596"
     }
   ],
   "pages": [
     {
-      "name": "Page 1",
+      "name": "⚡ Real-Time Streaming & Ingress Observability",
       "id": "211c4e57-4546-49da-95a3-861d88ab3f65"
+    },
+    {
+      "name": "📊 Medallion Pipeline & Platform SLA Observability",
+      "id": "185c1096-4a37-476c-a2d6-be34e558ba62"
     }
   ],
   "queries": [
@@ -594,6 +888,87 @@
       },
       "text": "get_dead_letter_audit_log(60)\r\n| project ingestion_timestamp, event_id, event_type, exception_status, payload_timestamp\r\n| take 50",
       "id": "5ae69060-17e1-465c-9a22-7b94fb6fe76a",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize \r\n    SuccessRate = round((countif(ExecutionStatus == \"SUCCESS\") * 100.0) / count(), 1)\r\n| project SuccessRate = strcat(SuccessRate, \"%\")",
+      "id": "c6fd8f7c-4f5f-4a1f-88c0-dca629af890c",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize TotalRows = sum(TargetRowCount)\r\n| project TotalRows = strcat(round(TotalRows / 1000000.0, 2), \"M\")",
+      "id": "4cfbcead-e0af-4dd4-96f5-c06fc1c7ce0f",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize TotalDurationSec = sum(ExecutionDurationMs) / 1000.0 by TraceId\r\n| summarize AvgBatchDuration = round(avg(TotalDurationSec) / 60.0, 2)\r\n| project AvgBatchDuration = strcat(AvgBatchDuration, \" min\")",
+      "id": "8e660130-a1a2-49cc-93d7-b23f3ce3a5c4",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "QualityAuditLog\r\n| where Timestamp > ago(7d)\r\n| summarize DefectRate = round((sum(DefectCount) * 100.0) / sum(TotalAuditedCount), 4)\r\n| project DefectRate = strcat(DefectRate, \"% (<0.1% SLA)\")",
+      "id": "1064e908-3b9f-4a6c-985e-1fca74eea347",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize AvgDurationSec = round(avg(ExecutionDurationMs) / 1000.0, 1) by StageName\r\n| order by AvgDurationSec desc",
+      "id": "7c73d831-f996-48b5-9355-4fbbf69556f0",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize RowsProcessed = sum(TargetRowCount) by StageName\r\n| order by RowsProcessed desc",
+      "id": "e9cceb56-fb3e-4eba-bdd0-85b2eaf43913",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "DataOpsPipelineLog\r\n| order by Timestamp desc\r\n| project \r\n    Timestamp = format_datetime(Timestamp, 'yyyy-MM-dd HH:mm:ss'),\r\n    TraceId,\r\n    StageName,\r\n    Component,\r\n    ExecutionStatus,\r\n    DurationSec = round(ExecutionDurationMs / 1000.0, 2),\r\n    ProcessedRows = TargetRowCount,\r\n    ErrorMessage",
+      "id": "e8f1772a-6a14-4a5b-9f2b-8606bc85d1d1",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "fn_DataOpsQualityGateStatus()\r\n| project \r\n    TableName,\r\n    ValidationRule,\r\n    TotalDefects,\r\n    TotalRecords,\r\n    DefectRate = strcat(OverallDefectRatePct, \"%\"),\r\n    SLA_Compliance",
+      "id": "4441e90c-eea5-4473-be02-91cc6d3d231b",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "fn_StreamIngestionLagMetrics()\r\n| project StreamName, P50_Lag_Sec, P95_Lag_Sec, P99_Lag_Sec, TotalEvents",
+      "id": "45316fb6-fb27-4bd9-9b27-0f0fc360b890",
       "usedVariables": []
     }
   ],
