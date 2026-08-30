@@ -1070,22 +1070,36 @@ if df_new_dl is not None and cnt_dl > 0:
     total_processed_rows += cnt_dl
     raw_cols = df_new_dl.columns
     fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
-    exc_reason_col = F.col("exception_reason") if "exception_reason" in raw_cols else F.lit("MISSING_PRIMARY_KEY")
-    stream_col = F.col("target_stream") if "target_stream" in raw_cols else (F.col("event_type") if "event_type" in raw_cols else F.lit("ENVIRONMENTAL_TELEMETRY"))
+    exc_reason_raw = F.col("exception_reason") if "exception_reason" in raw_cols else (F.col("error_reason") if "error_reason" in raw_cols else F.lit("MISSING_PRIMARY_KEY"))
+    stream_raw = F.col("target_stream") if "target_stream" in raw_cols else (F.col("event_type") if "event_type" in raw_cols else F.lit("ENVIRONMENTAL_TELEMETRY"))
+    raw_payload_val = F.col("raw_payload") if "raw_payload" in raw_cols else F.lit("{}")
+    
+    # Resolve ingestion timestamp column
+    time_raw = F.col("ingestion_timestamp") if "ingestion_timestamp" in raw_cols else (F.col("timestamp") if "timestamp" in raw_cols else F.current_timestamp())
+    raw_ts_str = F.regexp_replace(F.trim(time_raw.cast("string")), "[\"']", "")
+    ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
+    
+    exc_cat_expr = (
+        F.when(exc_reason_raw.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
+         .when(exc_reason_raw.contains("DEPRECATED") | exc_reason_raw.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
+         .when(exc_reason_raw.contains("SERDES") | exc_reason_raw.contains("PARSE") | exc_reason_raw.contains("JSON"), F.lit("SERDES_PARSE_FAILURE"))
+         .when(exc_reason_raw.contains("TIMESTAMP") | exc_reason_raw.contains("SYNC") | exc_reason_raw.contains("CLOCK"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
+         .when(exc_reason_raw.contains("MAC") | exc_reason_raw.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
+         .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
+    )
     
     # 1. silver.dead_letter_classified
     df_silver_dl = (
         df_new_dl
-        .withColumn("exception_category", 
-            F.when(exc_reason_col.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
-             .when(exc_reason_col.contains("DEPRECATED") | exc_reason_col.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
-             .when(exc_reason_col.contains("SERDES") | exc_reason_col.contains("PARSE") | exc_reason_col.contains("JSON"), F.lit("SERDES_PARSE_FAILURE"))
-             .when(exc_reason_col.contains("TIMESTAMP") | exc_reason_col.contains("SYNC") | exc_reason_col.contains("CLOCK"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
-             .when(exc_reason_col.contains("MAC") | exc_reason_col.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
-             .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
-        )
+        .withColumn("event_id", F.trim(F.col("event_id")))
+        .withColumn("target_stream", F.upper(F.trim(stream_raw)))
+        .withColumn("exception_category", exc_cat_expr)
+        .withColumn("exception_reason", F.trim(exc_reason_raw))
         .withColumn("is_auto_remediable", F.col("exception_category") == F.lit("DEPRECATED_SCHEMA_EVENT"))
+        .withColumn("raw_payload", raw_payload_val)
+        .withColumn("ingestion_timestamp", ts_clean)
         .drop_duplicates(["event_id"])
+        .select("event_id", "target_stream", "exception_category", "exception_reason", "is_auto_remediable", "raw_payload", "ingestion_timestamp")
     )
     DeltaTable.forName(spark, "silver.dead_letter_classified").alias("t").merge(
         df_silver_dl.alias("s"), "t.event_id = s.event_id"
@@ -1094,20 +1108,20 @@ if df_new_dl is not None and cnt_dl > 0:
     # 2. gold.fact_dead_letter_governance (Exact Match with Notebook_Gold_ETL)
     df_dl_agg = (
         df_silver_dl
-        .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
-        .withColumn("event_date", F.to_date("timestamp"))
-        .withColumn("target_stream_name", F.upper(F.trim(stream_col)))
-        .withColumn("governance_exception_reason", F.trim(F.col("exception_category")))
+        .withColumn("date_key", F.date_format("ingestion_timestamp", "yyyyMMdd").cast("int"))
+        .withColumn("event_date", F.to_date("ingestion_timestamp"))
+        .withColumn("target_stream_name", F.upper(F.trim(F.col("target_stream"))))
+        .withColumn("governance_exception_reason", F.trim(F.col("exception_reason")))
         .groupBy("date_key", "event_date", "target_stream_name", "governance_exception_reason")
         .agg(
             F.count("event_id").alias("dead_letter_event_count"),
-            F.sum(F.when(F.col("exception_category").contains("MISSING"), 1).otherwise(0)).alias("missing_pk_defect_count"),
-            F.sum(F.when(F.col("exception_category").contains("BOUNDS") | F.col("exception_category").contains("TEMP"), 1).otherwise(0)).alias("out_of_bounds_defect_count"),
-            F.sum(F.when(F.col("exception_category").contains("DEPRECATED") | F.col("exception_category").contains("SCHEMA"), 1).otherwise(0)).alias("deprecated_schema_defect_count"),
-            F.sum(F.when(F.col("exception_category").contains("JSON") | F.col("exception_category").contains("SERDES"), 1).otherwise(0)).alias("serdes_parse_defect_count"),
-            F.sum(F.when(F.col("exception_category").contains("CLOCK") | F.col("exception_category").contains("SYNC") | F.col("exception_category").contains("TIMESTAMP"), 1).otherwise(0)).alias("timestamp_sync_defect_count"),
-            F.sum(F.when(F.col("exception_category").contains("MAC") | F.col("exception_category").contains("UNREGISTERED"), 1).otherwise(0)).alias("unregistered_hardware_defect_count"),
-            F.sum(F.when(F.col("exception_category").contains("SERDES") | F.col("exception_category").contains("BOUNDS") | F.col("exception_category").contains("FORMAT"), 1).otherwise(0)).alias("formatting_defect_count")
+            F.sum(F.when(F.col("exception_reason").contains("MISSING"), 1).otherwise(0)).alias("missing_pk_defect_count"),
+            F.sum(F.when(F.col("exception_reason").contains("BOUNDS") | F.col("exception_reason").contains("TEMP"), 1).otherwise(0)).alias("out_of_bounds_defect_count"),
+            F.sum(F.when(F.col("exception_reason").contains("DEPRECATED") | F.col("exception_reason").contains("SCHEMA"), 1).otherwise(0)).alias("deprecated_schema_defect_count"),
+            F.sum(F.when(F.col("exception_reason").contains("JSON") | F.col("exception_reason").contains("SERDES"), 1).otherwise(0)).alias("serdes_parse_defect_count"),
+            F.sum(F.when(F.col("exception_reason").contains("CLOCK") | F.col("exception_reason").contains("SYNC") | F.col("exception_reason").contains("TIMESTAMP"), 1).otherwise(0)).alias("timestamp_sync_defect_count"),
+            F.sum(F.when(F.col("exception_reason").contains("MAC") | F.col("exception_reason").contains("UNREGISTERED"), 1).otherwise(0)).alias("unregistered_hardware_defect_count"),
+            F.sum(F.when(F.col("exception_reason").contains("SERDES") | F.col("exception_reason").contains("BOUNDS") | F.col("exception_reason").contains("FORMAT"), 1).otherwise(0)).alias("formatting_defect_count")
         )
         .select(
             F.col("date_key"),
