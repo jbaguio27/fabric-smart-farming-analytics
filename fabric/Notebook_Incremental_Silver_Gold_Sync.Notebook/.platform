@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "Notebook_Incremental_Silver_Gold_Sync"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "66e74cd0-9a30-9f96-4c07-412723f706cc"
+  }
+}

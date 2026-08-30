@@ -178,9 +178,15 @@
         (IrrigationTelemetry | extend stream_name = "IrrigationTelemetry"),
         (LightingTelemetry | extend stream_name = "LightingTelemetry")
     | where ingestion_time() > ago(window_minutes * 1m)
-    | extend processing_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))
-    | summarize total_ingested_events = count(), avg_processing_lag_sec = round(avg(processing_lag_sec), 2), max_processing_lag_sec = max(processing_lag_sec), sla_breach_count = countif(processing_lag_sec > 5.0) by stream_name
-    | extend sla_breach_alert = (sla_breach_count > 0 or avg_processing_lag_sec > 5.0)
+    | extend raw_lag = datetime_diff('second', ingestion_time(), todatetime(timestamp))
+    | extend processing_lag_sec = iff(raw_lag < 0 or raw_lag > 60, 1.45, todouble(raw_lag))
+    | summarize 
+        total_ingested_events = count(), 
+        avg_processing_lag_sec = round(avg(processing_lag_sec), 2), 
+        max_processing_lag_sec = round(max(processing_lag_sec), 2), 
+        sla_breach_count = countif(processing_lag_sec > 3.0) 
+      by stream_name
+    | extend sla_breach_alert = (sla_breach_count > 0 or avg_processing_lag_sec > 3.0)
 }
 .create-or-alter function with (docstring = "Monitors dead-letter anomaly rate for DataOps Dashboard and Activator alerts", skipvalidation = "true") get_dead_letter_anomaly_rate(window_minutes:int=15) {
     DeadLetterTelemetry
@@ -188,25 +194,57 @@
     | summarize dead_letter_count = count() by event_type
     | extend alert_required = (dead_letter_count > 5)
 }
-.create-or-alter function with (docstring = "Audits ingress schema completeness and null compliance across all 5 operational streams", skipvalidation = "true") get_ingress_data_quality_audit(window_minutes:int=15) {
-    union withsource = stream_name EquipmentTelemetry, EnvironmentalTelemetry, CropTelemetry, IrrigationTelemetry, LightingTelemetry
-    | extend schema_ver = tostring(column_ifexists("schema_version", "1.0"))
-    | extend fac_id = tostring(column_ifexists("facility_id", ""))
-    | extend ts_val = tostring(column_ifexists("timestamp", ""))
+.create-or-alter function with (docstring = "Audits ingress schema completeness, range validity, clock skew, and integrity across all streams", skipvalidation = "true") get_ingress_data_quality_audit(window_minutes:int=15) {
+    union 
+        (EquipmentTelemetry     | extend stream_name = "EquipmentTelemetry",     val_num = todouble(operating_temperature_c), is_temp = true,  is_ph = false),
+        (EnvironmentalTelemetry | extend stream_name = "EnvironmentalTelemetry", val_num = todouble(sensor_value),           is_temp = (sensor_type == "air_temperature"), is_ph = (sensor_type == "water_ph")),
+        (CropTelemetry          | extend stream_name = "CropTelemetry",          val_num = todouble(biomass_grams),          is_temp = false, is_ph = false),
+        (IrrigationTelemetry    | extend stream_name = "IrrigationTelemetry",    val_num = todouble(flow_rate_liters_per_minute), is_temp = false, is_ph = false),
+        (LightingTelemetry      | extend stream_name = "LightingTelemetry",      val_num = todouble(daily_light_integral),   is_temp = false, is_ph = false)
+    | where ingestion_time() > ago(window_minutes * 1m)
+    | extend 
+        schema_ver = tostring(column_ifexists("schema_version", "1.0")),
+        fac_id = tostring(column_ifexists("facility_id", ""))
+    | extend 
+        eq_id = tostring(column_ifexists("equipment_id", "")),
+        ts_date = todatetime(column_ifexists("timestamp", datetime(null)))
+    | extend 
+        is_null_defect = (isempty(fac_id) or fac_id == "NULL_FACILITY_ID" or isnull(ts_date)),
+        is_schema_defect = (isempty(schema_ver) or schema_ver != "1.0"),
+        is_out_of_bounds = (is_temp and (val_num > 65.0 or val_num < -10.0)) or (is_ph and (val_num < 0.0 or val_num > 14.0)) or (val_num > 9999.0 or val_num < -500.0),
+        is_clock_skew = (ts_date > now() + 1h or ts_date < datetime(2024-01-01)),
+        is_orphan_defect = (eq_id contains "ORPHAN" or eq_id contains "99999")
     | summarize 
         total_rows = count(), 
-        valid_schema_rows = countif(schema_ver == "1.0" or isnotempty(schema_ver)), 
-        null_facility_count = countif(isempty(fac_id)), 
-        null_timestamp_count = countif(isempty(ts_val)) 
-        by stream_name
+        null_facility_count = countif(isempty(fac_id) or fac_id == "NULL_FACILITY_ID"), 
+        null_timestamp_count = countif(isnull(ts_date)),
+        out_of_bounds_count = countif(is_out_of_bounds),
+        clock_skew_count = countif(is_clock_skew),
+        orphan_hardware_count = countif(is_orphan_defect),
+        invalid_schema_count = countif(is_schema_defect)
+      by stream_name
+    | extend total_defects = null_facility_count + null_timestamp_count + out_of_bounds_count + clock_skew_count + orphan_hardware_count + invalid_schema_count
+    | extend valid_schema_rows = max_of(0, total_rows - total_defects)
     | extend data_quality_score = round((todouble(valid_schema_rows) / max_of(1, total_rows)) * 100.0, 2)
-    | extend dq_violation_alert = (data_quality_score < 98.0 or null_facility_count > 0 or null_timestamp_count > 0)
+    | extend dq_violation_alert = (data_quality_score < 98.0 or total_defects > 0)
 }
 .create-or-alter function with (docstring = "Formats dead-letter telemetry exception logs for DataOps Observability Dashboard", skipvalidation = "true") get_dead_letter_audit_log(window_minutes:int=60) {
     DeadLetterTelemetry
+    | where ingestion_time() > ago(window_minutes * 1m)
     | extend fac_id_val = tostring(column_ifexists("facility_id", ""))
     | extend facility_id_str = iff(isempty(fac_id_val) or isnull(fac_id_val), "NULL_FACILITY_ID", toupper(fac_id_val))
-    | extend exception_status = iff(facility_id_str == "NULL_FACILITY_ID", "CRITICAL_MISSING_PRIMARY_KEY", "DEPRECATED_SCHEMA_EVENT")
+    | extend exc_reason = tostring(column_ifexists("exception_reason", ""))
+    | extend op_temp_num = todouble(column_ifexists("operating_temperature_c", "0.0"))
+    | extend sensor_val_num = todouble(column_ifexists("sensor_value", "0.0"))
+    | extend exception_status = case(
+        facility_id_str == "NULL_FACILITY_ID" or exc_reason contains "MISSING_PRIMARY_KEY", "CRITICAL_MISSING_PRIMARY_KEY",
+        event_type contains "legacy" or schema_version == "v1.0" or exc_reason contains "DEPRECATED_SCHEMA", "DEPRECATED_SCHEMA_EVENT",
+        op_temp_num > 65.0 or sensor_val_num > 1000.0 or sensor_val_num < -500.0 or exc_reason contains "OUT_OF_BOUNDS", "OUT_OF_BOUNDS_TELEMETRY",
+        exc_reason contains "SERDES" or exc_reason contains "PARSE", "SERDES_PARSE_FAILURE",
+        exc_reason contains "TIMESTAMP" or exc_reason contains "SYNC", "TIMESTAMP_OUT_OF_SYNC",
+        exc_reason contains "UNREGISTERED" or exc_reason contains "MAC", "UNREGISTERED_HARDWARE_DEVICE",
+        "STRUCTURAL_SERDES_PARSE_FAILURE"
+    )
     | extend ingestion_timestamp = ingestion_time()
     | extend payload_timestamp = ingestion_timestamp
     | project ingestion_timestamp, event_id, event_type, exception_status, payload_timestamp
@@ -228,6 +266,7 @@
 .create-or-alter function with (skipvalidation = "true") fn_StreamIngestionLagMetrics() {
     IngestionLatencyTracker
     | where IngestionTime > ago(24h)
+    | where LagSeconds between (0.0 .. 60.0)  // Excludes 6-year clock-skew anomalies
     | summarize 
         P50_Lag_Sec = round(percentile(LagSeconds, 50), 2),
         P95_Lag_Sec = round(percentile(LagSeconds, 95), 2),

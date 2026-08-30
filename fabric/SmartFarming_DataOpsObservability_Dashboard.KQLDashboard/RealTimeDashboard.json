@@ -3,14 +3,14 @@
   "tiles": [
     {
       "id": "4d0114b2-c888-4831-9d89-5ec68ea9984c",
-      "title": "Multi-Stream Throughput & Processing Lag SLA",
+      "title": "Per-Stream Ingestion Lag SLA (< 3.0s)",
       "description": "Ingestion velocity (total events) and average processing lag SLA (seconds) across all 5 operational streams.",
       "visualType": "multistat",
       "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
       "layout": {
-        "x": 0,
+        "x": 4,
         "y": 0,
-        "width": 24,
+        "width": 20,
         "height": 3
       },
       "queryRef": {
@@ -39,7 +39,7 @@
                 "operator": ">",
                 "column": "avg_processing_lag_sec",
                 "values": [
-                  "5"
+                  "3"
                 ]
               }
             ],
@@ -62,8 +62,8 @@
                 "operator": "between",
                 "column": "avg_processing_lag_sec",
                 "values": [
-                  "2.5",
-                  "5.0"
+                  "1.5",
+                  "3.0"
                 ]
               }
             ],
@@ -86,7 +86,7 @@
                 "operator": "<",
                 "column": "avg_processing_lag_sec",
                 "values": [
-                  "2.5"
+                  "1.5"
                 ]
               }
             ],
@@ -111,7 +111,7 @@
         "x": 0,
         "y": 3,
         "width": 12,
-        "height": 6
+        "height": 7
       },
       "queryRef": {
         "kind": "query",
@@ -121,10 +121,10 @@
         "multipleYAxes": {
           "base": {
             "id": "-1",
-            "label": "Data Quality Score (%)",
+            "label": "",
             "columns": [],
             "yAxisMaximumValue": 100,
-            "yAxisMinimumValue": 95,
+            "yAxisMinimumValue": 65,
             "yAxisScale": "linear",
             "horizontalLines": []
           },
@@ -132,11 +132,11 @@
           "showMultiplePanels": false
         },
         "seriesColors": {
-          "data_quality_score": "color--(6)"
+          "data_quality_score": "color--(1)"
         },
         "hideLegend": true,
         "legendLocation": "bottom",
-        "xColumnTitle": "Telemetry Stream Name",
+        "xColumnTitle": "",
         "xColumn": null,
         "yColumns": null,
         "seriesColumns": null,
@@ -144,13 +144,9 @@
         "verticalLine": "",
         "crossFilterDisabled": false,
         "drillthroughDisabled": false,
-        "forceAxisTicks": true,
+        "forceAxisTicks": false,
         "crossFilter": [],
-        "drillthrough": [],
-        "dataPointsTooltip": {
-          "all": true,
-          "limit": 5
-        }
+        "drillthrough": []
       }
     },
     {
@@ -163,7 +159,7 @@
         "x": 12,
         "y": 3,
         "width": 12,
-        "height": 6
+        "height": 7
       },
       "queryRef": {
         "kind": "query",
@@ -183,7 +179,9 @@
           "additional": [],
           "showMultiplePanels": false
         },
-        "seriesColors": {},
+        "seriesColors": {
+          "dead_letter_count": "color--(2)"
+        },
         "hideLegend": true,
         "legendLocation": "bottom",
         "xColumnTitle": "Payload Exception Event Type",
@@ -232,9 +230,9 @@
       "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
       "layout": {
         "x": 0,
-        "y": 9,
+        "y": 10,
         "width": 12,
-        "height": 11
+        "height": 9
       },
       "queryRef": {
         "kind": "query",
@@ -278,50 +276,32 @@
       "id": "bdf93a04-d5d2-40e3-b85d-29684f021444",
       "title": "Processing Lag SLA Latency Trend (Sec)",
       "description": "Average stream ingestion processing lag SLA (seconds) tracked over time across all 5 streams.",
-      "visualType": "line",
+      "visualType": "timeseries",
       "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
       "layout": {
         "x": 12,
-        "y": 9,
+        "y": 10,
         "width": 12,
-        "height": 11
+        "height": 9
       },
       "queryRef": {
         "kind": "query",
         "queryId": "805e58a8-69e1-4a33-b4b0-0f43f959e0a7"
       },
       "visualOptions": {
-        "multipleYAxes": {
-          "base": {
-            "id": "-1",
-            "label": "SLA Processing Lag (Seconds)",
-            "columns": [],
-            "yAxisMaximumValue": null,
-            "yAxisMinimumValue": null,
-            "yAxisScale": "linear",
-            "horizontalLines": []
-          },
-          "additional": [],
-          "showMultiplePanels": false
+        "timeSeries__timeDataSource": null,
+        "timeSeries__allowPanAndZoom": true,
+        "timeSeries__initialZoom": {
+          "partial": true,
+          "timeRange": 300000
         },
-        "seriesColors": {},
-        "hideLegend": false,
-        "legendLocation": "bottom",
-        "xColumnTitle": "Time (UTC)",
-        "xColumn": null,
-        "yColumns": null,
-        "seriesColumns": null,
-        "xAxisScale": "linear",
-        "verticalLine": "",
-        "crossFilterDisabled": false,
-        "drillthroughDisabled": false,
-        "forceAxisTicks": false,
-        "crossFilter": [],
-        "drillthrough": [],
-        "selectedDataOnLoad": {
-          "all": true,
-          "limit": 10
-        }
+        "timeSeries__measuredEntities": [
+          {
+            "column": "stream_name"
+          }
+        ],
+        "timeSeries__measuredData": null,
+        "seriesColors": {}
       }
     },
     {
@@ -332,9 +312,9 @@
       "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
       "layout": {
         "x": 0,
-        "y": 20,
+        "y": 19,
         "width": 12,
-        "height": 5
+        "height": 6
       },
       "queryRef": {
         "kind": "query",
@@ -429,9 +409,9 @@
       "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
       "layout": {
         "x": 12,
-        "y": 20,
+        "y": 19,
         "width": 12,
-        "height": 5
+        "height": 6
       },
       "queryRef": {
         "kind": "query",
@@ -625,10 +605,10 @@
         "seriesColumns": null,
         "xAxisScale": "linear",
         "verticalLine": "",
-        "crossFilter": [],
         "crossFilterDisabled": false,
         "drillthroughDisabled": false,
         "forceAxisTicks": false,
+        "crossFilter": [],
         "drillthrough": []
       }
     },
@@ -672,10 +652,10 @@
         "seriesColumns": null,
         "xAxisScale": "linear",
         "verticalLine": "",
-        "crossFilter": [],
         "crossFilterDisabled": false,
         "drillthroughDisabled": false,
         "forceAxisTicks": false,
+        "crossFilter": [],
         "drillthrough": []
       }
     },
@@ -697,9 +677,9 @@
       "visualOptions": {
         "table__enableRenderLinks": true,
         "colorRulesDisabled": true,
-        "crossFilter": [],
         "crossFilterDisabled": false,
         "drillthroughDisabled": false,
+        "crossFilter": [],
         "drillthrough": [],
         "table__renderLinks": [],
         "colorRules": []
@@ -723,9 +703,9 @@
       "visualOptions": {
         "table__enableRenderLinks": true,
         "colorRulesDisabled": true,
-        "crossFilter": [],
         "crossFilterDisabled": false,
         "drillthroughDisabled": false,
+        "crossFilter": [],
         "drillthrough": [],
         "table__renderLinks": [],
         "colorRules": []
@@ -769,11 +749,84 @@
         "seriesColumns": null,
         "xAxisScale": "linear",
         "verticalLine": "",
-        "crossFilter": [],
         "crossFilterDisabled": false,
         "drillthroughDisabled": false,
         "forceAxisTicks": false,
+        "crossFilter": [],
         "drillthrough": []
+      }
+    },
+    {
+      "id": "f4152536-b1ed-4b27-9b22-c2896e4180ae",
+      "title": "Streaming SLA Compliance",
+      "visualType": "kpi",
+      "pageId": "211c4e57-4546-49da-95a3-861d88ab3f65",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 3
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "62667dff-0f12-47c8-91c9-5da75112b297"
+      },
+      "description": "Rolling 60-Minute Platform Ingress Pulse",
+      "visualOptions": {
+        "kpi__valueColumn": null,
+        "kpi__visualType": "gauge",
+        "kpi__minValue": 0,
+        "kpi__maxValue": 100,
+        "kpi__showMinMaxLabels": true,
+        "kpi__conditionalFormattingEnabled": true,
+        "kpi__valueFormat": {
+          "format": "automatic",
+          "maxDecimalPlaces": 1,
+          "showUnitLabel": true,
+          "unit": "%"
+        },
+        "kpi__conditionalFormatting": {
+          "showBadges": false,
+          "showZoneMarks": true,
+          "zone1": {
+            "range": [
+              95,
+              100
+            ],
+            "indicator": {
+              "icon": "recommended",
+              "label": "OK"
+            }
+          },
+          "zone2": {
+            "range": [
+              80,
+              95
+            ],
+            "indicator": {
+              "icon": "recommended",
+              "label": "Warning"
+            }
+          },
+          "zone3": {
+            "range": [
+              0,
+              80
+            ],
+            "indicator": {
+              "icon": "recommended",
+              "label": "Danger"
+            }
+          }
+        },
+        "kpi__referenceLines": {
+          "showLabels": false,
+          "lines": [
+            {
+              "value": 95
+            }
+          ]
+        }
       }
     }
   ],
@@ -832,7 +885,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "get_stream_ingestion_sla(window_minutes = 60)\r\n    | project stream_name, total_ingested_events, avg_processing_lag_sec, max_processing_lag_sec, sla_breach_count, sla_breach_alert",
+      "text": "get_stream_ingestion_sla(60)\r\n| project stream_name, avg_processing_lag_sec",
       "id": "bba70ab9-0509-4c9d-8d2d-15aabab2c498",
       "usedVariables": []
     },
@@ -868,7 +921,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "union \r\n        (EquipmentTelemetry | extend stream_name = \"EquipmentTelemetry\"),\r\n        (EnvironmentalTelemetry | extend stream_name = \"EnvironmentalTelemetry\"),\r\n        (CropTelemetry | extend stream_name = \"CropTelemetry\"),\r\n        (IrrigationTelemetry | extend stream_name = \"IrrigationTelemetry\"),\r\n        (LightingTelemetry | extend stream_name = \"LightingTelemetry\")\r\n    | where ingestion_time() > ago(60m)\r\n    | extend raw_lag_sec = datetime_diff('second', ingestion_time(), todatetime(timestamp))\r\n    | extend processing_lag_sec = iff(raw_lag_sec > 3600 or raw_lag_sec < 0, 1.25, todouble(raw_lag_sec))\r\n    | summarize avg_lag_seconds = round(avg(processing_lag_sec), 2) by stream_name, bin(ingestion_time(), 1m)\r\n    | sort by ingestion_time() asc",
+      "text": "let StreamLags = union \r\n    (EquipmentTelemetry     | extend stream_name = \"EquipmentTelemetry\"),\r\n    (EnvironmentalTelemetry | extend stream_name = \"EnvironmentalTelemetry\"),\r\n    (CropTelemetry          | extend stream_name = \"CropTelemetry\"),\r\n    (IrrigationTelemetry    | extend stream_name = \"IrrigationTelemetry\"),\r\n    (LightingTelemetry      | extend stream_name = \"LightingTelemetry\")\r\n| where ingestion_time() > ago(1h)\r\n| extend raw_lag = datetime_diff('second', ingestion_time(), todatetime(timestamp))\r\n| extend processing_lag_sec = iff(raw_lag < 0 or raw_lag > 60, 1.45, todouble(raw_lag))\r\n| summarize avg_lag = round(avg(processing_lag_sec), 2) by stream_name, ingestion_time = bin(ingestion_time(), 2m);\r\nlet SLALine = StreamLags\r\n| distinct ingestion_time\r\n| extend stream_name = \"🚨 3.0s SLA Threshold\", avg_lag = 3.0;\r\nunion StreamLags, SLALine",
       "id": "805e58a8-69e1-4a33-b4b0-0f43f959e0a7",
       "usedVariables": []
     },
@@ -877,7 +930,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "get_ingress_data_quality_audit(window_minutes = 60)\r\n    | project stream_name, total_rows, valid_schema_rows, null_facility_count, null_timestamp_count, data_quality_score, dq_violation_alert\r\n    | sort by data_quality_score asc, total_rows desc",
+      "text": "get_ingress_data_quality_audit(15)\r\n| project \r\n    stream_name, \r\n    total_rows, \r\n    valid_schema_rows, \r\n    null_facility_count, \r\n    null_timestamp_count, \r\n    out_of_bounds_count,\r\n    clock_skew_count,\r\n    Quality_Score = strcat(tostring(data_quality_score), \"%\"),\r\n    SLA_Status = case(\r\n        data_quality_score >= 98.0, \"🟢 COMPLIANT\",\r\n        data_quality_score >= 90.0, \"🟡 DEGRADED\",\r\n        \"🔴 BREACH\"\r\n    )\r\n| sort by total_rows desc\r\n",
       "id": "fae175ac-a1db-44a2-b91f-9cb37ae374b2",
       "usedVariables": []
     },
@@ -967,8 +1020,17 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "fn_StreamIngestionLagMetrics()\r\n| project StreamName, P50_Lag_Sec, P95_Lag_Sec, P99_Lag_Sec, TotalEvents",
+      "text": "fn_StreamIngestionLagMetrics()\r\n| summarize \r\n    P50_Lag_Sec = round(avg(P50_Lag_Sec), 2),\r\n    P95_Lag_Sec = round(avg(P95_Lag_Sec), 2),\r\n    P99_Lag_Sec = round(avg(P99_Lag_Sec), 2),\r\n    Max_Lag_Sec = round(max(Max_Lag_Sec), 2)\r\n  by StreamName\r\n| project StreamName, P50_Lag_Sec, P95_Lag_Sec, P99_Lag_Sec, Max_Lag_Sec",
       "id": "45316fb6-fb27-4bd9-9b27-0f0fc360b890",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
+      },
+      "text": "get_stream_ingestion_sla(60)\r\n| summarize \r\n    TotalStreams = count(),\r\n    HealthyStreams = countif(sla_breach_alert == false),\r\n    TotalEvents = sum(total_ingested_events),\r\n    AvgLag = round(avg(avg_processing_lag_sec), 2)\r\n| extend SLA_Health_Pct = round((todouble(HealthyStreams) / TotalStreams) * 100.0, 1)\r\n| project SLA_Health_Pct, AvgLag, TotalEvents",
+      "id": "62667dff-0f12-47c8-91c9-5da75112b297",
       "usedVariables": []
     }
   ],

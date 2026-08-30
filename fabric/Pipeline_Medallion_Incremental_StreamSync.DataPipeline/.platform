@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "Pipeline_Medallion_Incremental_StreamSync"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ca50e236-3c1a-b94e-4a25-1e9dbcf2d837"
+  }
+}
