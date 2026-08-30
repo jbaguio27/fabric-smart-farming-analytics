@@ -152,7 +152,29 @@ dim_eq_bcast = get_safe_dim("gold.dim_equipment", ["equipment_key", "equipment_i
 dim_crop_bcast = get_safe_dim("gold.dim_crop", ["crop_key", F.upper(F.col("crop_type")).alias("crop_id")])
 dim_tech_bcast = get_safe_dim("gold.dim_technician", ["technician_key", F.trim(F.col("technician_name")).alias("technician_name")])
 
-print(f"Initialized Incremental Engine: {RUN_ID} (Multi-Source Extractor Active)")
+# Broadcast lookup for facility enrichment
+df_fac_lookup = None
+if spark.catalog.tableExists("silver.facility_master_enriched"):
+    try:
+        df_fac_lookup = spark.table("silver.facility_master_enriched").select("facility_id", "facility_name", "region").drop_duplicates(["facility_id"])
+    except Exception:
+        pass
+
+def enrich_facility_info(df):
+    if "facility_name" not in df.columns or "region" not in df.columns:
+        if df_fac_lookup is not None:
+            df = df.join(df_fac_lookup, "facility_id", "left")
+        if "facility_name" not in df.columns:
+            df = df.withColumn("facility_name", F.coalesce(F.col("facility_id"), F.lit("FAC-001")))
+        else:
+            df = df.withColumn("facility_name", F.coalesce(F.col("facility_name"), F.col("facility_id"), F.lit("FAC-001")))
+        if "region" not in df.columns:
+            df = df.withColumn("region", F.lit("NCR"))
+        else:
+            df = df.withColumn("region", F.coalesce(F.col("region"), F.lit("NCR")))
+    return df
+
+print(f"Initialized Incremental Engine: {RUN_ID} (Multi-Source Extractor & Schema-Aligned Active)")
 
 # METADATA ********************
 
@@ -352,7 +374,10 @@ if df_new_env is not None and cnt_env > 0:
         .withColumn("sensor_value", clean_val)
         .withColumn("timestamp", ts_clean)
         .drop_duplicates(["event_id"])
-        .select("event_id", "facility_id", "zone_id", "sensor_type", "sensor_value", "unit", "weather", "timestamp")
+    )
+    df_silver_clean = enrich_facility_info(df_silver_clean).select(
+        "event_id", "facility_id", "facility_name", "region", "zone_id",
+        "sensor_type", "sensor_value", "unit", "weather", "timestamp"
     )
     DeltaTable.forName(spark, "silver.environmental_cleaned").alias("t").merge(
         df_silver_clean.alias("s"), "t.event_id = s.event_id"
@@ -389,8 +414,14 @@ if df_new_env is not None and cnt_env > 0:
         .withColumn("composite_stability_score", comp_score)
         .withColumn("environmental_status", F.when(comp_score >= 90.0, "OPTIMAL").when(comp_score >= 75.0, "STABLE").otherwise("WARNING"))
         .withColumn("snapshot_id", F.concat_ws("_", F.col("facility_id"), F.col("zone_id"), F.date_format(F.col("window_time"), "yyyyMMddHHmmss")))
-        .select("snapshot_id", "facility_id", "zone_id", "air_temperature_c", "humidity_pct", "co2_ppm", "light_intensity_lux", "water_ph", "dissolved_oxygen_mg_l", "electrical_conductivity_ms_cm", "vpd_kpa", "temp_drift_c", "composite_stability_score", "environmental_status", F.col("window_time").alias("timestamp"))
         .drop_duplicates(["snapshot_id"])
+    )
+    df_metrics = enrich_facility_info(df_metrics).select(
+        "snapshot_id", "facility_id", "facility_name", "region", "zone_id",
+        "air_temperature_c", "humidity_pct", "co2_ppm", "light_intensity_lux",
+        "water_ph", "dissolved_oxygen_mg_l", "electrical_conductivity_ms_cm",
+        "vpd_kpa", "temp_drift_c", "composite_stability_score",
+        "environmental_status", F.col("window_time").alias("timestamp")
     )
     DeltaTable.forName(spark, "silver.environmental_metrics").alias("t").merge(
         df_metrics.alias("s"), "t.snapshot_id = s.snapshot_id"
@@ -451,9 +482,9 @@ if df_new_env is not None and cnt_env > 0:
         df_gold_env_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key"
     ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
     
-    max_ts = df_new_env.select(F.max(time_col)).collect()[0][0]
-    set_watermark("environmental_telemetry", max_ts)
-    print(f"Environmental: Merged {cnt_env:,} rows into environmental_cleaned, environmental_metrics, & fact_environmental_daily.")
+    max_ts_env = df_new_env.select(F.max(time_col)).collect()[0][0]
+    set_watermark("environmental_telemetry", max_ts_env)
+    print(f"Environmental: Merged {cnt_env:,} rows into environmental_cleaned, metrics & fact_environmental_daily.")
 
 
 # METADATA ********************
@@ -472,11 +503,15 @@ if df_new_eq is not None and cnt_eq > 0:
     total_processed_rows += cnt_eq
     raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
     eq_id_clean = F.when(raw_eq_id.isNull() | raw_eq_id.contains("ORPHAN"), F.lit("UNREGISTERED_ASSET")).otherwise(raw_eq_id)
+    fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
+    zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
     temp_clean = F.coalesce(F.when((F.col("operating_temperature_c").cast("double") < 0.0) | (F.col("operating_temperature_c").cast("double") > 150.0), F.lit(None)).otherwise(F.round(F.col("operating_temperature_c").cast("double"), 2)), F.lit(45.0))
     
     df_silver_eq = (
         df_new_eq
         .withColumn("equipment_id", eq_id_clean)
+        .withColumn("facility_id", fac_clean)
+        .withColumn("zone_id", zone_clean)
         .withColumn("operating_temp_c", temp_clean)
         .withColumn("vibration_vps", F.round(F.col("vibration_vps").cast("double"), 2))
         .withColumn("equipment_health_status", F.round(F.col("health").cast("double"), 2))
@@ -484,7 +519,21 @@ if df_new_eq is not None and cnt_eq > 0:
         .withColumn("power_consumption_kw", F.round(F.col("power_consumption_kw").cast("double"), 2))
         .withColumn("failure_probability", F.round(F.col("failure_probability").cast("double"), 4))
         .withColumn("runtime_hours", F.round(F.col("runtime_hours").cast("double"), 1))
+        .withColumn("equipment_type", F.coalesce(F.col("equipment_type"), F.lit("HVAC")))
+        .withColumn("manufacturer", F.coalesce(F.col("manufacturer"), F.lit("HydroPump Corp")))
+        .withColumn("model_number", F.coalesce(F.col("model_number"), F.lit("HP-3000X")))
+        .withColumn("operating_status", F.coalesce(F.col("operating_status"), F.lit("RUNNING")))
+        .withColumn("operator_contact", F.coalesce(F.col("operator_contact"), F.lit("tech.support@smartfarm.ph")))
+        .withColumn("operator_phone", F.coalesce(F.col("operator_phone"), F.lit("+639178452190")))
         .drop_duplicates(["event_id"])
+    )
+    df_silver_eq = enrich_facility_info(df_silver_eq).select(
+        "event_id", "facility_id", "facility_name", "region", "zone_id",
+        "equipment_id", "equipment_type", "manufacturer", "model_number",
+        "operating_status", "operating_temp_c", "vibration_vps",
+        "current_load_percent", "power_consumption_kw", "equipment_health_status",
+        "failure_probability", "runtime_hours", "operator_contact",
+        "operator_phone", "timestamp"
     )
     DeltaTable.forName(spark, "silver.equipment_risk_cleaned").alias("t").merge(
         df_silver_eq.alias("s"), "t.event_id = s.event_id"
@@ -566,12 +615,36 @@ if df_new_eq is not None and cnt_eq > 0:
 df_new_cr, cnt_cr, time_col_cr = extract_incremental_stream(["bronze.crop_telemetry", "CropTelemetry", "Files/CropTelemetry"], "crop_telemetry")
 if df_new_cr is not None and cnt_cr > 0:
     total_processed_rows += cnt_cr
+    fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
+    zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
+    
     df_silver_cr = (
         df_new_cr
-        .withColumn("biomass_g", F.round(F.col("biomass_grams").cast("double"), 2))
+        .withColumn("facility_id", fac_clean)
+        .withColumn("zone_id", zone_clean)
+        .withColumn("crop_batch_id", F.coalesce(F.col("crop_batch_id"), F.lit("BATCH-001")))
+        .withColumn("crop_type", F.coalesce(F.col("crop_type"), F.lit("BUTTERHEAD_LETTUCE")))
+        .withColumn("lifecycle_stage", F.coalesce(F.col("lifecycle_stage"), F.lit("VEGETATIVE")))
+        .withColumn("age_days", F.round(F.coalesce(F.col("age_days").cast("double"), F.lit(15.0)), 1))
         .withColumn("crop_health_score", F.round(F.col("health_score").cast("double"), 1))
         .withColumn("growth_rate_g_day", F.round(F.col("growth_rate").cast("double"), 2))
+        .withColumn("biomass_g", F.round(F.col("biomass_grams").cast("double"), 2))
+        .withColumn("biological_stress_pct", F.round(F.coalesce(F.col("biological_stress_percent").cast("double"), F.lit(5.0)), 1))
+        .withColumn("water_consumption_liters", F.round(F.coalesce(F.col("water_consumption_liters").cast("double"), F.lit(25.0)), 2))
+        .withColumn("nutrient_consumption_grams", F.round(F.coalesce(F.col("nutrient_consumption_grams").cast("double"), F.lit(50.0)), 2))
+        .withColumn("ambient_temperature_celsius", F.round(F.coalesce(F.col("ambient_temperature_celsius").cast("double"), F.lit(22.0)), 2))
+        .withColumn("ambient_humidity_percent", F.round(F.coalesce(F.col("ambient_humidity_percent").cast("double"), F.lit(65.0)), 1))
+        .withColumn("operator_contact", F.coalesce(F.col("operator_contact"), F.lit("agronomy.lead@smartfarm.ph")))
+        .withColumn("operator_phone", F.coalesce(F.col("operator_phone"), F.lit("+639178452190")))
         .drop_duplicates(["event_id"])
+    )
+    df_silver_cr = enrich_facility_info(df_silver_cr).select(
+        "event_id", "facility_id", "facility_name", "region", "zone_id",
+        "crop_batch_id", "crop_type", "lifecycle_stage", "age_days",
+        "crop_health_score", "growth_rate_g_day", "biomass_g",
+        "biological_stress_pct", "water_consumption_liters",
+        "nutrient_consumption_grams", "ambient_temperature_celsius",
+        "ambient_humidity_percent", "operator_contact", "operator_phone", "timestamp"
     )
     DeltaTable.forName(spark, "silver.crop_biological_cleaned").alias("t").merge(
         df_silver_cr.alias("s"), "t.event_id = s.event_id"
@@ -666,7 +739,13 @@ if df_new_irr is not None and cnt_irr > 0:
         .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("hydro.tech@smartfarm.ph")))
         .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
         .drop_duplicates(["event_id"])
-        .select("event_id", "facility_id", "zone_id", "irrigation_active", "flow_lpm", "pressure_kpa", "irrigation_duration_seconds", "water_delivered_liters", "nutrient_solution_delivered_liters", "operator_contact", "operator_phone", "timestamp")
+    )
+    df_silver_irr = enrich_facility_info(df_silver_irr).select(
+        "event_id", "facility_id", "facility_name", "region", "zone_id",
+        "irrigation_active", "flow_lpm", "pressure_kpa",
+        "irrigation_duration_seconds", "water_delivered_liters",
+        "nutrient_solution_delivered_liters", "operator_contact",
+        "operator_phone", "timestamp"
     )
     DeltaTable.forName(spark, "silver.irrigation_flow_cleaned").alias("t").merge(
         df_silver_irr.alias("s"), "t.event_id = s.event_id"
@@ -734,7 +813,12 @@ if df_new_lt is not None and cnt_lt > 0:
         .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("elec.tech@smartfarm.ph")))
         .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
         .drop_duplicates(["event_id"])
-        .select("event_id", "facility_id", "zone_id", "lighting_enabled", "lighting_intensity_percent", "photoperiod_hours", "dli_mol_m2_day", "operator_contact", "operator_phone", "timestamp")
+    )
+    df_silver_lt = enrich_facility_info(df_silver_lt).select(
+        "event_id", "facility_id", "facility_name", "region", "zone_id",
+        "lighting_enabled", "lighting_intensity_percent",
+        "photoperiod_hours", "dli_mol_m2_day", "operator_contact",
+        "operator_phone", "timestamp"
     )
     DeltaTable.forName(spark, "silver.lighting_dli_cleaned").alias("t").merge(
         df_silver_lt.alias("s"), "t.event_id = s.event_id"
@@ -816,7 +900,15 @@ if df_new_maint is not None and cnt_maint > 0:
         .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("maint.lead@smartfarm.ph")))
         .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
         .drop_duplicates(["event_id"])
-        .select("event_id", "facility_id", "zone_id", "equipment_id", "work_order_id", "maintenance_type", "priority", "assigned_technician", "maintenance_status", "estimated_duration_minutes", "remaining_duration_minutes", "completion_percent", "is_active", "technician_notes", "health_restored", "resolution_lag_min", "operator_contact", "operator_phone", "timestamp")
+    )
+    df_silver_maint = enrich_facility_info(df_silver_maint).select(
+        "event_id", "facility_id", "facility_name", "region", "zone_id",
+        "equipment_id", "work_order_id", "maintenance_type", "priority",
+        "assigned_technician", "maintenance_status",
+        "estimated_duration_minutes", "remaining_duration_minutes",
+        "completion_percent", "is_active", "technician_notes",
+        "health_restored", "resolution_lag_min", "operator_contact",
+        "operator_phone", "timestamp"
     )
     DeltaTable.forName(spark, "silver.maintenance_sla_cleaned").alias("t").merge(
         df_silver_maint.alias("s"), "t.event_id = s.event_id"
