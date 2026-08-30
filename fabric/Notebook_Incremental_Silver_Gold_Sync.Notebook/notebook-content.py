@@ -65,7 +65,7 @@ def set_watermark(stream_name, max_ts):
             WHEN NOT MATCHED THEN INSERT *
         """)
 
-# Dynamic Universal Incremental Batch Extractor with Multi-Source Fallback
+# Dynamic Universal Incremental Batch Extractor with Multi-Source Fallback & Diagnostic Telemetry
 def extract_incremental_stream(table_candidates, watermark_key):
     if isinstance(table_candidates, str):
         table_candidates = [table_candidates]
@@ -85,35 +85,44 @@ def extract_incremental_stream(table_candidates, watermark_key):
             except Exception:
                 pass
                 
-        if df is not None and df.count() > 0:
-            cols = df.columns
-            col_map = {c.lower(): c for c in cols}
-            
-            # Resolve timestamp column case-insensitively
-            raw_col_name = col_map.get("ingestiontime") or col_map.get("ingestion_timestamp") or col_map.get("timestamp")
-            if raw_col_name:
-                raw_ts_str = F.regexp_replace(F.trim(F.col(raw_col_name).cast("string")), "[\"']", "")
-                ts_expr = F.coalesce(
-                    F.to_timestamp(raw_ts_str),
-                    F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'"),
-                    F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"),
-                    F.to_timestamp(raw_ts_str, "yyyy-MM-dd HH:mm:ss"),
-                    F.to_timestamp(F.col(raw_col_name))
-                )
-            else:
-                ts_expr = F.current_timestamp()
+        if df is not None:
+            total_cand_rows = df.count()
+            if total_cand_rows > 0:
+                cols = df.columns
+                col_map = {c.lower(): c for c in cols}
                 
-            df_ts = df.withColumn("_parsed_sync_ts", ts_expr)
-            if wm is not None:
-                df_filtered = df_ts.filter(F.col("_parsed_sync_ts") > F.lit(wm))
-            else:
-                df_filtered = df_ts
+                # Resolve timestamp column case-insensitively
+                raw_col_name = col_map.get("ingestiontime") or col_map.get("ingestion_timestamp") or col_map.get("timestamp")
+                if raw_col_name:
+                    ts_expr = F.coalesce(
+                        F.col(raw_col_name).cast("timestamp"),
+                        F.to_timestamp(F.col(raw_col_name).cast("string")),
+                        F.to_timestamp(F.col(raw_col_name).cast("string"), "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'"),
+                        F.to_timestamp(F.col(raw_col_name).cast("string"), "yyyy-MM-dd'T'HH:mm:ss'Z'"),
+                        F.to_timestamp(F.col(raw_col_name).cast("string"), "yyyy-MM-dd HH:mm:ss")
+                    )
+                else:
+                    ts_expr = F.current_timestamp()
+                    
+                df_ts = df.withColumn("_parsed_sync_ts", ts_expr)
                 
-            cnt = df_filtered.count()
-            if cnt > 0:
-                print(f"[{watermark_key}] Extracted {cnt:,} new events from source '{cand}' (Watermark: {wm})")
-                return df_filtered, cnt, "_parsed_sync_ts"
+                # Compute max timestamp in candidate table
+                try:
+                    max_in_table = df_ts.select(F.max("_parsed_sync_ts")).collect()[0][0]
+                except Exception:
+                    max_in_table = None
                 
+                if wm is not None:
+                    df_filtered = df_ts.filter(F.col("_parsed_sync_ts") > F.lit(wm))
+                else:
+                    df_filtered = df_ts
+                    
+                cnt = df_filtered.count()
+                print(f"📡 [{watermark_key}] Source: '{cand}' | Total Rows: {total_cand_rows:,} | Max TS: {max_in_table} | Watermark: {wm} | New Delta Rows: {cnt:,}")
+                
+                if cnt > 0:
+                    return df_filtered, cnt, "_parsed_sync_ts"
+                    
     return None, 0, "_parsed_sync_ts"
 
 # Safe Dimension Lookup Helper
