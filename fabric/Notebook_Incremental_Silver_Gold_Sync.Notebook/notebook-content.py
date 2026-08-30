@@ -65,7 +65,7 @@ def set_watermark(stream_name, max_ts):
             WHEN NOT MATCHED THEN INSERT *
         """)
 
-# Dynamic Universal Incremental Batch Extractor with Multi-Source Fallback & Diagnostic Telemetry
+# Dynamic Universal Incremental Batch Extractor with Multi-Source Fallback & Self-Healing Watermarks
 def extract_incremental_stream(table_candidates, watermark_key):
     if isinstance(table_candidates, str):
         table_candidates = [table_candidates]
@@ -74,19 +74,46 @@ def extract_incremental_stream(table_candidates, watermark_key):
     
     for cand in table_candidates:
         df = None
-        if cand.startswith("Files/") or cand.startswith("/"):
+        
+        # Candidate Path Variations to resolve shortcuts and delta tables
+        paths_to_try = [cand]
+        if not cand.startswith("Files/") and not cand.startswith("Tables/") and not cand.startswith("/"):
+            paths_to_try.extend([f"Files/{cand}", f"/Files/{cand}", f"Tables/{cand}", f"/Tables/{cand}"])
+            
+        for path_cand in paths_to_try:
+            if df is not None:
+                break
+            # 1. Try spark.table()
             try:
-                df = spark.read.format("delta").load(cand)
+                if spark.catalog.tableExists(path_cand):
+                    df = spark.table(path_cand)
             except Exception:
                 pass
-        elif spark.catalog.tableExists(cand):
-            try:
-                df = spark.table(cand)
-            except Exception:
-                pass
+            # 2. Try Delta load
+            if df is None:
+                try:
+                    df = spark.read.format("delta").load(path_cand)
+                except Exception:
+                    pass
+            # 3. Try Parquet load
+            if df is None:
+                try:
+                    df = spark.read.parquet(path_cand)
+                except Exception:
+                    pass
+            # 4. Try Auto load
+            if df is None:
+                try:
+                    df = spark.read.load(path_cand)
+                except Exception:
+                    pass
                 
         if df is not None:
-            total_cand_rows = df.count()
+            try:
+                total_cand_rows = df.count()
+            except Exception:
+                total_cand_rows = 0
+                
             if total_cand_rows > 0:
                 cols = df.columns
                 col_map = {c.lower(): c for c in cols}
@@ -112,8 +139,13 @@ def extract_incremental_stream(table_candidates, watermark_key):
                 except Exception:
                     max_in_table = None
                 
+                # Self-healing watermark logic
                 if wm is not None:
-                    df_filtered = df_ts.filter(F.col("_parsed_sync_ts") > F.lit(wm))
+                    if max_in_table is not None and max_in_table < wm:
+                        print(f"⚠️ [{watermark_key}] Clock Skew/Restart detected: Watermark ({wm}) > Table Max ({max_in_table}). Auto-aligning watermark to capture live simulator stream!")
+                        df_filtered = df_ts
+                    else:
+                        df_filtered = df_ts.filter(F.col("_parsed_sync_ts") > F.lit(wm))
                 else:
                     df_filtered = df_ts
                     
