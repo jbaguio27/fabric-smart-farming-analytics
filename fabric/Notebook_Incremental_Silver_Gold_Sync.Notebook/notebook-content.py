@@ -348,10 +348,14 @@ print("Master Enriched Tables Synced with zero duplicate keys.")
 df_new_env, cnt_env, time_col = extract_incremental_stream(["bronze.environmental_telemetry", "EnvironmentalTelemetry", "Files/EnvironmentalTelemetry"], "environmental_telemetry")
 if df_new_env is not None and cnt_env > 0:
     total_processed_rows += cnt_env
+    raw_env_cols = df_new_env.columns
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
     zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
-    stype_clean = F.lower(F.trim(F.col("sensor_type")))
-    val_raw = F.col("sensor_value").cast("double")
+    stype_raw = F.col("sensor_type") if "sensor_type" in raw_env_cols else F.lit("air_temperature")
+    stype_clean = F.lower(F.trim(stype_raw))
+    val_raw = (F.col("sensor_value") if "sensor_value" in raw_env_cols else F.lit(22.0)).cast("double")
+    unit_col = F.col("unit") if "unit" in raw_env_cols else F.lit("celsius")
+    weather_col = F.col("weather") if "weather" in raw_env_cols else F.lit("Clear")
     
     clean_val = (
         F.when((stype_clean == "air_temperature") & ((val_raw < -10.0) | (val_raw > 65.0)), F.lit(None))
@@ -372,6 +376,8 @@ if df_new_env is not None and cnt_env > 0:
         .withColumn("zone_id", zone_clean)
         .withColumn("sensor_type", stype_clean)
         .withColumn("sensor_value", clean_val)
+        .withColumn("unit", unit_col)
+        .withColumn("weather", weather_col)
         .withColumn("timestamp", ts_clean)
         .drop_duplicates(["event_id"])
     )
@@ -501,11 +507,27 @@ if df_new_env is not None and cnt_env > 0:
 df_new_eq, cnt_eq, time_col_eq = extract_incremental_stream(["bronze.equipment_telemetry", "EquipmentTelemetry", "Files/EquipmentTelemetry"], "equipment_telemetry")
 if df_new_eq is not None and cnt_eq > 0:
     total_processed_rows += cnt_eq
-    raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
+    raw_eq_cols = df_new_eq.columns
+    eq_id_raw = F.col("equipment_id") if "equipment_id" in raw_eq_cols else F.lit("UNREGISTERED_ASSET")
+    raw_eq_id = F.upper(F.trim(eq_id_raw))
     eq_id_clean = F.when(raw_eq_id.isNull() | raw_eq_id.contains("ORPHAN"), F.lit("UNREGISTERED_ASSET")).otherwise(raw_eq_id)
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
     zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
-    temp_clean = F.coalesce(F.when((F.col("operating_temperature_c").cast("double") < 0.0) | (F.col("operating_temperature_c").cast("double") > 150.0), F.lit(None)).otherwise(F.round(F.col("operating_temperature_c").cast("double"), 2)), F.lit(45.0))
+    
+    op_temp = F.col("operating_temperature_c") if "operating_temperature_c" in raw_eq_cols else (F.col("operating_temp_c") if "operating_temp_c" in raw_eq_cols else F.lit(45.0))
+    temp_clean = F.coalesce(F.when((op_temp.cast("double") < 0.0) | (op_temp.cast("double") > 150.0), F.lit(None)).otherwise(F.round(op_temp.cast("double"), 2)), F.lit(45.0))
+    vib_col = F.round(F.col("vibration_vps").cast("double"), 2) if "vibration_vps" in raw_eq_cols else F.lit(0.05)
+    health_col = F.round(F.col("health").cast("double"), 2) if "health" in raw_eq_cols else (F.round(F.col("equipment_health_status").cast("double"), 2) if "equipment_health_status" in raw_eq_cols else F.lit(98.0))
+    load_col = F.round(F.col("current_load").cast("double"), 1) if "current_load" in raw_eq_cols else (F.round(F.col("current_load_percent").cast("double"), 1) if "current_load_percent" in raw_eq_cols else F.lit(50.0))
+    pwr_col = F.round(F.col("power_consumption_kw").cast("double"), 2) if "power_consumption_kw" in raw_eq_cols else F.lit(5.5)
+    fail_col = F.round(F.col("failure_probability").cast("double"), 4) if "failure_probability" in raw_eq_cols else F.lit(0.01)
+    runtime_col = F.round(F.col("runtime_hours").cast("double"), 1) if "runtime_hours" in raw_eq_cols else F.lit(120.0)
+    eq_type_col = F.col("equipment_type") if "equipment_type" in raw_eq_cols else F.lit("HVAC")
+    mfr_col = F.col("manufacturer") if "manufacturer" in raw_eq_cols else F.lit("HydroPump Corp")
+    model_col = F.col("model_number") if "model_number" in raw_eq_cols else F.lit("HP-3000X")
+    status_col = F.col("operating_status") if "operating_status" in raw_eq_cols else F.lit("RUNNING")
+    eq_contact_col = F.coalesce(F.trim(F.col("operator_contact")), F.lit("tech.support@smartfarm.ph")) if "operator_contact" in raw_eq_cols else F.lit("tech.support@smartfarm.ph")
+    eq_phone_col = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")) if "operator_phone" in raw_eq_cols else F.lit("+639178452190")
     
     df_silver_eq = (
         df_new_eq
@@ -513,18 +535,18 @@ if df_new_eq is not None and cnt_eq > 0:
         .withColumn("facility_id", fac_clean)
         .withColumn("zone_id", zone_clean)
         .withColumn("operating_temp_c", temp_clean)
-        .withColumn("vibration_vps", F.round(F.col("vibration_vps").cast("double"), 2))
-        .withColumn("equipment_health_status", F.round(F.col("health").cast("double"), 2))
-        .withColumn("current_load_percent", F.round(F.col("current_load").cast("double"), 1))
-        .withColumn("power_consumption_kw", F.round(F.col("power_consumption_kw").cast("double"), 2))
-        .withColumn("failure_probability", F.round(F.col("failure_probability").cast("double"), 4))
-        .withColumn("runtime_hours", F.round(F.col("runtime_hours").cast("double"), 1))
-        .withColumn("equipment_type", F.coalesce(F.col("equipment_type"), F.lit("HVAC")))
-        .withColumn("manufacturer", F.coalesce(F.col("manufacturer"), F.lit("HydroPump Corp")))
-        .withColumn("model_number", F.coalesce(F.col("model_number"), F.lit("HP-3000X")))
-        .withColumn("operating_status", F.coalesce(F.col("operating_status"), F.lit("RUNNING")))
-        .withColumn("operator_contact", F.coalesce(F.col("operator_contact"), F.lit("tech.support@smartfarm.ph")))
-        .withColumn("operator_phone", F.coalesce(F.col("operator_phone"), F.lit("+639178452190")))
+        .withColumn("vibration_vps", vib_col)
+        .withColumn("equipment_health_status", health_col)
+        .withColumn("current_load_percent", load_col)
+        .withColumn("power_consumption_kw", pwr_col)
+        .withColumn("failure_probability", fail_col)
+        .withColumn("runtime_hours", runtime_col)
+        .withColumn("equipment_type", eq_type_col)
+        .withColumn("manufacturer", mfr_col)
+        .withColumn("model_number", model_col)
+        .withColumn("operating_status", status_col)
+        .withColumn("operator_contact", eq_contact_col)
+        .withColumn("operator_phone", eq_phone_col)
         .drop_duplicates(["event_id"])
     )
     df_silver_eq = enrich_facility_info(df_silver_eq).select(
@@ -615,27 +637,53 @@ if df_new_eq is not None and cnt_eq > 0:
 df_new_cr, cnt_cr, time_col_cr = extract_incremental_stream(["bronze.crop_telemetry", "CropTelemetry", "Files/CropTelemetry"], "crop_telemetry")
 if df_new_cr is not None and cnt_cr > 0:
     total_processed_rows += cnt_cr
+    raw_cr_cols = df_new_cr.columns
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
     zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
+    
+    crop_batch_col = F.col("crop_batch_id") if "crop_batch_id" in raw_cr_cols else F.lit("BATCH-001")
+    crop_type_col = F.col("crop_type") if "crop_type" in raw_cr_cols else F.lit("BUTTERHEAD_LETTUCE")
+    stage_col = F.col("lifecycle_stage") if "lifecycle_stage" in raw_cr_cols else F.lit("VEGETATIVE")
+    age_col = F.round(F.col("age_days").cast("double"), 1) if "age_days" in raw_cr_cols else F.lit(15.0)
+    health_col = F.round(F.col("health_score").cast("double"), 1) if "health_score" in raw_cr_cols else F.lit(95.0)
+    growth_col = F.round(F.col("growth_rate").cast("double"), 2) if "growth_rate" in raw_cr_cols else F.lit(2.5)
+    biomass_col = F.round(F.col("biomass_grams").cast("double"), 2) if "biomass_grams" in raw_cr_cols else F.lit(150.0)
+    
+    stress_val = (
+        F.round(F.col("environmental_stress_index").cast("double") * F.lit(100.0), 1)
+        if "environmental_stress_index" in raw_cr_cols
+        else (
+            F.round(F.col("biological_stress_percent").cast("double"), 1)
+            if "biological_stress_percent" in raw_cr_cols
+            else F.lit(5.0)
+        )
+    )
+    
+    water_col = F.round(F.col("water_consumption_liters").cast("double"), 2) if "water_consumption_liters" in raw_cr_cols else F.lit(25.0)
+    nutr_col = F.round(F.col("nutrient_consumption_grams").cast("double"), 2) if "nutrient_consumption_grams" in raw_cr_cols else F.lit(50.0)
+    temp_col = F.round(F.col("ambient_temperature_celsius").cast("double"), 2) if "ambient_temperature_celsius" in raw_cr_cols else F.lit(22.0)
+    humid_col = F.round(F.col("ambient_humidity_percent").cast("double"), 1) if "ambient_humidity_percent" in raw_cr_cols else F.lit(65.0)
+    contact_col = F.coalesce(F.trim(F.col("operator_contact")), F.lit("agronomy.lead@smartfarm.ph")) if "operator_contact" in raw_cr_cols else F.lit("agronomy.lead@smartfarm.ph")
+    phone_col = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")) if "operator_phone" in raw_cr_cols else F.lit("+639178452190")
     
     df_silver_cr = (
         df_new_cr
         .withColumn("facility_id", fac_clean)
         .withColumn("zone_id", zone_clean)
-        .withColumn("crop_batch_id", F.coalesce(F.col("crop_batch_id"), F.lit("BATCH-001")))
-        .withColumn("crop_type", F.coalesce(F.col("crop_type"), F.lit("BUTTERHEAD_LETTUCE")))
-        .withColumn("lifecycle_stage", F.coalesce(F.col("lifecycle_stage"), F.lit("VEGETATIVE")))
-        .withColumn("age_days", F.round(F.coalesce(F.col("age_days").cast("double"), F.lit(15.0)), 1))
-        .withColumn("crop_health_score", F.round(F.col("health_score").cast("double"), 1))
-        .withColumn("growth_rate_g_day", F.round(F.col("growth_rate").cast("double"), 2))
-        .withColumn("biomass_g", F.round(F.col("biomass_grams").cast("double"), 2))
-        .withColumn("biological_stress_pct", F.round(F.coalesce(F.col("biological_stress_percent").cast("double"), F.lit(5.0)), 1))
-        .withColumn("water_consumption_liters", F.round(F.coalesce(F.col("water_consumption_liters").cast("double"), F.lit(25.0)), 2))
-        .withColumn("nutrient_consumption_grams", F.round(F.coalesce(F.col("nutrient_consumption_grams").cast("double"), F.lit(50.0)), 2))
-        .withColumn("ambient_temperature_celsius", F.round(F.coalesce(F.col("ambient_temperature_celsius").cast("double"), F.lit(22.0)), 2))
-        .withColumn("ambient_humidity_percent", F.round(F.coalesce(F.col("ambient_humidity_percent").cast("double"), F.lit(65.0)), 1))
-        .withColumn("operator_contact", F.coalesce(F.col("operator_contact"), F.lit("agronomy.lead@smartfarm.ph")))
-        .withColumn("operator_phone", F.coalesce(F.col("operator_phone"), F.lit("+639178452190")))
+        .withColumn("crop_batch_id", crop_batch_col)
+        .withColumn("crop_type", crop_type_col)
+        .withColumn("lifecycle_stage", stage_col)
+        .withColumn("age_days", age_col)
+        .withColumn("crop_health_score", health_col)
+        .withColumn("growth_rate_g_day", growth_col)
+        .withColumn("biomass_g", biomass_col)
+        .withColumn("biological_stress_pct", stress_val)
+        .withColumn("water_consumption_liters", water_col)
+        .withColumn("nutrient_consumption_grams", nutr_col)
+        .withColumn("ambient_temperature_celsius", temp_col)
+        .withColumn("ambient_humidity_percent", humid_col)
+        .withColumn("operator_contact", contact_col)
+        .withColumn("operator_phone", phone_col)
         .drop_duplicates(["event_id"])
     )
     df_silver_cr = enrich_facility_info(df_silver_cr).select(
@@ -720,24 +768,34 @@ if df_new_cr is not None and cnt_cr > 0:
 df_new_irr, cnt_irr, time_col_irr = extract_incremental_stream(["bronze.irrigation_telemetry", "IrrigationTelemetry", "Files/IrrigationTelemetry"], "irrigation_telemetry")
 if df_new_irr is not None and cnt_irr > 0:
     total_processed_rows += cnt_irr
+    raw_irr_cols = df_new_irr.columns
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
     zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
     raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
     ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
+    
+    active_col = F.col("irrigation_active").cast("boolean") if "irrigation_active" in raw_irr_cols else F.lit(True)
+    flow_col = F.round(F.col("flow_rate_liters_per_minute").cast("double"), 2) if "flow_rate_liters_per_minute" in raw_irr_cols else (F.round(F.col("flow_lpm").cast("double"), 2) if "flow_lpm" in raw_irr_cols else F.lit(12.5))
+    press_col = F.round(F.col("pressure_kpa").cast("double"), 1) if "pressure_kpa" in raw_irr_cols else F.lit(210.0)
+    dur_col = F.col("irrigation_duration_seconds").cast("int") if "irrigation_duration_seconds" in raw_irr_cols else F.lit(300)
+    water_col = F.round(F.col("water_delivered_liters").cast("double"), 2) if "water_delivered_liters" in raw_irr_cols else F.lit(62.5)
+    nutr_col = F.round(F.col("nutrient_solution_delivered_liters").cast("double"), 2) if "nutrient_solution_delivered_liters" in raw_irr_cols else F.lit(5.0)
+    irr_contact = F.coalesce(F.trim(F.col("operator_contact")), F.lit("hydro.tech@smartfarm.ph")) if "operator_contact" in raw_irr_cols else F.lit("hydro.tech@smartfarm.ph")
+    irr_phone = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")) if "operator_phone" in raw_irr_cols else F.lit("+639178452190")
     
     df_silver_irr = (
         df_new_irr
         .withColumn("facility_id", fac_clean)
         .withColumn("zone_id", zone_clean)
         .withColumn("timestamp", ts_clean)
-        .withColumn("irrigation_active", F.col("irrigation_active").cast("boolean"))
-        .withColumn("flow_lpm", F.round(F.col("flow_rate_liters_per_minute").cast("double"), 2))
-        .withColumn("pressure_kpa", F.round(F.col("pressure_kpa").cast("double"), 1))
-        .withColumn("irrigation_duration_seconds", F.col("irrigation_duration_seconds").cast("int"))
-        .withColumn("water_delivered_liters", F.round(F.col("water_delivered_liters").cast("double"), 2))
-        .withColumn("nutrient_solution_delivered_liters", F.round(F.col("nutrient_solution_delivered_liters").cast("double"), 2))
-        .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("hydro.tech@smartfarm.ph")))
-        .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
+        .withColumn("irrigation_active", active_col)
+        .withColumn("flow_lpm", flow_col)
+        .withColumn("pressure_kpa", press_col)
+        .withColumn("irrigation_duration_seconds", dur_col)
+        .withColumn("water_delivered_liters", water_col)
+        .withColumn("nutrient_solution_delivered_liters", nutr_col)
+        .withColumn("operator_contact", irr_contact)
+        .withColumn("operator_phone", irr_phone)
         .drop_duplicates(["event_id"])
     )
     df_silver_irr = enrich_facility_info(df_silver_irr).select(
@@ -796,22 +854,30 @@ if df_new_irr is not None and cnt_irr > 0:
 df_new_lt, cnt_lt, time_col_lt = extract_incremental_stream(["bronze.lighting_telemetry", "LightingTelemetry", "Files/LightingTelemetry"], "lighting_telemetry")
 if df_new_lt is not None and cnt_lt > 0:
     total_processed_rows += cnt_lt
+    raw_lt_cols = df_new_lt.columns
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
     zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
     raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
     ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
+    
+    lt_active = F.col("lighting_enabled").cast("boolean") if "lighting_enabled" in raw_lt_cols else F.lit(True)
+    lt_intensity = F.round(F.col("lighting_intensity_percent").cast("double"), 1) if "lighting_intensity_percent" in raw_lt_cols else F.lit(85.0)
+    lt_period = F.round(F.col("photoperiod_hours").cast("double"), 1) if "photoperiod_hours" in raw_lt_cols else F.lit(16.0)
+    lt_dli = F.round(F.col("daily_light_integral").cast("double"), 2) if "daily_light_integral" in raw_lt_cols else (F.round(F.col("dli_mol_m2_day").cast("double"), 2) if "dli_mol_m2_day" in raw_lt_cols else F.lit(18.5))
+    lt_contact = F.coalesce(F.trim(F.col("operator_contact")), F.lit("elec.tech@smartfarm.ph")) if "operator_contact" in raw_lt_cols else F.lit("elec.tech@smartfarm.ph")
+    lt_phone = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")) if "operator_phone" in raw_lt_cols else F.lit("+639178452190")
     
     df_silver_lt = (
         df_new_lt
         .withColumn("facility_id", fac_clean)
         .withColumn("zone_id", zone_clean)
         .withColumn("timestamp", ts_clean)
-        .withColumn("lighting_enabled", F.col("lighting_enabled").cast("boolean"))
-        .withColumn("lighting_intensity_percent", F.round(F.col("lighting_intensity_percent").cast("double"), 1))
-        .withColumn("photoperiod_hours", F.round(F.col("photoperiod_hours").cast("double"), 1))
-        .withColumn("dli_mol_m2_day", F.round(F.col("daily_light_integral").cast("double"), 2))
-        .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("elec.tech@smartfarm.ph")))
-        .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
+        .withColumn("lighting_enabled", lt_active)
+        .withColumn("lighting_intensity_percent", lt_intensity)
+        .withColumn("photoperiod_hours", lt_period)
+        .withColumn("dli_mol_m2_day", lt_dli)
+        .withColumn("operator_contact", lt_contact)
+        .withColumn("operator_phone", lt_phone)
         .drop_duplicates(["event_id"])
     )
     df_silver_lt = enrich_facility_info(df_silver_lt).select(
@@ -868,16 +934,29 @@ if df_new_lt is not None and cnt_lt > 0:
 df_new_maint, cnt_maint, time_col_maint = extract_incremental_stream(["bronze.maintenance_activity", "MaintenanceActivity", "Files/MaintenanceActivity"], "maintenance_activity")
 if df_new_maint is not None and cnt_maint > 0:
     total_processed_rows += cnt_maint
+    raw_maint_cols = df_new_maint.columns
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
     zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
-    raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
+    
+    raw_eq_id = F.upper(F.trim(F.col("equipment_id"))) if "equipment_id" in raw_maint_cols else F.lit("UNREGISTERED_ASSET")
     eq_id_clean = F.when(raw_eq_id.isNull() | raw_eq_id.contains("ORPHAN"), F.lit("UNREGISTERED_ASSET")).otherwise(raw_eq_id)
     raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
     ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
     
-    maint_status_clean = F.upper(F.trim(F.col("maintenance_status")))
+    wo_id = F.trim(F.col("work_order_id")) if "work_order_id" in raw_maint_cols else F.lit("WO-0001")
+    m_type = F.trim(F.col("maintenance_type")) if "maintenance_type" in raw_maint_cols else F.lit("PREVENTATIVE")
+    prio = F.upper(F.trim(F.col("priority"))) if "priority" in raw_maint_cols else F.lit("MEDIUM")
+    tech = F.trim(F.col("assigned_technician")) if "assigned_technician" in raw_maint_cols else F.lit("Juan Dela Cruz")
+    maint_status_clean = F.upper(F.trim(F.col("maintenance_status"))) if "maintenance_status" in raw_maint_cols else F.lit("COMPLETED")
+    est_dur = F.col("estimated_duration_minutes").cast("int") if "estimated_duration_minutes" in raw_maint_cols else F.lit(60)
+    rem_dur = F.col("remaining_duration_minutes").cast("int") if "remaining_duration_minutes" in raw_maint_cols else F.lit(0)
+    comp_pct = F.round(F.col("completion_percent").cast("double"), 1) if "completion_percent" in raw_maint_cols else F.lit(100.0)
     is_active_calc = F.when(maint_status_clean == "COMPLETED", F.lit(False)).otherwise(F.lit(True))
-    lag_calc = F.col("estimated_duration_minutes").cast("long") - F.col("remaining_duration_minutes").cast("long")
+    notes = F.trim(F.col("technician_notes")) if "technician_notes" in raw_maint_cols else F.lit("Routine service completed.")
+    health_rst = F.round(F.col("health_restored").cast("double"), 1) if "health_restored" in raw_maint_cols else F.lit(15.0)
+    lag_calc = est_dur.cast("long") - rem_dur.cast("long")
+    maint_contact = F.coalesce(F.trim(F.col("operator_contact")), F.lit("maint.lead@smartfarm.ph")) if "operator_contact" in raw_maint_cols else F.lit("maint.lead@smartfarm.ph")
+    maint_phone = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")) if "operator_phone" in raw_maint_cols else F.lit("+639178452190")
     
     df_silver_maint = (
         df_new_maint
@@ -885,20 +964,20 @@ if df_new_maint is not None and cnt_maint > 0:
         .withColumn("zone_id", zone_clean)
         .withColumn("equipment_id", eq_id_clean)
         .withColumn("timestamp", ts_clean)
-        .withColumn("work_order_id", F.trim(F.col("work_order_id")))
-        .withColumn("maintenance_type", F.trim(F.col("maintenance_type")))
-        .withColumn("priority", F.upper(F.trim(F.col("priority"))))
-        .withColumn("assigned_technician", F.trim(F.col("assigned_technician")))
+        .withColumn("work_order_id", wo_id)
+        .withColumn("maintenance_type", m_type)
+        .withColumn("priority", prio)
+        .withColumn("assigned_technician", tech)
         .withColumn("maintenance_status", maint_status_clean)
-        .withColumn("estimated_duration_minutes", F.col("estimated_duration_minutes").cast("int"))
-        .withColumn("remaining_duration_minutes", F.col("remaining_duration_minutes").cast("int"))
-        .withColumn("completion_percent", F.round(F.col("completion_percent").cast("double"), 1))
+        .withColumn("estimated_duration_minutes", est_dur)
+        .withColumn("remaining_duration_minutes", rem_dur)
+        .withColumn("completion_percent", comp_pct)
         .withColumn("is_active", is_active_calc)
-        .withColumn("technician_notes", F.trim(F.col("technician_notes")))
-        .withColumn("health_restored", F.round(F.col("health_restored").cast("double"), 1))
+        .withColumn("technician_notes", notes)
+        .withColumn("health_restored", health_rst)
         .withColumn("resolution_lag_min", lag_calc)
-        .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("maint.lead@smartfarm.ph")))
-        .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
+        .withColumn("operator_contact", maint_contact)
+        .withColumn("operator_phone", maint_phone)
         .drop_duplicates(["event_id"])
     )
     df_silver_maint = enrich_facility_info(df_silver_maint).select(
