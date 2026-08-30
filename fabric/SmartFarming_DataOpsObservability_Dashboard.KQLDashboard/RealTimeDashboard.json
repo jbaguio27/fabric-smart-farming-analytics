@@ -290,11 +290,8 @@
       },
       "visualOptions": {
         "timeSeries__timeDataSource": null,
-        "timeSeries__allowPanAndZoom": true,
-        "timeSeries__initialZoom": {
-          "partial": true,
-          "timeRange": 300000
-        },
+        "timeSeries__allowPanAndZoom": false,
+        "timeSeries__initialZoom": null,
         "timeSeries__measuredEntities": [
           {
             "column": "stream_name"

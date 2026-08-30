@@ -789,5 +789,89 @@
       }
     },
     "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "e7491532-e105-4d61-8063-14f1f8c6b02c",
+    "payload": {
+      "name": "SmartFarmingKQLDB",
+      "description": "Container Description",
+      "type": "kqlQueries"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "f557f688-b90c-409e-a3b9-3d7e542fd5e4",
+    "payload": {
+      "name": "Fabric item action",
+      "fabricItem": {
+        "itemId": "ca50e236-3c1a-b94e-4a25-1e9dbcf2d837",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "Pipeline"
+      },
+      "jobType": "Pipeline",
+      "parentContainer": {
+        "targetUniqueIdentifier": "e7491532-e105-4d61-8063-14f1f8c6b02c"
+      }
+    },
+    "type": "fabricItemAction-v1"
+  },
+  {
+    "uniqueIdentifier": "9ab83ac4-a321-471c-8500-3819e1779ba9",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "runSettings": {
+        "executionIntervalInSeconds": 900
+      },
+      "query": {
+        "queryString": "// 🚀 Live Stream Ingress Trigger for Incremental Medallion Pipeline\r\nIngestionLatencyTracker\r\n| where IngestionTime > ago(15m)\r\n| where LagSeconds between (0.0 .. 60.0) // Valid real-time stream events only\r\n| summarize TotalLiveEvents = count() by StreamName\r\n| summarize CombinedLiveEvents = sum(TotalLiveEvents)\r\n| where CombinedLiveEvents >= 200 // Fires only when real-time sensor packets are actively arriving"
+      },
+      "eventhouseItem": {
+        "itemId": "a31b9690-0b32-b343-47f1-74045eb138b9",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [],
+      "metadata": {
+        "workspaceId": "92bc9c4b-1186-473f-8398-f198e8b16b45",
+        "querySetId": "5eb138b9-7404-47f1-b343-0b32a31b9690",
+        "queryId": "48d1d012-7bd3-4a30-aa16-5605186d1472"
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "e7491532-e105-4d61-8063-14f1f8c6b02c"
+      }
+    },
+    "type": "kqlSource-v1"
+  },
+  {
+    "uniqueIdentifier": "c74ed1c4-9a9c-4113-820e-6ce6c277d04b",
+    "payload": {
+      "name": "SmartFarmingKQLDB event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "e7491532-e105-4d61-8063-14f1f8c6b02c"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"e14607f9-83a1-4f3b-949c-d4f7c95bc79b\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"9ab83ac4-a321-471c-8500-3819e1779ba9\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.0\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "0abaa47d-4ebe-4359-b53d-967175c31d3f",
+    "payload": {
+      "name": "Trigger_On_LiveStream_Ingress",
+      "parentContainer": {
+        "targetUniqueIdentifier": "e7491532-e105-4d61-8063-14f1f8c6b02c"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.0\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"8b1598ec-ab42-4c35-8543-7b2c27209deb\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"c74ed1c4-9a9c-4113-820e-6ce6c277d04b\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"e279a5ce-6048-4950-b3f4-7fec1aed6a3c\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"9998192e-75f6-4078-94de-86f2fa4e0c02\",\"rows\":[{\"name\":\"FabricItemBinding\",\"kind\":\"FabricItemInvocation\",\"arguments\":[{\"name\":\"fabricJobConnectionDocumentId\",\"type\":\"string\",\"value\":\"f557f688-b90c-409e-a3b9-3d7e542fd5e4\"},{\"name\":\"parameters\",\"type\":\"array\",\"values\":[]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[]},{\"name\":\"workspaceId\",\"type\":\"string\",\"value\":\"00000000-0000-0000-0000-000000000000\"},{\"name\":\"itemId\",\"type\":\"string\",\"value\":\"ca50e236-3c1a-b94e-4a25-1e9dbcf2d837\"},{\"name\":\"itemType\",\"type\":\"string\",\"value\":\"Pipeline\"},{\"name\":\"jobType\",\"type\":\"string\",\"value\":\"Pipeline\"}]}]}]}",
+        "settings": {
+          "shouldRun": true,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
   }
 ]
