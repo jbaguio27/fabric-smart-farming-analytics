@@ -44,12 +44,16 @@ watermark_table = "gold._ingestion_watermarks"
 if not spark.catalog.tableExists(watermark_table):
     spark.sql(f"CREATE TABLE IF NOT EXISTS {watermark_table} (stream_name STRING, last_processed_timestamp TIMESTAMP)")
 
-# 🛡️ 24-Hour Cold-Start Lookback: Guarantees absorption of all live streaming data today
 def get_watermark(stream_name):
-    row = spark.table(watermark_table).filter(F.col("stream_name") == stream_name).collect()
-    if row and row[0]["last_processed_timestamp"]:
-        return row[0]["last_processed_timestamp"]
-    return datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    if not spark.catalog.tableExists(watermark_table):
+        return None
+    try:
+        row = spark.table(watermark_table).filter(F.col("stream_name") == stream_name).collect()
+        if row and row[0]["last_processed_timestamp"]:
+            return row[0]["last_processed_timestamp"]
+    except Exception:
+        pass
+    return None
 
 def set_watermark(stream_name, max_ts):
     if max_ts:
@@ -61,21 +65,55 @@ def set_watermark(stream_name, max_ts):
             WHEN NOT MATCHED THEN INSERT *
         """)
 
-# Dynamic Universal Incremental Batch Extractor
-def extract_incremental_stream(table_name, watermark_key):
-    if not spark.catalog.tableExists(table_name):
+# Dynamic Universal Incremental Batch Extractor with Multi-Source Fallback
+def extract_incremental_stream(table_candidates, watermark_key):
+    if isinstance(table_candidates, str):
+        table_candidates = [table_candidates]
+    
+    df = None
+    for cand in table_candidates:
+        if cand.startswith("Files/") or cand.startswith("/"):
+            try:
+                df = spark.read.format("delta").load(cand)
+                if df is not None and df.count() > 0:
+                    break
+            except Exception:
+                pass
+        elif spark.catalog.tableExists(cand):
+            try:
+                df = spark.table(cand)
+                if df is not None and df.count() > 0:
+                    break
+            except Exception:
+                pass
+
+    if df is None:
         return None, 0, None
-    df = spark.table(table_name)
+        
     wm = get_watermark(watermark_key)
     cols = df.columns
+    col_map = {c.lower(): c for c in cols}
     
-    ts_expr = (
-        F.to_timestamp(F.col("IngestionTime")) if "IngestionTime" in cols else
-        (F.to_timestamp(F.col("ingestion_timestamp")) if "ingestion_timestamp" in cols else
-        (F.to_timestamp(F.col("timestamp")) if "timestamp" in cols else F.current_timestamp()))
-    )
+    # Resolve timestamp column case-insensitively
+    raw_col_name = col_map.get("ingestiontime") or col_map.get("ingestion_timestamp") or col_map.get("timestamp")
+    if raw_col_name:
+        raw_ts_str = F.regexp_replace(F.trim(F.col(raw_col_name).cast("string")), "[\"']", "")
+        ts_expr = F.coalesce(
+            F.to_timestamp(raw_ts_str),
+            F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'"),
+            F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"),
+            F.to_timestamp(raw_ts_str, "yyyy-MM-dd HH:mm:ss"),
+            F.to_timestamp(F.col(raw_col_name))
+        )
+    else:
+        ts_expr = F.current_timestamp()
+        
     df_ts = df.withColumn("_parsed_sync_ts", ts_expr)
-    df_filtered = df_ts.filter(F.col("_parsed_sync_ts") > F.lit(wm))
+    if wm is not None:
+        df_filtered = df_ts.filter(F.col("_parsed_sync_ts") > F.lit(wm))
+    else:
+        df_filtered = df_ts
+        
     cnt = df_filtered.count()
     return df_filtered, cnt, "_parsed_sync_ts"
 
@@ -88,13 +126,33 @@ def get_safe_dim(table_name, select_cols):
         return F.broadcast(df.select(*select_cols).cache())
     return None
 
+def resolve_table_df(candidates):
+    if isinstance(candidates, str):
+        candidates = [candidates]
+    for c in candidates:
+        if c.startswith("Files/") or c.startswith("/"):
+            try:
+                df = spark.read.format("delta").load(c)
+                if df is not None and df.count() > 0:
+                    return df
+            except Exception:
+                pass
+        elif spark.catalog.tableExists(c):
+            try:
+                df = spark.table(c)
+                if df is not None and df.count() > 0:
+                    return df
+            except Exception:
+                pass
+    return None
+
 dim_fac_bcast = get_safe_dim("gold.dim_facility", ["facility_key", "facility_id", "effective_date", "expiration_date"])
 dim_zone_bcast = get_safe_dim("gold.dim_zone", ["zone_key", "facility_key", "zone_id", "effective_date", "expiration_date"])
 dim_eq_bcast = get_safe_dim("gold.dim_equipment", ["equipment_key", "equipment_id", "effective_date", "expiration_date"])
 dim_crop_bcast = get_safe_dim("gold.dim_crop", ["crop_key", F.upper(F.col("crop_type")).alias("crop_id")])
 dim_tech_bcast = get_safe_dim("gold.dim_technician", ["technician_key", F.trim(F.col("technician_name")).alias("technician_name")])
 
-print(f"Initialized Incremental Engine: {RUN_ID} (Universal Timestamp & Watermark Active)")
+print(f"Initialized Incremental Engine: {RUN_ID} (Multi-Source Extractor Active)")
 
 # METADATA ********************
 
@@ -106,8 +164,8 @@ print(f"Initialized Incremental Engine: {RUN_ID} (Universal Timestamp & Watermar
 # CELL ********************
 
 # 1. Facility Master Enriched (silver.facility_master_enriched)
-if spark.catalog.tableExists("bronze.facility_operations"):
-    df_fac_raw = spark.table("bronze.facility_operations")
+df_fac_raw = resolve_table_df(["bronze.facility_operations", "FacilityOperations", "Files/FacilityOperations"])
+if df_fac_raw is not None:
     df_fac_cleaned = (
         df_fac_raw
         .withColumn("facility_id_clean", F.upper(F.trim(F.col("facility_id"))))
@@ -159,8 +217,8 @@ if spark.catalog.tableExists("bronze.facility_operations"):
     ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
 
 # 2. Equipment Master Enriched (silver.equipment_master_enriched)
-if spark.catalog.tableExists("bronze.equipment_telemetry"):
-    df_eq_raw = spark.table("bronze.equipment_telemetry")
+df_eq_raw = resolve_table_df(["bronze.equipment_telemetry", "EquipmentTelemetry", "Files/EquipmentTelemetry"])
+if df_eq_raw is not None:
     window_eq_latest = Window.partitionBy(F.trim(F.col("equipment_id"))).orderBy(F.col("timestamp").desc())
     contact_clean = F.coalesce(F.trim(F.col("operator_contact")), F.lit("tech.support@smartfarm.ph"))
     phone_clean = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190"))
@@ -200,8 +258,8 @@ if spark.catalog.tableExists("bronze.equipment_telemetry"):
     ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
 
 # 3. Crop Master Enriched (silver.crop_master_enriched)
-if spark.catalog.tableExists("bronze.crop_lifecycle"):
-    df_crop_raw = spark.table("bronze.crop_lifecycle")
+df_crop_raw = resolve_table_df(["bronze.crop_lifecycle", "CropLifecycle", "Files/CropLifecycle"])
+if df_crop_raw is not None:
     stage_clean = F.upper(F.trim(F.col("lifecycle_stage")))
     is_active_calc = F.when(stage_clean.isin("HARVESTED", "COMPLETED", "TERMINATED"), F.lit(False)).otherwise(F.lit(True))
     contact_clean = F.coalesce(F.trim(F.col("operator_contact")), F.lit("agronomy.lead@smartfarm.ph"))
@@ -265,7 +323,7 @@ print("Master Enriched Tables Synced with zero duplicate keys.")
 
 # Environmental
 
-df_new_env, cnt_env, time_col = extract_incremental_stream("bronze.environmental_telemetry", "environmental_telemetry")
+df_new_env, cnt_env, time_col = extract_incremental_stream(["bronze.environmental_telemetry", "EnvironmentalTelemetry", "Files/EnvironmentalTelemetry"], "environmental_telemetry")
 if df_new_env is not None and cnt_env > 0:
     total_processed_rows += cnt_env
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
@@ -409,7 +467,7 @@ if df_new_env is not None and cnt_env > 0:
 
 # Equipment
 
-df_new_eq, cnt_eq, time_col_eq = extract_incremental_stream("bronze.equipment_telemetry", "equipment_telemetry")
+df_new_eq, cnt_eq, time_col_eq = extract_incremental_stream(["bronze.equipment_telemetry", "EquipmentTelemetry", "Files/EquipmentTelemetry"], "equipment_telemetry")
 if df_new_eq is not None and cnt_eq > 0:
     total_processed_rows += cnt_eq
     raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
@@ -505,7 +563,7 @@ if df_new_eq is not None and cnt_eq > 0:
 
 # Crop Telemetry and Lifecycle
 
-df_new_cr, cnt_cr, time_col_cr = extract_incremental_stream("bronze.crop_telemetry", "crop_telemetry")
+df_new_cr, cnt_cr, time_col_cr = extract_incremental_stream(["bronze.crop_telemetry", "CropTelemetry", "Files/CropTelemetry"], "crop_telemetry")
 if df_new_cr is not None and cnt_cr > 0:
     total_processed_rows += cnt_cr
     df_silver_cr = (
@@ -586,7 +644,7 @@ if df_new_cr is not None and cnt_cr > 0:
 # Irrigation, Lighting, and Maintenance
 
 # 1. IRRIGATION TELEMETRY
-df_new_irr, cnt_irr, time_col_irr = extract_incremental_stream("bronze.irrigation_telemetry", "irrigation_telemetry")
+df_new_irr, cnt_irr, time_col_irr = extract_incremental_stream(["bronze.irrigation_telemetry", "IrrigationTelemetry", "Files/IrrigationTelemetry"], "irrigation_telemetry")
 if df_new_irr is not None and cnt_irr > 0:
     total_processed_rows += cnt_irr
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
@@ -656,7 +714,7 @@ if df_new_irr is not None and cnt_irr > 0:
     set_watermark("irrigation_telemetry", max_ts_irr)
 
 # 2. LIGHTING TELEMETRY
-df_new_lt, cnt_lt, time_col_lt = extract_incremental_stream("bronze.lighting_telemetry", "lighting_telemetry")
+df_new_lt, cnt_lt, time_col_lt = extract_incremental_stream(["bronze.lighting_telemetry", "LightingTelemetry", "Files/LightingTelemetry"], "lighting_telemetry")
 if df_new_lt is not None and cnt_lt > 0:
     total_processed_rows += cnt_lt
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
@@ -723,7 +781,7 @@ if df_new_lt is not None and cnt_lt > 0:
     set_watermark("lighting_telemetry", max_ts_lt)
 
 # 3. MAINTENANCE ACTIVITY
-df_new_maint, cnt_maint, time_col_maint = extract_incremental_stream("bronze.maintenance_activity", "maintenance_activity")
+df_new_maint, cnt_maint, time_col_maint = extract_incremental_stream(["bronze.maintenance_activity", "MaintenanceActivity", "Files/MaintenanceActivity"], "maintenance_activity")
 if df_new_maint is not None and cnt_maint > 0:
     total_processed_rows += cnt_maint
     fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
@@ -836,7 +894,7 @@ print("Incremental Streams Merged: Irrigation, Lighting, Maintenance into Silver
 
 # Dead-Letter Queue Triage
 
-df_new_dl, cnt_dl, time_col_dl = extract_incremental_stream("bronze.dead_letter_telemetry", "dead_letter_telemetry")
+df_new_dl, cnt_dl, time_col_dl = extract_incremental_stream(["bronze.dead_letter_telemetry", "DeadLetterTelemetry", "Files/DeadLetterTelemetry"], "dead_letter_telemetry")
 if df_new_dl is not None and cnt_dl > 0:
     total_processed_rows += cnt_dl
     raw_cols = df_new_dl.columns
