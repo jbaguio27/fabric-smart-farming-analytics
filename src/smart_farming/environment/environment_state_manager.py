@@ -63,12 +63,7 @@ class EnvironmentStateManager:
         self.state: WeatherState
 
         # Shared simulation clock used by all event generators.
-        self.simulation_time = datetime.utcnow().replace(
-            hour=SIMULATION_START_HOUR,
-            minute=SIMULATION_START_MINUTE,
-            second=0,
-            microsecond=0
-        )
+        self.simulation_time = datetime.utcnow()
 
         self._initialize_weather()
 

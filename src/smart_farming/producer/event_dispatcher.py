@@ -205,6 +205,9 @@ class EventDispatcher:
                 for k, v in normalized.items():
                     unified_payload[k] = v
 
+                if not unified_payload.get("timestamp"):
+                    unified_payload["timestamp"] = format_timestamp(datetime.utcnow())
+
                 return self.anomaly_injector.inject_anomalies(unified_payload)
 
             return [normalized] if isinstance(normalized, dict) else []
