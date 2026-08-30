@@ -43,3 +43,6 @@ htmlcov/
 
 # Local Development Verification
 /verify_pipeline.py
+Files/
+Files_Incremental/
+config/simulated_farm_state.json
