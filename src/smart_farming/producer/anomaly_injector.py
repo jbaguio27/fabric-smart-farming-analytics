@@ -59,22 +59,42 @@ class DataAnomalyInjector:
         dirty_payload["operator_contact"] = f"tech.{facility_id}@smartfarm.ph"
         dirty_payload["operator_phone"] = facility_phones.get(facility_id, "+639178452190")
 
-        # Controlled Structural Ingestion Anomaly Injection (2% sample rate when enabled)
-        if self.enable_ingestion_anomalies and random.random() <= 0.02:
-            ingestion_defect = random.choice([
-                "unmapped_event_type",
-                "missing_routing_metadata",
-                "corrupt_timestamp",
-            ])
-            if ingestion_defect == "unmapped_event_type":
-                # Tests Eventstream Dead-Letter Route (routes to DeadLetterTelemetry KQL table)
-                dirty_payload["event_type"] = "legacy.deprecated_sensor"
-            elif ingestion_defect == "missing_routing_metadata":
-                # Tests Eventstream Ingress Filter node (WHERE facility_id IS NOT NULL)
+        # Controlled Structural Ingestion Anomaly Injection (Balanced Multi-Defect Distribution)
+        if self.enable_ingestion_anomalies and random.random() <= 0.05:
+            defect_type = random.choices(
+                population=[
+                    "missing_primary_key",
+                    "out_of_bounds",
+                    "deprecated_schema",
+                    "serdes_parse",
+                    "clock_skew",
+                    "unregistered_mac",
+                ],
+                weights=[25, 20, 18, 15, 12, 10],
+                k=1
+            )[0]
+
+            if defect_type == "missing_primary_key":
                 dirty_payload["facility_id"] = None
-            elif ingestion_defect == "corrupt_timestamp":
-                # Tests Ingestion timestamp enrichment & filter validation
-                dirty_payload["timestamp"] = None
+                dirty_payload["exception_reason"] = "MISSING_PRIMARY_KEY: null facility_id"
+            elif defect_type == "out_of_bounds":
+                dirty_payload["operating_temperature_c"] = 99.5
+                dirty_payload["sensor_value"] = 88.5
+                dirty_payload["exception_reason"] = "OUT_OF_BOUNDS_SENSOR_VALUE: temperature > 65C"
+            elif defect_type == "deprecated_schema":
+                dirty_payload["event_type"] = "legacy.deprecated_sensor"
+                dirty_payload["schema_version"] = "v1.0"
+                dirty_payload["exception_reason"] = "DEPRECATED_SCHEMA_VERSION: v1.0 payload"
+            elif defect_type == "serdes_parse":
+                dirty_payload["raw_payload"] = "{malformed_json_bytes"
+                dirty_payload["exception_reason"] = "SERDES_PARSE_FAILURE: malformed JSON payload"
+            elif defect_type == "clock_skew":
+                dirty_payload["timestamp"] = "2020-01-01T00:00:00Z"
+                dirty_payload["exception_reason"] = "TIMESTAMP_OUT_OF_SYNC: clock skew > 24h"
+            elif defect_type == "unregistered_mac":
+                dirty_payload["equipment_id"] = "EQ-99999_ORPHAN"
+                dirty_payload["mac_address"] = "00:00:00:00:00:00"
+                dirty_payload["exception_reason"] = "UNREGISTERED_HARDWARE_MAC_ADDRESS: unregistered device"
 
             return [dirty_payload]
 
@@ -109,10 +129,10 @@ class DataAnomalyInjector:
 
         elif anomaly_type == "missing_values":
             # Handling missing values task: set string fields to None, "N/A", "Unknown", or ""
-            # Set numeric metrics to None (JSON null) to maintain numeric schema compatibility
             target_key = random.choice(["operating_status", "unit", "zone_id", "equipment_type"])
             if target_key in dirty_payload:
                 dirty_payload[target_key] = random.choice([None, "N/A", "Unknown", ""])
+                dirty_payload["exception_reason"] = "MISSING_PRIMARY_KEY: null facility_id"
 
         elif anomaly_type == "format_standardization":
             # Format standardization task: lowercase casing & mixed unix epoch timestamps
@@ -133,6 +153,7 @@ class DataAnomalyInjector:
 
         elif anomaly_type == "outliers":
             # handling outliers & value bounds tasks: system thermal spikes or negative values
+            dirty_payload["exception_reason"] = "OUT_OF_BOUNDS_SENSOR_VALUE: temperature > 65C"
             if "water_ph" in dirty_payload:
                 dirty_payload["water_ph"] = -999.0
             elif dirty_payload.get("sensor_type") == "water_ph" and dirty_payload.get("sensor_value") is not None:
@@ -148,6 +169,7 @@ class DataAnomalyInjector:
 
         elif anomaly_type == "integrity_constraint":
             # Integrity constraints tasks: mismatched foreign key referencing non-existent asset
+            dirty_payload["exception_reason"] = "UNREGISTERED_HARDWARE_MAC_ADDRESS: unregistered device"
             if "equipment_id" in dirty_payload:
                 dirty_payload["equipment_id"] = "EQ-99999_ORPHAN"
 

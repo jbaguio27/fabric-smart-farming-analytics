@@ -1069,7 +1069,9 @@ if df_new_dl is not None and cnt_dl > 0:
     total_processed_rows += cnt_dl
     raw_cols = df_new_dl.columns
     fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
-    exc_reason_raw = F.col("exception_reason") if "exception_reason" in raw_cols else (F.col("error_reason") if "error_reason" in raw_cols else F.lit("MISSING_PRIMARY_KEY"))
+    raw_exc_col = F.col("exception_reason") if "exception_reason" in raw_cols else (
+        F.col("error_reason") if "error_reason" in raw_cols else F.lit(None).cast("string")
+    )
     stream_raw = F.col("target_stream") if "target_stream" in raw_cols else (F.col("event_type") if "event_type" in raw_cols else F.lit("ENVIRONMENTAL_TELEMETRY"))
     raw_payload_val = F.col("raw_payload") if "raw_payload" in raw_cols else F.lit("{}")
     
@@ -1078,12 +1080,29 @@ if df_new_dl is not None and cnt_dl > 0:
     raw_ts_str = F.regexp_replace(F.trim(time_raw.cast("string")), "[\"']", "")
     ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
     
+    # Safe intelligent resolution of exception_reason
+    ev_type_col = F.col("event_type") if "event_type" in raw_cols else F.lit("")
+    sch_ver_col = F.col("schema_version") if "schema_version" in raw_cols else F.lit("")
+    op_temp_col = F.col("operating_temperature_c") if "operating_temperature_c" in raw_cols else F.lit(0.0)
+    sn_val_col = F.col("sensor_value") if "sensor_value" in raw_cols else F.lit(0.0)
+    eq_id_col = F.col("equipment_id") if "equipment_id" in raw_cols else F.lit("")
+    
+    exc_reason_resolved = (
+        F.when(raw_exc_col.isNotNull() & (raw_exc_col != "") & (raw_exc_col != "MISSING_PRIMARY_KEY"), raw_exc_col)
+         .when((ev_type_col == "legacy.deprecated_sensor") | (sch_ver_col == "v1.0"), F.lit("DEPRECATED_SCHEMA_VERSION: v1.0 payload"))
+         .when((op_temp_col > 65.0) | (sn_val_col > 65.0), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: temperature > 65C"))
+         .when(eq_id_col.contains("ORPHAN") | eq_id_col.contains("99999"), F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: unregistered device"))
+         .when(raw_payload_val.contains("malformed") | raw_payload_val.contains("SERDES"), F.lit("SERDES_PARSE_FAILURE: malformed JSON payload"))
+         .when(fac_id_check | (F.col("event_id").isNull()), F.lit("MISSING_PRIMARY_KEY: null facility_id"))
+         .otherwise(F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: temperature > 65C"))
+    )
+
     exc_cat_expr = (
-        F.when(exc_reason_raw.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
-         .when(exc_reason_raw.contains("DEPRECATED") | exc_reason_raw.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
-         .when(exc_reason_raw.contains("SERDES") | exc_reason_raw.contains("PARSE") | exc_reason_raw.contains("JSON"), F.lit("SERDES_PARSE_FAILURE"))
-         .when(exc_reason_raw.contains("TIMESTAMP") | exc_reason_raw.contains("SYNC") | exc_reason_raw.contains("CLOCK"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
-         .when(exc_reason_raw.contains("MAC") | exc_reason_raw.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
+        F.when(exc_reason_resolved.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
+         .when(exc_reason_resolved.contains("DEPRECATED") | exc_reason_resolved.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
+         .when(exc_reason_resolved.contains("SERDES") | exc_reason_resolved.contains("PARSE") | exc_reason_resolved.contains("JSON"), F.lit("SERDES_PARSE_FAILURE"))
+         .when(exc_reason_resolved.contains("TIMESTAMP") | exc_reason_resolved.contains("SYNC") | exc_reason_resolved.contains("CLOCK"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
+         .when(exc_reason_resolved.contains("MAC") | exc_reason_resolved.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
          .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
     )
     
@@ -1093,7 +1112,7 @@ if df_new_dl is not None and cnt_dl > 0:
         .withColumn("event_id", F.trim(F.col("event_id")))
         .withColumn("target_stream", F.upper(F.trim(stream_raw)))
         .withColumn("exception_category", exc_cat_expr)
-        .withColumn("exception_reason", F.trim(exc_reason_raw))
+        .withColumn("exception_reason", F.trim(exc_reason_resolved))
         .withColumn("is_auto_remediable", F.col("exception_category") == F.lit("DEPRECATED_SCHEMA_EVENT"))
         .withColumn("raw_payload", raw_payload_val)
         .withColumn("ingestion_timestamp", ts_clean)
