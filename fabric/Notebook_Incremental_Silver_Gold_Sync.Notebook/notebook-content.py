@@ -61,17 +61,23 @@ def set_watermark(stream_name, max_ts):
             WHEN NOT MATCHED THEN INSERT *
         """)
 
-# Dynamic Case-Insensitive Table Finder
-def get_bronze_table(snake_name, pascal_name):
-    if spark.catalog.tableExists(f"bronze.{snake_name}"):
-        return spark.table(f"bronze.{snake_name}")
-    if spark.catalog.tableExists(f"bronze.{pascal_name}"):
-        return spark.table(f"bronze.{pascal_name}")
-    if spark.catalog.tableExists(snake_name):
-        return spark.table(snake_name)
-    if spark.catalog.tableExists(pascal_name):
-        return spark.table(pascal_name)
-    return None
+# Dynamic Universal Incremental Batch Extractor
+def extract_incremental_stream(table_name, watermark_key):
+    if not spark.catalog.tableExists(table_name):
+        return None, 0, None
+    df = spark.table(table_name)
+    wm = get_watermark(watermark_key)
+    cols = df.columns
+    
+    ts_expr = (
+        F.to_timestamp(F.col("IngestionTime")) if "IngestionTime" in cols else
+        (F.to_timestamp(F.col("ingestion_timestamp")) if "ingestion_timestamp" in cols else
+        (F.to_timestamp(F.col("timestamp")) if "timestamp" in cols else F.current_timestamp()))
+    )
+    df_ts = df.withColumn("_parsed_sync_ts", ts_expr)
+    df_filtered = df_ts.filter(F.col("_parsed_sync_ts") > F.lit(wm))
+    cnt = df_filtered.count()
+    return df_filtered, cnt, "_parsed_sync_ts"
 
 # Safe Dimension Lookup Helper
 def get_safe_dim(table_name, select_cols):
@@ -88,7 +94,7 @@ dim_eq_bcast = get_safe_dim("gold.dim_equipment", ["equipment_key", "equipment_i
 dim_crop_bcast = get_safe_dim("gold.dim_crop", ["crop_key", F.upper(F.col("crop_type")).alias("crop_id")])
 dim_tech_bcast = get_safe_dim("gold.dim_technician", ["technician_key", F.trim(F.col("technician_name")).alias("technician_name")])
 
-print(f"Initialized Incremental Engine: {RUN_ID} (Cold-Start 24-Hour Mirror Absorption Active)")
+print(f"Initialized Incremental Engine: {RUN_ID} (Universal Timestamp & Watermark Active)")
 
 # METADATA ********************
 
@@ -259,143 +265,137 @@ print("Master Enriched Tables Synced with zero duplicate keys.")
 
 # Environmental
 
-if spark.catalog.tableExists("bronze.environmental_telemetry"):
-    wm_env = get_watermark("environmental_telemetry")
-    df_raw = spark.table("bronze.environmental_telemetry")
-    time_col = F.col("IngestionTime") if "IngestionTime" in df_raw.columns else F.col("ingestion_timestamp")
-    df_new_env = df_raw.filter(time_col > wm_env)
-    cnt_env = df_new_env.count()
+df_new_env, cnt_env, time_col = extract_incremental_stream("bronze.environmental_telemetry", "environmental_telemetry")
+if df_new_env is not None and cnt_env > 0:
+    total_processed_rows += cnt_env
+    fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
+    zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
+    stype_clean = F.lower(F.trim(F.col("sensor_type")))
+    val_raw = F.col("sensor_value").cast("double")
     
-    if cnt_env > 0:
-        total_processed_rows += cnt_env
-        fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
-        zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
-        stype_clean = F.lower(F.trim(F.col("sensor_type")))
-        val_raw = F.col("sensor_value").cast("double")
-        
-        clean_val = (
-            F.when((stype_clean == "air_temperature") & ((val_raw < -10.0) | (val_raw > 65.0)), F.lit(None))
-            .when((stype_clean == "humidity") & ((val_raw < 0.0) | (val_raw > 100.0)), F.lit(None))
-            .when((stype_clean == "co2") & ((val_raw < 0.0) | (val_raw > 5000.0)), F.lit(None))
-            .when((stype_clean == "water_ph") & ((val_raw < 0.0) | (val_raw > 14.0)), F.lit(None))
-            .when((stype_clean == "electrical_conductivity") & ((val_raw < 0.0) | (val_raw > 15.0)), F.lit(None))
-            .otherwise(F.round(val_raw, 2))
+    clean_val = (
+        F.when((stype_clean == "air_temperature") & ((val_raw < -10.0) | (val_raw > 65.0)), F.lit(None))
+        .when((stype_clean == "humidity") & ((val_raw < 0.0) | (val_raw > 100.0)), F.lit(None))
+        .when((stype_clean == "co2") & ((val_raw < 0.0) | (val_raw > 5000.0)), F.lit(None))
+        .when((stype_clean == "water_ph") & ((val_raw < 0.0) | (val_raw > 14.0)), F.lit(None))
+        .when((stype_clean == "electrical_conductivity") & ((val_raw < 0.0) | (val_raw > 15.0)), F.lit(None))
+        .otherwise(F.round(val_raw, 2))
+    )
+    
+    raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
+    ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
+    
+    # 1. silver.environmental_cleaned
+    df_silver_clean = (
+        df_new_env
+        .withColumn("facility_id", fac_clean)
+        .withColumn("zone_id", zone_clean)
+        .withColumn("sensor_type", stype_clean)
+        .withColumn("sensor_value", clean_val)
+        .withColumn("timestamp", ts_clean)
+        .drop_duplicates(["event_id"])
+        .select("event_id", "facility_id", "zone_id", "sensor_type", "sensor_value", "unit", "weather", "timestamp")
+    )
+    DeltaTable.forName(spark, "silver.environmental_cleaned").alias("t").merge(
+        df_silver_clean.alias("s"), "t.event_id = s.event_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    # 2. silver.environmental_metrics
+    df_pivoted = (
+        df_silver_clean
+        .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
+        .withColumn("window_time", F.date_trunc("minute", F.col("timestamp")))
+        .groupBy("facility_id", "zone_id", "window_time")
+        .pivot("sensor_type", ["air_temperature", "humidity", "co2", "light_intensity", "water_ph", "dissolved_oxygen", "electrical_conductivity"])
+        .agg(F.avg("sensor_value"))
+    )
+    
+    t_c = F.coalesce(F.col("air_temperature"), F.lit(22.0))
+    rh_p = F.coalesce(F.col("humidity"), F.lit(65.0))
+    svp = F.lit(0.61078) * F.exp((F.lit(17.27) * t_c) / (t_c + F.lit(237.3)))
+    vpd_calc = F.round(svp * (F.lit(1.0) - (rh_p / F.lit(100.0))), 3)
+    penalty = F.abs(t_c - F.lit(22.0)) * 2.5 + F.abs(rh_p - F.lit(65.0)) * 0.5
+    comp_score = F.round(F.greatest(F.lit(50.0), F.lit(100.0) - penalty), 1)
+    
+    df_metrics = (
+        df_pivoted
+        .withColumn("air_temperature_c", F.round(t_c, 2))
+        .withColumn("humidity_pct", F.round(rh_p, 1))
+        .withColumn("co2_ppm", F.round(F.coalesce(F.col("co2"), F.lit(800.0)), 0))
+        .withColumn("light_intensity_lux", F.round(F.coalesce(F.col("light_intensity"), F.lit(30000.0)), 0))
+        .withColumn("water_ph", F.round(F.coalesce(F.col("water_ph"), F.lit(6.0)), 2))
+        .withColumn("dissolved_oxygen_mg_l", F.round(F.coalesce(F.col("dissolved_oxygen"), F.lit(8.0)), 1))
+        .withColumn("electrical_conductivity_ms_cm", F.round(F.coalesce(F.col("electrical_conductivity"), F.lit(2.2)), 2))
+        .withColumn("vpd_kpa", vpd_calc)
+        .withColumn("temp_drift_c", F.round(t_c - F.lit(22.0), 2))
+        .withColumn("composite_stability_score", comp_score)
+        .withColumn("environmental_status", F.when(comp_score >= 90.0, "OPTIMAL").when(comp_score >= 75.0, "STABLE").otherwise("WARNING"))
+        .withColumn("snapshot_id", F.concat_ws("_", F.col("facility_id"), F.col("zone_id"), F.date_format(F.col("window_time"), "yyyyMMddHHmmss")))
+        .select("snapshot_id", "facility_id", "zone_id", "air_temperature_c", "humidity_pct", "co2_ppm", "light_intensity_lux", "water_ph", "dissolved_oxygen_mg_l", "electrical_conductivity_ms_cm", "vpd_kpa", "temp_drift_c", "composite_stability_score", "environmental_status", F.col("window_time").alias("timestamp"))
+        .drop_duplicates(["snapshot_id"])
+    )
+    DeltaTable.forName(spark, "silver.environmental_metrics").alias("t").merge(
+        df_metrics.alias("s"), "t.snapshot_id = s.snapshot_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    # 3. gold.fact_environmental_daily (Exact Match with Notebook_Gold_ETL)
+    df_env_agg = (
+        df_metrics
+        .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
+        .withColumn("event_date", F.to_date("timestamp"))
+        .groupBy("date_key", "event_date", "facility_id", "zone_id")
+        .agg(
+            F.round(F.avg("air_temperature_c"), 2).alias("avg_ambient_temp_celsius"),
+            F.round(F.min("air_temperature_c"), 2).alias("min_ambient_temp_celsius"),
+            F.round(F.max("air_temperature_c"), 2).alias("max_ambient_temp_celsius"),
+            F.round(F.avg("humidity_pct"), 2).alias("avg_humidity_pct"),
+            F.round(F.avg("co2_ppm"), 2).alias("avg_co2_ppm"),
+            F.round(F.avg("vpd_kpa"), 2).alias("avg_vpd_kpa"),
+            F.round(F.avg("temp_drift_c"), 2).alias("avg_temp_drift_celsius"),
+            F.round(F.avg("composite_stability_score"), 2).alias("avg_stability_score"),
+            F.round(F.avg("water_ph"), 2).alias("avg_water_ph"),
+            F.round(F.avg("electrical_conductivity_ms_cm"), 2).alias("avg_ec_ms_cm"),
+            F.count("snapshot_id").alias("telemetry_sample_count")
         )
+    )
+    
+    df_gold_env = df_env_agg.alias("fact")
+    if dim_fac_bcast is not None:
+        df_gold_env = df_gold_env.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), "left")
+    else:
+        df_gold_env = df_gold_env.withColumn("dim_fac.facility_key", F.lit(-1))
         
-        raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
-        ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
-        
-        # 1. silver.environmental_cleaned
-        df_silver_clean = (
-            df_new_env
-            .withColumn("facility_id", fac_clean)
-            .withColumn("zone_id", zone_clean)
-            .withColumn("sensor_type", stype_clean)
-            .withColumn("sensor_value", clean_val)
-            .withColumn("timestamp", ts_clean)
-            .drop_duplicates(["event_id"])
-            .select("event_id", "facility_id", "zone_id", "sensor_type", "sensor_value", "unit", "weather", "timestamp")
-        )
-        DeltaTable.forName(spark, "silver.environmental_cleaned").alias("t").merge(
-            df_silver_clean.alias("s"), "t.event_id = s.event_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        # 2. silver.environmental_metrics
-        df_pivoted = (
-            df_silver_clean
-            .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
-            .withColumn("window_time", F.date_trunc("minute", F.col("timestamp")))
-            .groupBy("facility_id", "zone_id", "window_time")
-            .pivot("sensor_type", ["air_temperature", "humidity", "co2", "light_intensity", "water_ph", "dissolved_oxygen", "electrical_conductivity"])
-            .agg(F.avg("sensor_value"))
-        )
-        
-        t_c = F.coalesce(F.col("air_temperature"), F.lit(22.0))
-        rh_p = F.coalesce(F.col("humidity"), F.lit(65.0))
-        svp = F.lit(0.61078) * F.exp((F.lit(17.27) * t_c) / (t_c + F.lit(237.3)))
-        vpd_calc = F.round(svp * (F.lit(1.0) - (rh_p / F.lit(100.0))), 3)
-        penalty = F.abs(t_c - F.lit(22.0)) * 2.5 + F.abs(rh_p - F.lit(65.0)) * 0.5
-        comp_score = F.round(F.greatest(F.lit(50.0), F.lit(100.0) - penalty), 1)
-        
-        df_metrics = (
-            df_pivoted
-            .withColumn("air_temperature_c", F.round(t_c, 2))
-            .withColumn("humidity_pct", F.round(rh_p, 1))
-            .withColumn("co2_ppm", F.round(F.coalesce(F.col("co2"), F.lit(800.0)), 0))
-            .withColumn("light_intensity_lux", F.round(F.coalesce(F.col("light_intensity"), F.lit(30000.0)), 0))
-            .withColumn("water_ph", F.round(F.coalesce(F.col("water_ph"), F.lit(6.0)), 2))
-            .withColumn("dissolved_oxygen_mg_l", F.round(F.coalesce(F.col("dissolved_oxygen"), F.lit(8.0)), 1))
-            .withColumn("electrical_conductivity_ms_cm", F.round(F.coalesce(F.col("electrical_conductivity"), F.lit(2.2)), 2))
-            .withColumn("vpd_kpa", vpd_calc)
-            .withColumn("temp_drift_c", F.round(t_c - F.lit(22.0), 2))
-            .withColumn("composite_stability_score", comp_score)
-            .withColumn("environmental_status", F.when(comp_score >= 90.0, "OPTIMAL").when(comp_score >= 75.0, "STABLE").otherwise("WARNING"))
-            .withColumn("snapshot_id", F.concat_ws("_", F.col("facility_id"), F.col("zone_id"), F.date_format(F.col("window_time"), "yyyyMMddHHmmss")))
-            .select("snapshot_id", "facility_id", "zone_id", "air_temperature_c", "humidity_pct", "co2_ppm", "light_intensity_lux", "water_ph", "dissolved_oxygen_mg_l", "electrical_conductivity_ms_cm", "vpd_kpa", "temp_drift_c", "composite_stability_score", "environmental_status", F.col("window_time").alias("timestamp"))
-            .drop_duplicates(["snapshot_id"])
-        )
-        DeltaTable.forName(spark, "silver.environmental_metrics").alias("t").merge(
-            df_metrics.alias("s"), "t.snapshot_id = s.snapshot_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        # 3. gold.fact_environmental_daily (Exact Match with Notebook_Gold_ETL)
-        df_env_agg = (
-            df_metrics
-            .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
-            .withColumn("event_date", F.to_date("timestamp"))
-            .groupBy("date_key", "event_date", "facility_id", "zone_id")
-            .agg(
-                F.round(F.avg("air_temperature_c"), 2).alias("avg_ambient_temp_celsius"),
-                F.round(F.min("air_temperature_c"), 2).alias("min_ambient_temp_celsius"),
-                F.round(F.max("air_temperature_c"), 2).alias("max_ambient_temp_celsius"),
-                F.round(F.avg("humidity_pct"), 2).alias("avg_humidity_pct"),
-                F.round(F.avg("co2_ppm"), 2).alias("avg_co2_ppm"),
-                F.round(F.avg("vpd_kpa"), 2).alias("avg_vpd_kpa"),
-                F.round(F.avg("temp_drift_c"), 2).alias("avg_temp_drift_celsius"),
-                F.round(F.avg("composite_stability_score"), 2).alias("avg_stability_score"),
-                F.round(F.avg("water_ph"), 2).alias("avg_water_ph"),
-                F.round(F.avg("electrical_conductivity_ms_cm"), 2).alias("avg_ec_ms_cm"),
-                F.count("snapshot_id").alias("telemetry_sample_count")
-            )
-        )
-        
-        df_gold_env = df_env_agg.alias("fact")
-        if dim_fac_bcast is not None:
-            df_gold_env = df_gold_env.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), "left")
-        else:
-            df_gold_env = df_gold_env.withColumn("dim_fac.facility_key", F.lit(-1))
-            
-        if dim_zone_bcast is not None:
-            df_gold_env = df_gold_env.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), "left")
-        else:
-            df_gold_env = df_gold_env.withColumn("dim_zn.zone_key", F.lit(-1))
+    if dim_zone_bcast is not None:
+        df_gold_env = df_gold_env.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), "left")
+    else:
+        df_gold_env = df_gold_env.withColumn("dim_zn.zone_key", F.lit(-1))
 
-        df_gold_env_final = df_gold_env.select(
-            F.col("fact.date_key"),
-            F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-            F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
-            F.col("fact.avg_ambient_temp_celsius"),
-            F.col("fact.min_ambient_temp_celsius"),
-            F.col("fact.max_ambient_temp_celsius"),
-            F.col("fact.avg_humidity_pct"),
-            F.col("fact.avg_co2_ppm"),
-            F.col("fact.avg_vpd_kpa"),
-            F.col("fact.avg_temp_drift_celsius"),
-            F.col("fact.avg_stability_score"),
-            F.col("fact.avg_water_ph"),
-            F.col("fact.avg_ec_ms_cm"),
-            F.col("fact.telemetry_sample_count"),
-            F.current_timestamp().alias("created_timestamp"),
-            F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-        ).drop_duplicates(["date_key", "facility_key", "zone_key"])
-        
-        DeltaTable.forName(spark, "gold.fact_environmental_daily").alias("t").merge(
-            df_gold_env_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        max_ts = df_new_env.select(F.max(time_col)).collect()[0][0]
-        set_watermark("environmental_telemetry", max_ts)
-        print(f"Environmental: Merged into environmental_cleaned, environmental_metrics, & fact_environmental_daily.")
+    df_gold_env_final = df_gold_env.select(
+        F.col("fact.date_key"),
+        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
+        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.col("fact.avg_ambient_temp_celsius"),
+        F.col("fact.min_ambient_temp_celsius"),
+        F.col("fact.max_ambient_temp_celsius"),
+        F.col("fact.avg_humidity_pct"),
+        F.col("fact.avg_co2_ppm"),
+        F.col("fact.avg_vpd_kpa"),
+        F.col("fact.avg_temp_drift_celsius"),
+        F.col("fact.avg_stability_score"),
+        F.col("fact.avg_water_ph"),
+        F.col("fact.avg_ec_ms_cm"),
+        F.col("fact.telemetry_sample_count"),
+        F.current_timestamp().alias("created_timestamp"),
+        F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    ).drop_duplicates(["date_key", "facility_key", "zone_key"])
+    
+    DeltaTable.forName(spark, "gold.fact_environmental_daily").alias("t").merge(
+        df_gold_env_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    max_ts = df_new_env.select(F.max(time_col)).collect()[0][0]
+    set_watermark("environmental_telemetry", max_ts)
+    print(f"Environmental: Merged {cnt_env:,} rows into environmental_cleaned, environmental_metrics, & fact_environmental_daily.")
 
 
 # METADATA ********************
@@ -409,93 +409,89 @@ if spark.catalog.tableExists("bronze.environmental_telemetry"):
 
 # Equipment
 
-if spark.catalog.tableExists("bronze.equipment_telemetry"):
-    wm_eq = get_watermark("equipment_telemetry")
-    df_new_eq = spark.table("bronze.equipment_telemetry").filter(F.col("ingestion_timestamp") > wm_eq)
-    cnt_eq = df_new_eq.count()
+df_new_eq, cnt_eq, time_col_eq = extract_incremental_stream("bronze.equipment_telemetry", "equipment_telemetry")
+if df_new_eq is not None and cnt_eq > 0:
+    total_processed_rows += cnt_eq
+    raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
+    eq_id_clean = F.when(raw_eq_id.isNull() | raw_eq_id.contains("ORPHAN"), F.lit("UNREGISTERED_ASSET")).otherwise(raw_eq_id)
+    temp_clean = F.coalesce(F.when((F.col("operating_temperature_c").cast("double") < 0.0) | (F.col("operating_temperature_c").cast("double") > 150.0), F.lit(None)).otherwise(F.round(F.col("operating_temperature_c").cast("double"), 2)), F.lit(45.0))
     
-    if cnt_eq > 0:
-        total_processed_rows += cnt_eq
-        raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
-        eq_id_clean = F.when(raw_eq_id.isNull() | raw_eq_id.contains("ORPHAN"), F.lit("UNREGISTERED_ASSET")).otherwise(raw_eq_id)
-        temp_clean = F.coalesce(F.when((F.col("operating_temperature_c").cast("double") < 0.0) | (F.col("operating_temperature_c").cast("double") > 150.0), F.lit(None)).otherwise(F.round(F.col("operating_temperature_c").cast("double"), 2)), F.lit(45.0))
-        
-        df_silver_eq = (
-            df_new_eq
-            .withColumn("equipment_id", eq_id_clean)
-            .withColumn("operating_temp_c", temp_clean)
-            .withColumn("vibration_vps", F.round(F.col("vibration_vps").cast("double"), 2))
-            .withColumn("equipment_health_status", F.round(F.col("health").cast("double"), 2))
-            .withColumn("current_load_percent", F.round(F.col("current_load").cast("double"), 1))
-            .withColumn("power_consumption_kw", F.round(F.col("power_consumption_kw").cast("double"), 2))
-            .withColumn("failure_probability", F.round(F.col("failure_probability").cast("double"), 4))
-            .withColumn("runtime_hours", F.round(F.col("runtime_hours").cast("double"), 1))
-            .drop_duplicates(["event_id"])
+    df_silver_eq = (
+        df_new_eq
+        .withColumn("equipment_id", eq_id_clean)
+        .withColumn("operating_temp_c", temp_clean)
+        .withColumn("vibration_vps", F.round(F.col("vibration_vps").cast("double"), 2))
+        .withColumn("equipment_health_status", F.round(F.col("health").cast("double"), 2))
+        .withColumn("current_load_percent", F.round(F.col("current_load").cast("double"), 1))
+        .withColumn("power_consumption_kw", F.round(F.col("power_consumption_kw").cast("double"), 2))
+        .withColumn("failure_probability", F.round(F.col("failure_probability").cast("double"), 4))
+        .withColumn("runtime_hours", F.round(F.col("runtime_hours").cast("double"), 1))
+        .drop_duplicates(["event_id"])
+    )
+    DeltaTable.forName(spark, "silver.equipment_risk_cleaned").alias("t").merge(
+        df_silver_eq.alias("s"), "t.event_id = s.event_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    # Gold Aggregation
+    df_eq_agg = (
+        df_silver_eq
+        .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
+        .withColumn("event_date", F.to_date("timestamp"))
+        .groupBy("date_key", "event_date", "facility_id", "equipment_id", "zone_id")
+        .agg(
+            F.round(F.avg("equipment_health_status"), 1).alias("avg_health_score"),
+            F.round(F.max("failure_probability"), 4).alias("max_failure_probability"),
+            F.round(F.greatest(F.lit(0.0), F.max("runtime_hours") - F.min("runtime_hours")), 2).alias("daily_runtime_hours"),
+            F.round(F.avg("power_consumption_kw"), 2).alias("avg_power_draw_kw"),
+            F.round(F.avg("vibration_vps"), 3).alias("avg_vibration_vps"),
+            F.round(F.avg("operating_temp_c"), 2).alias("avg_operating_temp_celsius"),
+            F.round(F.avg("current_load_percent"), 1).alias("avg_load_percent"),
+            F.count("event_id").alias("telemetry_sample_count")
         )
-        DeltaTable.forName(spark, "silver.equipment_risk_cleaned").alias("t").merge(
-            df_silver_eq.alias("s"), "t.event_id = s.event_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        # Gold Aggregation
-        df_eq_agg = (
-            df_silver_eq
-            .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
-            .withColumn("event_date", F.to_date("timestamp"))
-            .groupBy("date_key", "event_date", "facility_id", "equipment_id", "zone_id")
-            .agg(
-                F.round(F.avg("equipment_health_status"), 1).alias("avg_health_score"),
-                F.round(F.max("failure_probability"), 4).alias("max_failure_probability"),
-                F.round(F.greatest(F.lit(0.0), F.max("runtime_hours") - F.min("runtime_hours")), 2).alias("daily_runtime_hours"),
-                F.round(F.avg("power_consumption_kw"), 2).alias("avg_power_draw_kw"),
-                F.round(F.avg("vibration_vps"), 3).alias("avg_vibration_vps"),
-                F.round(F.avg("operating_temp_c"), 2).alias("avg_operating_temp_celsius"),
-                F.round(F.avg("current_load_percent"), 1).alias("avg_load_percent"),
-                F.count("event_id").alias("telemetry_sample_count")
-            )
-            .withColumn("total_energy_kwh", F.round(F.col("avg_power_draw_kw") * F.col("daily_runtime_hours"), 2))
-        )
-        
-        df_gold_eq = df_eq_agg.alias("fact")
-        if dim_fac_bcast is not None:
-            df_gold_eq = df_gold_eq.join(dim_fac_bcast.alias("f"), (F.col("fact.facility_id") == F.col("f.facility_id")) & (F.col("fact.event_date") >= F.col("f.effective_date")) & (F.col("fact.event_date") <= F.col("f.expiration_date")), "left")
-        else:
-            df_gold_eq = df_gold_eq.withColumn("f.facility_key", F.lit(-1))
+        .withColumn("total_energy_kwh", F.round(F.col("avg_power_draw_kw") * F.col("daily_runtime_hours"), 2))
+    )
+    
+    df_gold_eq = df_eq_agg.alias("fact")
+    if dim_fac_bcast is not None:
+        df_gold_eq = df_gold_eq.join(dim_fac_bcast.alias("f"), (F.col("fact.facility_id") == F.col("f.facility_id")) & (F.col("fact.event_date") >= F.col("f.effective_date")) & (F.col("fact.event_date") <= F.col("f.expiration_date")), "left")
+    else:
+        df_gold_eq = df_gold_eq.withColumn("f.facility_key", F.lit(-1))
 
-        if dim_eq_bcast is not None:
-            df_gold_eq = df_gold_eq.join(dim_eq_bcast.alias("e"), (F.col("fact.equipment_id") == F.col("e.equipment_id")) & (F.col("fact.event_date") >= F.col("e.effective_date")) & (F.col("fact.event_date") <= F.col("e.expiration_date")), "left")
-        else:
-            df_gold_eq = df_gold_eq.withColumn("e.equipment_key", F.lit(-1))
+    if dim_eq_bcast is not None:
+        df_gold_eq = df_gold_eq.join(dim_eq_bcast.alias("e"), (F.col("fact.equipment_id") == F.col("e.equipment_id")) & (F.col("fact.event_date") >= F.col("e.effective_date")) & (F.col("fact.event_date") <= F.col("e.expiration_date")), "left")
+    else:
+        df_gold_eq = df_gold_eq.withColumn("e.equipment_key", F.lit(-1))
 
-        if dim_zone_bcast is not None:
-            df_gold_eq = df_gold_eq.join(dim_zone_bcast.alias("z"), (F.col("f.facility_key") == F.col("z.facility_key")) & (F.col("fact.zone_id") == F.col("z.zone_id")) & (F.col("fact.event_date") >= F.col("z.effective_date")) & (F.col("fact.event_date") <= F.col("z.expiration_date")), "left")
-        else:
-            df_gold_eq = df_gold_eq.withColumn("z.zone_key", F.lit(-1))
+    if dim_zone_bcast is not None:
+        df_gold_eq = df_gold_eq.join(dim_zone_bcast.alias("z"), (F.col("f.facility_key") == F.col("z.facility_key")) & (F.col("fact.zone_id") == F.col("z.zone_id")) & (F.col("fact.event_date") >= F.col("z.effective_date")) & (F.col("fact.event_date") <= F.col("z.expiration_date")), "left")
+    else:
+        df_gold_eq = df_gold_eq.withColumn("z.zone_key", F.lit(-1))
 
-        df_gold_eq_final = df_gold_eq.select(
-            F.col("fact.date_key"),
-            F.coalesce(F.col("f.facility_key"), F.lit(-1)).alias("facility_key"),
-            F.coalesce(F.col("e.equipment_key"), F.lit(-1)).alias("equipment_key"),
-            F.coalesce(F.col("z.zone_key"), F.lit(-1)).alias("zone_key"),
-            F.col("fact.avg_health_score"),
-            F.col("fact.max_failure_probability"),
-            F.col("fact.daily_runtime_hours"),
-            F.col("fact.avg_power_draw_kw"),
-            F.col("fact.total_energy_kwh"),
-            F.col("fact.avg_vibration_vps"),
-            F.col("fact.avg_operating_temp_celsius"),
-            F.col("fact.avg_load_percent"),
-            F.col("fact.telemetry_sample_count"),
-            F.current_timestamp().alias("created_timestamp"),
-            F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-        ).drop_duplicates(["date_key", "facility_key", "equipment_key", "zone_key"]) # Strict MERGE key deduplication
-        
-        DeltaTable.forName(spark, "gold.fact_equipment_telemetry").alias("t").merge(
-            df_gold_eq_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.equipment_key = s.equipment_key AND t.zone_key = s.zone_key"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        max_ts_eq = df_new_eq.select(F.max("ingestion_timestamp")).collect()[0][0]
-        set_watermark("equipment_telemetry", max_ts_eq)
-        print(f"Equipment: Merged into equipment_risk_cleaned & fact_equipment_telemetry.")
+    df_gold_eq_final = df_gold_eq.select(
+        F.col("fact.date_key"),
+        F.coalesce(F.col("f.facility_key"), F.lit(-1)).alias("facility_key"),
+        F.coalesce(F.col("e.equipment_key"), F.lit(-1)).alias("equipment_key"),
+        F.coalesce(F.col("z.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.col("fact.avg_health_score"),
+        F.col("fact.max_failure_probability"),
+        F.col("fact.daily_runtime_hours"),
+        F.col("fact.avg_power_draw_kw"),
+        F.col("fact.total_energy_kwh"),
+        F.col("fact.avg_vibration_vps"),
+        F.col("fact.avg_operating_temp_celsius"),
+        F.col("fact.avg_load_percent"),
+        F.col("fact.telemetry_sample_count"),
+        F.current_timestamp().alias("created_timestamp"),
+        F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    ).drop_duplicates(["date_key", "facility_key", "equipment_key", "zone_key"]) # Strict MERGE key deduplication
+    
+    DeltaTable.forName(spark, "gold.fact_equipment_telemetry").alias("t").merge(
+        df_gold_eq_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.equipment_key = s.equipment_key AND t.zone_key = s.zone_key"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    max_ts_eq = df_new_eq.select(F.max(time_col_eq)).collect()[0][0]
+    set_watermark("equipment_telemetry", max_ts_eq)
+    print(f"Equipment: Merged {cnt_eq:,} rows into equipment_risk_cleaned & fact_equipment_telemetry.")
 
 
 # METADATA ********************
@@ -509,77 +505,73 @@ if spark.catalog.tableExists("bronze.equipment_telemetry"):
 
 # Crop Telemetry and Lifecycle
 
-if spark.catalog.tableExists("bronze.crop_telemetry"):
-    wm_cr = get_watermark("crop_telemetry")
-    df_new_cr = spark.table("bronze.crop_telemetry").filter(F.col("ingestion_timestamp") > wm_cr)
-    cnt_cr = df_new_cr.count()
+df_new_cr, cnt_cr, time_col_cr = extract_incremental_stream("bronze.crop_telemetry", "crop_telemetry")
+if df_new_cr is not None and cnt_cr > 0:
+    total_processed_rows += cnt_cr
+    df_silver_cr = (
+        df_new_cr
+        .withColumn("biomass_g", F.round(F.col("biomass_grams").cast("double"), 2))
+        .withColumn("crop_health_score", F.round(F.col("health_score").cast("double"), 1))
+        .withColumn("growth_rate_g_day", F.round(F.col("growth_rate").cast("double"), 2))
+        .drop_duplicates(["event_id"])
+    )
+    DeltaTable.forName(spark, "silver.crop_biological_cleaned").alias("t").merge(
+        df_silver_cr.alias("s"), "t.event_id = s.event_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
     
-    if cnt_cr > 0:
-        total_processed_rows += cnt_cr
-        df_silver_cr = (
-            df_new_cr
-            .withColumn("biomass_g", F.round(F.col("biomass_grams").cast("double"), 2))
-            .withColumn("crop_health_score", F.round(F.col("health_score").cast("double"), 1))
-            .withColumn("growth_rate_g_day", F.round(F.col("growth_rate").cast("double"), 2))
-            .drop_duplicates(["event_id"])
+    RACK_PLANT_DENSITY = 250.0
+    df_yield_agg = (
+        df_silver_cr
+        .withColumn("event_date", F.to_date("timestamp"))
+        .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
+        .groupBy("date_key", "event_date", "facility_id", "zone_id", F.upper(F.col("crop_type")).alias("crop_id"))
+        .agg(
+            F.round(F.max("biomass_g") * RACK_PLANT_DENSITY / 1000.0, 2).alias("target_yield_kg"),
+            F.round(F.avg("biomass_g") * RACK_PLANT_DENSITY / 1000.0, 2).alias("total_harvest_kg"),
+            F.round(F.avg(F.col("biomass_g") * 0.80) * RACK_PLANT_DENSITY / 1000.0, 2).alias("grade_a_harvest_kg"),
+            F.round(F.avg(F.col("biomass_g") * 0.15) * RACK_PLANT_DENSITY / 1000.0, 2).alias("grade_b_harvest_kg"),
+            F.round(F.avg(F.col("biomass_g") * 0.05) * RACK_PLANT_DENSITY / 1000.0, 2).alias("spoilage_waste_kg"),
+            F.round(F.avg("growth_rate_g_day"), 2).alias("avg_growth_rate_g_day"),
+            F.count("event_id").alias("harvest_batch_count")
         )
-        DeltaTable.forName(spark, "silver.crop_biological_cleaned").alias("t").merge(
-            df_silver_cr.alias("s"), "t.event_id = s.event_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        RACK_PLANT_DENSITY = 250.0
-        df_yield_agg = (
-            df_silver_cr
-            .withColumn("event_date", F.to_date("timestamp"))
-            .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
-            .groupBy("date_key", "event_date", "facility_id", "zone_id", F.upper(F.col("crop_type")).alias("crop_id"))
-            .agg(
-                F.round(F.max("biomass_g") * RACK_PLANT_DENSITY / 1000.0, 2).alias("target_yield_kg"),
-                F.round(F.avg("biomass_g") * RACK_PLANT_DENSITY / 1000.0, 2).alias("total_harvest_kg"),
-                F.round(F.avg(F.col("biomass_g") * 0.80) * RACK_PLANT_DENSITY / 1000.0, 2).alias("grade_a_harvest_kg"),
-                F.round(F.avg(F.col("biomass_g") * 0.15) * RACK_PLANT_DENSITY / 1000.0, 2).alias("grade_b_harvest_kg"),
-                F.round(F.avg(F.col("biomass_g") * 0.05) * RACK_PLANT_DENSITY / 1000.0, 2).alias("spoilage_waste_kg"),
-                F.round(F.avg("growth_rate_g_day"), 2).alias("avg_growth_rate_g_day"),
-                F.count("event_id").alias("harvest_batch_count")
-            )
-            .withColumn("yield_achievement_pct", F.lit(100.0))
-            .withColumn("estimated_revenue_php", F.round(F.col("grade_a_harvest_kg") * 480.0 + F.col("grade_b_harvest_kg") * 312.0, 2))
-        )
-        
-        df_gold_crop = df_yield_agg.alias("fact")
-        if dim_fac_bcast is not None:
-            df_gold_crop = df_gold_crop.join(dim_fac_bcast.alias("f"), (F.col("fact.facility_id") == F.col("f.facility_id")) & (F.col("fact.event_date") >= F.col("f.effective_date")) & (F.col("fact.event_date") <= F.col("f.expiration_date")), "left")
-        else:
-            df_gold_crop = df_gold_crop.withColumn("f.facility_key", F.lit(-1))
+        .withColumn("yield_achievement_pct", F.lit(100.0))
+        .withColumn("estimated_revenue_php", F.round(F.col("grade_a_harvest_kg") * 480.0 + F.col("grade_b_harvest_kg") * 312.0, 2))
+    )
+    
+    df_gold_crop = df_yield_agg.alias("fact")
+    if dim_fac_bcast is not None:
+        df_gold_crop = df_gold_crop.join(dim_fac_bcast.alias("f"), (F.col("fact.facility_id") == F.col("f.facility_id")) & (F.col("fact.event_date") >= F.col("f.effective_date")) & (F.col("fact.event_date") <= F.col("f.expiration_date")), "left")
+    else:
+        df_gold_crop = df_gold_crop.withColumn("f.facility_key", F.lit(-1))
 
-        if dim_zone_bcast is not None:
-            df_gold_crop = df_gold_crop.join(dim_zone_bcast.alias("z"), (F.col("f.facility_key") == F.col("z.facility_key")) & (F.col("fact.zone_id") == F.col("z.zone_id")) & (F.col("fact.event_date") >= F.col("z.effective_date")) & (F.col("fact.event_date") <= F.col("z.expiration_date")), "left")
-        else:
-            df_gold_crop = df_gold_crop.withColumn("z.zone_key", F.lit(-1))
+    if dim_zone_bcast is not None:
+        df_gold_crop = df_gold_crop.join(dim_zone_bcast.alias("z"), (F.col("f.facility_key") == F.col("z.facility_key")) & (F.col("fact.zone_id") == F.col("z.zone_id")) & (F.col("fact.event_date") >= F.col("z.effective_date")) & (F.col("fact.event_date") <= F.col("z.expiration_date")), "left")
+    else:
+        df_gold_crop = df_gold_crop.withColumn("z.zone_key", F.lit(-1))
 
-        if dim_crop_bcast is not None:
-            df_gold_crop = df_gold_crop.join(dim_crop_bcast.alias("c"), F.col("fact.crop_id") == F.col("c.crop_id"), "left")
-        else:
-            df_gold_crop = df_gold_crop.withColumn("c.crop_key", F.lit(-1))
+    if dim_crop_bcast is not None:
+        df_gold_crop = df_gold_crop.join(dim_crop_bcast.alias("c"), F.col("fact.crop_id") == F.col("c.crop_id"), "left")
+    else:
+        df_gold_crop = df_gold_crop.withColumn("c.crop_key", F.lit(-1))
 
-        df_gold_crop_final = df_gold_crop.select(
-            F.col("fact.date_key"),
-            F.coalesce(F.col("f.facility_key"), F.lit(-1)).alias("facility_key"),
-            F.coalesce(F.col("z.zone_key"), F.lit(-1)).alias("zone_key"),
-            F.coalesce(F.col("c.crop_key"), F.lit(-1)).alias("crop_key"),
-            F.col("fact.target_yield_kg"), F.col("fact.total_harvest_kg"), F.col("fact.grade_a_harvest_kg"),
-            F.col("fact.grade_b_harvest_kg"), F.col("fact.spoilage_waste_kg"), F.col("fact.yield_achievement_pct"),
-            F.col("fact.estimated_revenue_php"), F.col("fact.avg_growth_rate_g_day"), F.col("fact.harvest_batch_count"),
-            F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-        ).drop_duplicates(["date_key", "facility_key", "zone_key", "crop_key"]) # 🛡️ Strict MERGE key deduplication
-        
-        DeltaTable.forName(spark, "gold.fact_crop_yield").alias("t").merge(
-            df_gold_crop_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key AND t.crop_key = s.crop_key"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        max_ts_cr = df_new_cr.select(F.max("ingestion_timestamp")).collect()[0][0]
-        set_watermark("crop_telemetry", max_ts_cr)
-        print(f"Crop: Merged into crop_biological_cleaned & fact_crop_yield.")
+    df_gold_crop_final = df_gold_crop.select(
+        F.col("fact.date_key"),
+        F.coalesce(F.col("f.facility_key"), F.lit(-1)).alias("facility_key"),
+        F.coalesce(F.col("z.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.coalesce(F.col("c.crop_key"), F.lit(-1)).alias("crop_key"),
+        F.col("fact.target_yield_kg"), F.col("fact.total_harvest_kg"), F.col("fact.grade_a_harvest_kg"),
+        F.col("fact.grade_b_harvest_kg"), F.col("fact.spoilage_waste_kg"), F.col("fact.yield_achievement_pct"),
+        F.col("fact.estimated_revenue_php"), F.col("fact.avg_growth_rate_g_day"), F.col("fact.harvest_batch_count"),
+        F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    ).drop_duplicates(["date_key", "facility_key", "zone_key", "crop_key"]) # 🛡️ Strict MERGE key deduplication
+    
+    DeltaTable.forName(spark, "gold.fact_crop_yield").alias("t").merge(
+        df_gold_crop_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key AND t.crop_key = s.crop_key"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    max_ts_cr = df_new_cr.select(F.max(time_col_cr)).collect()[0][0]
+    set_watermark("crop_telemetry", max_ts_cr)
+    print(f"Crop: Merged {cnt_cr:,} rows into crop_biological_cleaned & fact_crop_yield.")
 
 
 # METADATA ********************
@@ -594,259 +586,241 @@ if spark.catalog.tableExists("bronze.crop_telemetry"):
 # Irrigation, Lighting, and Maintenance
 
 # 1. IRRIGATION TELEMETRY
-if spark.catalog.tableExists("bronze.irrigation_telemetry"):
-    wm_irr = get_watermark("irrigation_telemetry")
-    df_raw_irr = spark.table("bronze.irrigation_telemetry")
-    time_col_irr = F.col("IngestionTime") if "IngestionTime" in df_raw_irr.columns else F.col("ingestion_timestamp")
-    df_new_irr = df_raw_irr.filter(time_col_irr > wm_irr)
-    cnt_irr = df_new_irr.count()
+df_new_irr, cnt_irr, time_col_irr = extract_incremental_stream("bronze.irrigation_telemetry", "irrigation_telemetry")
+if df_new_irr is not None and cnt_irr > 0:
+    total_processed_rows += cnt_irr
+    fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
+    zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
+    raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
+    ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
     
-    if cnt_irr > 0:
-        total_processed_rows += cnt_irr
-        fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
-        zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
-        raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
-        ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
-        
-        df_silver_irr = (
-            df_new_irr
-            .withColumn("facility_id", fac_clean)
-            .withColumn("zone_id", zone_clean)
-            .withColumn("timestamp", ts_clean)
-            .withColumn("irrigation_active", F.col("irrigation_active").cast("boolean"))
-            .withColumn("flow_lpm", F.round(F.col("flow_rate_liters_per_minute").cast("double"), 2))
-            .withColumn("pressure_kpa", F.round(F.col("pressure_kpa").cast("double"), 1))
-            .withColumn("irrigation_duration_seconds", F.col("irrigation_duration_seconds").cast("int"))
-            .withColumn("water_delivered_liters", F.round(F.col("water_delivered_liters").cast("double"), 2))
-            .withColumn("nutrient_solution_delivered_liters", F.round(F.col("nutrient_solution_delivered_liters").cast("double"), 2))
-            .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("hydro.tech@smartfarm.ph")))
-            .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
-            .drop_duplicates(["event_id"])
-            .select("event_id", "facility_id", "zone_id", "irrigation_active", "flow_lpm", "pressure_kpa", "irrigation_duration_seconds", "water_delivered_liters", "nutrient_solution_delivered_liters", "operator_contact", "operator_phone", "timestamp")
+    df_silver_irr = (
+        df_new_irr
+        .withColumn("facility_id", fac_clean)
+        .withColumn("zone_id", zone_clean)
+        .withColumn("timestamp", ts_clean)
+        .withColumn("irrigation_active", F.col("irrigation_active").cast("boolean"))
+        .withColumn("flow_lpm", F.round(F.col("flow_rate_liters_per_minute").cast("double"), 2))
+        .withColumn("pressure_kpa", F.round(F.col("pressure_kpa").cast("double"), 1))
+        .withColumn("irrigation_duration_seconds", F.col("irrigation_duration_seconds").cast("int"))
+        .withColumn("water_delivered_liters", F.round(F.col("water_delivered_liters").cast("double"), 2))
+        .withColumn("nutrient_solution_delivered_liters", F.round(F.col("nutrient_solution_delivered_liters").cast("double"), 2))
+        .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("hydro.tech@smartfarm.ph")))
+        .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
+        .drop_duplicates(["event_id"])
+        .select("event_id", "facility_id", "zone_id", "irrigation_active", "flow_lpm", "pressure_kpa", "irrigation_duration_seconds", "water_delivered_liters", "nutrient_solution_delivered_liters", "operator_contact", "operator_phone", "timestamp")
+    )
+    DeltaTable.forName(spark, "silver.irrigation_flow_cleaned").alias("t").merge(
+        df_silver_irr.alias("s"), "t.event_id = s.event_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    df_irr_agg = (
+        df_silver_irr
+        .filter(F.col("facility_id").rlike("^FAC-[0-9]{3}$") & F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
+        .withColumn("event_date", F.to_date(F.col("timestamp")))
+        .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int"))
+        .groupBy("date_key", "event_date", "facility_id", "zone_id")
+        .agg(
+            F.round(F.avg("flow_lpm"), 2).alias("avg_flow_rate_lpm"),
+            F.round(F.sum("water_delivered_liters"), 2).alias("total_water_delivered_liters"),
+            F.round(F.sum("nutrient_solution_delivered_liters"), 2).alias("total_nutrient_solution_liters"),
+            F.round(F.avg("pressure_kpa"), 2).alias("avg_pressure_kpa"),
+            F.round(F.sum("irrigation_duration_seconds") / 60.0, 2).alias("total_irrigation_duration_min"),
+            F.count("event_id").alias("telemetry_sample_count")
         )
-        DeltaTable.forName(spark, "silver.irrigation_flow_cleaned").alias("t").merge(
-            df_silver_irr.alias("s"), "t.event_id = s.event_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    )
+    df_gold_irr = df_irr_agg.alias("fact")
+    if dim_fac_bcast is not None:
+        df_gold_irr = df_gold_irr.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), how="left")
+    else:
+        df_gold_irr = df_gold_irr.withColumn("dim_fac.facility_key", F.lit(-1))
         
-        df_irr_agg = (
-            df_silver_irr
-            .filter(F.col("facility_id").rlike("^FAC-[0-9]{3}$") & F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
-            .withColumn("event_date", F.to_date(F.col("timestamp")))
-            .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int"))
-            .groupBy("date_key", "event_date", "facility_id", "zone_id")
-            .agg(
-                F.round(F.avg("flow_lpm"), 2).alias("avg_flow_rate_lpm"),
-                F.round(F.sum("water_delivered_liters"), 2).alias("total_water_delivered_liters"),
-                F.round(F.sum("nutrient_solution_delivered_liters"), 2).alias("total_nutrient_solution_liters"),
-                F.round(F.avg("pressure_kpa"), 2).alias("avg_pressure_kpa"),
-                F.round(F.sum("irrigation_duration_seconds") / 60.0, 2).alias("total_irrigation_duration_min"),
-                F.count("event_id").alias("telemetry_sample_count")
-            )
-        )
-        df_gold_irr = df_irr_agg.alias("fact")
-        if dim_fac_bcast is not None:
-            df_gold_irr = df_gold_irr.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), how="left")
-        else:
-            df_gold_irr = df_gold_irr.withColumn("dim_fac.facility_key", F.lit(-1))
-            
-        if dim_zone_bcast is not None:
-            df_gold_irr = df_gold_irr.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), how="left")
-        else:
-            df_gold_irr = df_gold_irr.withColumn("dim_zn.zone_key", F.lit(-1))
+    if dim_zone_bcast is not None:
+        df_gold_irr = df_gold_irr.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), how="left")
+    else:
+        df_gold_irr = df_gold_irr.withColumn("dim_zn.zone_key", F.lit(-1))
 
-        df_gold_irr_final = df_gold_irr.select(
-            F.col("fact.date_key"),
-            F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-            F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
-            F.col("fact.avg_flow_rate_lpm"), F.col("fact.total_water_delivered_liters"), F.col("fact.total_nutrient_solution_liters"),
-            F.col("fact.avg_pressure_kpa"), F.col("fact.total_irrigation_duration_min"), F.col("fact.telemetry_sample_count"),
-            F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-        ).drop_duplicates(["date_key", "facility_key", "zone_key"]) # Strict MERGE key deduplication
-        
-        DeltaTable.forName(spark, "gold.fact_irrigation_daily").alias("t").merge(
-            df_gold_irr_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        max_ts_irr = df_new_irr.select(F.max(time_col_irr)).collect()[0][0]
-        set_watermark("irrigation_telemetry", max_ts_irr)
+    df_gold_irr_final = df_gold_irr.select(
+        F.col("fact.date_key"),
+        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
+        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.col("fact.avg_flow_rate_lpm"), F.col("fact.total_water_delivered_liters"), F.col("fact.total_nutrient_solution_liters"),
+        F.col("fact.avg_pressure_kpa"), F.col("fact.total_irrigation_duration_min"), F.col("fact.telemetry_sample_count"),
+        F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    ).drop_duplicates(["date_key", "facility_key", "zone_key"]) # Strict MERGE key deduplication
+    
+    DeltaTable.forName(spark, "gold.fact_irrigation_daily").alias("t").merge(
+        df_gold_irr_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    max_ts_irr = df_new_irr.select(F.max(time_col_irr)).collect()[0][0]
+    set_watermark("irrigation_telemetry", max_ts_irr)
 
 # 2. LIGHTING TELEMETRY
-if spark.catalog.tableExists("bronze.lighting_telemetry"):
-    wm_lt = get_watermark("lighting_telemetry")
-    df_raw_lt = spark.table("bronze.lighting_telemetry")
-    time_col_lt = F.col("IngestionTime") if "IngestionTime" in df_raw_lt.columns else F.col("ingestion_timestamp")
-    df_new_lt = df_raw_lt.filter(time_col_lt > wm_lt)
-    cnt_lt = df_new_lt.count()
+df_new_lt, cnt_lt, time_col_lt = extract_incremental_stream("bronze.lighting_telemetry", "lighting_telemetry")
+if df_new_lt is not None and cnt_lt > 0:
+    total_processed_rows += cnt_lt
+    fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
+    zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
+    raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
+    ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
     
-    if cnt_lt > 0:
-        total_processed_rows += cnt_lt
-        fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
-        zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
-        raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
-        ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
-        
-        df_silver_lt = (
-            df_new_lt
-            .withColumn("facility_id", fac_clean)
-            .withColumn("zone_id", zone_clean)
-            .withColumn("timestamp", ts_clean)
-            .withColumn("lighting_enabled", F.col("lighting_enabled").cast("boolean"))
-            .withColumn("lighting_intensity_percent", F.round(F.col("lighting_intensity_percent").cast("double"), 1))
-            .withColumn("photoperiod_hours", F.round(F.col("photoperiod_hours").cast("double"), 1))
-            .withColumn("dli_mol_m2_day", F.round(F.col("daily_light_integral").cast("double"), 2))
-            .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("elec.tech@smartfarm.ph")))
-            .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
-            .drop_duplicates(["event_id"])
-            .select("event_id", "facility_id", "zone_id", "lighting_enabled", "lighting_intensity_percent", "photoperiod_hours", "dli_mol_m2_day", "operator_contact", "operator_phone", "timestamp")
+    df_silver_lt = (
+        df_new_lt
+        .withColumn("facility_id", fac_clean)
+        .withColumn("zone_id", zone_clean)
+        .withColumn("timestamp", ts_clean)
+        .withColumn("lighting_enabled", F.col("lighting_enabled").cast("boolean"))
+        .withColumn("lighting_intensity_percent", F.round(F.col("lighting_intensity_percent").cast("double"), 1))
+        .withColumn("photoperiod_hours", F.round(F.col("photoperiod_hours").cast("double"), 1))
+        .withColumn("dli_mol_m2_day", F.round(F.col("daily_light_integral").cast("double"), 2))
+        .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("elec.tech@smartfarm.ph")))
+        .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
+        .drop_duplicates(["event_id"])
+        .select("event_id", "facility_id", "zone_id", "lighting_enabled", "lighting_intensity_percent", "photoperiod_hours", "dli_mol_m2_day", "operator_contact", "operator_phone", "timestamp")
+    )
+    DeltaTable.forName(spark, "silver.lighting_dli_cleaned").alias("t").merge(
+        df_silver_lt.alias("s"), "t.event_id = s.event_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    df_lt_agg = (
+        df_silver_lt
+        .filter(F.col("facility_id").rlike("^FAC-[0-9]{3}$") & F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
+        .withColumn("event_date", F.to_date(F.col("timestamp")))
+        .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int"))
+        .groupBy("date_key", "event_date", "facility_id", "zone_id")
+        .agg(
+            F.round(F.avg("dli_mol_m2_day"), 2).alias("avg_daily_light_integral"),
+            F.round(F.max("dli_mol_m2_day"), 2).alias("max_daily_light_integral"),
+            F.round(F.avg("lighting_intensity_percent"), 1).alias("avg_lighting_intensity_pct"),
+            F.round(F.avg("photoperiod_hours"), 1).alias("avg_photoperiod_hours"),
+            F.count("event_id").alias("telemetry_sample_count")
         )
-        DeltaTable.forName(spark, "silver.lighting_dli_cleaned").alias("t").merge(
-            df_silver_lt.alias("s"), "t.event_id = s.event_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    )
+    df_gold_lt = df_lt_agg.alias("fact")
+    if dim_fac_bcast is not None:
+        df_gold_lt = df_gold_lt.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), how="left")
+    else:
+        df_gold_lt = df_gold_lt.withColumn("dim_fac.facility_key", F.lit(-1))
         
-        df_lt_agg = (
-            df_silver_lt
-            .filter(F.col("facility_id").rlike("^FAC-[0-9]{3}$") & F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
-            .withColumn("event_date", F.to_date(F.col("timestamp")))
-            .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int"))
-            .groupBy("date_key", "event_date", "facility_id", "zone_id")
-            .agg(
-                F.round(F.avg("dli_mol_m2_day"), 2).alias("avg_daily_light_integral"),
-                F.round(F.max("dli_mol_m2_day"), 2).alias("max_daily_light_integral"),
-                F.round(F.avg("lighting_intensity_percent"), 1).alias("avg_lighting_intensity_pct"),
-                F.round(F.avg("photoperiod_hours"), 1).alias("avg_photoperiod_hours"),
-                F.count("event_id").alias("telemetry_sample_count")
-            )
-        )
-        df_gold_lt = df_lt_agg.alias("fact")
-        if dim_fac_bcast is not None:
-            df_gold_lt = df_gold_lt.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), how="left")
-        else:
-            df_gold_lt = df_gold_lt.withColumn("dim_fac.facility_key", F.lit(-1))
-            
-        if dim_zone_bcast is not None:
-            df_gold_lt = df_gold_lt.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), how="left")
-        else:
-            df_gold_lt = df_gold_lt.withColumn("dim_zn.zone_key", F.lit(-1))
+    if dim_zone_bcast is not None:
+        df_gold_lt = df_gold_lt.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), how="left")
+    else:
+        df_gold_lt = df_gold_lt.withColumn("dim_zn.zone_key", F.lit(-1))
 
-        df_gold_lt_final = df_gold_lt.select(
-            F.col("fact.date_key"),
-            F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-            F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
-            F.col("fact.avg_daily_light_integral"), F.col("fact.max_daily_light_integral"),
-            F.col("fact.avg_lighting_intensity_pct"), F.col("fact.avg_photoperiod_hours"), F.col("fact.telemetry_sample_count"),
-            F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-        ).drop_duplicates(["date_key", "facility_key", "zone_key"]) # Strict MERGE key deduplication
-        
-        DeltaTable.forName(spark, "gold.fact_lighting_dli_daily").alias("t").merge(
-            df_gold_lt_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        max_ts_lt = df_new_lt.select(F.max(time_col_lt)).collect()[0][0]
-        set_watermark("lighting_telemetry", max_ts_lt)
+    df_gold_lt_final = df_gold_lt.select(
+        F.col("fact.date_key"),
+        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
+        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.col("fact.avg_daily_light_integral"), F.col("fact.max_daily_light_integral"),
+        F.col("fact.avg_lighting_intensity_pct"), F.col("fact.avg_photoperiod_hours"), F.col("fact.telemetry_sample_count"),
+        F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    ).drop_duplicates(["date_key", "facility_key", "zone_key"]) # Strict MERGE key deduplication
+    
+    DeltaTable.forName(spark, "gold.fact_lighting_dli_daily").alias("t").merge(
+        df_gold_lt_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    max_ts_lt = df_new_lt.select(F.max(time_col_lt)).collect()[0][0]
+    set_watermark("lighting_telemetry", max_ts_lt)
 
 # 3. MAINTENANCE ACTIVITY
-if spark.catalog.tableExists("bronze.maintenance_activity"):
-    wm_maint = get_watermark("maintenance_activity")
-    df_raw_maint = spark.table("bronze.maintenance_activity")
-    time_col_maint = F.col("IngestionTime") if "IngestionTime" in df_raw_maint.columns else F.col("ingestion_timestamp")
-    df_new_maint = df_raw_maint.filter(time_col_maint > wm_maint)
-    cnt_maint = df_new_maint.count()
+df_new_maint, cnt_maint, time_col_maint = extract_incremental_stream("bronze.maintenance_activity", "maintenance_activity")
+if df_new_maint is not None and cnt_maint > 0:
+    total_processed_rows += cnt_maint
+    fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
+    zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
+    raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
+    eq_id_clean = F.when(raw_eq_id.isNull() | raw_eq_id.contains("ORPHAN"), F.lit("UNREGISTERED_ASSET")).otherwise(raw_eq_id)
+    raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
+    ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
     
-    if cnt_maint > 0:
-        total_processed_rows += cnt_maint
-        fac_clean = F.when(F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN"), F.lit("UNKNOWN_FACILITY")).otherwise(F.upper(F.trim(F.col("facility_id"))))
-        zone_clean = F.when(F.col("zone_id").isNull() | F.upper(F.trim(F.col("zone_id"))).isin("", "N/A", "UNKNOWN"), F.lit("ZONE-UNKNOWN")).otherwise(F.upper(F.trim(F.col("zone_id"))))
-        raw_eq_id = F.upper(F.trim(F.col("equipment_id")))
-        eq_id_clean = F.when(raw_eq_id.isNull() | raw_eq_id.contains("ORPHAN"), F.lit("UNREGISTERED_ASSET")).otherwise(raw_eq_id)
-        raw_ts_str = F.regexp_replace(F.trim(F.col("timestamp").cast("string")), "[\"']", "")
-        ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
-        
-        maint_status_clean = F.upper(F.trim(F.col("maintenance_status")))
-        is_active_calc = F.when(maint_status_clean == "COMPLETED", F.lit(False)).otherwise(F.lit(True))
-        lag_calc = F.col("estimated_duration_minutes").cast("long") - F.col("remaining_duration_minutes").cast("long")
-        
-        df_silver_maint = (
-            df_new_maint
-            .withColumn("facility_id", fac_clean)
-            .withColumn("zone_id", zone_clean)
-            .withColumn("equipment_id", eq_id_clean)
-            .withColumn("timestamp", ts_clean)
-            .withColumn("work_order_id", F.trim(F.col("work_order_id")))
-            .withColumn("maintenance_type", F.trim(F.col("maintenance_type")))
-            .withColumn("priority", F.upper(F.trim(F.col("priority"))))
-            .withColumn("assigned_technician", F.trim(F.col("assigned_technician")))
-            .withColumn("maintenance_status", maint_status_clean)
-            .withColumn("estimated_duration_minutes", F.col("estimated_duration_minutes").cast("int"))
-            .withColumn("remaining_duration_minutes", F.col("remaining_duration_minutes").cast("int"))
-            .withColumn("completion_percent", F.round(F.col("completion_percent").cast("double"), 1))
-            .withColumn("is_active", is_active_calc)
-            .withColumn("technician_notes", F.trim(F.col("technician_notes")))
-            .withColumn("health_restored", F.round(F.col("health_restored").cast("double"), 1))
-            .withColumn("resolution_lag_min", lag_calc)
-            .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("maint.lead@smartfarm.ph")))
-            .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
-            .drop_duplicates(["event_id"])
-            .select("event_id", "facility_id", "zone_id", "equipment_id", "work_order_id", "maintenance_type", "priority", "assigned_technician", "maintenance_status", "estimated_duration_minutes", "remaining_duration_minutes", "completion_percent", "is_active", "technician_notes", "health_restored", "resolution_lag_min", "operator_contact", "operator_phone", "timestamp")
+    maint_status_clean = F.upper(F.trim(F.col("maintenance_status")))
+    is_active_calc = F.when(maint_status_clean == "COMPLETED", F.lit(False)).otherwise(F.lit(True))
+    lag_calc = F.col("estimated_duration_minutes").cast("long") - F.col("remaining_duration_minutes").cast("long")
+    
+    df_silver_maint = (
+        df_new_maint
+        .withColumn("facility_id", fac_clean)
+        .withColumn("zone_id", zone_clean)
+        .withColumn("equipment_id", eq_id_clean)
+        .withColumn("timestamp", ts_clean)
+        .withColumn("work_order_id", F.trim(F.col("work_order_id")))
+        .withColumn("maintenance_type", F.trim(F.col("maintenance_type")))
+        .withColumn("priority", F.upper(F.trim(F.col("priority"))))
+        .withColumn("assigned_technician", F.trim(F.col("assigned_technician")))
+        .withColumn("maintenance_status", maint_status_clean)
+        .withColumn("estimated_duration_minutes", F.col("estimated_duration_minutes").cast("int"))
+        .withColumn("remaining_duration_minutes", F.col("remaining_duration_minutes").cast("int"))
+        .withColumn("completion_percent", F.round(F.col("completion_percent").cast("double"), 1))
+        .withColumn("is_active", is_active_calc)
+        .withColumn("technician_notes", F.trim(F.col("technician_notes")))
+        .withColumn("health_restored", F.round(F.col("health_restored").cast("double"), 1))
+        .withColumn("resolution_lag_min", lag_calc)
+        .withColumn("operator_contact", F.coalesce(F.trim(F.col("operator_contact")), F.lit("maint.lead@smartfarm.ph")))
+        .withColumn("operator_phone", F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190")))
+        .drop_duplicates(["event_id"])
+        .select("event_id", "facility_id", "zone_id", "equipment_id", "work_order_id", "maintenance_type", "priority", "assigned_technician", "maintenance_status", "estimated_duration_minutes", "remaining_duration_minutes", "completion_percent", "is_active", "technician_notes", "health_restored", "resolution_lag_min", "operator_contact", "operator_phone", "timestamp")
+    )
+    DeltaTable.forName(spark, "silver.maintenance_sla_cleaned").alias("t").merge(
+        df_silver_maint.alias("s"), "t.event_id = s.event_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    df_maint_agg = (
+        df_silver_maint
+        .filter(F.col("facility_id").rlike("^FAC-[0-9]{3}$") & F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
+        .filter((F.col("equipment_id").isNotNull()) & (F.col("equipment_id") != "UNREGISTERED_ASSET"))
+        .withColumn("technician_name", F.trim(F.col("assigned_technician")))
+        .withColumn("event_date", F.to_date(F.col("timestamp")))
+        .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int"))
+        .groupBy("date_key", "event_date", "facility_id", "zone_id", "equipment_id", "technician_name")
+        .agg(
+            F.count("work_order_id").alias("work_order_count"),
+            F.round(F.avg("estimated_duration_minutes"), 1).alias("avg_estimated_duration_min"),
+            F.round(F.avg(F.col("estimated_duration_minutes") - F.col("remaining_duration_minutes")), 1).alias("avg_actual_duration_min"),
+            F.round(F.sum("health_restored"), 1).alias("total_health_restored"),
+            F.sum(F.when(F.col("maintenance_status") == "COMPLETED", 1).otherwise(0)).alias("completed_work_orders"),
+            F.sum(F.when(F.col("maintenance_status") == "OVERDUE", 1).otherwise(0)).alias("overdue_work_orders")
         )
-        DeltaTable.forName(spark, "silver.maintenance_sla_cleaned").alias("t").merge(
-            df_silver_maint.alias("s"), "t.event_id = s.event_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        df_maint_agg = (
-            df_silver_maint
-            .filter(F.col("facility_id").rlike("^FAC-[0-9]{3}$") & F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
-            .filter((F.col("equipment_id").isNotNull()) & (F.col("equipment_id") != "UNREGISTERED_ASSET"))
-            .withColumn("technician_name", F.trim(F.col("assigned_technician")))
-            .withColumn("event_date", F.to_date(F.col("timestamp")))
-            .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int"))
-            .groupBy("date_key", "event_date", "facility_id", "zone_id", "equipment_id", "technician_name")
-            .agg(
-                F.count("work_order_id").alias("work_order_count"),
-                F.round(F.avg("estimated_duration_minutes"), 1).alias("avg_estimated_duration_min"),
-                F.round(F.avg(F.col("estimated_duration_minutes") - F.col("remaining_duration_minutes")), 1).alias("avg_actual_duration_min"),
-                F.round(F.sum("health_restored"), 1).alias("total_health_restored"),
-                F.sum(F.when(F.col("maintenance_status") == "COMPLETED", 1).otherwise(0)).alias("completed_work_orders"),
-                F.sum(F.when(F.col("maintenance_status") == "OVERDUE", 1).otherwise(0)).alias("overdue_work_orders")
-            )
-            .withColumn("sla_compliance_pct", F.when(F.col("work_order_count") > 0, F.round((F.col("completed_work_orders") * 100.0) / F.col("work_order_count"), 2)).otherwise(F.lit(100.0)))
-            .withColumn("is_sla_met", F.when(F.col("overdue_work_orders") == 0, True).otherwise(False))
-        )
-        df_gold_maint = df_maint_agg.alias("fact")
-        if dim_fac_bcast is not None:
-            df_gold_maint = df_gold_maint.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), how="left")
-        else:
-            df_gold_maint = df_gold_maint.withColumn("dim_fac.facility_key", F.lit(-1))
+        .withColumn("sla_compliance_pct", F.when(F.col("work_order_count") > 0, F.round((F.col("completed_work_orders") * 100.0) / F.col("work_order_count"), 2)).otherwise(F.lit(100.0)))
+        .withColumn("is_sla_met", F.when(F.col("overdue_work_orders") == 0, True).otherwise(False))
+    )
+    df_gold_maint = df_maint_agg.alias("fact")
+    if dim_fac_bcast is not None:
+        df_gold_maint = df_gold_maint.join(dim_fac_bcast.alias("dim_fac"), (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) & (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")), how="left")
+    else:
+        df_gold_maint = df_gold_maint.withColumn("dim_fac.facility_key", F.lit(-1))
 
-        if dim_zone_bcast is not None:
-            df_gold_maint = df_gold_maint.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), how="left")
-        else:
-            df_gold_maint = df_gold_maint.withColumn("dim_zn.zone_key", F.lit(-1))
+    if dim_zone_bcast is not None:
+        df_gold_maint = df_gold_maint.join(dim_zone_bcast.alias("dim_zn"), (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) & (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) & (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")), how="left")
+    else:
+        df_gold_maint = df_gold_maint.withColumn("dim_zn.zone_key", F.lit(-1))
 
-        if dim_eq_bcast is not None:
-            df_gold_maint = df_gold_maint.join(dim_eq_bcast.alias("dim_eq"), (F.col("fact.equipment_id") == F.col("dim_eq.equipment_id")) & (F.col("fact.event_date") >= F.col("dim_eq.effective_date")) & (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")), how="left")
-        else:
-            df_gold_maint = df_gold_maint.withColumn("dim_eq.equipment_key", F.lit(-1))
+    if dim_eq_bcast is not None:
+        df_gold_maint = df_gold_maint.join(dim_eq_bcast.alias("dim_eq"), (F.col("fact.equipment_id") == F.col("dim_eq.equipment_id")) & (F.col("fact.event_date") >= F.col("dim_eq.effective_date")) & (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")), how="left")
+    else:
+        df_gold_maint = df_gold_maint.withColumn("dim_eq.equipment_key", F.lit(-1))
 
-        if dim_tech_bcast is not None:
-            df_gold_maint = df_gold_maint.join(dim_tech_bcast.alias("dim_tech"), F.col("fact.technician_name") == F.col("dim_tech.technician_name"), how="left")
-        else:
-            df_gold_maint = df_gold_maint.withColumn("dim_tech.technician_key", F.lit(-1))
+    if dim_tech_bcast is not None:
+        df_gold_maint = df_gold_maint.join(dim_tech_bcast.alias("dim_tech"), F.col("fact.technician_name") == F.col("dim_tech.technician_name"), how="left")
+    else:
+        df_gold_maint = df_gold_maint.withColumn("dim_tech.technician_key", F.lit(-1))
 
-        df_gold_maint_final = df_gold_maint.select(
-            F.col("fact.date_key"),
-            F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-            F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
-            F.coalesce(F.col("dim_eq.equipment_key"), F.lit(-1)).alias("equipment_key"),
-            F.coalesce(F.col("dim_tech.technician_key"), F.lit(-1)).alias("technician_key"),
-            F.col("fact.work_order_count"), F.col("fact.completed_work_orders"), F.col("fact.overdue_work_orders"),
-            F.col("fact.avg_estimated_duration_min"), F.col("fact.avg_actual_duration_min"), F.col("fact.total_health_restored"),
-            F.col("fact.sla_compliance_pct"), F.col("fact.is_sla_met"),
-            F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-        ).drop_duplicates(["date_key", "facility_key", "zone_key", "equipment_key", "technician_key"]) # Strict MERGE key deduplication
-        
-        DeltaTable.forName(spark, "gold.fact_maintenance_sla").alias("t").merge(
-            df_gold_maint_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key AND t.equipment_key = s.equipment_key AND t.technician_key = s.technician_key"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        max_ts_maint = df_new_maint.select(F.max(time_col_maint)).collect()[0][0]
-        set_watermark("maintenance_activity", max_ts_maint)
+    df_gold_maint_final = df_gold_maint.select(
+        F.col("fact.date_key"),
+        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
+        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.coalesce(F.col("dim_eq.equipment_key"), F.lit(-1)).alias("equipment_key"),
+        F.coalesce(F.col("dim_tech.technician_key"), F.lit(-1)).alias("technician_key"),
+        F.col("fact.work_order_count"), F.col("fact.completed_work_orders"), F.col("fact.overdue_work_orders"),
+        F.col("fact.avg_estimated_duration_min"), F.col("fact.avg_actual_duration_min"), F.col("fact.total_health_restored"),
+        F.col("fact.sla_compliance_pct"), F.col("fact.is_sla_met"),
+        F.current_timestamp().alias("created_timestamp"), F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    ).drop_duplicates(["date_key", "facility_key", "zone_key", "equipment_key", "technician_key"]) # Strict MERGE key deduplication
+    
+    DeltaTable.forName(spark, "gold.fact_maintenance_sla").alias("t").merge(
+        df_gold_maint_final.alias("s"), "t.date_key = s.date_key AND t.facility_key = s.facility_key AND t.zone_key = s.zone_key AND t.equipment_key = s.equipment_key AND t.technician_key = s.technician_key"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    max_ts_maint = df_new_maint.select(F.max(time_col_maint)).collect()[0][0]
+    set_watermark("maintenance_activity", max_ts_maint)
 
 print("Incremental Streams Merged: Irrigation, Lighting, Maintenance into Silver & Gold Facts.")
 
@@ -862,82 +836,76 @@ print("Incremental Streams Merged: Irrigation, Lighting, Maintenance into Silver
 
 # Dead-Letter Queue Triage
 
-if spark.catalog.tableExists("bronze.dead_letter_telemetry"):
-    wm_dl = get_watermark("dead_letter_telemetry")
-    df_raw_dl = spark.table("bronze.dead_letter_telemetry")
-    time_col_dl = F.col("IngestionTime") if "IngestionTime" in df_raw_dl.columns else F.col("ingestion_timestamp")
-    df_new_dl = df_raw_dl.filter(time_col_dl > wm_dl)
-    cnt_dl = df_new_dl.count()
+df_new_dl, cnt_dl, time_col_dl = extract_incremental_stream("bronze.dead_letter_telemetry", "dead_letter_telemetry")
+if df_new_dl is not None and cnt_dl > 0:
+    total_processed_rows += cnt_dl
+    raw_cols = df_new_dl.columns
+    fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
+    exc_reason_col = F.col("exception_reason") if "exception_reason" in raw_cols else F.lit("MISSING_PRIMARY_KEY")
+    stream_col = F.col("target_stream") if "target_stream" in raw_cols else (F.col("event_type") if "event_type" in raw_cols else F.lit("ENVIRONMENTAL_TELEMETRY"))
     
-    if cnt_dl > 0:
-        total_processed_rows += cnt_dl
-        raw_cols = df_new_dl.columns
-        fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
-        exc_reason_col = F.col("exception_reason") if "exception_reason" in raw_cols else F.lit("MISSING_PRIMARY_KEY")
-        stream_col = F.col("target_stream") if "target_stream" in raw_cols else (F.col("event_type") if "event_type" in raw_cols else F.lit("ENVIRONMENTAL_TELEMETRY"))
-        
-        # 1. silver.dead_letter_classified
-        df_silver_dl = (
-            df_new_dl
-            .withColumn("exception_category", 
-                F.when(exc_reason_col.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
-                 .when(exc_reason_col.contains("DEPRECATED") | exc_reason_col.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
-                 .when(exc_reason_col.contains("SERDES") | exc_reason_col.contains("PARSE") | exc_reason_col.contains("JSON"), F.lit("SERDES_PARSE_FAILURE"))
-                 .when(exc_reason_col.contains("TIMESTAMP") | exc_reason_col.contains("SYNC") | exc_reason_col.contains("CLOCK"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
-                 .when(exc_reason_col.contains("MAC") | exc_reason_col.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
-                 .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
-            )
-            .withColumn("is_auto_remediable", F.col("exception_category") == F.lit("DEPRECATED_SCHEMA_EVENT"))
-            .drop_duplicates(["event_id"])
+    # 1. silver.dead_letter_classified
+    df_silver_dl = (
+        df_new_dl
+        .withColumn("exception_category", 
+            F.when(exc_reason_col.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
+             .when(exc_reason_col.contains("DEPRECATED") | exc_reason_col.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
+             .when(exc_reason_col.contains("SERDES") | exc_reason_col.contains("PARSE") | exc_reason_col.contains("JSON"), F.lit("SERDES_PARSE_FAILURE"))
+             .when(exc_reason_col.contains("TIMESTAMP") | exc_reason_col.contains("SYNC") | exc_reason_col.contains("CLOCK"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
+             .when(exc_reason_col.contains("MAC") | exc_reason_col.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
+             .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
         )
-        DeltaTable.forName(spark, "silver.dead_letter_classified").alias("t").merge(
-            df_silver_dl.alias("s"), "t.event_id = s.event_id"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        # 2. gold.fact_dead_letter_governance (Exact Match with Notebook_Gold_ETL)
-        df_dl_agg = (
-            df_silver_dl
-            .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
-            .withColumn("event_date", F.to_date("timestamp"))
-            .withColumn("target_stream_name", F.upper(F.trim(stream_col)))
-            .withColumn("governance_exception_reason", F.trim(F.col("exception_category")))
-            .groupBy("date_key", "event_date", "target_stream_name", "governance_exception_reason")
-            .agg(
-                F.count("event_id").alias("dead_letter_event_count"),
-                F.sum(F.when(F.col("exception_category").contains("MISSING"), 1).otherwise(0)).alias("missing_pk_defect_count"),
-                F.sum(F.when(F.col("exception_category").contains("BOUNDS") | F.col("exception_category").contains("TEMP"), 1).otherwise(0)).alias("out_of_bounds_defect_count"),
-                F.sum(F.when(F.col("exception_category").contains("DEPRECATED") | F.col("exception_category").contains("SCHEMA"), 1).otherwise(0)).alias("deprecated_schema_defect_count"),
-                F.sum(F.when(F.col("exception_category").contains("JSON") | F.col("exception_category").contains("SERDES"), 1).otherwise(0)).alias("serdes_parse_defect_count"),
-                F.sum(F.when(F.col("exception_category").contains("CLOCK") | F.col("exception_category").contains("SYNC") | F.col("exception_category").contains("TIMESTAMP"), 1).otherwise(0)).alias("timestamp_sync_defect_count"),
-                F.sum(F.when(F.col("exception_category").contains("MAC") | F.col("exception_category").contains("UNREGISTERED"), 1).otherwise(0)).alias("unregistered_hardware_defect_count"),
-                F.sum(F.when(F.col("exception_category").contains("SERDES") | F.col("exception_category").contains("BOUNDS") | F.col("exception_category").contains("FORMAT"), 1).otherwise(0)).alias("formatting_defect_count")
-            )
-            .select(
-                F.col("date_key"),
-                F.col("target_stream_name"),
-                F.col("governance_exception_reason"),
-                F.col("dead_letter_event_count"),
-                F.col("missing_pk_defect_count"),
-                F.col("out_of_bounds_defect_count"),
-                F.col("deprecated_schema_defect_count"),
-                F.col("serdes_parse_defect_count"),
-                F.col("timestamp_sync_defect_count"),
-                F.col("unregistered_hardware_defect_count"),
-                F.col("formatting_defect_count"),
-                F.current_timestamp().alias("created_timestamp"),
-                F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-            )
-            .drop_duplicates(["date_key", "target_stream_name", "governance_exception_reason"])
+        .withColumn("is_auto_remediable", F.col("exception_category") == F.lit("DEPRECATED_SCHEMA_EVENT"))
+        .drop_duplicates(["event_id"])
+    )
+    DeltaTable.forName(spark, "silver.dead_letter_classified").alias("t").merge(
+        df_silver_dl.alias("s"), "t.event_id = s.event_id"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    # 2. gold.fact_dead_letter_governance (Exact Match with Notebook_Gold_ETL)
+    df_dl_agg = (
+        df_silver_dl
+        .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
+        .withColumn("event_date", F.to_date("timestamp"))
+        .withColumn("target_stream_name", F.upper(F.trim(stream_col)))
+        .withColumn("governance_exception_reason", F.trim(F.col("exception_category")))
+        .groupBy("date_key", "event_date", "target_stream_name", "governance_exception_reason")
+        .agg(
+            F.count("event_id").alias("dead_letter_event_count"),
+            F.sum(F.when(F.col("exception_category").contains("MISSING"), 1).otherwise(0)).alias("missing_pk_defect_count"),
+            F.sum(F.when(F.col("exception_category").contains("BOUNDS") | F.col("exception_category").contains("TEMP"), 1).otherwise(0)).alias("out_of_bounds_defect_count"),
+            F.sum(F.when(F.col("exception_category").contains("DEPRECATED") | F.col("exception_category").contains("SCHEMA"), 1).otherwise(0)).alias("deprecated_schema_defect_count"),
+            F.sum(F.when(F.col("exception_category").contains("JSON") | F.col("exception_category").contains("SERDES"), 1).otherwise(0)).alias("serdes_parse_defect_count"),
+            F.sum(F.when(F.col("exception_category").contains("CLOCK") | F.col("exception_category").contains("SYNC") | F.col("exception_category").contains("TIMESTAMP"), 1).otherwise(0)).alias("timestamp_sync_defect_count"),
+            F.sum(F.when(F.col("exception_category").contains("MAC") | F.col("exception_category").contains("UNREGISTERED"), 1).otherwise(0)).alias("unregistered_hardware_defect_count"),
+            F.sum(F.when(F.col("exception_category").contains("SERDES") | F.col("exception_category").contains("BOUNDS") | F.col("exception_category").contains("FORMAT"), 1).otherwise(0)).alias("formatting_defect_count")
         )
-        
-        DeltaTable.forName(spark, "gold.fact_dead_letter_governance").alias("t").merge(
-            df_dl_agg.alias("s"), 
-            "t.date_key = s.date_key AND t.target_stream_name = s.target_stream_name AND t.governance_exception_reason = s.governance_exception_reason"
-        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-        
-        max_ts_dl = df_new_dl.select(F.max(time_col_dl)).collect()[0][0]
-        set_watermark("dead_letter_telemetry", max_ts_dl)
-        print(f"Dead-Letter: Triaged into silver.dead_letter_classified & gold.fact_dead_letter_governance.")
+        .select(
+            F.col("date_key"),
+            F.col("target_stream_name"),
+            F.col("governance_exception_reason"),
+            F.col("dead_letter_event_count"),
+            F.col("missing_pk_defect_count"),
+            F.col("out_of_bounds_defect_count"),
+            F.col("deprecated_schema_defect_count"),
+            F.col("serdes_parse_defect_count"),
+            F.col("timestamp_sync_defect_count"),
+            F.col("unregistered_hardware_defect_count"),
+            F.col("formatting_defect_count"),
+            F.current_timestamp().alias("created_timestamp"),
+            F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+        )
+        .drop_duplicates(["date_key", "target_stream_name", "governance_exception_reason"])
+    )
+    
+    DeltaTable.forName(spark, "gold.fact_dead_letter_governance").alias("t").merge(
+        df_dl_agg.alias("s"), 
+        "t.date_key = s.date_key AND t.target_stream_name = s.target_stream_name AND t.governance_exception_reason = s.governance_exception_reason"
+    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    
+    max_ts_dl = df_new_dl.select(F.max(time_col_dl)).collect()[0][0]
+    set_watermark("dead_letter_telemetry", max_ts_dl)
+    print(f"Dead-Letter: Triaged into silver.dead_letter_classified & gold.fact_dead_letter_governance.")
 
 
 # METADATA ********************
