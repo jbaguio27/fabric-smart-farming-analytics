@@ -363,10 +363,12 @@ def run_incremental_generator(hours: int = 24, output_dir: str = "Files_Incremen
 
     # 5. Dead-Letter Samples
     for i, (strm, exc) in enumerate([
-        ("EnvironmentalTelemetry", "MISSING_PRIMARY_KEY: null facility_id"),
-        ("EquipmentTelemetry", "OUT_OF_BOUNDS_SENSOR_VALUE: temperature > 65C"),
-        ("CropTelemetry", "DEPRECATED_SCHEMA_VERSION: v1.0 payload"),
-        ("IrrigationTelemetry", "SERDES_PARSE_FAILURE: malformed JSON payload"),
+        ("EnvironmentalTelemetry", "MISSING_PRIMARY_KEY: NULL FACILITY_ID"),
+        ("EquipmentTelemetry", "OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"),
+        ("CropTelemetry", "DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"),
+        ("IrrigationTelemetry", "SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"),
+        ("LightingTelemetry", "TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"),
+        ("MaintenanceActivity", "UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"),
     ]):
         seed_dl = f"DL-INC-{i:03d}"
         dl_rows.append({

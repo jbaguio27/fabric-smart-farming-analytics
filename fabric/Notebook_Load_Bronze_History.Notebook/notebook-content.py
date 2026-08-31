@@ -56,12 +56,28 @@ for entry in manifest:
     source_name = entry["folder"]
     target_table = f"bronze.{entry['table']}"
     pk_col = entry["pk"]
-    file_path = f"Files/bootstrap_history/{source_name}.json"
-    
-    try:
-        # 1. Read Bootstrap JSON Data from Files/bootstrap_history/
-        df_raw = spark.read.option("multiline", "true").json(file_path)
+    file_candidates = [
+        f"Files/bootstrap_history/{source_name}.json",
+        f"Files/{source_name}.json",
+        f"/lakehouse/default/Files/bootstrap_history/{source_name}.json",
+        f"/lakehouse/default/Files/{source_name}.json"
+    ]
+    df_raw = None
+    file_path = None
+    for cand in file_candidates:
+        try:
+            df_raw = spark.read.option("multiline", "true").json(cand)
+            if df_raw is not None and df_raw.count() > 0:
+                file_path = cand
+                break
+        except Exception:
+            pass
+            
+    if df_raw is None:
+        print(f"⚠️ Could not load bootstrap JSON for {source_name}")
+        continue
         
+    try:
         # 2. Enrich with DataOps Ingestion Metadata & Deduplicate
         df_bronze_source = (
             df_raw

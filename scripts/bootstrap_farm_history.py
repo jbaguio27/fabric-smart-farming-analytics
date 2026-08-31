@@ -507,12 +507,12 @@ def run_historical_bootstrap(start_date_str: str = "2025-01-15", stride_hours: f
 
     # 5. Inject Forensic Dead Letter Failure Samples (250 Records, Realistic Distribution)
     dl_distribution = [
-        ("EnvironmentalTelemetry", "MISSING_PRIMARY_KEY: null facility_id", '{"event_id": "DL-FAIL-01", "facility_id": null, "sensor_type": "air_temperature"}', 95),
-        ("EquipmentTelemetry", "OUT_OF_BOUNDS_SENSOR_VALUE: temperature > 65C", '{"event_id": "DL-FAIL-02", "facility_id": "FAC-001", "temperature_celsius": 88.5}', 55),
-        ("CropTelemetry", "DEPRECATED_SCHEMA_VERSION: v1.0 payload", '{"event_id": "DL-FAIL-03", "facility_id": "FAC-002", "schema_version": "v1.0"}', 35),
-        ("IrrigationTelemetry", "SERDES_PARSE_FAILURE: malformed JSON payload", '{"event_id": "DL-FAIL-04", "facility_id": "FAC-003", "payload": "{malformed_json_bytes"}', 30),
-        ("LightingTelemetry", "TIMESTAMP_OUT_OF_SYNC: clock skew > 24h", '{"event_id": "DL-FAIL-05", "facility_id": "FAC-004", "timestamp": "2020-01-01T00:00:00Z"}', 20),
-        ("MaintenanceActivity", "UNREGISTERED_HARDWARE_MAC_ADDRESS", '{"event_id": "DL-FAIL-06", "mac_address": "00:00:00:00:00:00"}', 15),
+        ("EnvironmentalTelemetry", "MISSING_PRIMARY_KEY: NULL FACILITY_ID", '{"event_id": "DL-FAIL-01", "facility_id": null, "sensor_type": "air_temperature"}', 95),
+        ("EquipmentTelemetry", "OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C", '{"event_id": "DL-FAIL-02", "facility_id": "FAC-001", "temperature_celsius": 88.5}', 55),
+        ("CropTelemetry", "DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD", '{"event_id": "DL-FAIL-03", "facility_id": "FAC-002", "schema_version": "v1.0"}', 35),
+        ("IrrigationTelemetry", "SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD", '{"event_id": "DL-FAIL-04", "facility_id": "FAC-003", "payload": "{malformed_json_bytes"}', 30),
+        ("LightingTelemetry", "TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H", '{"event_id": "DL-FAIL-05", "facility_id": "FAC-004", "timestamp": "2020-01-01T00:00:00Z"}', 20),
+        ("MaintenanceActivity", "UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE", '{"event_id": "DL-FAIL-06", "mac_address": "00:00:00:00:00:00"}', 15),
     ]
 
     dl_counter = 0
