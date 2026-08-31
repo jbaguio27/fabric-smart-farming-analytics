@@ -471,6 +471,7 @@ df_telemetry_cleaned = (
     .withColumn("facility_id_upper", facility_id_clean)
     .withColumn("zone_id_clean", zone_id_clean)
     .withColumn("clean_timestamp", timestamp_clean)
+    .filter(F.col("zone_id_clean").rlike("^ZONE-[0-9]{3}$"))
     .drop_duplicates(["event_id"])
 )
 
@@ -556,6 +557,7 @@ df_telemetry_cleaned = (
     .withColumn("facility_id_upper", facility_id_clean)
     .withColumn("zone_id_clean", zone_id_clean)
     .withColumn("clean_timestamp", timestamp_clean)
+    .filter(F.col("zone_id_clean").rlike("^ZONE-[0-9]{3}$"))
     .drop_duplicates(["event_id"])
 )
 
@@ -633,6 +635,7 @@ df_telemetry_cleaned = (
     .withColumn("facility_id_upper", facility_id_clean)
     .withColumn("zone_id_clean", zone_id_clean)
     .withColumn("clean_timestamp", timestamp_clean)
+    .filter(F.col("zone_id_clean").rlike("^ZONE-[0-9]{3}$"))
     .drop_duplicates(["event_id"])
 )
 
@@ -1026,13 +1029,25 @@ ingestion_ts_col = (
 # Safe facility_id null check
 fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
 
+# Canonical Governance Exception Reason Resolution (Standardized Single-Casing)
+exc_raw_upper = F.upper(F.trim(exception_reason_col))
+exception_reason_canonical = (
+    F.when(exc_raw_upper.contains("MISSING") | fac_id_check, F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
+     .when(exc_raw_upper.contains("BOUNDS") | exc_raw_upper.contains("TEMP") | exc_raw_upper.contains("65"), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+     .when(exc_raw_upper.contains("SCHEMA") | exc_raw_upper.contains("V1.0") | exc_raw_upper.contains("LEGACY"), F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
+     .when(exc_raw_upper.contains("SERDES") | exc_raw_upper.contains("JSON") | exc_raw_upper.contains("PARSE"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
+     .when(exc_raw_upper.contains("TIMESTAMP") | exc_raw_upper.contains("CLOCK") | exc_raw_upper.contains("SYNC") | exc_raw_upper.contains("SKEW"), F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
+     .when(exc_raw_upper.contains("MAC") | exc_raw_upper.contains("UNREGISTERED") | exc_raw_upper.contains("ORPHAN"), F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
+     .otherwise(F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+)
+
 # Classification Expressions Across All 6 Exception Categories
 exception_category_calc = (
-    F.when(exception_reason_col.contains("MISSING_PRIMARY_KEY") | fac_id_check, F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
-     .when(exception_reason_col.contains("SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
-     .when(exception_reason_col.contains("JSON") | exception_reason_col.contains("SERDES"), F.lit("SERDES_PARSE_FAILURE"))
-     .when(exception_reason_col.contains("CLOCK") | exception_reason_col.contains("SYNC"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
-     .when(exception_reason_col.contains("MAC") | exception_reason_col.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
+    F.when(exception_reason_canonical.contains("MISSING_PRIMARY_KEY"), F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
+     .when(exception_reason_canonical.contains("DEPRECATED_SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
+     .when(exception_reason_canonical.contains("SERDES_PARSE"), F.lit("SERDES_PARSE_FAILURE"))
+     .when(exception_reason_canonical.contains("TIMESTAMP_OUT_OF_SYNC"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
+     .when(exception_reason_canonical.contains("UNREGISTERED_HARDWARE"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
      .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
 )
 
@@ -1046,7 +1061,7 @@ df_dl_classified = (
     df_dl_raw
     .withColumn("event_id_clean", F.trim(F.col("event_id")))
     .withColumn("target_stream_clean", F.upper(F.trim(target_stream_col)))
-    .withColumn("exception_reason_clean", F.upper(F.trim(exception_reason_col)))
+    .withColumn("exception_reason_clean", exception_reason_canonical)
     .withColumn("exception_category", exception_category_calc)
     .withColumn("is_auto_remediable", is_auto_remediable_calc)
     .withColumn("raw_payload_clean", raw_payload_col)
