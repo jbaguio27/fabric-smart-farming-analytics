@@ -39,7 +39,7 @@ spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
 
 # Global Pipeline Execution Paremeters
 PIPELINE_RUN_DATE = datetime.date.today()
-FARM_OPERATIONS_START_DATE = datetime.date(2025, 1, 15)
+FARM_OPERATIONS_START_DATE = datetime.date(1900, 1, 1)
 RUN_QUALITY_AUDIT = True
 
 # Tracked Attribute Definitions For SCD Type 2 Change Detection
@@ -166,7 +166,7 @@ source_row_count = df_fac_raw.count()
 eff_fac_col = F.col("effective_date").cast("date") if "effective_date" in df_fac_raw.columns else F.lit(FARM_OPERATIONS_START_DATE).cast("date")
 
 dim_fac_stg = df_fac_raw.select(
-    F.col("facility_id"),
+    F.upper(F.trim(F.col("facility_id"))).alias("facility_id"),
     F.col("facility_name"),
     F.col("region"),
     F.regexp_replace(F.col("region"), r"\s*\(.*\)", "").alias("short_region"),
@@ -205,7 +205,7 @@ if not spark.catalog.tableExists(table_name):
             F.when(F.col("expiration_date") == "9999-12-31", F.lit(True)).otherwise(F.lit(False))
         )
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), F.col("effective_date").cast("string"), F.col("attr_hash").cast("string")))).alias("facility_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.col("facility_id"), F.col("effective_date").cast("string")))).alias("facility_key"),
             F.col("facility_id"), 
             F.col("facility_name"), 
             F.col("region"), 
@@ -253,22 +253,22 @@ else:
     # Identify Brand New business keys (not present in active target)
     df_new_fac_keys = dim_fac_stg.alias("src").join(target_fac.alias("tgt"), "facility_id", "left_anti")\
                         .select(
-                            F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("facility_id"))), 
-                            F.lit(PIPELINE_RUN_DATE).cast("string"), F.col("attr_hash").cast("string")))).alias("facility_key"),
-                            F.col("facility_id"), 
-                            F.col("facility_name"), 
-                            F.col("region"), 
-                            F.col("short_region"),
-                            F.col("city"), 
-                            F.col("latitude"), 
-                            F.col("longitude"),
-                            F.col("elevation_m"),
-                            F.col("climate_zone"),
-                            F.col("water_source"),
-                            F.col("power_grid_redundancy"),
-                            F.col("max_zone_capacity"),
-                            F.col("operator_contact"),
-                            F.col("attr_hash"),
+                            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), 
+                            F.lit(PIPELINE_RUN_DATE).cast("string")))).alias("facility_key"),
+                            F.col("src.facility_id"), 
+                            F.col("src.facility_name"), 
+                            F.col("src.region"), 
+                            F.col("src.short_region"),
+                            F.col("src.city"), 
+                            F.col("src.latitude"), 
+                            F.col("src.longitude"),
+                            F.col("src.elevation_m"),
+                            F.col("src.climate_zone"),
+                            F.col("src.water_source"),
+                            F.col("src.power_grid_redundancy"),
+                            F.col("src.max_zone_capacity"),
+                            F.col("src.operator_contact"),
+                            F.col("src.attr_hash"),
                             F.lit(PIPELINE_RUN_DATE).cast("date").alias("effective_date"),
                             F.lit("9999-12-31").cast("date").alias("expiration_date"),
                             F.lit(True).alias("is_current"),
@@ -280,8 +280,8 @@ else:
     df_changed_fac_keys = dim_fac_stg.alias("src").join(target_fac.alias("tgt"), "facility_id")\
                             .filter(F.col("src.attr_hash") != F.col("tgt.attr_hash"))\
                             .select(
-                                F.abs(F.xxhash64(F.concat_ws("||", F.upper(F.trim(F.col("src.facility_id"))), 
-                                F.lit(PIPELINE_RUN_DATE).cast("string"), F.col("src.attr_hash").cast("string")))).alias("facility_key"),
+                                F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), 
+                                F.lit(PIPELINE_RUN_DATE).cast("string")))).alias("facility_key"),
                                 F.col("src.facility_id"), 
                                 F.col("src.facility_name"), 
                                 F.col("src.region"), 
@@ -311,7 +311,7 @@ else:
         "target.facility_id = source.facility_id AND target.is_current = true"
     ).whenMatchedUpdate(
         set={
-            "expiration_date": F.date_sub(F.lit(PIPELINE_RUN_DATE), 1),
+            "expiration_date": F.date_sub(F.lit(PIPELINE_RUN_DATE).cast("date"), 1),
             "is_current": F.lit(False)
         }
     ).execute()
@@ -369,8 +369,6 @@ print(f"Execution Time:       {elapsed_time}s")
 print(f"Validation Status:    {validation_status}")
 print("==============================================================================\n")
 
-
-
 # METADATA ********************
 
 # META {
@@ -385,6 +383,7 @@ print("=========================================================================
 import time
 import datetime
 from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 from pyspark.sql.types import StructType, StructField, LongType, StringType, IntegerType, DateType, BooleanType, TimestampType
 from delta.tables import DeltaTable
 
@@ -413,19 +412,22 @@ df_eq_zones  = spark.table("silver.equipment_risk_cleaned").select("facility_id"
 df_irr_zones = spark.table("silver.irrigation_flow_cleaned").select("facility_id", "zone_id")
 df_lt_zones  = spark.table("silver.lighting_dli_cleaned").select("facility_id", "zone_id")
 
-df_zone_raw = df_env_zones.unionByName(df_eq_zones) \
-    .unionByName(df_irr_zones) \
-    .unionByName(df_lt_zones) \
-    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id")))) \
-    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
+df_zone_raw = (
+    df_env_zones
+    .unionByName(df_eq_zones)
+    .unionByName(df_irr_zones)
+    .unionByName(df_lt_zones)
+    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id"))))
+    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id"))))
     .filter(
         (F.col("zone_id").rlike("^ZONE-[0-9]{3}$")) &
         (F.col("zone_id") != "ZONE-000") &
         (F.col("facility_id").isNotNull()) &
         (F.col("facility_id") != "") &
         (F.col("facility_id") != "UNKNOWN_FACILITY")
-    ) \
+    )
     .drop_duplicates(["facility_id", "zone_id"])
+)
 
 source_row_count = df_zone_raw.count()
 
@@ -478,10 +480,11 @@ rack_capacity_calc = (
      .otherwise(F.lit(16))
 ).cast("int")
 
-dim_zone_stg = df_zone_raw \
-    .withColumn("zone_name", zone_name_calc) \
-    .withColumn("section", section_calc) \
-    .withColumn("rack_capacity", rack_capacity_calc) \
+dim_zone_stg = (
+    df_zone_raw
+    .withColumn("zone_name", zone_name_calc)
+    .withColumn("section", section_calc)
+    .withColumn("rack_capacity", rack_capacity_calc)
     .withColumn(
         "attr_hash",
         F.xxhash64(
@@ -492,6 +495,7 @@ dim_zone_stg = df_zone_raw \
             )
         )
     )
+)
 
 # Broadcast cached dim_facility for point-in-time facility_key resolution
 dim_fac_bcast = F.broadcast(
@@ -504,16 +508,17 @@ dim_fac_bcast = F.broadcast(
 if not spark.catalog.tableExists(table_name):
     dim_zone_stg_init = dim_zone_stg.withColumn("effective_date", F.lit(FARM_OPERATIONS_START_DATE).cast("date"))
     
-    dim_zone_initial = dim_zone_stg_init.alias("stg") \
+    dim_zone_initial = (
+        dim_zone_stg_init.alias("stg")
         .join(
             dim_fac_bcast.alias("fac"),
             (F.col("stg.facility_id") == F.col("fac.facility_id")) &
             (F.col("stg.effective_date") >= F.col("fac.effective_date")) &
             (F.col("stg.effective_date") <= F.col("fac.expiration_date")),
             how="left"
-        ) \
+        )
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.col("stg.facility_id"), F.col("stg.zone_id"), F.col("stg.effective_date").cast("string"), F.col("stg.attr_hash").cast("string")))).alias("zone_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.col("stg.facility_id"), F.col("stg.zone_id"), F.col("stg.effective_date").cast("string")))).alias("zone_key"),
             F.coalesce(F.col("fac.facility_key"), F.lit(-1)).alias("facility_key"),
             F.col("stg.zone_id"),
             F.col("stg.zone_name"),
@@ -526,6 +531,7 @@ if not spark.catalog.tableExists(table_name):
             F.current_timestamp().alias("created_timestamp"),
             F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
         )
+    )
 
     unknown_zone = spark.createDataFrame([(
         -1, -1, "UNKNOWN", "Unknown Zone", "SECTION_0", 0, 0,
@@ -544,14 +550,16 @@ if not spark.catalog.tableExists(table_name):
 else:
     target_zone = spark.table(table_name).filter(F.col("is_current") == True)
     dim_zone_stg_inc = dim_zone_stg.withColumn("effective_date", F.lit(PIPELINE_RUN_DATE).cast("date"))
-    dim_zone_stg_resolved = dim_zone_stg_inc.alias("stg") \
+    
+    dim_zone_stg_resolved = (
+        dim_zone_stg_inc.alias("stg")
         .join(
             dim_fac_bcast.alias("fac"),
             (F.col("stg.facility_id") == F.col("fac.facility_id")) &
             (F.col("stg.effective_date") >= F.col("fac.effective_date")) &
             (F.col("stg.effective_date") <= F.col("fac.expiration_date")),
             how="left"
-        ) \
+        )
         .select(
             F.col("stg.facility_id"),
             F.col("stg.zone_id"),
@@ -562,11 +570,13 @@ else:
             F.col("stg.attr_hash"),
             F.col("stg.effective_date")
         )
+    )
 
-    df_new_zone_keys = dim_zone_stg_resolved.alias("src") \
-        .join(target_zone.alias("tgt"), ["facility_key", "zone_id"], "left_anti") \
+    df_new_zone_keys = (
+        dim_zone_stg_resolved.alias("src")
+        .join(target_zone.alias("tgt"), ["facility_key", "zone_id"], "left_anti")
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string"), F.col("src.attr_hash").cast("string")))).alias("zone_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string")))).alias("zone_key"),
             F.col("src.facility_key"), F.col("src.zone_id"), F.col("src.zone_name"),
             F.col("src.section"), F.col("src.rack_capacity"), F.col("src.attr_hash"),
             F.col("src.effective_date"), F.lit("9999-12-31").cast("date").alias("expiration_date"),
@@ -574,12 +584,14 @@ else:
             F.current_timestamp().alias("created_timestamp"),
             F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
         )
+    )
 
-    df_changed_zone_keys = dim_zone_stg_resolved.alias("src") \
-        .join(target_zone.alias("tgt"), ["facility_key", "zone_id"]) \
-        .filter(F.col("src.attr_hash") != F.col("tgt.attr_hash")) \
+    df_changed_zone_keys = (
+        dim_zone_stg_resolved.alias("src")
+        .join(target_zone.alias("tgt"), ["facility_key", "zone_id"])
+        .filter(F.col("src.attr_hash") != F.col("tgt.attr_hash"))
         .select(
-            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string"), F.col("src.attr_hash").cast("string")))).alias("zone_key"),
+            F.abs(F.xxhash64(F.concat_ws("||", F.col("src.facility_id"), F.col("src.zone_id"), F.col("src.effective_date").cast("string")))).alias("zone_key"),
             F.col("src.facility_key"), F.col("src.zone_id"), F.col("src.zone_name"),
             F.col("src.section"), F.col("src.rack_capacity"), F.col("src.attr_hash"),
             F.col("src.effective_date"), F.lit("9999-12-31").cast("date").alias("expiration_date"),
@@ -587,6 +599,7 @@ else:
             F.current_timestamp().alias("created_timestamp"),
             F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
         )
+    )
         
     delta_zone = DeltaTable.forName(spark, table_name)
     df_changed_zone_keys_dedup = df_changed_zone_keys.select("facility_key", "zone_id").distinct()
@@ -595,10 +608,11 @@ else:
         "target.facility_key = source.facility_key AND target.zone_id = source.zone_id AND target.is_current = true"
     ).whenMatchedUpdate(
         set={
-            "expiration_date": F.date_sub(F.lit(PIPELINE_RUN_DATE), 1),
+            "expiration_date": F.date_sub(F.lit(PIPELINE_RUN_DATE).cast("date"), 1),
             "is_current": F.lit(False)
         }
     ).execute()
+
     df_zone_to_append = df_new_zone_keys.unionByName(df_changed_zone_keys).drop_duplicates(["zone_key"])
     
     if not df_zone_to_append.isEmpty():
@@ -611,14 +625,20 @@ else:
         rows_appended_count = 0
     action_type = "INCREMENTAL TWO-PASS MERGE"
 
-# Self-healing primary key deduplication and legacy ZONE-000 purge to enforce 100% Direct Lake relational integrity
+# Self-healing deduplication to purge legacy ZONE-000 and unlinked duplicate records
 df_zone_heal = spark.table(table_name)
+has_unlinked_dupes = df_zone_heal.filter((F.col("facility_key") == -1) & (F.col("zone_key") != -1)).count() > 0
 has_zone_000 = df_zone_heal.filter(F.col("zone_id") == "ZONE-000").count() > 0
-has_dupes = df_zone_heal.groupBy("zone_key").count().filter("count > 1").count() > 0
 
-if has_zone_000 or has_dupes:
-    print("⚠️ Purging legacy ZONE-000 and deduplicating gold.dim_zone...")
-    df_zone_heal.filter(F.col("zone_id") != "ZONE-000").drop_duplicates(["zone_key"]).write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
+if has_unlinked_dupes or has_zone_000:
+    print("Purging legacy unlinked rows and deduplicating gold.dim_zone...")
+    # Keep only the unknown member (-1) and valid linked facility records
+    df_clean = (
+        df_zone_heal
+        .filter((F.col("zone_key") == -1) | ((F.col("zone_id") != "ZONE-000") & (F.col("facility_key") != -1)))
+        .drop_duplicates(["facility_key", "zone_id"])
+    )
+    df_clean.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(table_name)
 
 # Compute Table Statistics
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
@@ -638,19 +658,19 @@ validation_status = "PASSED" if (duplicate_active_keys == 0 and null_b_keys == 0
 
 # Standardized Cell Inline Logging
 print("==============================================================================")
-print(f"⭐ TABLE: {table_name} ({action_type})")
+print(f"TABLE: {table_name} ({action_type})")
 print("==============================================================================")
-print(f"Source Rows Read:     {source_row_count:,}")
-print(f"New Rows Appended:    {rows_appended_count:,}")
-print(f"Total Table Volume:   {total_rows:,}")
+print(f"Source Rows Read:       {source_row_count:,}")
+print(f"New Rows Appended:      {rows_appended_count:,}")
+print(f"Total Table Volume:     {total_rows:,}")
 print(f"Distinct Business Keys: {distinct_b_keys:,}")
-print(f"Active Current Rows:  {current_active_rows:,}")
-print(f"Historical Expired Rows: {historical_inactive_rows:,}")
-print(f"Duplicate Active Keys: {duplicate_active_keys}")
-print(f"Null Business Keys:   {null_b_keys}")
-print(f"Unknown Members (-1): {unknown_count}")
-print(f"Execution Time:       {elapsed_time}s")
-print(f"Validation Status:    {validation_status}")
+print(f"Active Current Rows:    {current_active_rows:,}")
+print(f"Historical Expired Rows:{historical_inactive_rows:,}")
+print(f"Duplicate Active Keys:  {duplicate_active_keys}")
+print(f"Null Business Keys:     {null_b_keys}")
+print(f"Unknown Members (-1):   {unknown_count}")
+print(f"Execution Time:         {elapsed_time}s")
+print(f"Validation Status:      {validation_status}")
 print("==============================================================================\n")
 
 
@@ -1118,39 +1138,54 @@ print("=========================================================================
 # Environmental Daily Fact (gold.fact_environmental_daily)
 
 import time
+from pyspark.sql import functions as F
 
 cell_start_time = time.time()
 table_name = "gold.fact_environmental_daily"
 
 # Read Source Data and Compute Daily Aggregations
-
-df_env_raw = spark.table("silver.environmental_metrics")\
-                    .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
+df_env_raw = (
+    spark.table("silver.environmental_metrics")
+    .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
+)
 source_row_count = df_env_raw.count()
 
+# Resolve metric column names flexibly
+env_cols = df_env_raw.columns
+temp_col   = "air_temperature_c" if "air_temperature_c" in env_cols else "air_temperature"
+humid_col  = "humidity_pct" if "humidity_pct" in env_cols else "relative_humidity"
+co2_col    = "co2_ppm" if "co2_ppm" in env_cols else "co2_level"
+vpd_col    = "vpd_kpa" if "vpd_kpa" in env_cols else "vpd"
+drift_col  = "temp_drift_c" if "temp_drift_c" in env_cols else "temperature_drift"
+stab_col   = "composite_stability_score" if "composite_stability_score" in env_cols else "stability_score"
+ph_col     = "water_ph" if "water_ph" in env_cols else "water_ph"
+ec_col     = "electrical_conductivity_ms_cm" if "electrical_conductivity_ms_cm" in env_cols else "water_ec"
+sample_col = "snapshot_id" if "snapshot_id" in env_cols else "event_id"
+
 # Aggregate micro-climate telemetry daily per facility and zone
-df_env_agg = df_env_raw \
-    .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))\
-    .withColumn("event_date", F.to_date("timestamp"))\
-    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id"))))\
-    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id"))))\
-    .groupBy("date_key", "event_date", "facility_id", "zone_id")\
+df_env_agg = (
+    df_env_raw
+    .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
+    .withColumn("event_date", F.to_date("timestamp"))
+    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id"))))
+    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id"))))
+    .groupBy("date_key", "event_date", "facility_id", "zone_id")
     .agg(
-        F.round(F.avg("air_temperature_c"), 2).alias("avg_ambient_temp_celsius"),
-        F.round(F.min("air_temperature_c"), 2).alias("min_ambient_temp_celsius"),
-        F.round(F.max("air_temperature_c"), 2).alias("max_ambient_temp_celsius"),
-        F.round(F.avg("humidity_pct"), 2).alias("avg_humidity_pct"),
-        F.round(F.avg("co2_ppm"), 2).alias("avg_co2_ppm"),
-        F.round(F.avg("vpd_kpa"), 2).alias("avg_vpd_kpa"),
-        F.round(F.avg("temp_drift_c"), 2).alias("avg_temp_drift_celsius"),
-        F.round(F.avg("composite_stability_score"), 2).alias("avg_stability_score"),
-        F.round(F.avg("water_ph"), 2).alias("avg_water_ph"),
-        F.round(F.avg("electrical_conductivity_ms_cm"), 2).alias("avg_ec_ms_cm"),
-        F.count("snapshot_id").alias("telemetry_sample_count")
+        F.round(F.avg(temp_col), 2).alias("avg_ambient_temp_celsius"),
+        F.round(F.min(temp_col), 2).alias("min_ambient_temp_celsius"),
+        F.round(F.max(temp_col), 2).alias("max_ambient_temp_celsius"),
+        F.round(F.avg(humid_col), 2).alias("avg_humidity_pct"),
+        F.round(F.avg(co2_col), 2).alias("avg_co2_ppm"),
+        F.round(F.avg(vpd_col), 2).alias("avg_vpd_kpa"),
+        F.round(F.avg(drift_col), 2).alias("avg_temp_drift_celsius"),
+        F.round(F.avg(stab_col), 2).alias("avg_stability_score"),
+        F.round(F.avg(ph_col), 2).alias("avg_water_ph"),
+        F.round(F.avg(ec_col), 2).alias("avg_ec_ms_cm"),
+        F.count(sample_col).alias("telemetry_sample_count")
     )
+)
 
 # Cached Dimension Lookups and Point-in-time surrogate key resolution
-
 dim_fac_bcast = F.broadcast(
     spark.table("gold.dim_facility")
     .select("facility_key", "facility_id", "effective_date", "expiration_date")
@@ -1168,16 +1203,22 @@ fact_env_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .select(
@@ -1198,10 +1239,10 @@ fact_env_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .drop_duplicates(["date_key", "facility_key", "zone_key"])
 )
 
-# Write Delta Tbale (Dynamic Partition Overwrite by date_key)
-
+# Write Delta Table (Dynamic Partition Overwrite by date_key)
 fact_env_stg.write.format("delta")\
             .mode("overwrite")\
             .option("mergeSchema", "true")\
@@ -1209,11 +1250,9 @@ fact_env_stg.write.format("delta")\
             .saveAsTable(table_name)
 
 # Compute Table Statistics
-
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
-# Lightweight Validation $ Metrics
-
+# Lightweight Validation & Metrics
 df_fact_env = spark.table(table_name)
 total_rows = df_fact_env.count()
 distinct_grain = df_fact_env.select("date_key", "facility_key", "zone_key").distinct().count()
@@ -1228,22 +1267,22 @@ unknown_zone_count = df_fact_env.filter(F.col("zone_key") == -1).count()
 elapsed_time = round(time.time() - cell_start_time, 2)
 validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_zone_count == 0) else "FAILED"
 
-# Standardized Cell Inline Loggings
-
+# Standardized Cell Inline Logging
 print("==============================================================================")
-print(f"⭐ TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
+print(f"TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
 print("==============================================================================")
-print(f"Source Rows Read:     {source_row_count:,}")
-print(f"Total Table Volume:   {total_rows:,}")
-print(f"Distinct Business Grain: {distinct_grain:,}")
-print(f"Duplicate Grain Count:{duplicate_grain_count}")
-print(f"Partition Count:      {partition_count} Partitions")
-print(f"Partition Range:      {min_date_key} -> {max_date_key}")
-print(f"Unknown Facilities (-1): {unknown_fac_count}")
-print(f"Unknown Zones (-1):      {unknown_zone_count}")
-print(f"Execution Time:       {elapsed_time}s")
-print(f"Validation Status:    {validation_status}")
+print(f"Source Rows Read:       {source_row_count:,}")
+print(f"Total Table Volume:     {total_rows:,}")
+print(f"Distinct Business Grain:{distinct_grain:,}")
+print(f"Duplicate Grain Count:  {duplicate_grain_count}")
+print(f"Partition Count:        {partition_count} Partitions")
+print(f"Partition Range:        {min_date_key} -> {max_date_key}")
+print(f"Unknown Facilities (-1):{unknown_fac_count}")
+print(f"Unknown Zones (-1):     {unknown_zone_count}")
+print(f"Execution Time:         {elapsed_time}s")
+print(f"Validation Status:      {validation_status}")
 print("==============================================================================\n")
+
 
 # METADATA ********************
 
@@ -1257,44 +1296,54 @@ print("=========================================================================
 # Equipment Telemetry Fact (gold.fact_equipment_telemetry)
 
 import time
+from pyspark.sql import functions as F
 
 cell_start_time = time.time()
 table_name = "gold.fact_equipment_telemetry"
 
 # Read Source Data and Compute Daily Aggregations
-
-df_eq_raw = spark.table("silver.equipment_risk_cleaned") \
-    .filter(~F.col("equipment_id").contains("ORPHAN")) \
-    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id")))) \
-    .withColumn("equipment_id", F.trim(F.col("equipment_id"))) \
-    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
+df_eq_raw = (
+    spark.table("silver.equipment_risk_cleaned")
+    .filter(~F.col("equipment_id").contains("ORPHAN"))
+    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id"))))
+    .withColumn("equipment_id", F.trim(F.col("equipment_id")))
+    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id"))))
     .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
-
+)
 source_row_count = df_eq_raw.count()
 
+# Resolve metric column names flexibly
+eq_cols = df_eq_raw.columns
+health_col  = "equipment_health_status" if "equipment_health_status" in eq_cols else ("avg_health_score" if "avg_health_score" in eq_cols else "health")
+fail_col    = "failure_probability" if "failure_probability" in eq_cols else "max_failure_probability"
+power_col   = "power_consumption_kw" if "power_consumption_kw" in eq_cols else "power_draw_kw"
+vib_col     = "vibration_vps" if "vibration_vps" in eq_cols else "vibration"
+temp_col    = "operating_temp_c" if "operating_temp_c" in eq_cols else ("operating_temperature_c" if "operating_temperature_c" in eq_cols else "temp_c")
+load_col    = "current_load_percent" if "current_load_percent" in eq_cols else ("current_load" if "current_load" in eq_cols else "load_percent")
+
 # Aggregate machinery telemetry daily per facility, equipment, and zone
-df_eq_agg = df_eq_raw \
-    .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int")) \
-    .withColumn("event_date", F.to_date("timestamp")) \
-    .groupBy("date_key", "event_date", "facility_id", "equipment_id", "zone_id") \
+df_eq_agg = (
+    df_eq_raw
+    .withColumn("date_key", F.date_format("timestamp", "yyyyMMdd").cast("int"))
+    .withColumn("event_date", F.to_date("timestamp"))
+    .groupBy("date_key", "event_date", "facility_id", "equipment_id", "zone_id")
     .agg(
-        F.round(F.avg("equipment_health_status"), 1).alias("avg_health_score"),
-        F.round(F.max("failure_probability"), 4).alias("max_failure_probability"),
+        F.round(F.avg(health_col), 1).alias("avg_health_score"),
+        F.round(F.max(fail_col), 4).alias("max_failure_probability"),
         F.round(F.greatest(F.lit(0.0), F.max("runtime_hours") - F.min("runtime_hours")), 2).alias("daily_runtime_hours"),
-        F.round(F.avg("power_consumption_kw"), 2).alias("avg_power_draw_kw"),
-        F.round(F.avg("vibration_vps"), 3).alias("avg_vibration_vps"),
-        F.round(F.avg("operating_temp_c"), 2).alias("avg_operating_temp_celsius"),
-        F.round(F.avg("current_load_percent"), 1).alias("avg_load_percent"),
+        F.round(F.avg(power_col), 2).alias("avg_power_draw_kw"),
+        F.round(F.avg(vib_col), 3).alias("avg_vibration_vps"),
+        F.round(F.avg(temp_col), 2).alias("avg_operating_temp_celsius"),
+        F.round(F.avg(load_col), 1).alias("avg_load_percent"),
         F.count("event_id").alias("telemetry_sample_count")
-    ) \
+    )
     .withColumn(
         "total_energy_kwh",
         F.round(F.col("avg_power_draw_kw") * F.col("daily_runtime_hours"), 2)
     )
-
+)
 
 # Cached Dimension Lookups and Point-In-Time Surrogate Key Resolution
-
 dim_fac_bcast = F.broadcast(
     spark.table("gold.dim_facility")
     .select("facility_key", "facility_id", "effective_date", "expiration_date")
@@ -1318,23 +1367,32 @@ fact_eq_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_eq_bcast.alias("dim_eq"),
         (F.col("fact.equipment_id") == F.col("dim_eq.equipment_id")) &
-        (F.col("fact.event_date") >= F.col("dim_eq.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_eq.effective_date")) & (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_eq.effective_date")) & (F.col("dim_eq.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .select(
@@ -1354,10 +1412,10 @@ fact_eq_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .drop_duplicates(["date_key", "facility_key", "equipment_key", "zone_key"])
 )
 
 # Write Delta Table (Dynamic Partition Overwrite By date_key)
-
 fact_eq_stg.write.format("delta")\
                 .mode("overwrite")\
                 .option("mergeSchema", "true")\
@@ -1365,11 +1423,9 @@ fact_eq_stg.write.format("delta")\
                 .saveAsTable(table_name)
 
 # Compute Table Statistics
-
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
-# Lighweight Validation and Metrics
-
+# Lightweight Validation and Metrics
 df_fact_eq = spark.table(table_name)
 total_rows = df_fact_eq.count()
 distinct_grain = df_fact_eq.select("date_key", "facility_key", "equipment_key", "zone_key").distinct().count()
@@ -1385,22 +1441,23 @@ unknown_zone_count = df_fact_eq.filter(F.col("zone_key") == -1).count()
 elapsed_time = round(time.time() - cell_start_time, 2)
 validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_eq_count == 0 and unknown_zone_count == 0) else "FAILED"
 
-# Standarized Cell Inline Logging
+# Standardized Cell Inline Logging
 print("==============================================================================")
-print(f"⭐ TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
+print(f"TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
 print("==============================================================================")
-print(f"Source Rows Read:     {source_row_count:,}")
-print(f"Total Table Volume:   {total_rows:,}")
-print(f"Distinct Business Grain: {distinct_grain:,}")
-print(f"Duplicate Grain Count:{duplicate_grain_count}")
-print(f"Partition Count:      {partition_count} Partitions")
-print(f"Partition Range:      {min_date_key} -> {max_date_key}")
-print(f"Unknown Facilities (-1): {unknown_fac_count}")
-print(f"Unknown Equipment (-1):  {unknown_eq_count}")
-print(f"Unknown Zones (-1):      {unknown_zone_count}")
-print(f"Execution Time:       {elapsed_time}s")
-print(f"Validation Status:    {validation_status}")
+print(f"Source Rows Read:       {source_row_count:,}")
+print(f"Total Table Volume:     {total_rows:,}")
+print(f"Distinct Business Grain:{distinct_grain:,}")
+print(f"Duplicate Grain Count:  {duplicate_grain_count}")
+print(f"Partition Count:        {partition_count} Partitions")
+print(f"Partition Range:        {min_date_key} -> {max_date_key}")
+print(f"Unknown Facilities (-1):{unknown_fac_count}")
+print(f"Unknown Equipment (-1): {unknown_eq_count}")
+print(f"Unknown Zones (-1):     {unknown_zone_count}")
+print(f"Execution Time:         {elapsed_time}s")
+print(f"Validation Status:      {validation_status}")
 print("==============================================================================\n")
+
 
 # METADATA ********************
 
@@ -1414,6 +1471,7 @@ print("=========================================================================
 # Crop Yield Fact (gold.fact_crop_yield with Cultivar Pricing & Commercial Rack Density)
 
 import time
+from pyspark.sql import functions as F
 
 cell_start_time = time.time()
 table_name = "gold.fact_crop_yield"
@@ -1425,14 +1483,15 @@ source_row_count = df_crop_raw.count()
 # Daily aggregation per facility, zone and crop cultivar with commercial rack plant density (250 plants/rack)
 RACK_PLANT_DENSITY = 250.0
 
-df_yield_agg = df_crop_raw \
-    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id")))) \
-    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
-    .withColumn("crop_id", F.upper(F.trim(F.col("crop_type")))) \
-    .withColumn("event_date", F.to_date(F.col("timestamp"))) \
-    .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int")) \
-    .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$")) \
-    .groupBy("date_key", "event_date", "facility_id", "zone_id", "crop_id") \
+df_yield_agg = (
+    df_crop_raw
+    .withColumn("facility_id", F.upper(F.trim(F.col("facility_id"))))
+    .withColumn("zone_id", F.upper(F.trim(F.col("zone_id"))))
+    .withColumn("crop_id", F.upper(F.trim(F.col("crop_type"))))
+    .withColumn("event_date", F.to_date(F.col("timestamp")))
+    .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int"))
+    .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$"))
+    .groupBy("date_key", "event_date", "facility_id", "zone_id", "crop_id")
     .agg(
         F.round(F.avg("crop_health_score"), 1).alias("avg_health_score"),
         F.round(F.max("biomass_g") * RACK_PLANT_DENSITY / 1000.0, 2).alias("target_yield_kg"),
@@ -1442,31 +1501,16 @@ df_yield_agg = df_crop_raw \
         F.round(F.avg(F.col("biomass_g") * 0.05) * RACK_PLANT_DENSITY / 1000.0, 2).alias("spoilage_waste_kg"),
         F.round(F.avg("growth_rate_g_day"), 2).alias("avg_growth_rate_g_day"),
         F.count("crop_batch_id").alias("harvest_batch_count")
-    ) \
+    )
     .withColumn(
         "yield_achievement_pct",
         F.when(F.col("target_yield_kg") > 0, F.round((F.col("total_harvest_kg") * 100.0) / F.col("target_yield_kg"), 2)).otherwise(F.lit(100.0))
     )
-
-# Join dim_crop to get Cultivar Prices
-dim_crop_prices = spark.table("gold.dim_crop").select(
-    F.upper(F.trim(F.col("crop_type"))).alias("crop_id"),
-    "unit_price_grade_a_php",
-    "unit_price_grade_b_php"
+    .withColumn(
+        "estimated_revenue_php",
+        F.round(F.col("grade_a_harvest_kg") * 480.0 + F.col("grade_b_harvest_kg") * 312.0, 2)
+    )
 )
-
-df_yield_agg = df_yield_agg.alias("fact").join(
-    dim_crop_prices.alias("pr"),
-    F.col("fact.crop_id") == F.col("pr.crop_id"),
-    how="left"
-).select(
-    F.col("fact.*"),
-    F.coalesce(F.col("pr.unit_price_grade_a_php"), F.lit(480.0)).alias("price_a"),
-    F.coalesce(F.col("pr.unit_price_grade_b_php"), F.lit(312.0)).alias("price_b")
-).withColumn(
-    "estimated_revenue_php",
-    F.round(F.col("grade_a_harvest_kg") * F.col("price_a") + F.col("grade_b_harvest_kg") * F.col("price_b"), 2)
-).drop("price_a", "price_b")
 
 # Cached Dimension Lookups and Point-in-Time Surrogate Key Resolution
 dim_fac_bcast = F.broadcast(
@@ -1477,8 +1521,7 @@ dim_fac_bcast = F.broadcast(
 
 dim_zone_bcast = F.broadcast(
     spark.table("gold.dim_zone")
-    .select("zone_key", "zone_id", "is_current")
-    .filter(F.col("is_current") == True)
+    .select("zone_key", "facility_key", "zone_id", "effective_date", "expiration_date")
     .cache()
 )
 
@@ -1495,13 +1538,22 @@ fact_crop_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
-        F.col("fact.zone_id") == F.col("dim_zn.zone_id"),
+        (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) &
+        (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
+        (
+            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
@@ -1526,6 +1578,7 @@ fact_crop_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .drop_duplicates(["date_key", "facility_key", "zone_key", "crop_key"])
 )
 
 # Write Delta Table (Dynamic Partition Overwrite by date_key)
@@ -1555,19 +1608,19 @@ elapsed_time = round(time.time() - cell_start_time, 2)
 validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_zone_count == 0 and unknown_crop_count == 0) else "FAILED"
 
 print("==============================================================================")
-print(f"⭐ TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
+print(f"TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
 print("==============================================================================")
-print(f"Source Rows Read:     {source_row_count:,}")
-print(f"Total Table Volume:   {total_rows:,}")
-print(f"Distinct Business Grain: {distinct_grain:,}")
-print(f"Duplicate Grain Count:{duplicate_grain_count}")
-print(f"Partition Count:      {partition_count} Partitions")
-print(f"Partition Range:      {min_date_key} -> {max_date_key}")
-print(f"Unknown Facilities (-1): {unknown_fac_count}")
-print(f"Unknown Zones (-1):      {unknown_zone_count}")
-print(f"Unknown Crops (-1):      {unknown_crop_count}")
-print(f"Execution Time:       {elapsed_time}s")
-print(f"Validation Status:    {validation_status}")
+print(f"Source Rows Read:       {source_row_count:,}")
+print(f"Total Table Volume:     {total_rows:,}")
+print(f"Distinct Business Grain:{distinct_grain:,}")
+print(f"Duplicate Grain Count:  {duplicate_grain_count}")
+print(f"Partition Count:        {partition_count} Partitions")
+print(f"Partition Range:        {min_date_key} -> {max_date_key}")
+print(f"Unknown Facilities (-1):{unknown_fac_count}")
+print(f"Unknown Zones (-1):     {unknown_zone_count}")
+print(f"Unknown Crops (-1):     {unknown_crop_count}")
+print(f"Execution Time:         {elapsed_time}s")
+print(f"Validation Status:      {validation_status}")
 print("==============================================================================\n")
 
 
@@ -1583,12 +1636,12 @@ print("=========================================================================
 # Daily Irrigation Fact (gold.fact_irrigation_daily)
 
 import time
+from pyspark.sql import functions as F
 
 cell_start_time = time.time()
 table_name = "gold.fact_irrigation_daily"
 
 # Read Source Data and Compute Daily Irrigation Aggregations
-
 df_irr_raw = spark.table("silver.irrigation_flow_cleaned") \
     .withColumn("facility_id", F.upper(F.trim(F.col("facility_id")))) \
     .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
@@ -1612,7 +1665,6 @@ df_irr_agg = df_irr_raw \
     )
 
 # Cached Dimension Lookups and Point-in-time surrogate key resolution
-
 dim_fac_bcast = F.broadcast(
     spark.table("gold.dim_facility")
     .select("facility_key", "facility_id", "effective_date", "expiration_date")
@@ -1621,8 +1673,7 @@ dim_fac_bcast = F.broadcast(
 
 dim_zone_bcast = F.broadcast(
     spark.table("gold.dim_zone")
-    .select("zone_key", "zone_id", "is_current")
-    .filter(F.col("is_current") == True)
+    .select("zone_key", "facility_id", "zone_id", "effective_date", "expiration_date")
     .cache()
 )
 
@@ -1631,13 +1682,22 @@ fact_irr_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
-        F.col("fact.zone_id") == F.col("dim_zn.zone_id"),
+        (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
+        (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
+        (
+            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .select(
@@ -1653,10 +1713,10 @@ fact_irr_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .drop_duplicates(["date_key", "facility_key", "zone_key"])
 )
 
 # Write Delta Table (Dynamic Partition Overwrite by date_key)
-
 fact_irr_stg.write.format("delta")\
             .mode("overwrite")\
             .option("mergeSchema", "true")\
@@ -1664,11 +1724,9 @@ fact_irr_stg.write.format("delta")\
             .saveAsTable(table_name)
 
 # Compute Table Statistics
-
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 # Lightweight Validation and metrics
-
 df_fact_irr = spark.table(table_name)
 total_rows = df_fact_irr.count()
 distinct_grain = df_fact_irr.select("date_key", "facility_key", "zone_key").distinct().count()
@@ -1711,12 +1769,12 @@ print("=========================================================================
 # Daily Lighting DLI Fact (gold.fact_lighting_dli_daily)
 
 import time
+from pyspark.sql import functions as F
 
 cell_start_time = time.time()
 table_name = "gold.fact_lighting_dli_daily"
 
 # Read Source Data and Compute Daily Lighting Aggregations
-
 df_lt_raw = spark.table("silver.lighting_dli_cleaned") \
     .withColumn("facility_id", F.upper(F.trim(F.col("facility_id")))) \
     .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
@@ -1746,7 +1804,6 @@ df_lt_agg = df_lt_raw \
     )
 
 # Cached Dimension Lookups and Point-in-time surrogate key resolution
-
 dim_fac_bcast = F.broadcast(
     spark.table("gold.dim_facility")
     .select("facility_key", "facility_id", "effective_date", "expiration_date")
@@ -1755,8 +1812,7 @@ dim_fac_bcast = F.broadcast(
 
 dim_zone_bcast = F.broadcast(
     spark.table("gold.dim_zone")
-    .select("zone_key", "zone_id", "is_current")
-    .filter(F.col("is_current") == True)
+    .select("zone_key", "facility_id", "zone_id", "effective_date", "expiration_date")
     .cache()
 )
 
@@ -1765,13 +1821,22 @@ fact_lt_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
-        F.col("fact.zone_id") == F.col("dim_zn.zone_id"),
+        (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
+        (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
+        (
+            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .select(
@@ -1786,10 +1851,10 @@ fact_lt_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .drop_duplicates(["date_key", "facility_key", "zone_key"])
 )
 
 # Write Delta table (Dynamic Partition Overwrite by date_key)
-
 fact_lt_stg.write.format("delta")\
     .mode("overwrite")\
     .option("mergeSchema", "true")\
@@ -1797,11 +1862,9 @@ fact_lt_stg.write.format("delta")\
     .saveAsTable(table_name)
 
 # Compute Table Statistics
-
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 # Lightweight Validation and Metrics
-
 df_fact_lt = spark.table(table_name)
 total_rows = df_fact_lt.count()
 distinct_grain = df_fact_lt.select("date_key", "facility_key", "zone_key").distinct().count()
@@ -1816,7 +1879,7 @@ unknown_zone_count = df_fact_lt.filter(F.col("zone_key") == -1).count()
 elapsed_time = round(time.time() - cell_start_time, 2)
 validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_zone_count == 0) else "FAILED"
 
-# Standarized Cell Inline Logging
+# Standardized Cell Inline Logging
 print("==============================================================================")
 print(f"⭐ TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
 print("==============================================================================")
@@ -1845,12 +1908,12 @@ print("=========================================================================
 # Maintenance SLA Fact (gold.fact_maintenance_sla)
 
 import time
+from pyspark.sql import functions as F
 
 cell_start_time = time.time()
 table_name = "gold.fact_maintenance_sla"
 
 # Read Source Data and Prepare Maintenance Work Order Metric
-
 df_maint_raw = spark.table("silver.maintenance_sla_cleaned") \
     .withColumn("facility_id", F.upper(F.trim(F.col("facility_id")))) \
     .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
@@ -1860,14 +1923,12 @@ df_maint_raw = spark.table("silver.maintenance_sla_cleaned") \
     .filter((F.col("equipment_id").isNotNull()) & (F.col("equipment_id") != "unregistered_asset") & (~F.col("equipment_id").contains("ORPHAN")))
 
 source_row_count = df_maint_raw.count()
-
 raw_cols = df_maint_raw.columns
 
-
 # Direct column mapping
-tech_col  = "assigned_technician" if "assigned_technician" in raw_cols else ("technician_id" if "technician_id" in raw_cols else "operator_contact")
-est_col   = "estimated_duration_minutes" if "estimated_duration_minutes" in raw_cols else "estimated_duration"
-rem_col   = "remaining_duration_minutes" if "remaining_duration_minutes" in raw_cols else "actual_duration"
+tech_col   = "assigned_technician" if "assigned_technician" in raw_cols else ("technician_id" if "technician_id" in raw_cols else "operator_contact")
+est_col    = "estimated_duration_minutes" if "estimated_duration_minutes" in raw_cols else "estimated_duration"
+rem_col    = "remaining_duration_minutes" if "remaining_duration_minutes" in raw_cols else "actual_duration"
 health_col = "health_restored" if "health_restored" in raw_cols else "health_points"
 status_col = "maintenance_status" if "maintenance_status" in raw_cols else "status"
 type_col   = "maintenance_type" if "maintenance_type" in raw_cols else "type"
@@ -1898,7 +1959,6 @@ df_maint_agg = df_maint_raw \
     )
 
 # Cached Dimension Lookups and Point-in-time surrogate key resolution
-
 dim_fac_bcast = F.broadcast(
     spark.table("gold.dim_facility")
     .select("facility_key", "facility_id", "effective_date", "expiration_date")
@@ -1907,7 +1967,7 @@ dim_fac_bcast = F.broadcast(
 
 dim_zone_bcast = F.broadcast(
     spark.table("gold.dim_zone")
-    .select("zone_key", "facility_key", "zone_id", "effective_date", "expiration_date")
+    .select("zone_key", "facility_id", "zone_id", "effective_date", "expiration_date")
     .cache()
 )
 
@@ -1928,23 +1988,32 @@ fact_maint_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
-        (F.col("dim_fac.facility_key") == F.col("dim_zn.facility_key")) &
+        (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
         dim_eq_bcast.alias("dim_eq"),
         (F.col("fact.equipment_id") == F.col("dim_eq.equipment_id")) &
-        (F.col("fact.event_date") >= F.col("dim_eq.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_eq.effective_date")) & (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")))
+            |
+            ((F.col("fact.event_date") < F.col("dim_eq.effective_date")) & (F.col("dim_eq.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+        ),
         how="left"
     )
     .join(
@@ -1969,10 +2038,10 @@ fact_maint_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .drop_duplicates(["date_key", "facility_key", "zone_key", "equipment_key", "technician_key"])
 )
 
 # Write Delta Table (Dynamic Partition Overwrite By date_key)
-
 fact_maint_stg.write.format("delta")\
             .mode("overwrite")\
             .option("mergeSchema", "true")\
@@ -1980,11 +2049,9 @@ fact_maint_stg.write.format("delta")\
             .saveAsTable(table_name)
 
 # Compute Table Statistics
-
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 # Lightweight Validation and Metrics
-
 df_fact_maint = spark.table(table_name)
 total_rows = df_fact_maint.count()
 distinct_grain = df_fact_maint.select("date_key", "facility_key", "zone_key", "equipment_key", "technician_key").distinct().count()
@@ -2002,7 +2069,6 @@ elapsed_time = round(time.time() - cell_start_time, 2)
 validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_zone_count == 0 and unknown_eq_count == 0) else "FAILED"
 
 # Standardized Cell Inline Logging
-
 print("==============================================================================")
 print(f"⭐ TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
 print("==============================================================================")
@@ -2019,6 +2085,7 @@ print(f"Unknown Technicians (-1):{unknown_tech_count}")
 print(f"Execution Time:       {elapsed_time}s")
 print(f"Validation Status:    {validation_status}")
 print("==============================================================================\n")
+
 
 # METADATA ********************
 
@@ -2144,10 +2211,13 @@ print("=========================================================================
 # Executive Audit Scorecard and Gold Lakehouse Summary
 
 import time
+from pyspark.sql import functions as F
+
 cell_start_time = time.time()
 print("====================================================================================================")
 print("                       🌟 HYDROGROW GOLD LAYER STAR CONSTELLATION AUDIT SCORECARD                   ")
 print("====================================================================================================\n")
+
 gold_tables = [
     ("gold.dim_date", "Dimension", "date_key"),
     ("gold.dim_facility", "Dimension (SCD2)", "facility_key"),
@@ -2155,39 +2225,50 @@ gold_tables = [
     ("gold.dim_equipment", "Dimension (SCD2)", "equipment_key"),
     ("gold.dim_crop", "Dimension (SCD1)", "crop_key"),
     ("gold.dim_technician", "Dimension (SCD1)", "technician_key"),
-    ("gold.fact_environmental_daily", "Fact (Daily Agg)", "date_key"),
-    ("gold.fact_equipment_telemetry", "Fact (Daily Agg)", "date_key"),
-    ("gold.fact_crop_yield", "Fact (Daily Agg)", "date_key"),
-    ("gold.fact_irrigation_daily", "Fact (Daily Agg)", "date_key"),
-    ("gold.fact_lighting_dli_daily", "Fact (Daily Agg)", "date_key"),
-    ("gold.fact_maintenance_sla", "Fact (Daily Agg)", "date_key"),
-    ("gold.fact_dead_letter_governance", "Fact (Governance)", "date_key")
+    ("gold.fact_environmental_daily", "Fact (Daily Agg)", "facility_key"),
+    ("gold.fact_equipment_telemetry", "Fact (Daily Agg)", "facility_key"),
+    ("gold.fact_crop_yield", "Fact (Daily Agg)", "facility_key"),
+    ("gold.fact_irrigation_daily", "Fact (Daily Agg)", "facility_key"),
+    ("gold.fact_lighting_dli_daily", "Fact (Daily Agg)", "facility_key"),
+    ("gold.fact_maintenance_sla", "Fact (Daily Agg)", "facility_key"),
+    ("gold.fact_dead_letter_governance", "Fact (Governance)", "dead_letter_event_count")
 ]
+
 audit_results = []
 total_gold_volume = 0
 overall_passed = True
+
 print(f"{'TABLE NAME':<34} | {'TYPE':<18} | {'ROW COUNT':<10} | {'UNKNOWN (-1)':<12} | {'STATUS':<8}")
 print("-" * 92)
-for table_name, table_type, primary_key in gold_tables:
+
+for table_name, table_type, key_column in gold_tables:
     if spark.catalog.tableExists(table_name):
         try:
             spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
             spark.catalog.refreshTable(table_name)
         except Exception:
             pass
+            
         df_tbl = spark.table(table_name)
         rowCount = df_tbl.count()
         total_gold_volume += rowCount
         
-        # Check unknown key (-1) count if column exists
-        if primary_key in df_tbl.columns:
-            unknown_cnt = df_tbl.filter(F.col(primary_key) == -1).count()
-        elif "facility_key" in df_tbl.columns:
-            unknown_cnt = df_tbl.filter(F.col("facility_key") == -1).count()
-        else:
+        # Rigorous Unknown Key (-1) Verification
+        if table_name.startswith("gold.dim_"):
+            # Dimensions must have exactly 1 default Unknown row (-1)
+            unknown_cnt = df_tbl.filter(F.col(key_column) == -1).count() if key_column in df_tbl.columns else 0
+            status = "PASSED" if unknown_cnt == 1 else "FAILED"
+        elif table_name == "gold.fact_dead_letter_governance":
             unknown_cnt = 0
+            status = "PASSED"
+        else:
+            # Fact tables must have ZERO unmapped unknown rows (-1)
+            unknown_cnt = df_tbl.filter(F.col(key_column) == -1).count() if key_column in df_tbl.columns else 0
+            status = "PASSED" if unknown_cnt == 0 else "FAILED"
             
-        status = "PASSED"
+        if status == "FAILED":
+            overall_passed = False
+            
         print(f"{table_name:<34} | {table_type:<18} | {rowCount:<10,} | {unknown_cnt:<12} | {status:<8}")
         audit_results.append((table_name, table_type, rowCount, unknown_cnt, status))
     else:
@@ -2195,8 +2276,9 @@ for table_name, table_type, primary_key in gold_tables:
         overall_passed = False
         print(f"{table_name:<34} | {table_type:<18} | {'N/A':<10} | {'N/A':<12} | {status:<8}")
         audit_results.append((table_name, table_type, 0, -1, status))
+
 elapsed_time = round(time.time() - cell_start_time, 2)
-overall_status = "ALL TABLES PASSED & VERIFIED" if overall_passed else "ATTENTION REQUIRED"
+overall_status = "ALL TABLES PASSED & VERIFIED" if overall_passed else "ATTENTION REQUIRED (FAILED CHECKS)"
 print("=" * 92)
 print(f"📊 Total Gold Tables Audited:   {len(gold_tables)} Tables")
 print(f"📦 Total Gold Lakehouse Volume:  {total_gold_volume:,} Records")
