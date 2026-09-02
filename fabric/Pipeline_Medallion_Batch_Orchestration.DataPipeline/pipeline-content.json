@@ -29,7 +29,7 @@
         },
         "policy": {
           "timeout": "0.12:00:00",
-          "retry": 0,
+          "retry": 3,
           "retryIntervalInSeconds": 30,
           "secureInput": false,
           "secureOutput": false
@@ -100,7 +100,7 @@
         },
         "policy": {
           "timeout": "0.12:00:00",
-          "retry": 0,
+          "retry": 3,
           "retryIntervalInSeconds": 30,
           "secureInput": false,
           "secureOutput": false
@@ -187,7 +187,7 @@
           "scripts": [
             {
               "text": {
-                "value": "@concat(\r\n    'INSERT INTO SmartFarming_Lakehouse.gold.fact_dataops_pipeline_log (TraceId, SpanId, PipelineName, StageName, Component, ExecutionStatus, SourceRowCount, TargetRowCount, ExecutionDurationMs, ErrorMessage, Timestamp) VALUES (CONCAT(''TRC-'', FORMAT(GETUTCDATE(), ''yyyyMMdd-HHmmss'')), ''SPN-PBISMR'', ''Pipeline_Medallion_Batch_Orchestration'', ''Semantic_Model_Refresh'', ''Power_BI_DirectLake'', ''',\r\n    activity('PBISemanticModelRefresh').status,\r\n    ''', 0, 0, ',\r\n    string(coalesce(activity('PBISemanticModelRefresh').output.duration, 0)),\r\n    ', '''', GETUTCDATE());'\r\n)",
+                "value": "@concat(\r\n    'IF OBJECT_ID(''dbo.fact_dataops_pipeline_log'', ''U'') IS NULL\r\n    BEGIN\r\n        CREATE TABLE dbo.fact_dataops_pipeline_log (\r\n            TraceId VARCHAR(100),\r\n            SpanId VARCHAR(50),\r\n            PipelineName VARCHAR(100),\r\n            StageName VARCHAR(100),\r\n            Component VARCHAR(100),\r\n            ExecutionStatus VARCHAR(50),\r\n            SourceRowCount BIGINT,\r\n            TargetRowCount BIGINT,\r\n            ExecutionDurationMs INT,\r\n            ErrorMessage VARCHAR(1000),\r\n            Timestamp DATETIME2(6)\r\n        );\r\n    END;\r\n\r\n    INSERT INTO dbo.fact_dataops_pipeline_log (\r\n        TraceId, SpanId, PipelineName, StageName, Component, ExecutionStatus,\r\n        SourceRowCount, TargetRowCount, ExecutionDurationMs, ErrorMessage, Timestamp\r\n    ) VALUES (\r\n        CONCAT(''TRC-'', FORMAT(GETUTCDATE(), ''yyyyMMdd-HHmmss'')),\r\n        ''SPN-PBISMR'',\r\n        ''Pipeline_Medallion_Batch_Orchestration'',\r\n        ''Semantic_Model_Refresh'',\r\n        ''Power_BI_DirectLake'',\r\n        ''', activity('PBISemanticModelRefresh').status, ''',\r\n        0,\r\n        0,\r\n        ', string(coalesce(activity('PBISemanticModelRefresh').output.executionDuration, 0)), ',\r\n        '''',\r\n        GETUTCDATE()\r\n    );'\r\n)",
                 "type": "Expression"
               },
               "type": "Query"
