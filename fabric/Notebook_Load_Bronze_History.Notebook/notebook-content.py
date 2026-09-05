@@ -74,7 +74,10 @@ for entry in manifest:
             pass
             
     if df_raw is None:
-        print(f"⚠️ Could not load bootstrap JSON for {source_name}")
+        if spark.catalog.tableExists(target_table) and spark.table(target_table).count() > 0:
+            print(f"✓ {target_table} already populated ({spark.table(target_table).count():,} rows). Landing JSON already archived.")
+        else:
+            print(f"ℹ️ No new landing JSON found for {source_name}. Waiting for incoming stream.")
         continue
         
     try:

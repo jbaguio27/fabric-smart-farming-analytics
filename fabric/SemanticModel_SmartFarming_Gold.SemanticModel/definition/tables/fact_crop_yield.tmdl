@@ -66,6 +66,58 @@ table fact_crop_yield
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
+	measure 'Target Yield kg' = SUM('fact_crop_yield'[target_yield_kg])
+		formatString: " #,##0.00 ""kg"""
+		lineageTag: 6b53b79a-0ee9-4da6-a13f-4b8ca4c52dce
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Yield Achievement %' = DIVIDE([Total Harvest kg], [Target Yield kg], 1) * 100
+		formatString: " 0.0""%"""
+		lineageTag: d7cc211e-f80b-4b51-808f-fb594c565770
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Grade B Harvest kg' = SUM('fact_crop_yield'[grade_b_harvest_kg])
+		formatString: " #,##0.00 ""kg"""
+		lineageTag: 316042f3-f823-4675-b7d7-251888c2c734
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		changedProperty = FormatStringDefinition
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Spoilage Rate %' = DIVIDE([Total Spoilage Waste kg], [Total Harvest kg] + [Total Spoilage Waste kg], 0) * 100
+		formatString: " 0.00""%"""
+		lineageTag: fb8915f0-4d27-4559-9fcb-159b6ae268b2
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Total Harvest Batches' = SUM(fact_crop_yield[harvest_batch_count])
+		formatString: #,##0
+		lineageTag: 6f6f374f-85d2-457a-b8f2-c47986b11140
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
 	column date_key
 		dataType: int64
 		formatString: 0

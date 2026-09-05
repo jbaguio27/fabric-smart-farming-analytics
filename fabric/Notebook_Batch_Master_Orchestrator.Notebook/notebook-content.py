@@ -91,7 +91,6 @@ print("Executing Stage 1: Bronze Ingestion...")
 
 # CELL ********************
 
-
 try:
     bronze_tables = [
         "environmental_telemetry", "equipment_telemetry", "crop_telemetry",
@@ -150,6 +149,46 @@ except Exception as e:
     record_span("Silver_Cleansing", "Spark_Notebook", t_silver_start, status="FAILED", error=str(e))
     raise e
 
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+t_remediation_start = time.time()
+print("Executing Stage 2.5: Dead-Letter Automated Remediation & Governance...")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+%run Notebook_DeadLetter_Remediation
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+try:
+    remediation_rows = spark.table("silver.dead_letter_classified").count() if spark.catalog.tableExists("silver.dead_letter_classified") else 0
+    remediated_healed = spark.table("silver.dead_letter_classified").filter(F.col("remediation_status") == "REMEDIATED").count() if spark.catalog.tableExists("silver.dead_letter_classified") else 0
+    record_span("Dead_Letter_Remediation", "Spark_Notebook", t_remediation_start, src_rows=remediation_rows, tgt_rows=remediated_healed, status="SUCCESS")
+except Exception as e:
+    record_span("Dead_Letter_Remediation", "Spark_Notebook", t_remediation_start, status="FAILED", error=str(e))
+    raise e
 
 # METADATA ********************
 

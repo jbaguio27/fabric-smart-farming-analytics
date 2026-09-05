@@ -380,6 +380,51 @@ print("Master Enriched Tables Synced with zero duplicate keys.")
 
 # CELL ********************
 
+# Dead-Letter Stream Ingestion Check
+df_new_dl, cnt_dl, time_col_dl = extract_incremental_stream(
+    ["DeadLetterTelemetry", "Files/DeadLetterTelemetry", "bronze.dead_letter_telemetry"], 
+    "dead_letter_telemetry"
+)
+
+if df_new_dl is not None and cnt_dl > 0:
+    total_processed_rows += cnt_dl
+    print(f"📡 Dead-Letter Stream: {cnt_dl:,} new defective events detected. Triggering self-healing...")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+%run Notebook_DeadLetter_Remediation
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# Update Dead-Letter Stream Watermark Post-Remediation
+if df_new_dl is not None and cnt_dl > 0:
+    max_ts_dl = df_new_dl.select(F.max(time_col_dl)).collect()[0][0]
+    set_watermark("dead_letter_telemetry", max_ts_dl)
+    print(f"✓ Dead-Letter: Watermark updated to {max_ts_dl}.")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 # Environmental
 
 df_new_env, cnt_env, time_col = extract_incremental_stream(["EnvironmentalTelemetry", "Files/EnvironmentalTelemetry", "bronze.environmental_telemetry"], "environmental_telemetry")
@@ -548,8 +593,6 @@ if df_new_env is not None and cnt_env > 0:
     max_ts_env = df_new_env.select(F.max(time_col)).collect()[0][0]
     set_watermark("environmental_telemetry", max_ts_env)
     print(f"Environmental: Merged {cnt_env:,} rows into environmental_cleaned, metrics & fact_environmental_daily.")
-
-
 
 # METADATA ********************
 
@@ -1232,111 +1275,15 @@ print("Incremental Streams Merged: Irrigation, Lighting, Maintenance into Silver
 
 # CELL ********************
 
-# Dead-Letter Queue Triage
+# Dead-Letter Stream Ingestion Check
+df_new_dl, cnt_dl, time_col_dl = extract_incremental_stream(
+    ["DeadLetterTelemetry", "Files/DeadLetterTelemetry", "bronze.dead_letter_telemetry"], 
+    "dead_letter_telemetry"
+)
 
-df_new_dl, cnt_dl, time_col_dl = extract_incremental_stream(["DeadLetterTelemetry", "Files/DeadLetterTelemetry", "bronze.dead_letter_telemetry"], "dead_letter_telemetry")
 if df_new_dl is not None and cnt_dl > 0:
     total_processed_rows += cnt_dl
-    raw_cols = df_new_dl.columns
-    fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
-    raw_exc_col = F.col("exception_reason") if "exception_reason" in raw_cols else (
-        F.col("error_reason") if "error_reason" in raw_cols else F.lit(None).cast("string")
-    )
-    stream_raw = F.col("target_stream") if "target_stream" in raw_cols else (F.col("event_type") if "event_type" in raw_cols else F.lit("ENVIRONMENTAL_TELEMETRY"))
-    raw_payload_val = F.col("raw_payload") if "raw_payload" in raw_cols else F.lit("{}")
-    
-    # Resolve ingestion timestamp column
-    time_raw = F.col("ingestion_timestamp") if "ingestion_timestamp" in raw_cols else (F.col("timestamp") if "timestamp" in raw_cols else F.current_timestamp())
-    raw_ts_str = F.regexp_replace(F.trim(time_raw.cast("string")), "[\"']", "")
-    ts_clean = F.coalesce(F.to_timestamp(raw_ts_str), F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"), F.current_timestamp())
-    
-    # Canonical Governance Exception Reason Resolution (Standardized Single-Casing)
-    raw_exc_upper = F.upper(F.trim(raw_exc_col))
-    
-    exc_reason_canonical = (
-        F.when(raw_exc_upper.contains("MISSING") | fac_id_check | (F.col("event_id").isNull()), F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
-         .when(raw_exc_upper.contains("BOUNDS") | raw_exc_upper.contains("TEMP") | raw_exc_upper.contains("65"), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
-         .when(raw_exc_upper.contains("SCHEMA") | raw_exc_upper.contains("V1.0") | raw_exc_upper.contains("LEGACY"), F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
-         .when(raw_exc_upper.contains("SERDES") | raw_exc_upper.contains("JSON") | raw_exc_upper.contains("PARSE") | raw_payload_val.contains("malformed"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
-         .when(raw_exc_upper.contains("TIMESTAMP") | raw_exc_upper.contains("CLOCK") | raw_exc_upper.contains("SYNC") | raw_exc_upper.contains("SKEW"), F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
-         .when(raw_exc_upper.contains("MAC") | raw_exc_upper.contains("UNREGISTERED") | raw_exc_upper.contains("ORPHAN"), F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
-         .otherwise(F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
-    )
-
-    exc_cat_expr = (
-        F.when(exc_reason_canonical.contains("MISSING_PRIMARY_KEY"), F.lit("CRITICAL_MISSING_PRIMARY_KEY"))
-         .when(exc_reason_canonical.contains("DEPRECATED_SCHEMA"), F.lit("DEPRECATED_SCHEMA_EVENT"))
-         .when(exc_reason_canonical.contains("SERDES_PARSE"), F.lit("SERDES_PARSE_FAILURE"))
-         .when(exc_reason_canonical.contains("TIMESTAMP_OUT_OF_SYNC"), F.lit("TIMESTAMP_OUT_OF_SYNC"))
-         .when(exc_reason_canonical.contains("UNREGISTERED_HARDWARE"), F.lit("UNREGISTERED_HARDWARE_DEVICE"))
-         .otherwise(F.lit("OUT_OF_BOUNDS_ANOMALY"))
-    )
-    
-    # 1. silver.dead_letter_classified
-    df_silver_dl = (
-        df_new_dl
-        .withColumn("event_id", F.trim(F.col("event_id")))
-        .withColumn("target_stream", F.upper(F.trim(stream_raw)))
-        .withColumn("exception_category", exc_cat_expr)
-        .withColumn("exception_reason", exc_reason_canonical)
-        .withColumn("is_auto_remediable", F.col("exception_category") == F.lit("DEPRECATED_SCHEMA_EVENT"))
-        .withColumn("raw_payload", raw_payload_val)
-        .withColumn("ingestion_timestamp", ts_clean)
-        .drop_duplicates(["event_id"])
-        .select("event_id", "target_stream", "exception_category", "exception_reason", "is_auto_remediable", "raw_payload", "ingestion_timestamp")
-    )
-    DeltaTable.forName(spark, "silver.dead_letter_classified").alias("t").merge(
-        df_silver_dl.alias("s"), "t.event_id = s.event_id"
-    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-    
-    # 2. gold.fact_dead_letter_governance
-    df_dl_agg = (
-        df_silver_dl
-        .withColumn("date_key", F.date_format("ingestion_timestamp", "yyyyMMdd").cast("int"))
-        .withColumn("event_date", F.to_date("ingestion_timestamp"))
-        .withColumn("target_stream_name", F.upper(F.trim(F.col("target_stream"))))
-        .withColumn("governance_exception_reason", F.col("exception_reason"))
-        .groupBy("date_key", "event_date", "target_stream_name", "governance_exception_reason")
-        .agg(
-            F.count("event_id").alias("dead_letter_event_count"),
-            F.sum(F.when(F.col("governance_exception_reason").contains("MISSING"), 1).otherwise(0)).alias("missing_pk_defect_count"),
-            F.sum(F.when(F.col("governance_exception_reason").contains("BOUNDS") | F.col("governance_exception_reason").contains("TEMP"), 1).otherwise(0)).alias("out_of_bounds_defect_count"),
-            F.sum(F.when(F.col("governance_exception_reason").contains("DEPRECATED") | F.col("governance_exception_reason").contains("SCHEMA"), 1).otherwise(0)).alias("deprecated_schema_defect_count"),
-            F.sum(F.when(F.col("governance_exception_reason").contains("JSON") | F.col("governance_exception_reason").contains("SERDES"), 1).otherwise(0)).alias("serdes_parse_defect_count"),
-            F.sum(F.when(F.col("governance_exception_reason").contains("CLOCK") | F.col("governance_exception_reason").contains("SYNC") | F.col("governance_exception_reason").contains("TIMESTAMP"), 1).otherwise(0)).alias("timestamp_sync_defect_count"),
-            F.sum(F.when(F.col("governance_exception_reason").contains("MAC") | F.col("governance_exception_reason").contains("UNREGISTERED"), 1).otherwise(0)).alias("unregistered_hardware_defect_count"),
-            F.sum(F.when(
-                F.col("governance_exception_reason").contains("JSON") | F.col("governance_exception_reason").contains("SERDES") | 
-                F.col("governance_exception_reason").contains("BOUNDS") | F.col("governance_exception_reason").contains("CLOCK") | 
-                F.col("governance_exception_reason").contains("MAC") | F.col("governance_exception_reason").contains("FORMAT"), 1
-            ).otherwise(0)).alias("formatting_defect_count")
-        )
-        .select(
-            F.col("date_key"),
-            F.col("target_stream_name"),
-            F.col("governance_exception_reason"),
-            F.col("dead_letter_event_count"),
-            F.col("missing_pk_defect_count"),
-            F.col("out_of_bounds_defect_count"),
-            F.col("deprecated_schema_defect_count"),
-            F.col("serdes_parse_defect_count"),
-            F.col("timestamp_sync_defect_count"),
-            F.col("unregistered_hardware_defect_count"),
-            F.col("formatting_defect_count"),
-            F.current_timestamp().alias("created_timestamp"),
-            F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-        )
-        .drop_duplicates(["date_key", "target_stream_name", "governance_exception_reason"])
-    )
-    
-    DeltaTable.forName(spark, "gold.fact_dead_letter_governance").alias("t").merge(
-        df_dl_agg.alias("s"), 
-        "t.date_key = s.date_key AND t.target_stream_name = s.target_stream_name AND t.governance_exception_reason = s.governance_exception_reason"
-    ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
-    
-    max_ts_dl = df_new_dl.select(F.max(time_col_dl)).collect()[0][0]
-    set_watermark("dead_letter_telemetry", max_ts_dl)
-    print(f"Dead-Letter: Triaged into silver.dead_letter_classified & gold.fact_dead_letter_governance.")
+    print(f"📡 Dead-Letter Stream: {cnt_dl:,} new defective events detected. Triggering self-healing...")
 
 # METADATA ********************
 
