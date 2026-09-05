@@ -2,18 +2,21 @@ table fact_maintenance_sla
 	lineageTag: 0d0d3e29-5f62-49fc-9dac-ae0c7a94222d
 	sourceLineageTag: [gold].[fact_maintenance_sla]
 
-	measure 'SLA Compliance Pct' =
+	measure 'SLA Compliance %' =
 			
 			VAR TotalWO = SUM('fact_maintenance_sla'[work_order_count])
 			VAR CompletedWO = SUM('fact_maintenance_sla'[completed_work_orders])
 			VAR RawRatio = IF(TotalWO > 0, CompletedWO / TotalWO, 1.0)
 			RETURN MIN(RawRatio, 1.0)
 		formatString: " 0.0%"
+		displayFolder: ⚙️ Equipment & Reliability
 		lineageTag: 842ca250-a321-4829-b40b-4bec4de17b64
 
 		changedProperty = Name
 
 		changedProperty = FormatString
+
+		changedProperty = DisplayFolder
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
@@ -26,23 +29,74 @@ table fact_maintenance_sla
 			)
 			```
 		formatString: 0.00" pts
+		displayFolder: ⚙️ Equipment & Reliability
 		lineageTag: df55aaff-2bbd-4214-b174-d7f347616bc3
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Avg Repair Duration Min' = AVERAGE('fact_maintenance_sla'[avg_actual_duration_min])
-		formatString: " 0.00"" min"""
+	measure 'Avg Repair Duration (min)' = AVERAGE('fact_maintenance_sla'[avg_actual_duration_min])
+		formatString: #,##0.0" min"
+		displayFolder: ⚙️ Equipment & Reliability
 		lineageTag: c0dc5922-1d7c-44b1-8394-de9b1c9d7e28
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Total Work Orders' =
+			
+			COUNTROWS('fact_maintenance_sla')
+		formatString: #,##0
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: 73e226bb-3369-42d0-a26b-f6c525a5f90c
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'MTTR (Hours)' =
+			
+			DIVIDE([Avg Repair Duration (min)], 60, 0)
+		formatString: " 0.0"" hrs"""
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: 0f974600-bdb5-4087-b662-4d12562fe48c
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Equipment Availability %' =
+			
+			VAR TotalSlots = COUNTROWS('fact_equipment_telemetry')
+			VAR LowHealthSlots = CALCULATE(COUNTROWS('fact_equipment_telemetry'), 'fact_equipment_telemetry'[avg_health_score] < 50)
+			RETURN DIVIDE(TotalSlots - LowHealthSlots, TotalSlots, 1)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: f4fdf6f0-4935-432d-a7a6-4df06eaddd6c
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
 
 	column date_key
 		dataType: int64

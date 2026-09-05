@@ -2,6 +2,102 @@ table fact_environmental_daily
 	lineageTag: c8ee865e-7dc0-4f9b-96ca-c19b16aacc36
 	sourceLineageTag: [gold].[fact_environmental_daily]
 
+	measure 'Avg Ambient Temp (°C)' = AVERAGE('fact_environmental_daily'[avg_ambient_temp_celsius])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 🌾 Agronomy & Growth
+		lineageTag: 2f892c68-0106-420b-adc9-f5326f58def8
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		changedProperty = DisplayFolder
+
+	measure 'Avg Relative Humidity %' =
+			
+			AVERAGE('fact_environmental_daily'[avg_humidity_pct])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 🌾 Agronomy & Growth
+		lineageTag: aa33c027-8572-4802-b0c2-570901ace4d2
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure 'Avg CO2 (ppm)' =
+			
+			AVERAGE('fact_environmental_daily'[avg_co2_ppm])
+		formatString: " #,##0"" ppm"""
+		displayFolder: 🌾 Agronomy & Growth
+		lineageTag: 992546e3-c29b-44b8-ad4d-63e87216be29
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg VPD (kPa)' =
+			
+			AVERAGE('fact_environmental_daily'[avg_vpd_kpa])
+		formatString: " 0.00"" kPa"""
+		displayFolder: 🌾 Agronomy & Growth
+		lineageTag: e5d1c7b4-3a62-4595-b1eb-fb50e436787c
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Water pH' =
+			
+			AVERAGE('fact_environmental_daily'[avg_water_ph])
+		displayFolder: 🌾 Agronomy & Growth
+		lineageTag: 9537f760-e4d6-4f70-8704-4d24b2337245
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		changedProperty = DisplayFolder
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Avg EC (mS/cm)' =
+			
+			AVERAGE('fact_environmental_daily'[avg_ec_ms_cm])
+		formatString: " 0.00"" mS/cm"""
+		displayFolder: 🌾 Agronomy & Growth
+		lineageTag: 8db63ea5-9e34-422e-8745-163e8856235e
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Environmental Stability' =
+			
+			AVERAGE('fact_environmental_daily'[avg_stability_score])
+		formatString: 0.00
+		displayFolder: 🌾 Agronomy & Growth
+		lineageTag: ca3d21f2-12e1-41fc-9a81-9e1b14e87e79
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
 	column date_key
 		dataType: int64
 		formatString: 0

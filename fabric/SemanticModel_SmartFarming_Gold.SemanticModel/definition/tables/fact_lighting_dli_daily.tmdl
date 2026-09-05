@@ -2,15 +2,31 @@ table fact_lighting_dli_daily
 	lineageTag: 4ce59644-3bb4-4acb-a5fb-f6c88458c42b
 	sourceLineageTag: [gold].[fact_lighting_dli_daily]
 
-	measure 'Avg DLI' = AVERAGE('fact_lighting_dli_daily'[avg_daily_light_integral])
-		formatString: " 0.0"" mol/m²/d"""
+	measure 'Avg DLI (mol/m²/d)' = AVERAGE('fact_lighting_dli_daily'[avg_daily_light_integral])
+		formatString: 0.00" mol/m²/d"
+		displayFolder: 💧 Resources & Sustainability
 		lineageTag: a2c82885-e6a8-41d9-b1fa-0e78f469fae0
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'DLI Target Compliance %' =
+			
+			DIVIDE([Avg DLI (mol/m²/d)], 16.0, 1)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 💧 Resources & Sustainability
+		lineageTag: b98f308b-1944-4c40-b752-6388038baaa1
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
 
 	column date_key
 		dataType: int64

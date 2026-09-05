@@ -2,19 +2,40 @@ table fact_irrigation_daily
 	lineageTag: 63f99c69-0c1b-4cd8-a5cf-a15a99abad48
 	sourceLineageTag: [gold].[fact_irrigation_daily]
 
-	measure 'Total Water Liters' = SUM('fact_irrigation_daily'[total_water_delivered_liters])
+	measure 'Total Water Delivered (L)' = SUM('fact_irrigation_daily'[total_water_delivered_liters])
 		formatString: " #,##0.0"" L"""
+		displayFolder: 💧 Resources & Sustainability
 		lineageTag: d8615f69-e961-4716-bfa9-23e5da242847
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Total Nutrient Liters' = SUM('fact_irrigation_daily'[total_nutrient_solution_liters])
-		formatString: " #,##0.0"" L"""
+	measure 'Total Nutrient Solution (L)' = SUM('fact_irrigation_daily'[total_nutrient_solution_liters])
+		formatString: #,##0.0" L"
+		displayFolder: 💧 Resources & Sustainability
 		lineageTag: ab93fc2c-a45e-4ec6-b4bd-c5bcc72490ed
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		changedProperty = DisplayFolder
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Water Use Efficiency (L/kg)' =
+			
+			DIVIDE([Total Water Delivered (L)], [Total Harvest (kg)], 0)
+		formatString: " #,##0.0"" L/kg"""
+		displayFolder: 💧 Resources & Sustainability
+		lineageTag: db113a57-2620-498b-82e4-a3514abee329
+
+		changedProperty = DisplayFolder
 
 		changedProperty = Name
 

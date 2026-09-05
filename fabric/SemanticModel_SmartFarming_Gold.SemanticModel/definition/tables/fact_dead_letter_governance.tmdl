@@ -2,11 +2,192 @@ table fact_dead_letter_governance
 	lineageTag: 20eb0c70-ea77-45ba-bf3b-302c18f572b0
 	sourceLineageTag: [gold].[fact_dead_letter_governance]
 
-	measure 'Total Dead Letter Count' = SUM('fact_dead_letter_governance'[dead_letter_event_count])
-		formatString: 0
+	measure 'Total Dead-Letter Events' = SUM('fact_dead_letter_governance'[dead_letter_event_count])
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
 		lineageTag: b102df68-1635-41d2-9371-6bc74a08eeba
 
 		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Missing PK Defects' =
+			
+			SUM('fact_dead_letter_governance'[missing_pk_defect_count])
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: a707681e-122e-41fb-b00a-f5c27dd313a8
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Deprecated Schema Defects' =
+			
+			SUM('fact_dead_letter_governance'[deprecated_schema_defect_count])
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 4d47d2da-7c31-428d-8fc9-330284b636cc
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Formatting Defects' =
+			
+			SUM('fact_dead_letter_governance'[formatting_defect_count])
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 8dcbc701-7da0-4def-8511-56dff15abba3
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Out of Bounds Defects' =
+			
+			SUM('fact_dead_letter_governance'[out_of_bounds_defect_count])
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 8703d4f9-22c6-4769-942b-6f67b87cf716
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Timestamp Skew Defects' =
+			
+			SUM('fact_dead_letter_governance'[timestamp_sync_defect_count])
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 7e536f8f-af23-429d-802c-b1378eba91f6
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Unregistered Hardware Defects' =
+			
+			SUM('fact_dead_letter_governance'[unregistered_hardware_defect_count])
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: fc0d8cda-9742-468f-b029-c9a3c46e20ca
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Total Ingestion Defects' =
+			
+			[Missing PK Defects] + [Deprecated Schema Defects] + [Formatting Defects] + [Out of Bounds Defects] + [Timestamp Skew Defects] + [Unregistered Hardware Defects]
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 51dfd288-f5a5-4b0a-ad43-e835f8a0dfbc
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Auto-Remediated Defects' =
+			
+			[Deprecated Schema Defects] + [Formatting Defects] + [Timestamp Skew Defects]
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: f061cf6f-52b8-47ef-92ad-84985fffb7a8
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Auto-Remediation Rate %' =
+			
+			DIVIDE([Auto-Remediated Defects], [Total Ingestion Defects], 0)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 7dd33b1d-0799-4189-90da-8525668d5242
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure 'Quarantined Defects' =
+			
+			[Missing PK Defects] + [Out of Bounds Defects] + [Unregistered Hardware Defects]
+		formatString: #,##0
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 7553a9dc-941e-49da-9302-ffa66f62175b
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Quarantine Rate %' =
+			
+			DIVIDE([Quarantined Defects], [Total Ingestion Defects], 0)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 27ca50e6-cf52-421d-a8b8-fe587c025706
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure 'Data Quality Score %' =
+			
+			1 - DIVIDE([Total Ingestion Defects], [Total Ingestion Defects] + 1000000, 0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 🛡️ DataOps & Governance
+		lineageTag: 2fb1be92-8440-48ff-ad89-f30b0095de72
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
 
 	column date_key
 		dataType: int64

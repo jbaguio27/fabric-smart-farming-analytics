@@ -2,17 +2,53 @@ table fact_equipment_telemetry
 	lineageTag: 1221bb3c-3dba-49d4-9618-45f83895df91
 	sourceLineageTag: [gold].[fact_equipment_telemetry]
 
-	measure 'Avg Equipment Health' = AVERAGE('fact_equipment_telemetry'[avg_health_score])
-		formatString: 0.00
+	measure 'Avg Equipment Health Score' = AVERAGE('fact_equipment_telemetry'[avg_health_score])
+		formatString: 0.0
+		displayFolder: ⚙️ Equipment & Reliability
 		lineageTag: ec042e8b-394d-4588-9936-c06dbd4b319c
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
-	measure 'Total Energy kWh' = SUM('fact_equipment_telemetry'[total_energy_kwh])
+		changedProperty = DisplayFolder
+
+	measure 'Total Energy (kWh)' = SUM('fact_equipment_telemetry'[total_energy_kwh])
 		formatString: #,##0.0" kWh"
+		displayFolder: 💧 Resources & Sustainability
 		lineageTag: 6d17ef59-5369-4ee2-baae-063aaf3c6757
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		changedProperty = DisplayFolder
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Energy Use Intensity (kWh/kg)' =
+			
+			DIVIDE([Total Energy (kWh)], [Total Harvest (kg)], 0)
+		formatString: " #,##0.00"" kWh/kg"""
+		displayFolder: 💧 Resources & Sustainability
+		lineageTag: 1c2af65e-a84c-46c0-9f06-c830486f2e1a
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Carbon Footprint (kg CO2e)' =
+			
+			[Total Energy (kWh)] * 0.7122
+		formatString: " #,##0.0"" kg CO2e"""
+		displayFolder: 💧 Resources & Sustainability
+		lineageTag: 3e1182c3-59dc-40e6-9043-8b7e2df0c745
+
+		changedProperty = DisplayFolder
 
 		changedProperty = Name
 

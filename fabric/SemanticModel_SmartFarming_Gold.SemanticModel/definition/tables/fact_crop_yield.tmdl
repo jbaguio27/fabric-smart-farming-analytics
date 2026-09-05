@@ -2,92 +2,117 @@ table fact_crop_yield
 	lineageTag: a443f0c6-e63f-4180-a65b-01ce33b9c95d
 	sourceLineageTag: [gold].[fact_crop_yield]
 
-	measure 'Total Revenue PHP' = SUM('fact_crop_yield'[estimated_revenue_php])
+	measure 'Total Revenue (₱)' = SUM('fact_crop_yield'[estimated_revenue_php])
 		formatString: \₱#,##0.00
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: f9bec4c5-3c5e-4ef2-9081-9d842b0ceef6
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Total Harvest kg' = SUM('fact_crop_yield'[total_harvest_kg])
+	measure 'Total Harvest (kg)' = SUM('fact_crop_yield'[total_harvest_kg])
 		formatString: #,##0.00" kg"
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: 479ac7c8-4bf7-4132-93e5-07b41ad392cc
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Grade A Ratio Pct' =
+	measure 'Grade A Ratio %' =
 			
 			VAR TotalYield = SUM('fact_crop_yield'[total_harvest_kg])
 			VAR GradeAYield = SUM('fact_crop_yield'[grade_a_harvest_kg])
 			VAR RawRatio = IF(TotalYield > 0, GradeAYield / TotalYield, 0)
 			RETURN
 			    MIN(RawRatio, 1.0)
-		formatString: 0.00%;-0.00%;0.00%
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 🌾 Agronomy & Growth
 		lineageTag: 870f0912-36ef-40d0-b62b-8c1dff24ccdd
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
-	measure 'Avg Daily Growth Rate' = AVERAGE('fact_crop_yield'[avg_growth_rate_g_day])
-		formatString: " 0.00"" g/day"""
+		changedProperty = DisplayFolder
+
+	measure 'Avg Daily Growth Rate (g/day)' = AVERAGE('fact_crop_yield'[avg_growth_rate_g_day])
+		formatString: #,##0.00" g/day"
+		displayFolder: 🌾 Agronomy & Growth
 		lineageTag: b843acac-dcbe-494d-9a74-7f80dc9105a0
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Grade A Harvest kg' = SUM('fact_crop_yield'[grade_a_harvest_kg])
-		formatString: " #,##0.00"" kg"""
+	measure 'Grade A Harvest (kg)' = SUM('fact_crop_yield'[grade_a_harvest_kg])
+		formatString: #,##0.00" kg"
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: 434106bb-1d41-4bce-a35c-59eaf8665ba1
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Total Spoilage Waste kg' = SUM('fact_crop_yield'[spoilage_waste_kg])
-		formatString: " #,##0.00"" kg"""
+	measure 'Total Spoilage Waste (kg)' = SUM('fact_crop_yield'[spoilage_waste_kg])
+		formatString: #,##0.00" kg"
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: fe7173da-be0e-43b9-8042-f8a0872b8cee
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Target Yield kg' = SUM('fact_crop_yield'[target_yield_kg])
-		formatString: " #,##0.00 ""kg"""
+	measure 'Target Yield (kg)' = SUM('fact_crop_yield'[target_yield_kg])
+		formatString: #,##0.00" kg"
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: 6b53b79a-0ee9-4da6-a13f-4b8ca4c52dce
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Yield Achievement %' = DIVIDE([Total Harvest kg], [Target Yield kg], 1) * 100
+	measure 'Yield Achievement %' = DIVIDE([Total Harvest (kg)], [Target Yield (kg)], 1) * 100
 		formatString: " 0.0""%"""
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: d7cc211e-f80b-4b51-808f-fb594c565770
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Grade B Harvest kg' = SUM('fact_crop_yield'[grade_b_harvest_kg])
-		formatString: " #,##0.00 ""kg"""
+	measure 'Grade B Harvest (kg)' = SUM('fact_crop_yield'[grade_b_harvest_kg])
+		formatString: #,##0.00" kg"
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: 316042f3-f823-4675-b7d7-251888c2c734
 
 		changedProperty = Name
@@ -96,27 +121,93 @@ table fact_crop_yield
 
 		changedProperty = FormatStringDefinition
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Spoilage Rate %' = DIVIDE([Total Spoilage Waste kg], [Total Harvest kg] + [Total Spoilage Waste kg], 0) * 100
+	measure 'Spoilage Rate %' = DIVIDE([Total Spoilage Waste (kg)], [Total Harvest (kg)] + [Total Spoilage Waste (kg)], 0) * 100
 		formatString: " 0.00""%"""
+		displayFolder: 🌾 Agronomy & Growth
 		lineageTag: fb8915f0-4d27-4559-9fcb-159b6ae268b2
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
 
 	measure 'Total Harvest Batches' = SUM(fact_crop_yield[harvest_batch_count])
 		formatString: #,##0
+		displayFolder: 💰 Revenue & Yield
 		lineageTag: 6f6f374f-85d2-457a-b8f2-c47986b11140
 
 		changedProperty = Name
 
 		changedProperty = FormatString
 
+		changedProperty = DisplayFolder
+
 		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Revenue / kg' =
+			
+			DIVIDE([Total Revenue (₱)], [Total Harvest (kg)], 0)
+		formatString: " \₱#,##0.00"
+		displayFolder: 💰 Revenue & Yield
+		lineageTag: 3fb2c5d7-8658-497f-bb4f-c3231b5cc3ae
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Revenue Lost to Spoilage (₱)' =
+			
+			[Total Spoilage Waste (kg)] * [Avg Revenue / kg]
+		formatString: " \₱#,##0.00"
+		displayFolder: 💰 Revenue & Yield
+		lineageTag: e08aedb8-ca6f-40c8-9f4d-bc9c4d4e660a
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Target Revenue (₱)' =
+			
+			[Target Yield (kg)] * [Avg Revenue / kg]
+		formatString: " \₱#,##0.00"
+		displayFolder: 💰 Revenue & Yield
+		lineageTag: df83ace6-d83b-4a8e-b1dc-37a0e6836f3f
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Revenue Realization %' =
+			
+			DIVIDE([Total Revenue (₱)], [Target Revenue (₱)], 1)
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 💰 Revenue & Yield
+		lineageTag: 2bd62803-3515-4a05-a082-ea5f71560984
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
 
 	column date_key
 		dataType: int64
