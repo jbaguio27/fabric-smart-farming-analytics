@@ -13,6 +13,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 300
       },
       "query": {
@@ -102,6 +103,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 300
       },
       "query": {
@@ -170,6 +172,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 300
       },
       "query": {
@@ -238,6 +241,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 900
       },
       "query": {
@@ -306,6 +310,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 900
       },
       "query": {
@@ -374,6 +379,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 900
       },
       "query": {
@@ -442,6 +448,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 300
       },
       "query": {
@@ -510,6 +517,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 900
       },
       "query": {
@@ -578,6 +586,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 900
       },
       "query": {
@@ -646,6 +655,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 300
       },
       "query": {
@@ -820,6 +830,7 @@
     "payload": {
       "name": "SmartFarmingKQLDB event",
       "runSettings": {
+        "isStopped": false,
         "executionIntervalInSeconds": 900
       },
       "query": {

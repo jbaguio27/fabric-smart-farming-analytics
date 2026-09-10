@@ -44,7 +44,7 @@
               },
               "queryRef": "fact_dead_letter_governance.governance_exception_reason",
               "nativeQueryRef": "governance_exception_reason",
-              "active": true
+              "active": false
             }
           ]
         },
@@ -207,40 +207,7 @@
             "isPinned": true
           }
         ],
-        "root": {
-          "children": [
-            {
-              "identityValues": [
-                {
-                  "Literal": {
-                    "Value": "'CROPTELEMETRY'"
-                  }
-                }
-              ],
-              "isToggled": true
-            },
-            {
-              "identityValues": [
-                {
-                  "Literal": {
-                    "Value": "'ENVIRONMENTALTELEMETRY'"
-                  }
-                }
-              ],
-              "isToggled": true
-            },
-            {
-              "identityValues": [
-                {
-                  "Literal": {
-                    "Value": "'EQUIPMENTTELEMETRY'"
-                  }
-                }
-              ],
-              "isToggled": true
-            }
-          ]
-        }
+        "root": {}
       }
     ],
     "objects": {
