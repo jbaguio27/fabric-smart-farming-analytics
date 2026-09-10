@@ -35,7 +35,7 @@ import time
 
 # Spark Session & Schema Initialization
 spark.sql("CREATE SCHEMA IF NOT EXISTS gold")
-spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+spark.conf.set("spark.sql.sources.partitionOverwriteMode", "static")
 
 # Global Pipeline Execution Paremeters
 PIPELINE_RUN_DATE = datetime.date.today()
@@ -48,7 +48,7 @@ EQUIPMENT_TRACKED_COLUMNS = ["zone_id", "operating_status", "model_number", "equ
 
 print("==============================================================================")
 print(f"🟢 FABRIC ENVIRONMENT INITIALIZED | RUN DATE: {PIPELINE_RUN_DATE}")
-print(f"✍️ DYNAMIC PARTITION OVERWRITE MODE: ACTIVE | CUSTOM FUNCTIONS DEFINED: 0")
+print(f"✍️ PARTITION OVERWRITE MODE: STATIC (SAFE OVERWRITE SCHEMA) | CUSTOM FUNCTIONS DEFINED: 0")
 print("==============================================================================")
 
 # METADATA ********************

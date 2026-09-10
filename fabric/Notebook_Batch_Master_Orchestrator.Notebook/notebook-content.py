@@ -29,6 +29,7 @@
 # Configure Delta Lake OCC Concurrency & Isolation
 spark.conf.set("spark.databricks.delta.properties.defaults.isolationLevel", "Serializable")
 spark.conf.set("spark.databricks.delta.write.concurrentAppendMode.enabled", "true")
+spark.conf.set("spark.sql.sources.partitionOverwriteMode", "static")
 
 import time
 import uuid
