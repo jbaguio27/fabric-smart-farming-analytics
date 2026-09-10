@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "d6cfb2ca4e4675f8f7f9",
   "position": {
-    "x": 940,
+    "x": 965,
     "y": 120,
     "z": 4000,
     "height": 90,
-    "width": 390,
+    "width": 395,
     "tabOrder": 4000
   },
   "visual": {
@@ -20,14 +20,14 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_crop_yield"
+                      "Entity": "fact_lighting_dli_daily"
                     }
                   },
-                  "Property": "Grade A Harvest kg"
+                  "Property": "Avg DLI (mol/m²/d)"
                 }
               },
-              "queryRef": "fact_crop_yield.Grade A Harvest kg",
-              "nativeQueryRef": "Grade A Harvest kg"
+              "queryRef": "fact_lighting_dli_daily.Avg DLI (mol/m²/d)",
+              "nativeQueryRef": "Avg DLI (mol/m²/d)"
             }
           ]
         }
@@ -39,10 +39,10 @@
               "Measure": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "fact_crop_yield"
+                    "Entity": "fact_lighting_dli_daily"
                   }
                 },
-                "Property": "Grade A Harvest kg"
+                "Property": "Avg DLI (mol/m²/d)"
               }
             },
             "direction": "Descending"
@@ -123,6 +123,38 @@
           "selector": {
             "id": "default"
           }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Avg Daily Light Integral (DLI)'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_lighting_dli_daily.Avg DLI (mol/m²/d)"
+          }
         }
       ],
       "value": [
@@ -163,6 +195,24 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_lighting_dli_daily.Avg DLI (mol/m²/d)"
           }
         }
       ]

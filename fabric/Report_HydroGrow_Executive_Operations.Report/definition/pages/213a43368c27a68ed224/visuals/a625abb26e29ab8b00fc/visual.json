@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "a625abb26e29ab8b00fc",
   "position": {
-    "x": 710,
-    "y": 26,
+    "x": 616.6122098022355,
+    "y": 39.002579535683573,
     "z": 13000,
-    "height": 60,
-    "width": 1100,
+    "height": 50.14617368873602,
+    "width": 1192.3645743766122,
     "tabOrder": 12000
   },
   "visual": {
@@ -106,7 +106,7 @@
                           [
                             {
                               "Literal": {
-                                "Value": "'CALABARZON'"
+                                "Value": "'CENTRAL VISAYAS'"
                               }
                             }
                           ]
@@ -195,9 +195,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 1,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#D8F3DC'"
                     }
                   }
                 }
@@ -208,7 +207,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#90A955'"
+                      "Value": "'#52B788'"
                     }
                   }
                 }

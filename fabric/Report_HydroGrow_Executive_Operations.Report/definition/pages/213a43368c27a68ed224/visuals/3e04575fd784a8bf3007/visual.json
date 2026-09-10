@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "3e04575fd784a8bf3007",
   "position": {
-    "x": 115.15047291487531,
-    "y": 29.716251074806532,
+    "x": 131.50684931506848,
+    "y": 39.452054794520542,
     "z": 12000,
-    "height": 55,
-    "width": 600,
+    "height": 52.602739726027394,
+    "width": 453.69863013698625,
     "tabOrder": 7000
   },
   "visual": {
@@ -22,7 +22,7 @@
                     "value": "HYDROGROW SMART FARMING",
                     "textStyle": {
                       "fontWeight": "bold",
-                      "fontSize": "18pt",
+                      "fontSize": "16pt",
                       "color": "#ffffff"
                     }
                   }
@@ -33,7 +33,7 @@
                   {
                     "value": "Executive Operations Control Tower | Real-Time Yield & Financial Analytics",
                     "textStyle": {
-                      "fontSize": "10pt",
+                      "fontSize": "9pt",
                       "color": "#ecf39e"
                     }
                   }

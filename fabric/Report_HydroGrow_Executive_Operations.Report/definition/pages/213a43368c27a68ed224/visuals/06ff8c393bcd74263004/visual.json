@@ -20,14 +20,14 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_equipment_telemetry"
+                      "Entity": "fact_crop_yield"
                     }
                   },
-                  "Property": "Avg Equipment Health"
+                  "Property": "Yield Achievement %"
                 }
               },
-              "queryRef": "fact_equipment_telemetry.Avg Equipment Health",
-              "nativeQueryRef": "Avg Equipment Health"
+              "queryRef": "fact_crop_yield.Yield Achievement %",
+              "nativeQueryRef": "Yield Achievement %"
             }
           ]
         }
@@ -39,10 +39,10 @@
               "Measure": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "fact_equipment_telemetry"
+                    "Entity": "fact_crop_yield"
                   }
                 },
-                "Property": "Avg Equipment Health"
+                "Property": "Yield Achievement %"
               }
             },
             "direction": "Descending"
@@ -74,7 +74,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "26D"
+                  "Value": "24D"
                 }
               }
             },
@@ -89,9 +89,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#95D5B2'"
                     }
                   }
                 }
@@ -118,7 +117,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#E2E8F0'"
+                      "Value": "'#B7E4C7'"
                     }
                   }
                 }
@@ -127,6 +126,20 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'TARGET REALIZATION'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_crop_yield.Yield Achievement %"
           }
         }
       ],

@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "215ec46ffcebe57e9a00",
   "position": {
-    "x": 115,
-    "y": 255,
+    "x": 115.15047291487531,
+    "y": 250,
     "z": 6000,
     "height": 430,
-    "width": 1050,
+    "width": 870,
     "tabOrder": 6000
   },
   "visual": {
@@ -42,11 +42,11 @@
                       "Entity": "fact_crop_yield"
                     }
                   },
-                  "Property": "Total Harvest kg"
+                  "Property": "Total Harvest (kg)"
                 }
               },
-              "queryRef": "fact_crop_yield.Total Harvest kg",
-              "nativeQueryRef": "Total Harvest kg"
+              "queryRef": "fact_crop_yield.Total Harvest (kg)",
+              "nativeQueryRef": "Total Harvest (kg)"
             }
           ]
         },
@@ -60,11 +60,11 @@
                       "Entity": "fact_crop_yield"
                     }
                   },
-                  "Property": "Avg Daily Growth Rate"
+                  "Property": "Avg Daily Growth Rate (g/day)"
                 }
               },
-              "queryRef": "fact_crop_yield.Avg Daily Growth Rate",
-              "nativeQueryRef": "Avg Daily Growth Rate"
+              "queryRef": "fact_crop_yield.Avg Daily Growth Rate (g/day)",
+              "nativeQueryRef": "Avg Daily Growth Rate (g/day)"
             }
           ]
         }
@@ -85,9 +85,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
                     }
                   }
                 }
@@ -222,21 +221,10 @@
       "dataPoint": [
         {
           "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#DDA15E'"
-                    }
-                  }
-                }
-              }
-            },
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "80D"
+                  "Value": "85D"
                 }
               }
             },
@@ -266,8 +254,47 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#DDA15E'"
+                    "FillRule": {
+                      "Input": {
+                        "Aggregation": {
+                          "Expression": {
+                            "Column": {
+                              "Expression": {
+                                "SourceRef": {
+                                  "Entity": "dim_date"
+                                }
+                              },
+                              "Property": "month_year"
+                            }
+                          },
+                          "Function": 5
+                        }
+                      },
+                      "FillRule": {
+                        "linearGradient2": {
+                          "min": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#283618'"
+                              }
+                            }
+                          },
+                          "max": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#606C38'"
+                              }
+                            }
+                          },
+                          "nullColoringStrategy": {
+                            "strategy": {
+                              "Literal": {
+                                "Value": "'asZero'"
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -275,7 +302,13 @@
             }
           },
           "selector": {
-            "metadata": "fact_crop_yield.Total Harvest kg"
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ]
           }
         },
         {
@@ -285,7 +318,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FFD700'"
+                      "Value": "'#DDA15E'"
                     }
                   }
                 }
@@ -293,7 +326,7 @@
             }
           },
           "selector": {
-            "metadata": "fact_crop_yield.Avg Daily Growth Rate"
+            "metadata": "fact_crop_yield.Avg Daily Growth Rate (g/day)"
           }
         }
       ],
@@ -343,80 +376,41 @@
         },
         {
           "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
             "color": {
               "solid": {
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FFD700'"
+                      "Value": "'#FEFAE0'"
                     }
                   }
-                }
-              }
-            },
-            "bold": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
-            "labelPosition": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Auto'"
                 }
               }
             }
           },
           "selector": {
-            "metadata": "fact_crop_yield.Avg Daily Growth Rate"
+            "metadata": "fact_crop_yield.Total Harvest (kg)"
           }
         },
         {
           "properties": {
-            "labelPosition": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'OutsideEnd'"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#F29A37'"
-                    }
-                  }
-                }
-              }
-            },
-            "showSeries": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "enableBackground": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
-            "labelPrecision": {
-              "expr": {
-                "Literal": {
-                  "Value": "1L"
+                  "Value": "9D"
                 }
               }
             }
           },
           "selector": {
-            "metadata": "fact_crop_yield.Total Harvest kg"
+            "metadata": "fact_crop_yield.Avg Daily Growth Rate (g/day)"
           }
         }
       ],
@@ -453,7 +447,7 @@
             "strokeWidth": {
               "expr": {
                 "Literal": {
-                  "Value": "2D"
+                  "Value": "3D"
                 }
               }
             }
@@ -475,7 +469,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Daily Growth Rate (g/day) vs. Biomass Output (kg)'"
+                  "Value": "'Biomass Growth vs. VPD Combo Chart'"
                 }
               }
             },
@@ -497,9 +491,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
                     }
                   }
                 }
@@ -552,6 +545,13 @@
                       "Value": "'#FEFAE0'"
                     }
                   }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

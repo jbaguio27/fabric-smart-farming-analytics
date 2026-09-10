@@ -6,8 +6,12 @@ table fact_maintenance_sla
 			
 			VAR TotalWO = SUM('fact_maintenance_sla'[work_order_count])
 			VAR CompletedWO = SUM('fact_maintenance_sla'[completed_work_orders])
-			VAR RawRatio = IF(TotalWO > 0, CompletedWO / TotalWO, 1.0)
-			RETURN MIN(RawRatio, 1.0)
+			RETURN
+			    IF(
+			        ISBLANK(TotalWO) || TotalWO <= 0,
+			        BLANK(),
+			        MIN(DIVIDE(CompletedWO, TotalWO), 1.0)
+			    )
 		formatString: " 0.0%"
 		displayFolder: ⚙️ Equipment & Reliability
 		lineageTag: 842ca250-a321-4829-b40b-4bec4de17b64

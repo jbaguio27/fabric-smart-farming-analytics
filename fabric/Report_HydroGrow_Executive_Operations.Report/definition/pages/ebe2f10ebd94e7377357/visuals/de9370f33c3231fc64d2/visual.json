@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "de9370f33c3231fc64d2",
   "position": {
-    "x": 115,
-    "y": 25,
+    "x": 115.15047291487531,
+    "y": 27.858985382631126,
     "z": 0,
-    "height": 60,
-    "width": 700,
+    "height": 62.218400687876176,
+    "width": 599.89681857265691,
     "tabOrder": 0
   },
   "visual": {
@@ -21,9 +21,9 @@
                   {
                     "value": "HYDROWGROW SMART FARMING",
                     "textStyle": {
-                      "fontFamily": "Segoe UI Semibold",
+                      "fontFamily": "Segoe (Bold)",
                       "fontSize": "18pt",
-                      "color": "#ffffff"
+                      "color": "#fefae0"
                     }
                   }
                 ]
@@ -31,10 +31,10 @@
               {
                 "textRuns": [
                   {
-                    "value": "Crop Biological Health & Growth Dynamics | Biomass Accumulation & Quality",
+                    "value": "Crop Biological Health & Microclimate Dynamics",
                     "textStyle": {
                       "fontSize": "10pt",
-                      "color": "#fefae0"
+                      "color": "#dda15e"
                     }
                   }
                 ]

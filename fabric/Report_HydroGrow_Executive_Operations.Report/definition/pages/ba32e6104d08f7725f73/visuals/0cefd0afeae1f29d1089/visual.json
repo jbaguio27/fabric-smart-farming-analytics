@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "0cefd0afeae1f29d1089",
   "position": {
-    "x": 940,
-    "y": 120,
+    "x": 968,
+    "y": 115,
     "z": 4000,
-    "height": 90,
-    "width": 390,
+    "height": 105,
+    "width": 410,
     "tabOrder": 4000
   },
   "visual": {
@@ -20,14 +20,14 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_lighting_dli_daily"
+                      "Entity": "fact_equipment_telemetry"
                     }
                   },
-                  "Property": "Avg DLI"
+                  "Property": "Total Energy (kWh)"
                 }
               },
-              "queryRef": "fact_lighting_dli_daily.Avg DLI",
-              "nativeQueryRef": "Avg DLI"
+              "queryRef": "fact_equipment_telemetry.Total Energy (kWh)",
+              "nativeQueryRef": "Total Energy (kWh)"
             }
           ]
         }
@@ -39,10 +39,10 @@
               "Measure": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "fact_lighting_dli_daily"
+                    "Entity": "fact_equipment_telemetry"
                   }
                 },
-                "Property": "Avg DLI"
+                "Property": "Total Energy (kWh)"
               }
             },
             "direction": "Descending"
@@ -136,6 +136,31 @@
           "selector": {
             "id": "default"
           }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#48CAE4'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "24D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Total Energy (kWh)"
+          }
         }
       ],
       "label": [
@@ -163,6 +188,31 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#90E0EF'"
+                    }
+                  }
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'TOTAL ENERGY USAGE'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Total Energy (kWh)"
           }
         }
       ]

@@ -23,11 +23,11 @@
                       "Entity": "fact_crop_yield"
                     }
                   },
-                  "Property": "Total Harvest kg"
+                  "Property": "Total Harvest (kg)"
                 }
               },
-              "queryRef": "fact_crop_yield.Total Harvest kg",
-              "nativeQueryRef": "Total Harvest kg"
+              "queryRef": "fact_crop_yield.Total Harvest (kg)",
+              "nativeQueryRef": "Total Harvest (kg)"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "fact_crop_yield"
                   }
                 },
-                "Property": "Total Harvest kg"
+                "Property": "Total Harvest (kg)"
               }
             },
             "direction": "Descending"
@@ -103,7 +103,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "26D"
+                  "Value": "24D"
                 }
               }
             },
@@ -111,9 +111,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#52B788'"
                     }
                   }
                 }
@@ -147,9 +146,39 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#E2E8F0'"
+                      "Value": "'#B7E4C7'"
                     }
                   }
+                }
+              }
+            }
+          },
+          "selector": {
+            "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'TOTAL HARVEST (KG)'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_crop_yield.Total Harvest (kg)"
+          }
+        }
+      ],
+      "divider": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

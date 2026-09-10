@@ -3,119 +3,359 @@
   "name": "05d4778d7e6737bcf838",
   "position": {
     "x": 115,
-    "y": 735,
+    "y": 720,
     "z": 8000,
-    "height": 290,
+    "height": 315,
     "width": 1690,
     "tabOrder": 8000
   },
   "visual": {
-    "visualType": "clusteredBarChart",
+    "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Category": {
+        "Rows": {
           "projections": [
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_dead_letter_governance"
+                      "Entity": "dim_equipment"
                     }
                   },
-                  "Property": "governance_exception_reason"
+                  "Property": "equipment_type"
                 }
               },
-              "queryRef": "fact_dead_letter_governance.governance_exception_reason",
-              "nativeQueryRef": "governance_exception_reason",
-              "active": true
+              "queryRef": "dim_equipment.equipment_type",
+              "nativeQueryRef": "Equipment Category",
+              "active": true,
+              "displayName": "Equipment Category"
             },
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_dead_letter_governance"
+                      "Entity": "dim_equipment"
                     }
                   },
-                  "Property": "target_stream_name"
+                  "Property": "equipment_id"
                 }
               },
-              "queryRef": "fact_dead_letter_governance.target_stream_name",
-              "nativeQueryRef": "target_stream_name",
+              "queryRef": "dim_equipment.equipment_id",
+              "nativeQueryRef": "equipment_id",
               "active": false
             }
           ]
         },
-        "Y": {
+        "Values": {
           "projections": [
             {
               "field": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_dead_letter_governance"
+                      "Entity": "fact_equipment_telemetry"
                     }
                   },
-                  "Property": "Total Dead Letter Count"
+                  "Property": "Avg Equipment Health Score"
                 }
               },
-              "queryRef": "fact_dead_letter_governance.Total Dead Letter Count",
-              "nativeQueryRef": "Total Dead Letter Count"
+              "queryRef": "fact_equipment_telemetry.Avg Equipment Health Score",
+              "nativeQueryRef": "Avg Health Score",
+              "displayName": "Avg Health Score"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Max Failure Risk %"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Max Failure Risk %",
+              "nativeQueryRef": "Max Failure Risk",
+              "displayName": "Max Failure Risk"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Avg Daily Runtime (Hours)"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Avg Daily Runtime (Hours)",
+              "nativeQueryRef": "Daily Runtime",
+              "displayName": "Daily Runtime"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Avg Operating Temp (°C)"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Avg Operating Temp (°C)",
+              "nativeQueryRef": "Operating Temp",
+              "displayName": "Operating Temp"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Avg Vibration (vps)"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Avg Vibration (vps)",
+              "nativeQueryRef": "Vibration (vps)",
+              "displayName": "Vibration (vps)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Carbon Footprint (kg CO2e)"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Carbon Footprint (kg CO2e)",
+              "nativeQueryRef": "Carbon Footprint (kg CO2e)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Total Energy (kWh)"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Total Energy (kWh)",
+              "nativeQueryRef": "Total Energy",
+              "displayName": "Total Energy"
             }
           ]
         }
       },
       "sortDefinition": {
-        "sort": [
-          {
-            "field": {
-              "Measure": {
-                "Expression": {
-                  "SourceRef": {
-                    "Entity": "fact_dead_letter_governance"
-                  }
-                },
-                "Property": "Total Dead Letter Count"
-              }
-            },
-            "direction": "Descending"
-          }
-        ],
         "isDefaultSort": true
       }
     },
+    "expansionStates": [
+      {
+        "roles": [
+          "Rows"
+        ],
+        "levels": [
+          {
+            "queryRefs": [
+              "dim_equipment.equipment_type"
+            ],
+            "isCollapsed": true,
+            "identityKeys": [
+              {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_equipment"
+                    }
+                  },
+                  "Property": "equipment_type"
+                }
+              }
+            ],
+            "isPinned": true
+          },
+          {
+            "queryRefs": [
+              "dim_equipment.equipment_id"
+            ],
+            "isCollapsed": true,
+            "isPinned": true
+          }
+        ],
+        "root": {}
+      }
+    ],
     "objects": {
-      "valueAxis": [
+      "columnHeaders": [
         {
           "properties": {
-            "gridlineShow": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1D3557'"
+                    }
+                  }
                 }
               }
             },
-            "show": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F1FAEE'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "10D"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Center'"
                 }
               }
             }
           }
         }
       ],
-      "categoryAxis": [
+      "columnWidth": [
         {
           "properties": {
-            "labelColor": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "260D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "dim_equipment.equipment_type"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "199D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Avg Equipment Health Score"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "200D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Max Failure Risk %"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "200D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Avg Daily Runtime (Hours)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "200D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Avg Operating Temp (°C)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "174D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Avg Vibration (vps)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "210D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Total Energy (kWh)"
+          }
+        }
+      ],
+      "rowHeaders": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            },
+            "fontColor": {
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#A8DADC'"
                     }
                   }
                 }
@@ -124,49 +364,197 @@
           }
         }
       ],
-      "labels": [
+      "values": [
         {
           "properties": {
-            "show": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9.5D"
+                }
+              }
+            },
+            "fontColorPrimary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F1FAEE'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F1FAEE'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColorPrimary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#1D3557'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "FillRule": {
+                      "Input": {
+                        "Measure": {
+                          "Expression": {
+                            "SourceRef": {
+                              "Entity": "fact_equipment_telemetry"
+                            }
+                          },
+                          "Property": "Avg Equipment Health Score"
+                        }
+                      },
+                      "FillRule": {
+                        "linearGradient3": {
+                          "min": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#E63946'"
+                              }
+                            }
+                          },
+                          "mid": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#457B9D'"
+                              }
+                            }
+                          },
+                          "max": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#1D3557'"
+                              }
+                            }
+                          },
+                          "nullColoringStrategy": {
+                            "strategy": {
+                              "Literal": {
+                                "Value": "'asZero'"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "fact_equipment_telemetry.Avg Equipment Health Score"
+          }
+        }
+      ],
+      "columnFormatting": [
+        {
+          "properties": {
+            "dataBars": {
+              "positiveColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'#E63946'"
+                      }
+                    }
+                  }
+                }
+              },
+              "negativeColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'minColor'"
+                      }
+                    }
+                  }
+                }
+              },
+              "axisColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'foreground'"
+                      }
+                    }
+                  }
+                }
+              },
+              "reverseDirection": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "hideText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "totalMatchingOption": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1L"
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Max Failure Risk %"
+          }
+        }
+      ],
+      "grid": [
+        {
+          "properties": {
+            "gridHorizontal": {
               "expr": {
                 "Literal": {
                   "Value": "true"
                 }
               }
             },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
-                    }
-                  }
-                }
-              }
-            },
-            "labelDisplayUnits": {
+            "gridVertical": {
               "expr": {
                 "Literal": {
-                  "Value": "1D"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "dataPoint": [
-        {
-          "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#C3423F'"
-                    }
-                  }
+                  "Value": "false"
                 }
               }
             }
@@ -195,7 +583,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Dead-Letter Pipeline Ingestion Defects by Error Code'"
+                  "Value": "'Facility Equipment Fleet Diagnostics, Runtime Hours & Failure Probability Benchmark'"
                 }
               }
             },
@@ -203,9 +591,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#F1FAEE'"
                     }
                   }
                 }
@@ -232,6 +619,13 @@
                       "Value": "'#5BC0EB'"
                     }
                   }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

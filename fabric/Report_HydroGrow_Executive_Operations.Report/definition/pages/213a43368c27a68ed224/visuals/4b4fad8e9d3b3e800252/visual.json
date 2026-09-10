@@ -23,11 +23,11 @@
                       "Entity": "fact_crop_yield"
                     }
                   },
-                  "Property": "Grade A Ratio Pct"
+                  "Property": "Grade A Ratio %"
                 }
               },
-              "queryRef": "fact_crop_yield.Grade A Ratio Pct",
-              "nativeQueryRef": "Grade A Ratio Pct"
+              "queryRef": "fact_crop_yield.Grade A Ratio %",
+              "nativeQueryRef": "Grade A Ratio %"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "fact_crop_yield"
                   }
                 },
-                "Property": "Grade A Ratio Pct"
+                "Property": "Grade A Ratio %"
               }
             },
             "direction": "Descending"
@@ -69,7 +69,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "26D"
+                  "Value": "24D"
                 }
               }
             },
@@ -77,9 +77,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#74C69D'"
                     }
                   }
                 }
@@ -129,7 +128,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#E2E8F0'"
+                      "Value": "'#B7E4C7'"
                     }
                   }
                 }
@@ -138,6 +137,20 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'GRADE A HARVEST RATIO'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_crop_yield.Grade A Ratio %"
           }
         }
       ],

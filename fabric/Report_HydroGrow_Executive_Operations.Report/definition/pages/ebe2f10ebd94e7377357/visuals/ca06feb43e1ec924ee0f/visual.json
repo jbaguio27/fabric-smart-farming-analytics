@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "ca06feb43e1ec924ee0f",
   "position": {
-    "x": 530,
+    "x": 540,
     "y": 120,
     "z": 3000,
     "height": 90,
-    "width": 390,
+    "width": 395,
     "tabOrder": 3000
   },
   "visual": {
@@ -20,14 +20,14 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_crop_yield"
+                      "Entity": "fact_environmental_daily"
                     }
                   },
-                  "Property": "Total Harvest kg"
+                  "Property": "Avg VPD (kPa)"
                 }
               },
-              "queryRef": "fact_crop_yield.Total Harvest kg",
-              "nativeQueryRef": "Total Harvest kg"
+              "queryRef": "fact_environmental_daily.Avg VPD (kPa)",
+              "nativeQueryRef": "Avg VPD (kPa)"
             }
           ]
         }
@@ -39,10 +39,10 @@
               "Measure": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "fact_crop_yield"
+                    "Entity": "fact_environmental_daily"
                   }
                 },
-                "Property": "Total Harvest kg"
+                "Property": "Avg VPD (kPa)"
               }
             },
             "direction": "Descending"
@@ -123,6 +123,38 @@
           "selector": {
             "id": "default"
           }
+        },
+        {
+          "properties": {
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Avg Vapor Pressure Deficit (VPD)'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_environmental_daily.Avg VPD (kPa)"
+          }
         }
       ],
       "value": [
@@ -140,7 +172,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FEFAE0'"
+                      "Value": "'#606C38'"
                     }
                   }
                 }
@@ -163,6 +195,31 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "26D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#606C38'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_environmental_daily.Avg VPD (kPa)"
           }
         }
       ]

@@ -56,6 +56,80 @@ table fact_equipment_telemetry
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
+	measure 'Avg Daily Runtime (Hours)' = AVERAGE('fact_equipment_telemetry'[daily_runtime_hours])
+		formatString: " 0.0"" hrs"""
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: 44764a7d-5f2e-4995-bcae-48f361ca257d
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Max Failure Risk %' = MAX('fact_equipment_telemetry'[max_failure_probability])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: 663e917e-cab2-4d45-9b94-fcb18d0233b6
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	measure 'Avg Operating Temp (°C)' = AVERAGE('fact_equipment_telemetry'[avg_operating_temp_celsius])
+		formatString: " 0.0"" °C"""
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: 4540b717-a3ad-423c-86fc-da73c7a8976a
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Vibration (vps)' = AVERAGE('fact_equipment_telemetry'[avg_vibration_vps])
+		formatString: " 0.00"" vps"""
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: f28ad6b8-54c6-40ad-870a-104f21631a38
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Power Draw (kW)' = AVERAGE('fact_equipment_telemetry'[avg_power_draw_kw])
+		formatString: " 0.0"" kW"""
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: 4f495bff-0c24-4ad3-a998-7993c6e946a4
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Avg Load %' = AVERAGE('fact_equipment_telemetry'[avg_load_percent])
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: ⚙️ Equipment & Reliability
+		lineageTag: f2ac336a-1b4d-4d2a-a63f-193120759e62
+
+		changedProperty = DisplayFolder
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
 	column date_key
 		dataType: int64
 		formatString: 0

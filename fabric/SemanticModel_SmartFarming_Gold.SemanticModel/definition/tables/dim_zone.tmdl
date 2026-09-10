@@ -131,6 +131,16 @@ table dim_zone
 
 		annotation SummarizationSetBy = Automatic
 
+	column facility_id
+		dataType: string
+		sourceProviderType: varchar(8000)
+		lineageTag: 4f6c66e8-7c21-4a81-809f-3e99c068bcbc
+		sourceLineageTag: facility_id
+		summarizeBy: none
+		sourceColumn: facility_id
+
+		annotation SummarizationSetBy = Automatic
+
 	partition dim_zone = entity
 		mode: directLake
 		source
