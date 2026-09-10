@@ -588,7 +588,7 @@ class EquipmentStateManager:
 
             state.power_consumption_kw = round(
                 min(
-                    profile.max_power_kw * 5.0,
+                    profile.max_power_kw,
                     max(
                         profile.idle_power_kw,
                         power,

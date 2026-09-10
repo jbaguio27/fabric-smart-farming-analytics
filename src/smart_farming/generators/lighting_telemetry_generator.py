@@ -48,7 +48,7 @@ class LightingTelemetryGenerator(BaseTelemetryGenerator):
         self._lighting_state_manager = (
             lighting_state_manager
         )
-        self._cycle_counter = 0
+        self._cycle_counter = 5
 
     def generate(
         self,

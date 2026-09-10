@@ -57,7 +57,7 @@ class IrrigationTelemetryGenerator(
         self._irrigation_state_manager = (
             irrigation_state_manager
         )
-        self._cycle_counter = 0
+        self._cycle_counter = 2
 
     def generate(
         self,

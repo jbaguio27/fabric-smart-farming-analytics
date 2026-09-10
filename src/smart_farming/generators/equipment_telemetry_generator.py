@@ -77,7 +77,7 @@ class EquipmentTelemetryGenerator(BaseTelemetryGenerator):
 
         self.equipment_registry = equipment_registry
         self.equipment_state_manager = equipment_state_manager
-        self._cycle_counter = 0
+        self._cycle_counter = 1
 
         self.logger = get_logger(__name__)
 

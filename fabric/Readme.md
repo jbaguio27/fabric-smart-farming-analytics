@@ -788,3 +788,108 @@ The platform provisions 9 Zero-Copy OneLake Shortcuts linking `SmartFarmingKQLDB
 The platform documents the complete attribute dictionary and exception handling workflow:
 - **Telemetry Attribute Dictionary**: [`docs/architecture/telemetry-attribute-dictionary.md`](../docs/architecture/telemetry-attribute-dictionary.md) (Physical representations, business value, persona consumers, derived KPIs, and analytics capabilities for all 8 datasets).
 - **Dead-Letter Remediation Framework**: [`docs/architecture/dead-letter-remediation-architecture.md`](../docs/architecture/dead-letter-remediation-architecture.md) (4-tier failure classification: `CRITICAL_MISSING_PRIMARY_KEY`, `DEPRECATED_SCHEMA_EVENT`, `SERDES_PARSE_FAILURE`, `OUT_OF_BOUNDS_ANOMALY`).
+
+---
+
+## Step 7: Cross-Cutting Monitoring & Observability Architecture
+
+The **HydroGrow Smart Farming Analytics Platform** enforces enterprise-grade, end-to-end observability across the entire hot-path and cold-path data lifecycle in Microsoft Fabric.
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                        CROSS-CUTTING MONITORING & OBSERVABILITY TOPOLOGY                         │
+├───────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                   │
+│  [ Hot Path: Eventstream Ingestion ] ──► [ KQL Observability Dashboard (17 Tiles) ]              │
+│       │                                       │                                                   │
+│       ▼                                       ▼                                                   │
+│  [ Fabric Activator Reflex Alerts ] ──► [ Automated Teams / Email / PagerDuty Notifications ]     │
+│       │                                       │                                                   │
+│       ▼                                       ▼                                                   │
+│  [ Medallion PySpark Pipelines ]    ──► [ fact_dataops_pipeline_log (Distributed Traces/Spans) ]  │
+│       │                                       │                                                   │
+│       ▼                                       ▼                                                   │
+│  [ Synapse Warehouse Replication ]  ──► [ Direct Lake Semantic Model / Governance Command Hub ]   │
+│                                                                                                   │
+└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1. Distributed Pipeline Tracing & Span Logging (`fact_dataops_pipeline_log`)
+
+All batch orchestrations (`Notebook_Batch_Master_Orchestrator`), incremental stream syncs (`Notebook_Incremental_Silver_Gold_Sync`), and dead-letter remediations (`Notebook_DeadLetter_Remediation`) emit standardized OpenTelemetry spans into `gold.fact_dataops_pipeline_log` (Lakehouse) and `dbo.fact_dataops_pipeline_log` (Synapse Warehouse).
+
+#### Standardized Span Schema
+| Field Name | Data Type | Description |
+| :--- | :--- | :--- |
+| **`TraceId`** | `VARCHAR(100)` | Unique distributed execution run identifier (e.g. `TRC-20260910-183000`). |
+| **`SpanId`** | `VARCHAR(50)` | Granular sub-task or stage identifier (e.g. `SPN-SILVER-ENV`, `SPN-GOLD-SCD2`). |
+| **`PipelineName`** | `VARCHAR(100)` | Master pipeline or orchestrator notebook name. |
+| **`StageName`** | `VARCHAR(100)` | Specific Medallion lifecycle stage (`Bronze_Ingest`, `Silver_ETL`, `Remediation`, `Gold_Star_Schema`, `Semantic_Refresh`). |
+| **`Component`** | `VARCHAR(100)` | Execution runtime engine (`Spark_Notebook`, `Fabric_DataPipeline`, `Power_BI_DirectLake`). |
+| **`ExecutionStatus`** | `VARCHAR(50)` | Status code (`SUCCESS`, `FAILED`, `DEGRADED`, `SKIPPED`). |
+| **`SourceRowCount`** | `BIGINT` | Input record count read during the span. |
+| **`TargetRowCount`** | `BIGINT` | Output record count written or merged into target Delta table. |
+| **`ExecutionDurationMs`** | `INT` | Total span execution elapsed time in milliseconds. |
+| **`ErrorMessage`** | `VARCHAR(1000)`| Detailed error stack trace or exception message (empty on success). |
+| **`Timestamp`** | `DATETIME2(6)` | UTC timestamp when the execution span concluded. |
+
+---
+
+### 2. Eventhouse Real-Time KQL DataOps Observability Dashboard
+
+The platform includes **`SmartFarming_DataOpsObservability_Dashboard`**, a 17-tile Real-Time KQL Dashboard organized into two specialized command pages:
+
+#### Page 1: ⚡ Real-Time Streaming & Ingress Observability
+1. **Streaming SLA Compliance Pulse (Gauge KPI)**: Rolling 60-minute ingress health percentage (<3.0s SLA).
+2. **Per-Stream Ingestion Lag SLA (Multi-stat)**: Ingestion velocity and average lag across all 5 operational streams.
+3. **Ingress Data Quality Scorecard (Bar Chart)**: Percentage of incoming records meeting strict schema validation.
+4. **Dead-Letter Queue Anomaly Rate (Column Chart)**: Ingress payload parsing exceptions and invalid schema events.
+5. **Multi-Stream Event Ingestion Velocity (Logarithmic Line Chart)**: Ingestion throughput (events/min) over time.
+6. **Processing Lag SLA Latency Trend (Time Series Chart)**: Per-stream lag latency tracked against the 3.0s SLA redline.
+7. **Ingress Schema Violation Audit Log (Interactive Table)**: Audit grid tracking null keys and data quality scores.
+8. **Raw Dead-Letter Exception Payload Log (Table Drilldown)**: Live payload strings and exception codes.
+
+#### Page 2: 📊 Medallion Pipeline & Platform SLA Observability
+9. **Pipeline Run Success Rate (Card KPI)**: 7-day rolling batch execution success percentage.
+10. **Total Volume Processed (Card KPI)**: Total historical rows transformed across Medallion layers.
+11. **End-to-End Batch SLA Duration (Card KPI)**: Average runtime duration per batch run.
+12. **Ingress Defect Rate (Card KPI)**: Defect percentage against the <0.1% SLA target.
+13. **Stage Execution Duration Breakdown (Column Chart)**: Execution duration waterfall by Medallion stage.
+14. **Volume Processed per Stage (Bar Chart)**: Record throughput volume processed across Bronze, Silver, and Gold.
+15. **Streaming Ingestion Lag Percentiles (Column Chart)**: P50, P95, P99, and Max latency percentiles per stream.
+16. **Medallion Pipeline Trace & Execution History (Table)**: Live trace execution history query on `DataOpsPipelineLog`.
+17. **Data Quality Gate & SLA Compliance Audit (Table)**: Real-time defect rates and SLA compliance status per table.
+
+---
+
+### 3. Fabric Activator Reflex Alert Rules & Action Invocations
+
+**`SmartFarming_Activator_Alerts`** defines 10 automated reflex alert rules and 2 event-driven pipeline trigger bindings:
+
+| Alert Rule Name | Target Persona | Condition / SLA Threshold | Notification Channel |
+| :--- | :--- | :--- | :--- |
+| **Executive Facility Emergency** | Executive Operations Lead | Facility Health < 65.0 or Critical Alerts > 0 | Teams: Operations Emergency Escalation |
+| **Facility Power Surge SLA** | Energy Steward | Total Power Consumption > 300 kW | Teams: Energy & Power Monitoring |
+| **Critical Equipment Failure** | Maintenance Supervisor | Risk Score > 75.0% or Alert Required = true | PagerDuty: Emergency Work Order |
+| **Micro-Climate Instability** | Crop Agronomist | Stability Score < 70.0% or Temp Drift > 3.0°C | Teams: Agronomy Action |
+| **Crop Biological Stress Spike** | Chief Agronomist | Biological Stress > 40.0% or Health < 50.0 | Teams: Crop Health Emergency |
+| **Work Order SLA Breach** | Maintenance Lead | Work Order Resolution Time > 120 Minutes | Teams: Maintenance Dispatch |
+| **Stream Ingestion Lag Breach** | DataOps Lead | Average Ingestion Lag > 3.0s SLA Limit | PagerDuty: Stream SLA Incident |
+| **Ingress Data Quality Breach** | Data Quality Steward | Data Quality Score < 98.0% or Null PKs > 0 | Teams: Ingress DQ Governance Alert |
+| **Dead-Letter Burst Rate** | Data Engineer | Dead-Letter Event Count > 5 Events / 15m | Teams: DataOps Incidents |
+| **Missing Primary Key Ingress** | Edge IoT Engineer | Exception Status = `CRITICAL_MISSING_PRIMARY_KEY` | PagerDuty: Edge Ingress Emergency |
+| **Trigger_On_Bootstrap_FileUpload** | Data Pipeline Orchestration | OneLake FileCreated under `/Files/bootstrap_history` | Automated Batch Pipeline Trigger |
+| **Trigger_On_LiveStream_Ingress** | Data Pipeline Orchestration | Live stream event count >= 200 within 15m | Automated Incremental Stream Sync Trigger |
+
+---
+
+### 4. Step 7 Verification & Automated Testing
+
+Step 7 is verified through the automated integration test suite:
+```powershell
+# Run Step 7 Observability Integration Tests
+python -m unittest tests/integration/test_step7_observability.py -v
+
+# Run Full Simulator & Verification Pipeline
+python tests/integration/verify_pipeline.py
+```

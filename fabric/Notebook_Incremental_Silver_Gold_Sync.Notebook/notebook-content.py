@@ -1289,17 +1289,21 @@ span_df = spark.createDataFrame([(
 ])
 
 # Idempotent MERGE into gold.fact_dataops_pipeline_log
-delta_log = DeltaTable.forName(spark, "gold.fact_dataops_pipeline_log")
-(
-    delta_log.alias("target")
-    .merge(
-        span_df.alias("source"),
-        "target.TraceId = source.TraceId AND target.StageName = source.StageName"
+log_table = "gold.fact_dataops_pipeline_log"
+if not spark.catalog.tableExists(log_table):
+    span_df.write.format("delta").mode("append").saveAsTable(log_table)
+else:
+    delta_log = DeltaTable.forName(spark, log_table)
+    (
+        delta_log.alias("target")
+        .merge(
+            span_df.alias("source"),
+            "target.TraceId = source.TraceId AND target.StageName = source.StageName"
+        )
+        .whenMatchedUpdateAll()
+        .whenNotMatchedInsertAll()
+        .execute()
     )
-    .whenMatchedUpdateAll()
-    .whenNotMatchedInsertAll()
-    .execute()
-)
 
 print("==============================================================================")
 print(f"INCREMENTAL MICRO-BATCH COMPLETE: Processed {total_processed_rows:,} records across all 11 Silver & 13 Gold tables in {duration_ms/1000.0:.2f}s")

@@ -69,7 +69,7 @@ class CropTelemetryGenerator(BaseTelemetryGenerator):
         self._environment_manager = environment_manager
         self._crop_registry = crop_registry
         self._crop_state_manager = crop_state_manager
-        self._cycle_counter = 0
+        self._cycle_counter = 11
 
     def generate(
         self,

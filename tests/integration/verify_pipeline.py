@@ -640,7 +640,7 @@ def verify_crop_state_manager(
             f"Unexpected health score for {state.crop_type}"
         )
 
-    print("✓ CropStateManager verification passed.")
+    print("[PASS] CropStateManager verification passed.")
 
     simulation_cycles = 5000
 
