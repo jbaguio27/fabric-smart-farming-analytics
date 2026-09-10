@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "d8803d06b40f0c9d4cac",
   "position": {
-    "x": 120,
+    "x": 115,
     "y": 120,
     "z": 2000,
     "height": 90,
-    "width": 390,
+    "width": 395,
     "tabOrder": 2000
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "fact_crop_yield"
                     }
                   },
-                  "Property": "Avg Daily Growth Rate"
+                  "Property": "Avg Daily Growth Rate (g/day)"
                 }
               },
-              "queryRef": "fact_crop_yield.Avg Daily Growth Rate",
-              "nativeQueryRef": "Avg Daily Growth Rate"
+              "queryRef": "fact_crop_yield.Avg Daily Growth Rate (g/day)",
+              "nativeQueryRef": "Avg Daily Growth Rate (g/day)"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "fact_crop_yield"
                   }
                 },
-                "Property": "Avg Daily Growth Rate"
+                "Property": "Avg Daily Growth Rate (g/day)"
               }
             },
             "direction": "Descending"
@@ -73,9 +73,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
                     }
                   }
                 }
@@ -84,6 +83,27 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Avg Daily Growth Rate'"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_crop_yield.Avg Daily Growth Rate (g/day)"
           }
         }
       ],
@@ -145,7 +165,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "26D"
+                  "Value": "24D"
                 }
               }
             },
@@ -170,6 +190,20 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "26D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_crop_yield.Avg Daily Growth Rate (g/day)"
           }
         }
       ]

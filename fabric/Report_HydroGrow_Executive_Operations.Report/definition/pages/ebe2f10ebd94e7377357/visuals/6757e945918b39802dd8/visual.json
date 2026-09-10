@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "6757e945918b39802dd8",
   "position": {
-    "x": 1350,
+    "x": 1390,
     "y": 120,
     "z": 5000,
     "height": 90,
-    "width": 390,
+    "width": 415,
     "tabOrder": 5000
   },
   "visual": {
@@ -20,14 +20,14 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_lighting_dli_daily"
+                      "Entity": "fact_crop_yield"
                     }
                   },
-                  "Property": "Avg DLI"
+                  "Property": "Grade A Ratio %"
                 }
               },
-              "queryRef": "fact_lighting_dli_daily.Avg DLI",
-              "nativeQueryRef": "Avg DLI"
+              "queryRef": "fact_crop_yield.Grade A Ratio %",
+              "nativeQueryRef": "Grade A Ratio %"
             }
           ]
         }
@@ -39,10 +39,10 @@
               "Measure": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "fact_lighting_dli_daily"
+                    "Entity": "fact_crop_yield"
                   }
                 },
-                "Property": "Avg DLI"
+                "Property": "Grade A Ratio %"
               }
             },
             "direction": "Descending"
@@ -123,6 +123,38 @@
           "selector": {
             "id": "default"
           }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Grade A Harvest Quality'"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Semibold'', wf_segoe-ui_semibold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_crop_yield.Grade A Ratio %"
+          }
         }
       ],
       "value": [
@@ -163,6 +195,24 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#DDA15E'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_crop_yield.Grade A Ratio %"
           }
         }
       ]

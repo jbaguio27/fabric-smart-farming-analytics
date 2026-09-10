@@ -3,10 +3,10 @@
   "name": "2426d5bafc17efcb1a64",
   "position": {
     "x": 115,
-    "y": 26.25,
+    "y": 29,
     "z": 0,
-    "height": 58.75,
-    "width": 700,
+    "height": 61,
+    "width": 620,
     "tabOrder": 0
   },
   "visual": {
@@ -22,9 +22,9 @@
                     "value": "HYDROGROW SMART FARMING",
                     "textStyle": {
                       "fontWeight": "bold",
-                      "fontFamily": "Segoe UI Semibold",
+                      "fontFamily": "Segoe (Bold)",
                       "fontSize": "18pt",
-                      "color": "#ffffff"
+                      "color": "#f1faee"
                     }
                   }
                 ]
@@ -32,10 +32,10 @@
               {
                 "textRuns": [
                   {
-                    "value": "Equipment SLA & Data Ops Governance | Asset Health, Maintenance & Dead-Letter Alerts",
+                    "value": "Equipment Health & Maintenance SLA Reliability | Asset Up-Time & Governance",
                     "textStyle": {
                       "fontSize": "10pt",
-                      "color": "#5bc0eb"
+                      "color": "#a8dadc"
                     }
                   }
                 ]

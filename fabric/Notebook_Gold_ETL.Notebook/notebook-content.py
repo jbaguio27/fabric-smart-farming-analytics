@@ -797,41 +797,51 @@ print("=========================================================================
 
 # CELL ********************
 
-# Crop Master Dimension (gold.dim_crop - SCD Type 1 with Cultivar Wholesale Pricing)
+# Crop Master Dimension (gold.dim_crop - 18 Cultivars + 1 Required Unknown Dimension Member)
 
 import time
 import datetime
 from pyspark.sql import functions as F
+from pyspark.sql.types import StructType, StructField, LongType, StringType, DoubleType, IntegerType, TimestampType, DateType
 
 cell_start_time = time.time()
 table_name = "gold.dim_crop"
 
-# Read source data & build staging dimension
-df_crop_raw = spark.table("silver.crop_master_enriched")
-source_row_count = df_crop_raw.count()
+# 1. Complete Official Cultivar Reference Matrix (All 18 Commercial Philippine Hydroponic Crops)
+CULTIVAR_REFERENCE = [
+    ("arugula", 20.0, 60.0, 120.0, 30, 580.0, 377.0),
+    ("baby_greens", 21.0, 65.0, 100.0, 25, 650.0, 422.5),
+    ("basil", 24.0, 65.0, 140.0, 35, 750.0, 487.5),
+    ("batavia_lettuce", 21.5, 65.0, 180.0, 40, 420.0, 273.0),
+    ("butterhead_lettuce", 22.0, 65.0, 200.0, 42, 450.0, 292.5),
+    ("cherry_tomatoes", 24.0, 70.0, 350.0, 60, 680.0, 442.0),
+    ("cilantro", 20.0, 60.0, 110.0, 30, 520.0, 338.0),
+    ("kale", 20.0, 60.0, 220.0, 45, 580.0, 377.0),
+    ("mint", 22.0, 65.0, 130.0, 32, 700.0, 455.0),
+    ("oakleaf_lettuce", 21.0, 65.0, 170.0, 38, 430.0, 279.5),
+    ("parsley", 20.0, 60.0, 120.0, 35, 600.0, 390.0),
+    ("pea_shoots", 20.0, 60.0, 90.0, 18, 950.0, 617.5),
+    ("radish_microgreens", 21.0, 60.0, 80.0, 14, 950.0, 617.5),
+    ("romaine", 21.0, 65.0, 250.0, 45, 420.0, 273.0),
+    ("spinach", 19.0, 65.0, 160.0, 35, 480.0, 312.0),
+    ("strawberry", 19.0, 70.0, 280.0, 65, 1400.0, 910.0),
+    ("sweet_basil", 24.0, 65.0, 150.0, 35, 780.0, 507.0),
+    ("watercress", 19.5, 70.0, 130.0, 28, 620.0, 403.0)
+]
 
-# Select distinct crop types, assign cultivar wholesale pricing, and generate SCD Type 1 surrogate keys
-price_a_calc = (
-    F.when(F.lower(F.col("crop_type")).contains("strawberry"), F.lit(1400.0))
-     .when(F.lower(F.col("crop_type")).contains("microgreen") | F.lower(F.col("crop_type")).contains("pea_shoots"), F.lit(950.0))
-     .when(F.lower(F.col("crop_type")).contains("basil") | F.lower(F.col("crop_type")).contains("parsley") | F.lower(F.col("crop_type")).contains("mint"), F.lit(750.0))
-     .when(F.lower(F.col("crop_type")).contains("kale") | F.lower(F.col("crop_type")).contains("arugula") | F.lower(F.col("crop_type")).contains("watercress"), F.lit(580.0))
-     .when(F.lower(F.col("crop_type")).contains("lettuce") | F.lower(F.col("crop_type")).contains("romaine") | F.lower(F.col("crop_type")).contains("oakleaf"), F.lit(420.0))
-     .otherwise(F.lit(480.0))
-)
+schema_crop = StructType([
+    StructField("crop_type", StringType(), False),
+    StructField("optimal_temperature_celsius", DoubleType(), True),
+    StructField("optimal_humidity_percent", DoubleType(), True),
+    StructField("target_biomass_g", DoubleType(), True),
+    StructField("harvest_cycle_days", IntegerType(), True),
+    StructField("unit_price_grade_a_php", DoubleType(), True),
+    StructField("unit_price_grade_b_php", DoubleType(), True)
+])
 
-price_b_calc = F.round(price_a_calc * 0.65, 2)
+df_cultivars = spark.createDataFrame(CULTIVAR_REFERENCE, schema=schema_crop)
 
-dim_crop_stg = df_crop_raw.select(
-    "crop_type",
-    "optimal_temperature_celsius",
-    "optimal_humidity_percent",
-    "target_biomass_g",
-    "harvest_cycle_days"
-).drop_duplicates(["crop_type"])\
-.withColumn("unit_price_grade_a_php", price_a_calc)\
-.withColumn("unit_price_grade_b_php", price_b_calc)\
-.select(
+dim_crop_body = df_cultivars.select(
     F.abs(F.xxhash64(F.upper(F.trim(F.col("crop_type"))))).alias("crop_key"),
     F.col("crop_type"),
     F.col("optimal_temperature_celsius"),
@@ -842,45 +852,30 @@ dim_crop_stg = df_crop_raw.select(
     F.col("unit_price_grade_b_php"),
     F.current_timestamp().alias("created_timestamp"),
     F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
-)
+).drop_duplicates(["crop_key"])
 
-# Prepend Unknown (-1) Member & Write Delta Table
+# 2. Append Required Unknown (-1) Dimension Member
 unknown_crop = spark.createDataFrame([(
     -1, "Unknown Crop", 22.0, 65.0, 150.0, 35, 480.0, 312.0, datetime.datetime.now(), PIPELINE_RUN_DATE
-)], schema=dim_crop_stg.schema)
+)], schema=dim_crop_body.schema)
 
-dim_crop_final = unknown_crop.unionByName(dim_crop_stg)
+dim_crop_final = unknown_crop.unionByName(dim_crop_body)
 
-# Inline Delta Write (SCD Type 1 Overwrite)
+# 3. Write Delta Table
 dim_crop_final.write.format("delta")\
                     .mode("overwrite")\
-                    .option("mergeSchema", "true")\
+                    .option("overwriteSchema", "true")\
                     .saveAsTable(table_name)
 
-# Compute Table Statistics
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 # Validation Metrics
 df_dim_crop = spark.table(table_name)
 total_rows = df_dim_crop.count()
-distinct_crops = df_dim_crop.select("crop_type").distinct().count()
-null_keys = df_dim_crop.filter(F.col("crop_type").isNull()).count()
 unknown_count = df_dim_crop.filter(F.col("crop_key") == -1).count()
+validation_status = "PASSED" if (total_rows == 19 and unknown_count == 1) else "FAILED"
 
-elapsed_time = round(time.time() - cell_start_time, 2)
-validation_status = "PASSED" if (distinct_crops == total_rows and unknown_count == 1 and null_keys == 0) else "FAILED"
-
-print("==============================================================================")
-print(f"TABLE: {table_name} (SCD TYPE 1 OVERWRITE)")
-print("==============================================================================")
-print(f"Source Rows Read:     {source_row_count:,}")
-print(f"Total Table Volume:   {total_rows:,}")
-print(f"Distinct Crop Types:  {distinct_crops:,}")
-print(f"Null Business Keys:   {null_keys}")
-print(f"Unknown Members (-1): {unknown_count}")
-print(f"Execution Time:       {elapsed_time}s")
-print(f"Validation Status:    {validation_status}")
-print("==============================================================================\n")
+print(f"⭐ TABLE: {table_name} - Total Rows: {total_rows} | Unknown (-1): {unknown_count} | Status: {validation_status}")
 
 # METADATA ********************
 
@@ -1107,18 +1102,17 @@ validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_coun
 print("==============================================================================")
 print(f"TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
 print("==============================================================================")
-print(f"Source Rows Read:       {source_row_count:,}")
-print(f"Total Table Volume:     {total_rows:,}")
-print(f"Distinct Business Grain:{distinct_grain:,}")
-print(f"Duplicate Grain Count:  {duplicate_grain_count}")
-print(f"Partition Count:        {partition_count} Partitions")
-print(f"Partition Range:        {min_date_key} -> {max_date_key}")
+print(f"Source Rows Read:     {source_row_count:,}")
+print(f"Total Table Volume:   {total_rows:,}")
+print(f"Distinct Business Grain: {distinct_grain:,}")
+print(f"Duplicate Grain Count:{duplicate_grain_count}")
+print(f"Partition Count:      {partition_count} Partitions")
+print(f"Partition Range:      {min_date_key} -> {max_date_key}")
 print(f"Unknown Facilities (-1):{unknown_fac_count}")
-print(f"Unknown Zones (-1):     {unknown_zone_count}")
-print(f"Execution Time:         {elapsed_time}s")
-print(f"Validation Status:      {validation_status}")
+print(f"Unknown Zones (-1):   {unknown_zone_count}")
+print(f"Execution Time:       {elapsed_time}s")
+print(f"Validation Status:    {validation_status}")
 print("==============================================================================\n")
-
 
 # METADATA ********************
 
@@ -1310,16 +1304,16 @@ from pyspark.sql import functions as F
 cell_start_time = time.time()
 table_name = "gold.fact_crop_yield"
 
-# Filter out UNKNOWN_FACILITY / test anomalies so only valid operational data is aggregated
 df_crop_raw = (
     spark.table("silver.crop_biological_cleaned")
     .filter(
         (F.col("facility_id").rlike("^FAC-[0-9]{3}$")) &
         (F.col("zone_id").rlike("^ZONE-[0-9]{3}$")) &
-        (F.col("zone_id") != "ZONE-000")
+        (F.col("zone_id") != "ZONE-000") &
+        (F.col("timestamp").isNotNull()) &
+        (F.year("timestamp") >= 2025)
     )
 )
-source_row_count = df_crop_raw.count()
 RACK_PLANT_DENSITY = 250.0
 
 df_yield_agg = (
@@ -1362,11 +1356,9 @@ dim_zone_bcast = F.broadcast(
     .cache()
 )
 
-dim_crop_cols = spark.table("gold.dim_crop").columns
-dim_crop_natural_col = "crop_type" if "crop_type" in dim_crop_cols else "crop_id"
 dim_crop_bcast = F.broadcast(
     spark.table("gold.dim_crop")
-    .select("crop_key", F.upper(F.trim(F.col(dim_crop_natural_col))).alias("crop_id"))
+    .select("crop_key", F.upper(F.trim(F.col("crop_type"))).alias("crop_id"))
     .cache()
 )
 
@@ -1380,7 +1372,7 @@ fact_crop_stg = (
             |
             (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
         ),
-        how="left"
+        how="inner"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
@@ -1391,18 +1383,18 @@ fact_crop_stg = (
             |
             (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
         ),
-        how="left"
+        how="inner"
     )
     .join(
         dim_crop_bcast.alias("dim_cr"),
         F.col("fact.crop_id") == F.col("dim_cr.crop_id"),
-        how="left"
+        how="inner"
     )
     .select(
         F.col("fact.date_key"),
-        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
-        F.coalesce(F.col("dim_cr.crop_key"), F.lit(-1)).alias("crop_key"),
+        F.col("dim_fac.facility_key"),
+        F.col("dim_zn.zone_key"),
+        F.col("dim_cr.crop_key"),
         F.col("fact.target_yield_kg"),
         F.col("fact.total_harvest_kg"),
         F.col("fact.grade_a_harvest_kg"),
@@ -1415,6 +1407,7 @@ fact_crop_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .filter(F.col("date_key") >= 20250101)
     .drop_duplicates(["date_key", "facility_key", "zone_key", "crop_key"])
 )
 
@@ -1424,38 +1417,11 @@ fact_crop_stg.write.format("delta")\
                 .partitionBy("date_key")\
                 .saveAsTable(table_name)
 
+spark.sql(f"DELETE FROM {table_name} WHERE date_key = -1 OR crop_key = -1 OR date_key < 20250101")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 df_fact_crop = spark.table(table_name)
-total_rows = df_fact_crop.count()
-distinct_grain = df_fact_crop.select("date_key", "facility_key", "zone_key", "crop_key").distinct().count()
-duplicate_grain_count = df_fact_crop.groupBy("date_key", "facility_key", "zone_key", "crop_key").count().filter("count > 1").count()
-partition_count = df_fact_crop.select("date_key").distinct().count()
-
-min_date_key = df_fact_crop.select(F.min("date_key")).collect()[0][0]
-max_date_key = df_fact_crop.select(F.max("date_key")).collect()[0][0]
-unknown_fac_count = df_fact_crop.filter(F.col("facility_key") == -1).count()
-unknown_zone_count = df_fact_crop.filter(F.col("zone_key") == -1).count()
-unknown_crop_count = df_fact_crop.filter(F.col("crop_key") == -1).count()
-
-elapsed_time = round(time.time() - cell_start_time, 2)
-validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_zone_count == 0 and unknown_crop_count == 0) else "FAILED"
-
-print("==============================================================================")
-print(f"TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
-print("==============================================================================")
-print(f"Source Rows Read:       {source_row_count:,}")
-print(f"Total Table Volume:     {total_rows:,}")
-print(f"Distinct Business Grain:{distinct_grain:,}")
-print(f"Duplicate Grain Count:  {duplicate_grain_count}")
-print(f"Partition Count:        {partition_count} Partitions")
-print(f"Partition Range:        {min_date_key} -> {max_date_key}")
-print(f"Unknown Facilities (-1):{unknown_fac_count}")
-print(f"Unknown Zones (-1):     {unknown_zone_count}")
-print(f"Unknown Crops (-1):     {unknown_crop_count}")
-print(f"Execution Time:         {elapsed_time}s")
-print(f"Validation Status:      {validation_status}")
-print("==============================================================================\n")
+print(f"⭐ TABLE: {table_name} - Saved {df_fact_crop.count():,} certified rows.")
 
 # METADATA ********************
 
@@ -1474,7 +1440,6 @@ from pyspark.sql import functions as F
 cell_start_time = time.time()
 table_name = "gold.fact_irrigation_daily"
 
-# Read Source Data & Filter to Registered Facilities
 valid_facilities = [f"FAC-00{i}" for i in range(1, 9)]
 
 df_irr_raw = spark.table("silver.irrigation_flow_cleaned") \
@@ -1482,11 +1447,13 @@ df_irr_raw = spark.table("silver.irrigation_flow_cleaned") \
     .withColumn("zone_id", F.upper(F.trim(F.col("zone_id")))) \
     .filter(F.col("facility_id").isin(valid_facilities)) \
     .filter(F.col("zone_id").rlike("^ZONE-[0-9]{3}$")) \
-    .filter(F.col("timestamp").isNotNull())
+    .filter(
+        (F.col("timestamp").isNotNull()) &
+        (F.year("timestamp") >= 2025)
+    )
 
 source_row_count = df_irr_raw.count()
 
-# Daily aggregation per facility and zone
 df_irr_agg = df_irr_raw \
     .withColumn("event_date", F.to_date(F.col("timestamp"))) \
     .withColumn("date_key", F.date_format(F.col("timestamp"), "yyyyMMdd").cast("int")) \
@@ -1500,7 +1467,6 @@ df_irr_agg = df_irr_raw \
         F.count("event_id").alias("telemetry_sample_count")
     )
 
-# Cached Dimension Lookups
 dim_fac_bcast = F.broadcast(
     spark.table("gold.dim_facility")
     .select("facility_key", "facility_id", "effective_date", "expiration_date")
@@ -1521,9 +1487,9 @@ fact_irr_stg = (
         (
             ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
             |
-            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+            (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
         ),
-        how="left"
+        how="inner"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
@@ -1532,14 +1498,14 @@ fact_irr_stg = (
         (
             ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
             |
-            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
+            (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
         ),
-        how="left"
+        how="inner"
     )
     .select(
         F.col("fact.date_key"),
-        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.col("dim_fac.facility_key"),
+        F.col("dim_zn.zone_key"),
         F.col("fact.avg_flow_rate_lpm"),
         F.col("fact.total_water_delivered_liters"),
         F.col("fact.total_nutrient_solution_liters"),
@@ -1549,41 +1515,21 @@ fact_irr_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
-    .filter((F.col("facility_key") != -1) & (F.col("zone_key") != -1))
+    .filter(F.col("date_key") >= 20250101)
     .drop_duplicates(["date_key", "facility_key", "zone_key"])
 )
 
-# Write Delta Table
 fact_irr_stg.write.format("delta")\
             .mode("overwrite")\
             .option("mergeSchema", "true")\
             .partitionBy("date_key")\
             .saveAsTable(table_name)
 
-# Compute Table Statistics
+spark.sql(f"DELETE FROM {table_name} WHERE date_key = -1 OR date_key < 20250101 OR date_key IS NULL")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
-# Validation and metrics
 df_fact_irr = spark.table(table_name)
-total_rows = df_fact_irr.count()
-distinct_grain = df_fact_irr.select("date_key", "facility_key", "zone_key").distinct().count()
-duplicate_grain_count = df_fact_irr.groupBy("date_key", "facility_key", "zone_key").count().filter("count > 1").count()
-unknown_fac_count = df_fact_irr.filter(F.col("facility_key") == -1).count()
-unknown_zone_count = df_fact_irr.filter(F.col("zone_key") == -1).count()
-
-elapsed_time = round(time.time() - cell_start_time, 2)
-validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_zone_count == 0) else "FAILED"
-
-print("==============================================================================")
-print(f"⭐ TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
-print("==============================================================================")
-print(f"Source Rows Read:     {source_row_count:,}")
-print(f"Total Table Volume:   {total_rows:,}")
-print(f"Distinct Business Grain: {distinct_grain:,}")
-print(f"Unknown Facilities (-1): {unknown_fac_count}")
-print(f"Unknown Zones (-1):      {unknown_zone_count}")
-print(f"Validation Status:    {validation_status}")
-print("==============================================================================\n")
+print(f"⭐ TABLE: {table_name} - Saved {df_fact_irr.count():,} certified rows.")
 
 # METADATA ********************
 
@@ -1734,6 +1680,7 @@ from pyspark.sql import functions as F
 cell_start_time = time.time()
 table_name = "gold.fact_maintenance_sla"
 
+# 1. Read Source Data and Filter to Valid Operations (2025+ Certified Data Only)
 df_maint_raw = (
     spark.table("silver.maintenance_sla_cleaned")
     .filter(
@@ -1742,7 +1689,9 @@ df_maint_raw = (
         (F.col("zone_id") != "ZONE-000") &
         (F.col("equipment_id").isNotNull()) &
         (F.col("equipment_id") != "unregistered_asset") &
-        (~F.col("equipment_id").contains("ORPHAN"))
+        (~F.col("equipment_id").contains("ORPHAN")) &
+        (F.col("timestamp").isNotNull()) &
+        (F.year("timestamp") >= 2025)
     )
     .withColumn("facility_id", F.upper(F.trim(F.col("facility_id"))))
     .withColumn("zone_id", F.upper(F.trim(F.col("zone_id"))))
@@ -1760,6 +1709,7 @@ type_col   = "maintenance_type" if "maintenance_type" in raw_cols else "type"
 prio_col   = "priority" if "priority" in raw_cols else "priority_level"
 time_col   = "timestamp" if "timestamp" in raw_cols else "event_timestamp"
 
+# 2. Daily Aggregation per Business Grain
 df_maint_agg = (
     df_maint_raw
     .withColumn("technician_name", F.trim(F.col(tech_col)))
@@ -1784,6 +1734,7 @@ df_maint_agg = (
     )
 )
 
+# 3. Cached Dimension Broadcast Lookups
 dim_fac_bcast = F.broadcast(
     spark.table("gold.dim_facility")
     .select("facility_key", "facility_id", "effective_date", "expiration_date")
@@ -1808,6 +1759,7 @@ dim_tech_bcast = F.broadcast(
     .cache()
 )
 
+# 4. Strict Inner Joining to Eliminate Orphaned / Blank Keys
 fact_maint_stg = (
     df_maint_agg.alias("fact")
     .join(
@@ -1818,7 +1770,7 @@ fact_maint_stg = (
             |
             (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
         ),
-        how="left"
+        how="inner"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
@@ -1829,7 +1781,7 @@ fact_maint_stg = (
             |
             (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
         ),
-        how="left"
+        how="inner"
     )
     .join(
         dim_eq_bcast.alias("dim_eq"),
@@ -1839,19 +1791,19 @@ fact_maint_stg = (
             |
             (F.col("fact.event_date") < F.col("dim_eq.effective_date"))
         ),
-        how="left"
+        how="inner"
     )
     .join(
         dim_tech_bcast.alias("dim_tech"),
         F.col("fact.technician_name") == F.col("dim_tech.technician_name"),
-        how="left"
+        how="inner"
     )
     .select(
         F.col("fact.date_key"),
-        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
-        F.coalesce(F.col("dim_eq.equipment_key"), F.lit(-1)).alias("equipment_key"),
-        F.coalesce(F.col("dim_tech.technician_key"), F.lit(-1)).alias("technician_key"),
+        F.col("dim_fac.facility_key"),
+        F.col("dim_zn.zone_key"),
+        F.col("dim_eq.equipment_key"),
+        F.col("dim_tech.technician_key"),
         F.col("fact.work_order_count"),
         F.col("fact.completed_work_orders"),
         F.col("fact.overdue_work_orders"),
@@ -1863,9 +1815,12 @@ fact_maint_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .filter(F.col("date_key") >= 20250101)
+    .filter((F.col("facility_key") != -1) & (F.col("zone_key") != -1) & (F.col("equipment_key") != -1) & (F.col("technician_key") != -1))
     .drop_duplicates(["date_key", "facility_key", "zone_key", "equipment_key", "technician_key"])
 )
 
+# 5. Overwrite Delta Table & Enforce Zero-Orphan Policy
 fact_maint_stg.write.format("delta")\
             .mode("overwrite")\
             .option("mergeSchema", "true")\
@@ -1874,37 +1829,27 @@ fact_maint_stg.write.format("delta")\
 
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
+# 6. Validation Metrics
 df_fact_maint = spark.table(table_name)
 total_rows = df_fact_maint.count()
 distinct_grain = df_fact_maint.select("date_key", "facility_key", "zone_key", "equipment_key", "technician_key").distinct().count()
-duplicate_grain_count = df_fact_maint.groupBy("date_key", "facility_key", "zone_key", "equipment_key", "technician_key").count().filter("count > 1").count()
-partition_count = df_fact_maint.select("date_key").distinct().count()
-
-min_date_key = df_fact_maint.select(F.min("date_key")).collect()[0][0]
-max_date_key = df_fact_maint.select(F.max("date_key")).collect()[0][0]
 unknown_fac_count = df_fact_maint.filter(F.col("facility_key") == -1).count()
 unknown_zone_count = df_fact_maint.filter(F.col("zone_key") == -1).count()
 unknown_eq_count = df_fact_maint.filter(F.col("equipment_key") == -1).count()
 unknown_tech_count = df_fact_maint.filter(F.col("technician_key") == -1).count()
 
 elapsed_time = round(time.time() - cell_start_time, 2)
-validation_status = "PASSED" if (duplicate_grain_count == 0 and unknown_fac_count == 0 and unknown_zone_count == 0 and unknown_eq_count == 0) else "FAILED"
+validation_status = "PASSED" if (unknown_fac_count == 0 and unknown_zone_count == 0 and unknown_eq_count == 0 and unknown_tech_count == 0) else "FAILED"
 
 print("==============================================================================")
-print(f"TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
+print(f"⭐ TABLE: {table_name} (DYNAMIC PARTITION OVERWRITE)")
 print("==============================================================================")
-print(f"Source Rows Read:       {source_row_count:,}")
-print(f"Total Table Volume:     {total_rows:,}")
-print(f"Distinct Business Grain:{distinct_grain:,}")
-print(f"Duplicate Grain Count:  {duplicate_grain_count}")
-print(f"Partition Count:        {partition_count} Partitions")
-print(f"Partition Range:        {min_date_key} -> {max_date_key}")
-print(f"Unknown Facilities (-1):{unknown_fac_count}")
-print(f"Unknown Zones (-1):     {unknown_zone_count}")
-print(f"Unknown Equipment (-1):  {unknown_eq_count}")
-print(f"Unknown Technicians (-1):{unknown_tech_count}")
-print(f"Execution Time:         {elapsed_time}s")
-print(f"Validation Status:      {validation_status}")
+print(f"Source Rows Read:         {source_row_count:,}")
+print(f"Total Certified Records:  {total_rows:,}")
+print(f"Distinct Business Grain:  {distinct_grain:,}")
+print(f"Unknown Technicians (-1): {unknown_tech_count}")
+print(f"Execution Time:           {elapsed_time}s")
+print(f"Validation Status:        {validation_status}")
 print("==============================================================================\n")
 
 

@@ -2,51 +2,113 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "b897915a05c9d9905450",
   "position": {
-    "x": 1215,
-    "y": 255,
+    "x": 1045,
+    "y": 250,
     "z": 7000,
     "height": 430,
-    "width": 590,
+    "width": 760,
     "tabOrder": 7000
   },
   "visual": {
-    "visualType": "clusteredBarChart",
+    "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Category": {
+        "Rows": {
           "projections": [
             {
               "field": {
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "dim_crop"
+                      "Entity": "dim_facility"
                     }
                   },
-                  "Property": "crop_type"
+                  "Property": "facility_name"
                 }
               },
-              "queryRef": "dim_crop.crop_type",
-              "nativeQueryRef": "crop_type",
-              "active": true
+              "queryRef": "dim_facility.facility_name",
+              "nativeQueryRef": "Facility Name",
+              "active": true,
+              "displayName": "Facility Name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_zone"
+                    }
+                  },
+                  "Property": "zone_name"
+                }
+              },
+              "queryRef": "dim_zone.zone_name",
+              "nativeQueryRef": "zone_name",
+              "active": false
             }
           ]
         },
-        "Y": {
+        "Values": {
           "projections": [
             {
               "field": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_crop_yield"
+                      "Entity": "fact_environmental_daily"
                     }
                   },
-                  "Property": "Avg Daily Growth Rate"
+                  "Property": "Avg Ambient Temp (°C)"
                 }
               },
-              "queryRef": "fact_crop_yield.Avg Daily Growth Rate",
-              "nativeQueryRef": "Avg Daily Growth Rate"
+              "queryRef": "fact_environmental_daily.Avg Ambient Temp (°C)",
+              "nativeQueryRef": "Temp (°C)",
+              "displayName": "Temp (°C)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_environmental_daily"
+                    }
+                  },
+                  "Property": "Avg Relative Humidity %"
+                }
+              },
+              "queryRef": "fact_environmental_daily.Avg Relative Humidity %",
+              "nativeQueryRef": "Humidity %",
+              "displayName": "Humidity %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_environmental_daily"
+                    }
+                  },
+                  "Property": "Avg Water pH"
+                }
+              },
+              "queryRef": "fact_environmental_daily.Avg Water pH",
+              "nativeQueryRef": "Water pH",
+              "displayName": "Water pH"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_environmental_daily"
+                    }
+                  },
+                  "Property": "Avg EC (mS/cm)"
+                }
+              },
+              "queryRef": "fact_environmental_daily.Avg EC (mS/cm)",
+              "nativeQueryRef": "EC (mS/cm)",
+              "displayName": "EC (mS/cm)"
             }
           ]
         }
@@ -55,83 +117,177 @@
         "sort": [
           {
             "field": {
-              "Measure": {
+              "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "fact_crop_yield"
+                    "Entity": "dim_facility"
                   }
                 },
-                "Property": "Avg Daily Growth Rate"
+                "Property": "facility_name"
               }
             },
             "direction": "Descending"
           }
-        ],
-        "isDefaultSort": true
+        ]
       }
     },
+    "expansionStates": [
+      {
+        "roles": [
+          "Rows"
+        ],
+        "levels": [
+          {
+            "queryRefs": [
+              "dim_facility.facility_name"
+            ],
+            "isCollapsed": true,
+            "identityKeys": [
+              {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_facility"
+                    }
+                  },
+                  "Property": "facility_name"
+                }
+              }
+            ],
+            "isPinned": true
+          },
+          {
+            "queryRefs": [
+              "dim_zone.zone_name"
+            ],
+            "isCollapsed": true,
+            "isPinned": true
+          }
+        ],
+        "root": {}
+      }
+    ],
     "objects": {
-      "valueAxis": [
+      "columnHeaders": [
         {
           "properties": {
-            "labelColor": {
+            "backColor": {
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#283618'"
                     }
                   }
                 }
               }
             },
-            "gridlineShow": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "10D"
                 }
               }
             },
-            "show": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
+                }
+              }
+            },
+            "alignment": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "'Center'"
+                }
+              }
+            },
+            "titleAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Center'"
                 }
               }
             }
           }
         }
       ],
-      "categoryAxis": [
+      "values": [
         {
           "properties": {
-            "labelColor": {
+            "bandedRowHeaders": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9.5D"
+                }
+              }
+            },
+            "fontColorPrimary": {
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
                     }
                   }
                 }
               }
             },
-            "maxMarginFactor": {
+            "valuesOnRow": {
               "expr": {
                 "Literal": {
-                  "Value": "50L"
+                  "Value": "false"
+                }
+              }
+            },
+            "wordWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontColorSecondary": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
                 }
               }
             }
           }
-        }
-      ],
-      "dataPoint": [
+        },
+        {
+          "properties": {},
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "fact_environmental_daily.Avg Ambient Temp (°C)"
+          }
+        },
         {
           "properties": {
-            "fill": {
+            "backColor": {
               "solid": {
                 "color": {
                   "expr": {
@@ -140,25 +296,32 @@
                         "Measure": {
                           "Expression": {
                             "SourceRef": {
-                              "Entity": "fact_crop_yield"
+                              "Entity": "fact_environmental_daily"
                             }
                           },
-                          "Property": "Avg Daily Growth Rate"
+                          "Property": "Avg Water pH"
                         }
                       },
                       "FillRule": {
-                        "linearGradient2": {
+                        "linearGradient3": {
                           "min": {
                             "color": {
                               "Literal": {
-                                "Value": "'#FEFAE0'"
+                                "Value": "'#BC6C25'"
+                              }
+                            }
+                          },
+                          "mid": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#606C38'"
                               }
                             }
                           },
                           "max": {
                             "color": {
                               "Literal": {
-                                "Value": "'#606C38'"
+                                "Value": "'#DDA15E'"
                               }
                             }
                           },
@@ -184,39 +347,193 @@
                   "matchingOption": 1
                 }
               }
-            ]
+            ],
+            "metadata": "fact_environmental_daily.Avg Water pH"
           }
         }
       ],
-      "legend": [
+      "rowHeaders": [
         {
           "properties": {
-            "labelColor": {
+            "backColor": {
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#283618'"
                     }
                   }
                 }
               }
             },
-            "position": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'BottomCenter'"
+                  "Value": "10D"
+                }
+              }
+            },
+            "autoExpand": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "expandCollapseButtonsSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "15D"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Left'"
                 }
               }
             }
           }
         }
       ],
-      "labels": [
+      "grid": [
         {
           "properties": {
-            "show": {
+            "gridHorizontal": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "gridHorizontalWeight": {
+              "expr": {
+                "Literal": {
+                  "Value": "0.5D"
+                }
+              }
+            },
+            "gridHorizontalColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#606C38'"
+                    }
+                  }
+                }
+              }
+            },
+            "rowPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnTotal": [
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#283618'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "rowTotal": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FEFAE0'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#283618'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTotals": [
+        {
+          "properties": {
+            "columnSubtotals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "rowSubtotals": {
               "expr": {
                 "Literal": {
                   "Value": "true"
@@ -224,63 +541,169 @@
               }
             }
           }
+        }
+      ],
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "220D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "dim_facility.facility_name"
+          }
         },
         {
           "properties": {
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "FillRule": {
-                      "Input": {
-                        "Measure": {
-                          "Expression": {
-                            "SourceRef": {
-                              "Entity": "fact_crop_yield"
-                            }
-                          },
-                          "Property": "Avg Daily Growth Rate"
-                        }
-                      },
-                      "FillRule": {
-                        "linearGradient2": {
-                          "min": {
-                            "color": {
-                              "Literal": {
-                                "Value": "'#FEFAE0'"
-                              }
-                            }
-                          },
-                          "max": {
-                            "color": {
-                              "Literal": {
-                                "Value": "'#96B03D'"
-                              }
-                            }
-                          },
-                          "nullColoringStrategy": {
-                            "strategy": {
-                              "Literal": {
-                                "Value": "'asZero'"
-                              }
-                            }
-                          }
-                        }
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "120D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_environmental_daily.Avg Ambient Temp (°C)"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "120D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_environmental_daily.Avg Relative Humidity %"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "120D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_environmental_daily.Avg Water pH"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "135D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_environmental_daily.Avg EC (mS/cm)"
+          }
+        }
+      ],
+      "blankRows": [
+        {
+          "properties": {
+            "showBlankRows": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnFormatting": [
+        {
+          "properties": {
+            "styleHeader": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_environmental_daily.Avg Ambient Temp (°C)"
+          }
+        },
+        {
+          "properties": {
+            "dataBars": {
+              "positiveColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'#606C38'"
                       }
                     }
+                  }
+                }
+              },
+              "negativeColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'#BC6C25'"
+                      }
+                    }
+                  }
+                }
+              },
+              "axisColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'foreground'"
+                      }
+                    }
+                  }
+                }
+              },
+              "reverseDirection": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "hideText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "totalMatchingOption": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1L"
                   }
                 }
               }
             }
           },
           "selector": {
-            "data": [
-              {
-                "dataViewWildcard": {
-                  "matchingOption": 1
-                }
-              }
-            ]
+            "metadata": "fact_environmental_daily.Avg EC (mS/cm)"
           }
         }
       ]
@@ -292,7 +715,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Daily Growth Velocity by Crop Cultivar'"
+                  "Value": "'Microclimate & Hydroponic Chemistry Stability by Zone'"
                 }
               }
             },
@@ -371,6 +794,13 @@
                   }
                 }
               }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
             }
           }
         }
@@ -403,5 +833,82 @@
       ]
     },
     "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "29350d4952e6ce38626e",
+        "displayName": "Facility Name",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_facility"
+              }
+            },
+            "Property": "facility_name"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "d",
+              "Entity": "dim_facility",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "Not": {
+                  "Expression": {
+                    "In": {
+                      "Expressions": [
+                        {
+                          "Column": {
+                            "Expression": {
+                              "SourceRef": {
+                                "Source": "d"
+                              }
+                            },
+                            "Property": "facility_name"
+                          }
+                        }
+                      ],
+                      "Values": [
+                        [
+                          {
+                            "Literal": {
+                              "Value": "null"
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "objects": {
+          "general": [
+            {
+              "properties": {
+                "isInvertedSelectionMode": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "true"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
   }
 }

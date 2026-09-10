@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "9fe2f9a9925ba82cbf75",
   "position": {
-    "x": 1350,
-    "y": 120,
+    "x": 1394,
+    "y": 115,
     "z": 5000,
-    "height": 90,
-    "width": 390,
+    "height": 105,
+    "width": 410,
     "tabOrder": 5000
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "fact_equipment_telemetry"
                     }
                   },
-                  "Property": "Total Energy kWh"
+                  "Property": "Carbon Footprint (kg CO2e)"
                 }
               },
-              "queryRef": "fact_equipment_telemetry.Total Energy kWh",
-              "nativeQueryRef": "Total Energy kWh"
+              "queryRef": "fact_equipment_telemetry.Carbon Footprint (kg CO2e)",
+              "nativeQueryRef": "Carbon Footprint (kg CO2e)"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "fact_equipment_telemetry"
                   }
                 },
-                "Property": "Total Energy kWh"
+                "Property": "Carbon Footprint (kg CO2e)"
               }
             },
             "direction": "Descending"
@@ -152,6 +152,31 @@
           "selector": {
             "id": "default"
           }
+        },
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "24D"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#90E0EF'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Carbon Footprint (kg CO2e)"
+          }
         }
       ],
       "label": [
@@ -179,6 +204,31 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'CARBON FOOTPRINT'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#90E0EF'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Carbon Footprint (kg CO2e)"
           }
         }
       ]

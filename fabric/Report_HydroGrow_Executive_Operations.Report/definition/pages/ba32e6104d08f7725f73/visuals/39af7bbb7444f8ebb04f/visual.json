@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "39af7bbb7444f8ebb04f",
   "position": {
-    "x": 1215,
+    "x": 1260,
     "y": 255,
     "z": 7000,
-    "height": 430,
-    "width": 590,
+    "height": 445,
+    "width": 545,
     "tabOrder": 7000
   },
   "visual": {
@@ -20,15 +20,47 @@
                 "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "dim_zone"
+                      "Entity": "dim_facility"
                     }
                   },
-                  "Property": "zone_id"
+                  "Property": "facility_name"
                 }
               },
-              "queryRef": "dim_zone.zone_id",
-              "nativeQueryRef": "zone_id",
+              "queryRef": "dim_facility.facility_name",
+              "nativeQueryRef": "facility_name",
               "active": true
+            }
+          ]
+        },
+        "Tooltips": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Energy Use Intensity (kWh/kg)"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Energy Use Intensity (kWh/kg)",
+              "nativeQueryRef": "Energy Use Intensity (kWh/kg)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_lighting_dli_daily"
+                    }
+                  },
+                  "Property": "DLI Target Compliance %"
+                }
+              },
+              "queryRef": "fact_lighting_dli_daily.DLI Target Compliance %",
+              "nativeQueryRef": "DLI Target Compliance %"
             }
           ]
         },
@@ -39,14 +71,28 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_irrigation_daily"
+                      "Entity": "fact_equipment_telemetry"
                     }
                   },
-                  "Property": "Total Water Liters"
+                  "Property": "Total Energy (kWh)"
                 }
               },
-              "queryRef": "fact_irrigation_daily.Total Water Liters",
-              "nativeQueryRef": "Total Water Liters"
+              "queryRef": "fact_equipment_telemetry.Total Energy (kWh)",
+              "nativeQueryRef": "Total Energy (kWh)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_equipment_telemetry"
+                    }
+                  },
+                  "Property": "Carbon Footprint (kg CO2e)"
+                }
+              },
+              "queryRef": "fact_equipment_telemetry.Carbon Footprint (kg CO2e)",
+              "nativeQueryRef": "Carbon Footprint (kg CO2e)"
             }
           ]
         }
@@ -58,10 +104,10 @@
               "Measure": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "fact_irrigation_daily"
+                    "Entity": "fact_equipment_telemetry"
                   }
                 },
-                "Property": "Total Water Liters"
+                "Property": "Total Energy (kWh)"
               }
             },
             "direction": "Descending"
@@ -111,60 +157,39 @@
             "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "1000D"
+                  "Value": "0D"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#CAF0F8'"
+                    }
+                  }
+                }
+              }
+            },
+            "labelPosition": {
+              "expr": {
+                "Literal": {
+                  "Value": "'OutsideEnd'"
+                }
+              }
+            },
+            "labelPrecision": {
+              "expr": {
+                "Literal": {
+                  "Value": "2L"
                 }
               }
             }
           }
         },
         {
-          "properties": {
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "FillRule": {
-                      "Input": {
-                        "Measure": {
-                          "Expression": {
-                            "SourceRef": {
-                              "Entity": "fact_irrigation_daily"
-                            }
-                          },
-                          "Property": "Total Water Liters"
-                        }
-                      },
-                      "FillRule": {
-                        "linearGradient2": {
-                          "min": {
-                            "color": {
-                              "Literal": {
-                                "Value": "'#ADE8F4'"
-                              }
-                            }
-                          },
-                          "max": {
-                            "color": {
-                              "Literal": {
-                                "Value": "'#0077B6'"
-                              }
-                            }
-                          },
-                          "nullColoringStrategy": {
-                            "strategy": {
-                              "Literal": {
-                                "Value": "'asZero'"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
+          "properties": {},
           "selector": {
             "data": [
               {
@@ -259,6 +284,60 @@
               }
             ]
           }
+        },
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#00B4D8'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Total Energy (kWh)"
+          }
+        },
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#023E8A'"
+                    }
+                  }
+                }
+              }
+            },
+            "borderShow": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "borderColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0077B6'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_equipment_telemetry.Carbon Footprint (kg CO2e)"
+          }
         }
       ],
       "legend": [
@@ -293,7 +372,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Water Consumption by Hydroponic Zone'"
+                  "Value": "'Energy Consumption & Carbon Footprint by Facility'"
                 }
               }
             },
@@ -315,9 +394,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#CAF0F8'"
                     }
                   }
                 }
@@ -358,7 +436,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             }
@@ -371,7 +449,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
+                  "Value": "true"
                 }
               }
             }
@@ -396,6 +474,13 @@
                       "Value": "'#CAF0F8'"
                     }
                   }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

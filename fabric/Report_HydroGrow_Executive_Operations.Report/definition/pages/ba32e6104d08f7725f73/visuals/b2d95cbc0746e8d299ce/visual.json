@@ -6,7 +6,7 @@
     "y": 255,
     "z": 6000,
     "height": 430,
-    "width": 1050,
+    "width": 1095,
     "tabOrder": 6000
   },
   "visual": {
@@ -42,11 +42,25 @@
                       "Entity": "fact_irrigation_daily"
                     }
                   },
-                  "Property": "Total Water Liters"
+                  "Property": "Total Water Delivered (L)"
                 }
               },
-              "queryRef": "fact_irrigation_daily.Total Water Liters",
-              "nativeQueryRef": "Total Water Liters"
+              "queryRef": "fact_irrigation_daily.Total Water Delivered (L)",
+              "nativeQueryRef": "Total Water Delivered (L)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_irrigation_daily"
+                    }
+                  },
+                  "Property": "Total Nutrient Solution (L)"
+                }
+              },
+              "queryRef": "fact_irrigation_daily.Total Nutrient Solution (L)",
+              "nativeQueryRef": "Total Nutrient Solution (L)"
             }
           ]
         },
@@ -60,11 +74,11 @@
                       "Entity": "fact_irrigation_daily"
                     }
                   },
-                  "Property": "Total Nutrient Liters"
+                  "Property": "Water Use Efficiency (L/kg)"
                 }
               },
-              "queryRef": "fact_irrigation_daily.Total Nutrient Liters",
-              "nativeQueryRef": "Total Nutrient Liters"
+              "queryRef": "fact_irrigation_daily.Water Use Efficiency (L/kg)",
+              "nativeQueryRef": "Water Use Efficiency (L/kg)"
             }
           ]
         }
@@ -88,7 +102,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "80D"
+                  "Value": "91D"
                 }
               }
             }
@@ -101,7 +115,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#99FD09'"
+                      "Value": "'#00B4D8'"
                     }
                   }
                 }
@@ -109,7 +123,43 @@
             }
           },
           "selector": {
-            "metadata": "fact_irrigation_daily.Total Nutrient Liters"
+            "metadata": "fact_irrigation_daily.Total Water Delivered (L)"
+          }
+        },
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#0096C7'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_irrigation_daily.Total Nutrient Solution (L)"
+          }
+        },
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#CAF0F8'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_irrigation_daily.Water Use Efficiency (L/kg)"
           }
         }
       ],
@@ -134,9 +184,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#90E0EF'"
                     }
                   }
                 }
@@ -188,7 +237,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FBFAF3'"
+                      "Value": "'#90E0EF'"
                     }
                   }
                 }
@@ -287,72 +336,42 @@
                   "Value": "8D"
                 }
               }
+            },
+            "labelDisplayUnits": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
             }
           }
         },
         {
           "properties": {
-            "enableBackground": {
+            "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "false"
-                }
-              }
-            },
-            "labelPosition": {
-              "expr": {
-                "Literal": {
-                  "Value": "'OutsideEnd'"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
-                    }
-                  }
+                  "Value": "1000D"
                 }
               }
             }
           },
           "selector": {
-            "metadata": "fact_irrigation_daily.Total Water Liters"
+            "metadata": "fact_irrigation_daily.Total Water Delivered (L)"
           }
         },
         {
           "properties": {
-            "labelPosition": {
+            "labelDisplayUnits": {
               "expr": {
                 "Literal": {
-                  "Value": "'Auto'"
-                }
-              }
-            },
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#99FD09'"
-                    }
-                  }
-                }
-              }
-            },
-            "bold": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
+                  "Value": "1000D"
                 }
               }
             }
           },
           "selector": {
-            "metadata": "fact_irrigation_daily.Total Nutrient Liters"
+            "metadata": "fact_irrigation_daily.Total Nutrient Solution (L)"
           }
         }
       ],
@@ -409,9 +428,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#CAF0F8'"
                     }
                   }
                 }
@@ -434,7 +452,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Daily Water & Nutrient Delivery Trend'"
+                  "Value": "'Monthly Hydro-Nutrient Volume vs Water Use Efficiency (L/kg)'"
                 }
               }
             }
@@ -531,6 +549,13 @@
                       "Value": "'#CAF0F8'"
                     }
                   }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

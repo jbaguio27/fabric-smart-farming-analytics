@@ -3,10 +3,10 @@
   "name": "d04966cdff9892b212b9",
   "position": {
     "x": 115,
-    "y": 255,
+    "y": 250,
     "z": 6000,
     "height": 430,
-    "width": 1050,
+    "width": 870,
     "tabOrder": 6000
   },
   "visual": {
@@ -39,14 +39,14 @@
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_equipment_telemetry"
+                      "Entity": "fact_maintenance_sla"
                     }
                   },
-                  "Property": "Avg Equipment Health"
+                  "Property": "Total Work Orders"
                 }
               },
-              "queryRef": "fact_equipment_telemetry.Avg Equipment Health",
-              "nativeQueryRef": "Avg Equipment Health"
+              "queryRef": "fact_maintenance_sla.Total Work Orders",
+              "nativeQueryRef": "Total Work Orders"
             }
           ]
         },
@@ -60,11 +60,11 @@
                       "Entity": "fact_maintenance_sla"
                     }
                   },
-                  "Property": "Avg Repair Duration Min"
+                  "Property": "SLA Compliance %"
                 }
               },
-              "queryRef": "fact_maintenance_sla.Avg Repair Duration Min",
-              "nativeQueryRef": "Avg Repair Duration Min"
+              "queryRef": "fact_maintenance_sla.SLA Compliance %",
+              "nativeQueryRef": "SLA Compliance %"
             }
           ]
         }
@@ -172,17 +172,35 @@
                   "Value": "78L"
                 }
               }
-            }
-          }
-        },
-        {
-          "properties": {
+            },
             "color": {
               "solid": {
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FDE74C'"
+                      "Value": "'#F1FAEE'"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#F1FAEE'"
                     }
                   }
                 }
@@ -190,42 +208,13 @@
             }
           },
           "selector": {
-            "metadata": "fact_maintenance_sla.Avg Repair Duration Min"
-          }
-        },
-        {
-          "properties": {
-            "color": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#5BC0EB'"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "selector": {
-            "metadata": "fact_equipment_telemetry.Avg Equipment Health"
+            "metadata": "fact_maintenance_sla.Total Work Orders"
           }
         }
       ],
       "dataPoint": [
         {
           "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#5BC0EB'"
-                    }
-                  }
-                }
-              }
-            },
             "transparency": {
               "expr": {
                 "Literal": {
@@ -241,8 +230,47 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "Literal": {
-                      "Value": "'#FDE74C'"
+                    "FillRule": {
+                      "Input": {
+                        "Aggregation": {
+                          "Expression": {
+                            "Column": {
+                              "Expression": {
+                                "SourceRef": {
+                                  "Entity": "dim_date"
+                                }
+                              },
+                              "Property": "month_year"
+                            }
+                          },
+                          "Function": 5
+                        }
+                      },
+                      "FillRule": {
+                        "linearGradient2": {
+                          "min": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#6BC0F4'"
+                              }
+                            }
+                          },
+                          "max": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#457B9D'"
+                              }
+                            }
+                          },
+                          "nullColoringStrategy": {
+                            "strategy": {
+                              "Literal": {
+                                "Value": "'asZero'"
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -250,7 +278,31 @@
             }
           },
           "selector": {
-            "metadata": "fact_maintenance_sla.Avg Repair Duration Min"
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ]
+          }
+        },
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#A8DADC'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_maintenance_sla.SLA Compliance %"
           }
         }
       ],
@@ -260,7 +312,7 @@
             "strokeWidth": {
               "expr": {
                 "Literal": {
-                  "Value": "2D"
+                  "Value": "3D"
                 }
               }
             },
@@ -268,6 +320,27 @@
               "expr": {
                 "Literal": {
                   "Value": "true"
+                }
+              }
+            },
+            "strokeTransparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "15D"
+                }
+              }
+            },
+            "showMarker": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "markerShape": {
+              "expr": {
+                "Literal": {
+                  "Value": "'diamond'"
                 }
               }
             }
@@ -281,9 +354,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#F1FAEE'"
                     }
                   }
                 }
@@ -340,7 +412,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Equipment Health Index vs. Repair Duration'"
+                  "Value": "'Monthly Work Order Volume vs. SLA Compliance %'"
                 }
               }
             },
@@ -348,9 +420,8 @@
               "solid": {
                 "color": {
                   "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 0,
-                      "Percent": 0
+                    "Literal": {
+                      "Value": "'#F1FAEE'"
                     }
                   }
                 }
@@ -377,6 +448,13 @@
                       "Value": "'#5BC0EB'"
                     }
                   }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

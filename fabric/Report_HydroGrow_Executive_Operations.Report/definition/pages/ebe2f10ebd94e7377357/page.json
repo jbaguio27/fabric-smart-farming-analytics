@@ -14,7 +14,7 @@
               "name": {
                 "expr": {
                   "Literal": {
-                    "Value": "'Page 3.svg'"
+                    "Value": "'page 3 new.svg'"
                   }
                 }
               },
@@ -23,7 +23,7 @@
                   "ResourcePackageItem": {
                     "PackageName": "RegisteredResources",
                     "PackageType": 1,
-                    "ItemName": "Page_323661835197175674.svg"
+                    "ItemName": "page_3_new43834791691982256.svg"
                   }
                 }
               },

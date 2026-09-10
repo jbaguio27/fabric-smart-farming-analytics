@@ -30,11 +30,14 @@ table fact_crop_yield
 
 	measure 'Grade A Ratio %' =
 			
-			VAR TotalYield = SUM('fact_crop_yield'[total_harvest_kg])
-			VAR GradeAYield = SUM('fact_crop_yield'[grade_a_harvest_kg])
-			VAR RawRatio = IF(TotalYield > 0, GradeAYield / TotalYield, 0)
+			VAR TotalYield = [Total Harvest (kg)]
+			VAR GradeAYield = [Grade A Harvest (kg)]
 			RETURN
-			    MIN(RawRatio, 1.0)
+			    IF(
+			        ISBLANK(TotalYield) || TotalYield <= 0,
+			        BLANK(),
+			        MIN(DIVIDE(GradeAYield, TotalYield), 1.0)
+			    )
 		formatString: 0.0%;-0.0%;0.0%
 		displayFolder: 🌾 Agronomy & Growth
 		lineageTag: 870f0912-36ef-40d0-b62b-8c1dff24ccdd
@@ -97,7 +100,7 @@ table fact_crop_yield
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Yield Achievement %' = DIVIDE([Total Harvest (kg)], [Target Yield (kg)], 1) * 100
+	measure 'Yield Achievement %' = DIVIDE([Total Harvest (kg)], [Target Yield (kg)]) * 100
 		formatString: " 0.0""%"""
 		displayFolder: 💰 Revenue & Yield
 		lineageTag: d7cc211e-f80b-4b51-808f-fb594c565770
@@ -125,7 +128,17 @@ table fact_crop_yield
 
 		annotation PBI_FormatHint = {"isCustom":true}
 
-	measure 'Spoilage Rate %' = DIVIDE([Total Spoilage Waste (kg)], [Total Harvest (kg)] + [Total Spoilage Waste (kg)], 0) * 100
+	measure 'Spoilage Rate %' =
+			
+			VAR TotalHarvest = [Total Harvest (kg)]
+			VAR Spoilage = [Total Spoilage Waste (kg)]
+			VAR TotalOutput = TotalHarvest + Spoilage
+			RETURN
+			    IF(
+			        ISBLANK(TotalOutput) || TotalOutput <= 0,
+			        BLANK(),
+			        DIVIDE(Spoilage, TotalOutput) * 100
+			    )
 		formatString: " 0.00""%"""
 		displayFolder: 🌾 Agronomy & Growth
 		lineageTag: fb8915f0-4d27-4559-9fcb-159b6ae268b2
@@ -153,7 +166,7 @@ table fact_crop_yield
 
 	measure 'Avg Revenue / kg' =
 			
-			DIVIDE([Total Revenue (₱)], [Total Harvest (kg)], 0)
+			DIVIDE([Total Revenue (₱)], [Total Harvest (kg)])
 		formatString: " \₱#,##0.00"
 		displayFolder: 💰 Revenue & Yield
 		lineageTag: 3fb2c5d7-8658-497f-bb4f-c3231b5cc3ae
@@ -198,7 +211,7 @@ table fact_crop_yield
 
 	measure 'Revenue Realization %' =
 			
-			DIVIDE([Total Revenue (₱)], [Target Revenue (₱)], 1)
+			DIVIDE([Total Revenue (₱)], [Target Revenue (₱)])
 		formatString: 0.0%;-0.0%;0.0%
 		displayFolder: 💰 Revenue & Yield
 		lineageTag: 2bd62803-3515-4a05-a082-ea5f71560984

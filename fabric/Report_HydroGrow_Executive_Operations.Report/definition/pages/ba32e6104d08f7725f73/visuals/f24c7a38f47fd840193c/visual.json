@@ -3,10 +3,10 @@
   "name": "f24c7a38f47fd840193c",
   "position": {
     "x": 115.15047291487531,
-    "y": 29.716251074806532,
+    "y": 37.145313843508163,
     "z": 0,
-    "height": 55,
-    "width": 599.89681857265691,
+    "height": 57.575236457437654,
+    "width": 442.95786758383485,
     "tabOrder": 0
   },
   "visual": {
@@ -23,7 +23,7 @@
                     "textStyle": {
                       "fontWeight": "bold",
                       "fontSize": "18pt",
-                      "color": "#ffffff"
+                      "color": "#caf0f8"
                     }
                   }
                 ]
@@ -34,7 +34,7 @@
                     "value": "Resource & Hydro-Nutrient Efficiency | Water, Energy & DLI",
                     "textStyle": {
                       "fontSize": "10pt",
-                      "color": "#caf0f8"
+                      "color": "#90e0ef"
                     }
                   }
                 ]

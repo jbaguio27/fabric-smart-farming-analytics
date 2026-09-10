@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "4cb1de67c11c282e194b",
   "position": {
-    "x": 530,
-    "y": 120,
+    "x": 541,
+    "y": 115,
     "z": 3000,
-    "height": 90,
-    "width": 390,
+    "height": 105,
+    "width": 410,
     "tabOrder": 3000
   },
   "visual": {
@@ -23,11 +23,11 @@
                       "Entity": "fact_irrigation_daily"
                     }
                   },
-                  "Property": "Total Nutrient Liters"
+                  "Property": "Total Nutrient Solution (L)"
                 }
               },
-              "queryRef": "fact_irrigation_daily.Total Nutrient Liters",
-              "nativeQueryRef": "Total Nutrient Liters"
+              "queryRef": "fact_irrigation_daily.Total Nutrient Solution (L)",
+              "nativeQueryRef": "Total Nutrient Solution (L)"
             }
           ]
         }
@@ -42,7 +42,7 @@
                     "Entity": "fact_irrigation_daily"
                   }
                 },
-                "Property": "Total Nutrient Liters"
+                "Property": "Total Nutrient Solution (L)"
               }
             },
             "direction": "Descending"
@@ -103,7 +103,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "26D"
+                  "Value": "24D"
                 }
               }
             },
@@ -136,6 +136,24 @@
           "selector": {
             "id": "default"
           }
+        },
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#00B4D8'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_irrigation_daily.Total Nutrient Solution (L)"
+          }
         }
       ],
       "label": [
@@ -163,6 +181,31 @@
           },
           "selector": {
             "id": "default"
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'NUTRIENT SOLUTION'"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#90E0EF'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fact_irrigation_daily.Total Nutrient Solution (L)"
           }
         }
       ]

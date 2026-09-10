@@ -467,7 +467,14 @@ df_eq.show(10, truncate=False)
 
 # CELL ********************
 
-# Create silver.crop_biological_cleaned
+# Create silver.crop_biological_cleaned (Data Quality Gated & Conformed)
+
+REGISTERED_CROPS = [
+    "arugula", "baby_greens", "basil", "batavia_lettuce", "butterhead_lettuce",
+    "cherry_tomatoes", "cilantro", "kale", "mint", "oakleaf_lettuce", 
+    "parsley", "pea_shoots", "radish_microgreens", "romaine", "spinach", 
+    "strawberry", "sweet_basil", "watercress"
+]
 
 facility_id_clean = F.when(
     F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN", "NULL", "NONE"),
@@ -485,22 +492,25 @@ timestamp_clean = F.coalesce(
     F.to_timestamp(raw_ts_str, "yyyy-MM-dd HH:mm:ss"),
     F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"),
     F.to_timestamp(F.from_unixtime(raw_ts_str.cast("bigint"))),
-    F.current_timestamp()
+    F.lit(None)
 )
 
-growth_clean = F.round(F.col("growth_rate").cast("double"), 3)
-biomass_clean = F.round(F.col("biomass_grams").cast("double"), 1)
-stress_clean = F.round(F.col("environmental_stress_index").cast("double") * F.lit(100.0), 1)
-
-contact_clean = F.coalesce(F.trim(F.col("operator_contact")), F.lit("agronomy.lead@smartfarm.ph"))
-phone_clean = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190"))
+crop_type_clean = F.lower(F.trim(F.col("crop_type")))
 
 df_telemetry_cleaned = (
     spark.table("bronze.crop_telemetry")
     .withColumn("facility_id_upper", facility_id_clean)
     .withColumn("zone_id_clean", zone_id_clean)
     .withColumn("clean_timestamp", timestamp_clean)
-    .filter(F.col("zone_id_clean").rlike("^ZONE-[0-9]{3}$"))
+    .withColumn("clean_crop_type", crop_type_clean)
+    .filter(
+        (F.col("clean_timestamp").isNotNull()) &
+        (F.year("clean_timestamp") >= 2025) &
+        (F.col("facility_id_upper").rlike("^FAC-[0-9]{3}$")) &
+        (F.col("zone_id_clean").rlike("^ZONE-[0-9]{3}$")) &
+        (F.col("zone_id_clean") != "ZONE-000") &
+        (F.col("clean_crop_type").isin(REGISTERED_CROPS))
+    )
     .drop_duplicates(["event_id"])
 )
 
@@ -509,6 +519,13 @@ df_enriched = df_telemetry_cleaned.join(
     F.col("facility_id_upper") == F.col("fac_id_join"),
     "left"
 )
+
+growth_clean = F.round(F.col("growth_rate").cast("double"), 3)
+biomass_clean = F.round(F.col("biomass_grams").cast("double"), 1)
+stress_clean = F.round(F.col("environmental_stress_index").cast("double") * F.lit(100.0), 1)
+
+contact_clean = F.coalesce(F.trim(F.col("operator_contact")), F.lit("agronomy.lead@smartfarm.ph"))
+phone_clean = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190"))
 
 df_crop = (
     df_enriched
@@ -523,7 +540,7 @@ df_crop = (
         F.col("region"),
         F.col("zone_id_clean").alias("zone_id"),
         F.trim(F.col("crop_batch_id")).alias("crop_batch_id"),
-        F.trim(F.col("crop_type")).alias("crop_type"),
+        F.col("clean_crop_type").alias("crop_type"),
         F.upper(F.trim(F.col("lifecycle_stage"))).alias("lifecycle_stage"),
         F.round(F.col("age_days").cast("double"), 1).alias("age_days"),
         F.round(F.col("health_score").cast("double"), 1).alias("crop_health_score"),
@@ -540,13 +557,12 @@ df_crop = (
     )
 )
 
-df_crop.write.format('delta')\
-            .mode("overwrite")\
-            .option("overwriteSchema", "true")\
-            .saveAsTable("silver.crop_biological_cleaned")
+df_crop.write.format("delta") \
+    .mode("overwrite") \
+    .option("overwriteSchema", "true") \
+    .saveAsTable("silver.crop_biological_cleaned")
 
-print(f"Created silver.crop_biological_cleaned ({df_crop.count()} rows).")
-df_crop.show(10, truncate=False)
+print(f"Created certified silver.crop_biological_cleaned ({df_crop.count():,} rows).")
 
 # METADATA ********************
 
@@ -557,7 +573,7 @@ df_crop.show(10, truncate=False)
 
 # CELL ********************
 
-# Create silver.irrigation_flow_cleaned
+# Create silver.irrigation_flow_cleaned (Data Quality Gated)
 
 facility_id_clean = F.when(
     F.col("facility_id").isNull() | F.upper(F.trim(F.col("facility_id"))).isin("", "N/A", "UNKNOWN", "NULL", "NONE"),
@@ -575,18 +591,24 @@ timestamp_clean = F.coalesce(
     F.to_timestamp(raw_ts_str, "yyyy-MM-dd HH:mm:ss"),
     F.to_timestamp(raw_ts_str, "yyyy-MM-dd'T'HH:mm:ss'Z'"),
     F.to_timestamp(F.from_unixtime(raw_ts_str.cast("bigint"))),
-    F.current_timestamp()
+    F.lit(None)
 )
 
 contact_clean = F.coalesce(F.trim(F.col("operator_contact")), F.lit("hydro.tech@smartfarm.ph"))
 phone_clean = F.coalesce(F.trim(F.col("operator_phone")), F.lit("+639178452190"))
 
+# Quality Gate: Require Valid 2025+ Timestamps
 df_telemetry_cleaned = (
     spark.table("bronze.irrigation_telemetry")
     .withColumn("facility_id_upper", facility_id_clean)
     .withColumn("zone_id_clean", zone_id_clean)
     .withColumn("clean_timestamp", timestamp_clean)
-    .filter(F.col("zone_id_clean").rlike("^ZONE-[0-9]{3}$"))
+    .filter(
+        (F.col("clean_timestamp").isNotNull()) &
+        (F.year("clean_timestamp") >= 2025) &
+        (F.col("zone_id_clean").rlike("^ZONE-[0-9]{3}$")) &
+        (F.col("zone_id_clean") != "ZONE-000")
+    )
     .drop_duplicates(["event_id"])
 )
 
@@ -622,9 +644,7 @@ df_irr.write.format("delta")\
             .option("overwriteSchema", "true")\
             .saveAsTable("silver.irrigation_flow_cleaned")
 
-print(f"Created silver.irrigation_flow_cleaned ({df_irr.count()} rows).")
-
-df_irr.show(10, truncate=False)
+print(f"Created certified silver.irrigation_flow_cleaned ({df_irr.count():,} rows).")
 
 # METADATA ********************
 
@@ -1078,8 +1098,14 @@ exception_category_calc = (
 )
 
 is_auto_remediable_calc = (
-    F.when(exception_category_calc == F.lit("DEPRECATED_SCHEMA_EVENT"), F.lit(True))
-     .otherwise(F.lit(False))
+    F.when(
+        exception_category_calc.isin(
+            "DEPRECATED_SCHEMA_EVENT", 
+            "SERDES_PARSE_FAILURE", 
+            "TIMESTAMP_OUT_OF_SYNC"
+        ), 
+        F.lit(True)
+    ).otherwise(F.lit(False))
 )
 
 # Transformation Pipeline
@@ -1111,17 +1137,6 @@ df_dl_classified.write.format("delta") \
                       .saveAsTable(table_name)
 
 print(f"Created silver.dead_letter_classified ({df_dl_classified.count()} rows).")
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 
 # METADATA ********************
 
