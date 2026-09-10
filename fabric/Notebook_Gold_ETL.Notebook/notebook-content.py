@@ -1195,14 +1195,14 @@ fact_eq_stg = (
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
         (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
         (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
-        how="left"
+        how="inner"
     )
     .join(
         dim_eq_bcast.alias("dim_eq"),
         (F.col("fact.equipment_id") == F.col("dim_eq.equipment_id")) &
         (F.col("fact.event_date") >= F.col("dim_eq.effective_date")) &
         (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")),
-        how="left"
+        how="inner"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
@@ -1210,13 +1210,13 @@ fact_eq_stg = (
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
         (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
         (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
-        how="left"
+        how="inner"
     )
     .select(
         F.col("fact.date_key"),
-        F.coalesce(F.col("dim_fac.facility_key"), F.lit(-1)).alias("facility_key"),
-        F.coalesce(F.col("dim_eq.equipment_key"), F.lit(-1)).alias("equipment_key"),
-        F.coalesce(F.col("dim_zn.zone_key"), F.lit(-1)).alias("zone_key"),
+        F.col("dim_fac.facility_key"),
+        F.col("dim_eq.equipment_key"),
+        F.col("dim_zn.zone_key"),
         F.col("fact.avg_health_score"),
         F.col("fact.max_failure_probability"),
         F.col("fact.daily_runtime_hours"),
@@ -1229,6 +1229,7 @@ fact_eq_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .filter((F.col("facility_key") != -1) & (F.col("equipment_key") != -1) & (F.col("zone_key") != -1))
     .drop_duplicates(["date_key", "facility_key", "equipment_key", "zone_key"])
 )
 

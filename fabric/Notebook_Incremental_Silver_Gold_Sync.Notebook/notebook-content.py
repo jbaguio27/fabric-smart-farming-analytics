@@ -736,6 +736,8 @@ if df_new_eq is not None and cnt_eq > 0:
         F.col("fact.telemetry_sample_count"),
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
+    ).filter(
+        (F.col("facility_key") != -1) & (F.col("equipment_key") != -1) & (F.col("zone_key") != -1)
     ).drop_duplicates(["date_key", "facility_key", "equipment_key", "zone_key"])
     
     DeltaTable.forName(spark, "gold.fact_equipment_telemetry").alias("t").merge(
