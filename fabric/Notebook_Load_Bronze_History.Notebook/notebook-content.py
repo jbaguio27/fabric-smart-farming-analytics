@@ -82,10 +82,15 @@ for entry in manifest:
         
     try:
         # 2. Enrich with DataOps Ingestion Metadata & Deduplicate
+        ts_expr = (
+            F.col("ingestion_timestamp") 
+            if "ingestion_timestamp" in df_raw.columns 
+            else (F.col("timestamp") if "timestamp" in df_raw.columns else F.current_timestamp())
+        )
         df_bronze_source = (
             df_raw
             .drop_duplicates([pk_col])
-            .withColumn("ingestion_timestamp", F.current_timestamp())
+            .withColumn("ingestion_timestamp", ts_expr)
             .withColumn("ingestion_source", F.lit("BOOTSTRAP"))
             .withColumn("ingestion_run_id", F.lit(run_id))
             .withColumn("source_file", F.lit(file_path))

@@ -399,15 +399,23 @@ def run_historical_bootstrap(start_date_str: str = "2025-01-15", stride_hours: f
                     "timestamp": ts_str
                 })
 
-        # Irrigation & Lighting Telemetry (Every 3 Hours)
+        # Irrigation & Lighting Telemetry (Every 3 Hours across All Zones in All 8 Facilities)
         if step % 3 == 0:
-            events_irr = irrigation_generator.generate()
-            for ev in events_irr:
-                seed = f"{ev.facility_id}_{ev.zone_id}_{ts_str}"
-                ev_dict = ev.to_dict()
-                ev_dict["event_id"] = make_uuidv5("IrrigationTelemetry", seed)
-                ev_dict["timestamp"] = ts_str
-                irr_rows.append(ev_dict)
+            for state in irrigation_state_manager.get_all_states():
+                seed = f"{state.facility_id}_{state.zone_id}_{ts_str}"
+                irr_rows.append({
+                    "event_id": make_uuidv5("IrrigationTelemetry", seed),
+                    "event_type": "irrigation",
+                    "facility_id": state.facility_id,
+                    "zone_id": state.zone_id,
+                    "irrigation_active": state.irrigation_active,
+                    "flow_rate_liters_per_minute": state.flow_rate_liters_per_minute,
+                    "pressure_kpa": state.pressure_kpa,
+                    "irrigation_duration_seconds": state.irrigation_duration_seconds,
+                    "water_delivered_liters": state.water_delivered_liters,
+                    "nutrient_solution_delivered_liters": state.nutrient_solution_delivered_liters,
+                    "timestamp": ts_str
+                })
 
             events_light = lighting_generator.generate()
             for ev in events_light:
@@ -418,6 +426,17 @@ def run_historical_bootstrap(start_date_str: str = "2025-01-15", stride_hours: f
                 light_rows.append(ev_dict)
 
         # Maintenance Activity Generator (Every 6 Hours across All Equipment Types)
+        facility_technician_roster = {
+            "FAC-001": [("Juan Dela Cruz", "+639171110001", "juan.delacruz@smartfarm.ph"), ("Ana Cruz", "+639171110002", "ana.cruz@smartfarm.ph")],
+            "FAC-002": [("Maria Santos", "+639171110003", "maria.santos@smartfarm.ph"), ("Mark Dizon", "+639171110004", "mark.dizon@smartfarm.ph")],
+            "FAC-003": [("Jose Reyes", "+639171110005", "jose.reyes@smartfarm.ph"), ("Rhea Santos", "+639171110006", "rhea.santos@smartfarm.ph")],
+            "FAC-004": [("Paolo Ramos", "+639171110007", "paolo.ramos@smartfarm.ph"), ("Grace Villanueva", "+639171110008", "grace.villanueva@smartfarm.ph")],
+            "FAC-005": [("Danilo Aquino", "+639171110009", "danilo.aquino@smartfarm.ph"), ("Luzviminda Garcia", "+639171110010", "luzviminda.garcia@smartfarm.ph")],
+            "FAC-006": [("Gabriel Mendoza", "+639171110011", "gabriel.mendoza@smartfarm.ph"), ("Corazon Reyes", "+639171110012", "corazon.reyes@smartfarm.ph")],
+            "FAC-007": [("Eduardo Tan", "+639171110013", "eduardo.tan@smartfarm.ph"), ("Teresa Mercado", "+639171110014", "teresa.mercado@smartfarm.ph")],
+            "FAC-008": [("Rodrigo Castillo", "+639171110015", "rodrigo.castillo@smartfarm.ph"), ("Elena Bautista", "+639171110016", "elena.bautista@smartfarm.ph")],
+        }
+
         if step % 6 == 0:
             events_maint = maintenance_generator.generate()
             for ev in events_maint:
@@ -428,11 +447,15 @@ def run_historical_bootstrap(start_date_str: str = "2025-01-15", stride_hours: f
                     ev_dict["timestamp"] = ts_str
                     maint_rows.append(ev_dict)
             
-            # Generate representative work orders across all equipment types for 85-95% SLA compliance
+            # Generate representative work orders across all equipment types and all 16 technicians
             all_eq_list = list(equipment_registry.list_all())
             target_eq = all_eq_list[step % len(all_eq_list)]
             seed_maint = f"WO-{target_eq.equipment_id}-{step:06d}"
             maint_status = "COMPLETED" if (step % 7 != 0) else ("OVERDUE" if step % 14 == 0 else "IN_PROGRESS")
+            
+            tech_pairs = facility_technician_roster.get(target_eq.facility_id, [("Juan Dela Cruz", "+639171110001", "juan.delacruz@smartfarm.ph")])
+            assigned_tech, tech_phone, tech_email = tech_pairs[(step // len(all_eq_list)) % len(tech_pairs)]
+            
             maint_rows.append({
                 "event_id": make_uuidv5("MaintenanceActivity", seed_maint),
                 "event_type": "MaintenanceActivity",
@@ -442,15 +465,15 @@ def run_historical_bootstrap(start_date_str: str = "2025-01-15", stride_hours: f
                 "work_order_id": f"WO-{target_eq.equipment_id}-{step:06d}",
                 "maintenance_type": "PREVENTATIVE" if step % 2 == 0 else "CORRECTIVE",
                 "priority": "HIGH" if step % 3 == 0 else "MEDIUM",
-                "assigned_technician": f"Tech-NCR-{(step % 5) + 1:02d}",
+                "assigned_technician": assigned_tech,
                 "maintenance_status": maint_status,
                 "estimated_duration_minutes": 60 + (step % 4) * 30,
                 "remaining_duration_minutes": 0 if maint_status == "COMPLETED" else 45,
                 "completion_percent": 100.0 if maint_status == "COMPLETED" else (0.0 if maint_status == "OVERDUE" else 50.0),
                 "technician_notes": f"Routine calibration and inspection completed for {target_eq.equipment_type} asset.",
                 "health_restored": 25.0 if maint_status == "COMPLETED" else 0.0,
-                "operator_contact": "maint.lead@smartfarm.ph",
-                "operator_phone": "+639178452190",
+                "operator_contact": tech_email,
+                "operator_phone": tech_phone,
                 "timestamp": ts_str
             })
 
@@ -505,34 +528,48 @@ def run_historical_bootstrap(start_date_str: str = "2025-01-15", stride_hours: f
                         "timestamp": ts_str
                     })
 
-    # 5. Inject Forensic Dead Letter Failure Samples (250 Records, Realistic Distribution)
-    dl_distribution = [
-        ("EnvironmentalTelemetry", "MISSING_PRIMARY_KEY: NULL FACILITY_ID", '{"event_id": "DL-FAIL-01", "facility_id": null, "sensor_type": "air_temperature"}', 95),
-        ("EquipmentTelemetry", "OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C", '{"event_id": "DL-FAIL-02", "facility_id": "FAC-001", "temperature_celsius": 88.5}', 55),
-        ("CropTelemetry", "DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD", '{"event_id": "DL-FAIL-03", "facility_id": "FAC-002", "schema_version": "v1.0"}', 35),
-        ("IrrigationTelemetry", "SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD", '{"event_id": "DL-FAIL-04", "facility_id": "FAC-003", "payload": "{malformed_json_bytes"}', 30),
-        ("LightingTelemetry", "TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H", '{"event_id": "DL-FAIL-05", "facility_id": "FAC-004", "timestamp": "2020-01-01T00:00:00Z"}', 20),
-        ("MaintenanceActivity", "UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE", '{"event_id": "DL-FAIL-06", "mac_address": "00:00:00:00:00:00"}', 15),
+    # 5. Inject Forensic Dead Letter Failure Samples Across All Streams and Full Timeline (~3,200 Events)
+    streams_list = [
+        "EnvironmentalTelemetry",
+        "EquipmentTelemetry",
+        "CropTelemetry",
+        "IrrigationTelemetry",
+        "LightingTelemetry",
+        "MaintenanceActivity",
+    ]
+
+    dl_exception_catalog = [
+        ("MISSING_PRIMARY_KEY: NULL FACILITY_ID", '{"event_id": "DL-FAIL-PK", "facility_id": null, "zone_id": "ZONE-001"}', 110),
+        ("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C", '{"event_id": "DL-FAIL-VAL", "facility_id": "FAC-001", "sensor_val": 88.5}', 130),
+        ("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD", '{"event_id": "DL-FAIL-SCH", "facility_id": "FAC-002", "schema_version": "v1.0"}', 100),
+        ("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD", '{"event_id": "DL-FAIL-JSON", "facility_id": "FAC-003", "payload": "{bad_json"}', 80),
+        ("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H", '{"event_id": "DL-FAIL-TS", "facility_id": "FAC-004", "timestamp": "2020-01-01T00:00:00Z"}', 65),
+        ("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE", '{"event_id": "DL-FAIL-MAC", "mac_address": "00:00:00:00:00:00"}', 55),
     ]
 
     dl_counter = 0
-    for stream_name, exc_reason, payload, target_count in dl_distribution:
-        for k in range(target_count):
-            seed_dl = f"DL-GOV-{dl_counter:04d}"
-            dl_step_dt = start_dt + timedelta(days=(dl_counter * (days_history / 250.0)))
-            ts_dl_str = dl_step_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-            
-            dl_rows.append({
-                "event_id": make_uuidv5("DeadLetterTelemetry", seed_dl),
-                "event_type": "DeadLetterTelemetry",
-                "target_stream": stream_name,
-                "exception_reason": exc_reason,
-                "raw_payload": payload,
-                "ingestion_timestamp": ts_dl_str
-            })
-            dl_counter += 1
+    total_dl_target = sum(cnt for _, _, cnt in dl_exception_catalog) * len(streams_list)
+    
+    for stream_name in streams_list:
+        for exc_reason, payload, target_count in dl_exception_catalog:
+            for k in range(target_count):
+                seed_dl = f"DL-GOV-{stream_name[:3]}-{dl_counter:05d}"
+                # Distribute events evenly across full 600-day historical window
+                fraction = dl_counter / float(total_dl_target)
+                dl_step_dt = start_dt + timedelta(days=fraction * days_history, hours=(dl_counter % 24), minutes=(dl_counter % 60))
+                ts_dl_str = dl_step_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                
+                dl_rows.append({
+                    "event_id": make_uuidv5("DeadLetterTelemetry", seed_dl),
+                    "event_type": "DeadLetterTelemetry",
+                    "target_stream": stream_name,
+                    "exception_reason": exc_reason,
+                    "raw_payload": payload,
+                    "ingestion_timestamp": ts_dl_str
+                })
+                dl_counter += 1
 
-    print(f" [info] Pre-populated ALL 12 Stream Data Accumulators Successfully!")
+    print(f" [info] Pre-populated ALL 12 Stream Data Accumulators Successfully ({len(dl_rows)} Dead-Letter Governance records)!")
 
     # Save to OneLake Landing Directory
     output_base = Path("Files")

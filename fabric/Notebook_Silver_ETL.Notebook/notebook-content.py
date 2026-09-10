@@ -1055,16 +1055,13 @@ ingestion_ts_col = (
     else F.coalesce(F.col("IngestionTime"), F.current_timestamp())
 )
 
-# Safe facility_id null check
-fac_id_check = F.col("facility_id").isNull() if "facility_id" in raw_cols else F.lit(False)
-
 # Canonical Governance Exception Reason Resolution (Standardized Single-Casing)
 exc_raw_upper = F.upper(F.trim(exception_reason_col))
 exception_reason_canonical = (
-    F.when(exc_raw_upper.contains("MISSING") | fac_id_check, F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
+    F.when(exc_raw_upper.contains("MISSING") | exc_raw_upper.contains("NULL"), F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
      .when(exc_raw_upper.contains("BOUNDS") | exc_raw_upper.contains("TEMP") | exc_raw_upper.contains("65"), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
      .when(exc_raw_upper.contains("SCHEMA") | exc_raw_upper.contains("V1.0") | exc_raw_upper.contains("LEGACY"), F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
-     .when(exc_raw_upper.contains("SERDES") | exc_raw_upper.contains("JSON") | exc_raw_upper.contains("PARSE"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
+     .when(exc_raw_upper.contains("SERDES") | exc_raw_upper.contains("JSON") | exc_raw_upper.contains("PARSE") | exc_raw_upper.contains("FORMAT"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
      .when(exc_raw_upper.contains("TIMESTAMP") | exc_raw_upper.contains("CLOCK") | exc_raw_upper.contains("SYNC") | exc_raw_upper.contains("SKEW"), F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
      .when(exc_raw_upper.contains("MAC") | exc_raw_upper.contains("UNREGISTERED") | exc_raw_upper.contains("ORPHAN"), F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
      .otherwise(F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))

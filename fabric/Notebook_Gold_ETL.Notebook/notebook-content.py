@@ -1042,16 +1042,22 @@ fact_env_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
+            |
+            (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
+        ),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
-        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
+        (
+            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
+            |
+            (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
+        ),
         how="left"
     )
     .select(
@@ -1072,6 +1078,7 @@ fact_env_stg = (
         F.current_timestamp().alias("created_timestamp"),
         F.lit(PIPELINE_RUN_DATE).alias("pipeline_run_date")
     )
+    .filter((F.col("facility_key") != -1) & (F.col("zone_key") != -1) & (F.col("date_key") >= 20250101))
     .drop_duplicates(["date_key", "facility_key", "zone_key"])
 )
 
