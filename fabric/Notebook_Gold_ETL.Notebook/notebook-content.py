@@ -1073,10 +1073,11 @@ fact_env_stg = (
 
 fact_env_stg.write.format("delta")\
             .mode("overwrite")\
-            .option("mergeSchema", "true")\
+            .option("overwriteSchema", "true")\
             .partitionBy("date_key")\
             .saveAsTable(table_name)
 
+spark.sql(f"DELETE FROM {table_name} WHERE facility_key = -1 OR zone_key = -1 OR date_key = -1 OR date_key < 20250101")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 df_fact_env = spark.table(table_name)
@@ -1235,10 +1236,11 @@ fact_eq_stg = (
 
 fact_eq_stg.write.format("delta")\
                 .mode("overwrite")\
-                .option("mergeSchema", "true")\
+                .option("overwriteSchema", "true")\
                 .partitionBy("date_key")\
                 .saveAsTable(table_name)
 
+spark.sql(f"DELETE FROM {table_name} WHERE facility_key = -1 OR equipment_key = -1 OR zone_key = -1 OR date_key = -1 OR date_key < 20250101")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 df_fact_eq = spark.table(table_name)
@@ -1393,11 +1395,11 @@ fact_crop_stg = (
 
 fact_crop_stg.write.format("delta")\
                 .mode("overwrite")\
-                .option("mergeSchema", "true")\
+                .option("overwriteSchema", "true")\
                 .partitionBy("date_key")\
                 .saveAsTable(table_name)
 
-spark.sql(f"DELETE FROM {table_name} WHERE date_key = -1 OR crop_key = -1 OR date_key < 20250101")
+spark.sql(f"DELETE FROM {table_name} WHERE facility_key = -1 OR zone_key = -1 OR crop_key = -1 OR date_key = -1 OR date_key < 20250101")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 df_fact_crop = spark.table(table_name)
@@ -1495,11 +1497,11 @@ fact_irr_stg = (
 
 fact_irr_stg.write.format("delta")\
             .mode("overwrite")\
-            .option("mergeSchema", "true")\
+            .option("overwriteSchema", "true")\
             .partitionBy("date_key")\
             .saveAsTable(table_name)
 
-spark.sql(f"DELETE FROM {table_name} WHERE date_key = -1 OR date_key < 20250101 OR date_key IS NULL")
+spark.sql(f"DELETE FROM {table_name} WHERE facility_key = -1 OR zone_key = -1 OR date_key = -1 OR date_key < 20250101 OR date_key IS NULL")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 df_fact_irr = spark.table(table_name)
@@ -1602,11 +1604,11 @@ fact_lt_stg = (
 # Write Delta Table
 fact_lt_stg.write.format("delta")\
             .mode("overwrite")\
-            .option("mergeSchema", "true")\
+            .option("overwriteSchema", "true")\
             .partitionBy("date_key")\
             .saveAsTable(table_name)
 
-# Compute Table Statistics
+spark.sql(f"DELETE FROM {table_name} WHERE facility_key = -1 OR zone_key = -1 OR date_key = -1 OR date_key < 20250101")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 # Validation and metrics
@@ -1782,10 +1784,11 @@ fact_maint_stg = (
 # 5. Overwrite Delta Table & Enforce Zero-Orphan Policy
 fact_maint_stg.write.format("delta")\
             .mode("overwrite")\
-            .option("mergeSchema", "true")\
+            .option("overwriteSchema", "true")\
             .partitionBy("date_key")\
             .saveAsTable(table_name)
 
+spark.sql(f"DELETE FROM {table_name} WHERE facility_key = -1 OR zone_key = -1 OR equipment_key = -1 OR technician_key = -1 OR date_key = -1 OR date_key < 20250101")
 spark.sql(f"ANALYZE TABLE {table_name} COMPUTE STATISTICS")
 
 # 6. Validation Metrics
