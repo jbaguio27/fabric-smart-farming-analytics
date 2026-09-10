@@ -1037,22 +1037,16 @@ fact_env_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
         how="left"
     )
     .select(
@@ -1163,7 +1157,7 @@ df_eq_agg = (
     .agg(
         F.round(F.avg(health_col), 1).alias("avg_health_score"),
         F.round(F.max(fail_col), 4).alias("max_failure_probability"),
-        F.round(F.greatest(F.lit(0.0), F.max("runtime_hours") - F.min("runtime_hours")), 2).alias("daily_runtime_hours"),
+        F.round(F.least(F.lit(24.0), F.greatest(F.lit(0.0), F.max("runtime_hours") - F.min("runtime_hours"))), 2).alias("daily_runtime_hours"),
         F.round(F.avg(power_col), 2).alias("avg_power_draw_kw"),
         F.round(F.avg(vib_col), 3).alias("avg_vibration_vps"),
         F.round(F.avg(temp_col), 2).alias("avg_operating_temp_celsius"),
@@ -1199,32 +1193,23 @@ fact_eq_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
         how="left"
     )
     .join(
         dim_eq_bcast.alias("dim_eq"),
         (F.col("fact.equipment_id") == F.col("dim_eq.equipment_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_eq.effective_date")) & (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_eq.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_eq.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
         how="left"
     )
     .select(
@@ -1367,22 +1352,16 @@ fact_crop_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
         how="inner"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
         how="inner"
     )
     .join(
@@ -1484,22 +1463,16 @@ fact_irr_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
         how="inner"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
         how="inner"
     )
     .select(
@@ -1597,22 +1570,16 @@ fact_lt_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-            |
-            ((F.col("fact.event_date") < F.col("dim_fac.effective_date")) & (F.col("dim_fac.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
         how="left"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-            |
-            ((F.col("fact.event_date") < F.col("dim_zn.effective_date")) & (F.col("dim_zn.effective_date") == F.lit(FARM_OPERATIONS_START_DATE)))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
         how="left"
     )
     .select(
@@ -1765,32 +1732,23 @@ fact_maint_stg = (
     .join(
         dim_fac_bcast.alias("dim_fac"),
         (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
         how="inner"
     )
     .join(
         dim_zone_bcast.alias("dim_zn"),
         (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
         (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
         how="inner"
     )
     .join(
         dim_eq_bcast.alias("dim_eq"),
         (F.col("fact.equipment_id") == F.col("dim_eq.equipment_id")) &
-        (
-            ((F.col("fact.event_date") >= F.col("dim_eq.effective_date")) & (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")))
-            |
-            (F.col("fact.event_date") < F.col("dim_eq.effective_date"))
-        ),
+        (F.col("fact.event_date") >= F.col("dim_eq.effective_date")) &
+        (F.col("fact.event_date") <= F.col("dim_eq.expiration_date")),
         how="inner"
     )
     .join(

@@ -544,10 +544,8 @@ if df_new_env is not None and cnt_env > 0:
         df_gold_env = df_gold_env.join(
             dim_fac_bcast.alias("dim_fac"),
             (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
             "left"
         )
     else:
@@ -558,10 +556,8 @@ if df_new_env is not None and cnt_env > 0:
             dim_zone_bcast.alias("dim_zn"),
             (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
             (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
             "left"
         )
     else:
@@ -679,7 +675,7 @@ if df_new_eq is not None and cnt_eq > 0:
         .agg(
             F.round(F.avg("equipment_health_status"), 1).alias("avg_health_score"),
             F.round(F.max("failure_probability"), 4).alias("max_failure_probability"),
-            F.round(F.greatest(F.lit(0.0), F.max("runtime_hours") - F.min("runtime_hours")), 2).alias("daily_runtime_hours"),
+            F.round(F.least(F.lit(24.0), F.greatest(F.lit(0.0), F.max("runtime_hours") - F.min("runtime_hours"))), 2).alias("daily_runtime_hours"),
             F.round(F.avg("power_consumption_kw"), 2).alias("avg_power_draw_kw"),
             F.round(F.avg("vibration_vps"), 3).alias("avg_vibration_vps"),
             F.round(F.avg("operating_temp_c"), 2).alias("avg_operating_temp_celsius"),
@@ -694,10 +690,8 @@ if df_new_eq is not None and cnt_eq > 0:
         df_gold_eq = df_gold_eq.join(
             dim_fac_bcast.alias("f"),
             (F.col("fact.facility_id") == F.col("f.facility_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("f.effective_date")) & (F.col("fact.event_date") <= F.col("f.expiration_date")))
-                | (F.col("fact.event_date") < F.col("f.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("f.effective_date")) &
+            (F.col("fact.event_date") <= F.col("f.expiration_date")),
             "left"
         )
     else:
@@ -707,10 +701,8 @@ if df_new_eq is not None and cnt_eq > 0:
         df_gold_eq = df_gold_eq.join(
             dim_eq_bcast.alias("e"),
             (F.col("fact.equipment_id") == F.col("e.equipment_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("e.effective_date")) & (F.col("fact.event_date") <= F.col("e.expiration_date")))
-                | (F.col("fact.event_date") < F.col("e.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("e.effective_date")) &
+            (F.col("fact.event_date") <= F.col("e.expiration_date")),
             "left"
         )
     else:
@@ -721,10 +713,8 @@ if df_new_eq is not None and cnt_eq > 0:
             dim_zone_bcast.alias("z"),
             (F.col("fact.facility_id") == F.col("z.facility_id")) &
             (F.col("fact.zone_id") == F.col("z.zone_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("z.effective_date")) & (F.col("fact.event_date") <= F.col("z.expiration_date")))
-                | (F.col("fact.event_date") < F.col("z.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("z.effective_date")) &
+            (F.col("fact.event_date") <= F.col("z.expiration_date")),
             "left"
         )
     else:
@@ -983,10 +973,8 @@ if df_new_irr is not None and cnt_irr > 0:
         df_gold_irr = df_gold_irr.join(
             dim_fac_bcast.alias("dim_fac"),
             (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
             how="left"
         )
     else:
@@ -997,10 +985,8 @@ if df_new_irr is not None and cnt_irr > 0:
             dim_zone_bcast.alias("dim_zn"),
             (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
             (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
             how="left"
         )
     else:
@@ -1080,10 +1066,8 @@ if df_new_lt is not None and cnt_lt > 0:
         df_gold_lt = df_gold_lt.join(
             dim_fac_bcast.alias("dim_fac"),
             (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
             how="left"
         )
     else:
@@ -1094,10 +1078,8 @@ if df_new_lt is not None and cnt_lt > 0:
             dim_zone_bcast.alias("dim_zn"),
             (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
             (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
             how="left"
         )
     else:
@@ -1205,10 +1187,8 @@ if df_new_maint is not None and cnt_maint > 0:
         df_gold_maint = df_gold_maint.join(
             dim_fac_bcast.alias("dim_fac"),
             (F.col("fact.facility_id") == F.col("dim_fac.facility_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_fac.effective_date")) & (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_fac.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_fac.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_fac.expiration_date")),
             how="left"
         )
     else:
@@ -1219,10 +1199,8 @@ if df_new_maint is not None and cnt_maint > 0:
             dim_zone_bcast.alias("dim_zn"),
             (F.col("fact.facility_id") == F.col("dim_zn.facility_id")) &
             (F.col("fact.zone_id") == F.col("dim_zn.zone_id")) &
-            (
-                ((F.col("fact.event_date") >= F.col("dim_zn.effective_date")) & (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")))
-                | (F.col("fact.event_date") < F.col("dim_zn.effective_date"))
-            ),
+            (F.col("fact.event_date") >= F.col("dim_zn.effective_date")) &
+            (F.col("fact.event_date") <= F.col("dim_zn.expiration_date")),
             how="left"
         )
     else:
