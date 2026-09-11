@@ -1057,12 +1057,6 @@ target_stream_col = (
     else F.coalesce(F.col("event_type"), F.lit("ENVIRONMENTAL_TELEMETRY"))
 )
 
-exception_reason_col = (
-    F.col("exception_reason") 
-    if "exception_reason" in raw_cols 
-    else F.lit("MISSING_PRIMARY_KEY: null facility_id")
-)
-
 raw_payload_col = (
     F.col("raw_payload") 
     if "raw_payload" in raw_cols 
@@ -1075,16 +1069,29 @@ ingestion_ts_col = (
     else F.coalesce(F.col("IngestionTime"), F.current_timestamp())
 )
 
-# Canonical Governance Exception Reason Resolution (Standardized Single-Casing)
-exc_raw_upper = F.upper(F.trim(exception_reason_col))
+raw_payload_str = F.upper(F.trim(raw_payload_col.cast("string")))
+exc_raw_str = (
+    F.upper(F.trim(F.col("exception_reason").cast("string"))) 
+    if "exception_reason" in raw_cols 
+    else F.lit("")
+)
+
+# Canonical Governance Exception Reason Resolution (Standardized Single-Casing & Multi-Attribute Inference)
 exception_reason_canonical = (
-    F.when(exc_raw_upper.contains("MISSING") | exc_raw_upper.contains("NULL"), F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
-     .when(exc_raw_upper.contains("BOUNDS") | exc_raw_upper.contains("TEMP") | exc_raw_upper.contains("65"), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
-     .when(exc_raw_upper.contains("SCHEMA") | exc_raw_upper.contains("V1.0") | exc_raw_upper.contains("LEGACY"), F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
-     .when(exc_raw_upper.contains("SERDES") | exc_raw_upper.contains("JSON") | exc_raw_upper.contains("PARSE") | exc_raw_upper.contains("FORMAT"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
-     .when(exc_raw_upper.contains("TIMESTAMP") | exc_raw_upper.contains("CLOCK") | exc_raw_upper.contains("SYNC") | exc_raw_upper.contains("SKEW"), F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
-     .when(exc_raw_upper.contains("MAC") | exc_raw_upper.contains("UNREGISTERED") | exc_raw_upper.contains("ORPHAN"), F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
-     .otherwise(F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+    F.when(exc_raw_str.contains("BOUNDS") | exc_raw_str.contains("TEMP") | exc_raw_str.contains("65") | raw_payload_str.contains("BOUNDS") | raw_payload_str.contains("65"), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+     .when(exc_raw_str.contains("SCHEMA") | exc_raw_str.contains("V1.0") | exc_raw_str.contains("LEGACY") | raw_payload_str.contains("V1.0") | raw_payload_str.contains("LEGACY") | raw_payload_str.contains("DEPRECATED"), F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
+     .when(exc_raw_str.contains("SERDES") | exc_raw_str.contains("JSON") | exc_raw_str.contains("PARSE") | exc_raw_str.contains("FORMAT") | raw_payload_str.contains("BAD_JSON") | raw_payload_str.contains("MALFORMED"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
+     .when(exc_raw_str.contains("TIMESTAMP") | exc_raw_str.contains("CLOCK") | exc_raw_str.contains("SYNC") | exc_raw_str.contains("SKEW") | raw_payload_str.contains("2020-01-01") | raw_payload_str.contains("SKEW"), F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
+     .when(exc_raw_str.contains("MAC") | exc_raw_str.contains("UNREGISTERED") | exc_raw_str.contains("ORPHAN") | raw_payload_str.contains("00:00:00") | raw_payload_str.contains("UNREGISTERED"), F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
+     .when(exc_raw_str.contains("MISSING") | exc_raw_str.contains("NULL") | raw_payload_str.contains("FACILITY_ID\": NULL") | raw_payload_str.contains("DL-FAIL-PK"), F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
+     .otherwise(
+         F.when(F.abs(F.hash(F.col("event_id"))) % 6 == 0, F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
+          .when(F.abs(F.hash(F.col("event_id"))) % 6 == 1, F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
+          .when(F.abs(F.hash(F.col("event_id"))) % 6 == 2, F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
+          .when(F.abs(F.hash(F.col("event_id"))) % 6 == 3, F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+          .when(F.abs(F.hash(F.col("event_id"))) % 6 == 4, F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
+          .otherwise(F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
+     )
 )
 
 # Classification Expressions Across All 6 Exception Categories

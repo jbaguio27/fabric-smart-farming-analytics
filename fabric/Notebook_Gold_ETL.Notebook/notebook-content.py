@@ -1844,12 +1844,12 @@ time_col    = "ingestion_timestamp" if "ingestion_timestamp" in raw_cols else ("
 # Daily aggregation per date, target stream, and standardized canonical governance exception reason
 exc_raw_upper = F.upper(F.trim(F.col(reason_col)))
 gov_reason_canonical = (
-    F.when(exc_raw_upper.contains("MISSING"), F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
-     .when(exc_raw_upper.contains("BOUNDS") | exc_raw_upper.contains("TEMP") | exc_raw_upper.contains("65"), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
-     .when(exc_raw_upper.contains("SCHEMA") | exc_raw_upper.contains("V1.0") | exc_raw_upper.contains("LEGACY"), F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
-     .when(exc_raw_upper.contains("SERDES") | exc_raw_upper.contains("JSON") | exc_raw_upper.contains("PARSE"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
+    F.when(exc_raw_upper.contains("BOUNDS") | exc_raw_upper.contains("TEMP") | exc_raw_upper.contains("65"), F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+     .when(exc_raw_upper.contains("SCHEMA") | exc_raw_upper.contains("V1.0") | exc_raw_upper.contains("LEGACY") | exc_raw_upper.contains("DEPRECATED"), F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
+     .when(exc_raw_upper.contains("SERDES") | exc_raw_upper.contains("JSON") | exc_raw_upper.contains("PARSE") | exc_raw_upper.contains("FORMAT"), F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
      .when(exc_raw_upper.contains("TIMESTAMP") | exc_raw_upper.contains("CLOCK") | exc_raw_upper.contains("SYNC") | exc_raw_upper.contains("SKEW"), F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
      .when(exc_raw_upper.contains("MAC") | exc_raw_upper.contains("UNREGISTERED") | exc_raw_upper.contains("ORPHAN"), F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
+     .when(exc_raw_upper.contains("MISSING") | exc_raw_upper.contains("NULL"), F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
      .otherwise(F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
 )
 
@@ -1864,13 +1864,12 @@ df_dl_agg = df_dl_raw \
         F.sum(F.when(F.col("governance_exception_reason").contains("MISSING"), 1).otherwise(0)).alias("missing_pk_defect_count"),
         F.sum(F.when(F.col("governance_exception_reason").contains("BOUNDS") | F.col("governance_exception_reason").contains("TEMP"), 1).otherwise(0)).alias("out_of_bounds_defect_count"),
         F.sum(F.when(F.col("governance_exception_reason").contains("DEPRECATED") | F.col("governance_exception_reason").contains("SCHEMA"), 1).otherwise(0)).alias("deprecated_schema_defect_count"),
-        F.sum(F.when(F.col("governance_exception_reason").contains("JSON") | F.col("governance_exception_reason").contains("SERDES"), 1).otherwise(0)).alias("serdes_parse_defect_count"),
+        F.sum(F.when(F.col("governance_exception_reason").contains("JSON") | F.col("governance_exception_reason").contains("SERDES") | F.col("governance_exception_reason").contains("PARSE"), 1).otherwise(0)).alias("serdes_parse_defect_count"),
         F.sum(F.when(F.col("governance_exception_reason").contains("CLOCK") | F.col("governance_exception_reason").contains("SYNC") | F.col("governance_exception_reason").contains("TIMESTAMP"), 1).otherwise(0)).alias("timestamp_sync_defect_count"),
         F.sum(F.when(F.col("governance_exception_reason").contains("MAC") | F.col("governance_exception_reason").contains("UNREGISTERED"), 1).otherwise(0)).alias("unregistered_hardware_defect_count"),
         F.sum(F.when(
             F.col("governance_exception_reason").contains("JSON") | F.col("governance_exception_reason").contains("SERDES") | 
-            F.col("governance_exception_reason").contains("BOUNDS") | F.col("governance_exception_reason").contains("CLOCK") | 
-            F.col("governance_exception_reason").contains("MAC") | F.col("governance_exception_reason").contains("FORMAT"), 1
+            F.col("governance_exception_reason").contains("FORMAT") | F.col("governance_exception_reason").contains("PARSE"), 1
         ).otherwise(0)).alias("formatting_defect_count")
     )
 
