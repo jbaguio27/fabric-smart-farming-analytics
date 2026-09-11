@@ -945,7 +945,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d);\r\nlet LiveCount = toscalar(LiveData | count);\r\nlet LiveSuccess = toscalar(LiveData | summarize round((countif(ExecutionStatus == \"SUCCESS\") * 100.0) / count(), 1));\r\nprint SuccessRate = iff(LiveCount > 0 and isnotnull(LiveSuccess), strcat(LiveSuccess, \"%\"), \"100.0%\")",
+      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize arg_max(Timestamp, *) by TraceId, StageName;\r\nlet LiveCount = toscalar(LiveData | count);\r\nlet LiveSuccess = toscalar(LiveData | summarize round((countif(ExecutionStatus == \"SUCCESS\") * 100.0) / count(), 1));\r\nprint SuccessRate = iff(LiveCount > 0 and isnotnull(LiveSuccess), strcat(LiveSuccess, \"%\"), \"100.0%\")",
       "id": "c6fd8f7c-4f5f-4a1f-88c0-dca629af890c",
       "usedVariables": []
     },
@@ -954,7 +954,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d);\r\nlet LiveCount = toscalar(LiveData | count);\r\nlet LiveRows = toscalar(LiveData | summarize sum(TargetRowCount));\r\nprint TotalRows = iff(LiveCount > 0 and isnotnull(LiveRows), strcat(round(LiveRows / 1000000.0, 2), \"M\"), \"1.24M\")",
+      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize arg_max(Timestamp, *) by TraceId, StageName;\r\nlet LiveCount = toscalar(LiveData | count);\r\nlet LiveRows = toscalar(LiveData | summarize sum(TargetRowCount));\r\nprint TotalRows = iff(LiveCount > 0 and isnotnull(LiveRows), strcat(round(LiveRows / 1000000.0, 2), \"M\"), \"1.24M\")",
       "id": "4cfbcead-e0af-4dd4-96f5-c06fc1c7ce0f",
       "usedVariables": []
     },
@@ -963,7 +963,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d);\r\nlet LiveCount = toscalar(LiveData | count);\r\nlet LiveDuration = toscalar(LiveData | summarize TotalDurationSec = sum(ExecutionDurationMs) / 1000.0 by TraceId | summarize round(avg(TotalDurationSec) / 60.0, 2));\r\nprint AvgBatchDuration = iff(LiveCount > 0 and isnotnull(LiveDuration), strcat(LiveDuration, \" min\"), \"1.85 min\")",
+      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize arg_max(Timestamp, *) by TraceId, StageName;\r\nlet LiveCount = toscalar(LiveData | count);\r\nlet LiveDuration = toscalar(LiveData | summarize TotalDurationSec = sum(ExecutionDurationMs) / 1000.0 by TraceId | summarize round(avg(TotalDurationSec) / 60.0, 2));\r\nprint AvgBatchDuration = iff(LiveCount > 0 and isnotnull(LiveDuration), strcat(LiveDuration, \" min\"), \"1.85 min\")",
       "id": "8e660130-a1a2-49cc-93d7-b23f3ce3a5c4",
       "usedVariables": []
     },
@@ -981,7 +981,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize AvgDurationSec = round(avg(ExecutionDurationMs) / 1000.0, 1) by StageName;\r\nlet Fallback = datatable(StageName: string, AvgDurationSec: real)[\r\n    \"Bronze_Ingestion\", 14.2,\r\n    \"Silver_Deduplication_Cleaning\", 28.5,\r\n    \"Gold_Aggregation_Dimensions\", 45.1,\r\n    \"Warehouse_DataOps_Sync\", 18.3\r\n];\r\nunion (LiveData | where isnotempty(StageName)), (Fallback | where toscalar(LiveData | count) == 0)\r\n| order by AvgDurationSec desc",
+      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize arg_max(Timestamp, *) by TraceId, StageName\r\n| summarize AvgDurationSec = round(avg(ExecutionDurationMs) / 1000.0, 1) by StageName;\r\nlet Fallback = datatable(StageName: string, AvgDurationSec: real)[\r\n    \"Bronze_Ingestion\", 14.2,\r\n    \"Silver_Deduplication_Cleaning\", 28.5,\r\n    \"Gold_Aggregation_Dimensions\", 45.1,\r\n    \"Warehouse_DataOps_Sync\", 18.3\r\n];\r\nunion (LiveData | where isnotempty(StageName)), (Fallback | where toscalar(LiveData | count) == 0)\r\n| order by AvgDurationSec desc",
       "id": "7c73d831-f996-48b5-9355-4fbbf69556f0",
       "usedVariables": []
     },
@@ -990,7 +990,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize RowsProcessed = sum(TargetRowCount) by StageName;\r\nlet Fallback = datatable(StageName: string, RowsProcessed: long)[\r\n    \"Bronze_Ingestion\", 350000,\r\n    \"Silver_Deduplication_Cleaning\", 348500,\r\n    \"Gold_Aggregation_Dimensions\", 348500,\r\n    \"Warehouse_DataOps_Sync\", 348500\r\n];\r\nunion (LiveData | where isnotempty(StageName)), (Fallback | where toscalar(LiveData | count) == 0)\r\n| order by RowsProcessed desc",
+      "text": "let LiveData = DataOpsPipelineLog\r\n| where Timestamp > ago(7d)\r\n| summarize arg_max(Timestamp, *) by TraceId, StageName\r\n| summarize RowsProcessed = sum(TargetRowCount) by StageName;\r\nlet Fallback = datatable(StageName: string, RowsProcessed: long)[\r\n    \"Bronze_Ingestion\", 350000,\r\n    \"Silver_Deduplication_Cleaning\", 348500,\r\n    \"Gold_Aggregation_Dimensions\", 348500,\r\n    \"Warehouse_DataOps_Sync\", 348500\r\n];\r\nunion (LiveData | where isnotempty(StageName)), (Fallback | where toscalar(LiveData | count) == 0)\r\n| order by RowsProcessed desc",
       "id": "e9cceb56-fb3e-4eba-bdd0-85b2eaf43913",
       "usedVariables": []
     },
@@ -999,7 +999,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "let LiveData = DataOpsPipelineLog\r\n| project \r\n    Timestamp = format_datetime(Timestamp, \"yyyy-MM-dd HH:mm:ss\"),\r\n    TraceId,\r\n    StageName,\r\n    Component,\r\n    ExecutionStatus,\r\n    DurationSec = round(ExecutionDurationMs / 1000.0, 2),\r\n    ProcessedRows = TargetRowCount,\r\n    ErrorMessage;\r\nlet Fallback = datatable(Timestamp: string, TraceId: string, StageName: string, Component: string, ExecutionStatus: string, DurationSec: real, ProcessedRows: long, ErrorMessage: string)[\r\n    \"2026-09-11 00:00:00\", \"batch-trace-init-001\", \"Gold_Aggregation_Dimensions\", \"Notebook_Gold_ETL\", \"SUCCESS\", 45.10, 348500, \"\",\r\n    \"2026-09-11 00:01:00\", \"batch-trace-init-001\", \"Warehouse_DataOps_Sync\", \"Pipeline_Medallion_Batch\", \"SUCCESS\", 18.30, 348500, \"\",\r\n    \"2026-09-11 00:02:00\", \"stream-sync-init-001\", \"Silver_Incremental_Sync\", \"Notebook_Incremental_Sync\", \"SUCCESS\", 12.40, 15200, \"\"\r\n];\r\nunion LiveData, (Fallback | where toscalar(LiveData | count) == 0)\r\n| order by Timestamp desc\r\n| take 100",
+      "text": "let LiveData = DataOpsPipelineLog\r\n| summarize arg_max(Timestamp, *) by TraceId, StageName\r\n| project \r\n    Timestamp = format_datetime(Timestamp, \"yyyy-MM-dd HH:mm:ss\"),\r\n    TraceId,\r\n    StageName,\r\n    Component,\r\n    ExecutionStatus,\r\n    DurationSec = round(ExecutionDurationMs / 1000.0, 2),\r\n    ProcessedRows = TargetRowCount,\r\n    ErrorMessage;\r\nlet Fallback = datatable(Timestamp: string, TraceId: string, StageName: string, Component: string, ExecutionStatus: string, DurationSec: real, ProcessedRows: long, ErrorMessage: string)[\r\n    \"2026-09-11 00:00:00\", \"batch-trace-init-001\", \"Gold_Aggregation_Dimensions\", \"Notebook_Gold_ETL\", \"SUCCESS\", 45.10, 348500, \"\",\r\n    \"2026-09-11 00:01:00\", \"batch-trace-init-001\", \"Warehouse_DataOps_Sync\", \"Pipeline_Medallion_Batch\", \"SUCCESS\", 18.30, 348500, \"\",\r\n    \"2026-09-11 00:02:00\", \"stream-sync-init-001\", \"Silver_Incremental_Sync\", \"Notebook_Incremental_Sync\", \"SUCCESS\", 12.40, 15200, \"\"\r\n];\r\nunion LiveData, (Fallback | where toscalar(LiveData | count) == 0)\r\n| order by Timestamp desc\r\n| take 100",
       "id": "e8f1772a-6a14-4a5b-9f2b-8606bc85d1d1",
       "usedVariables": []
     },
