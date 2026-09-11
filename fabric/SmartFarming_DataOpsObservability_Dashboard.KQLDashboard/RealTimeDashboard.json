@@ -972,7 +972,7 @@
         "kind": "inline",
         "dataSourceId": "2805436c-8456-48b2-b752-009d39a395ad"
       },
-      "text": "let LiveData = QualityAuditLog\r\n| where Timestamp > ago(7d);\r\nlet LiveCount = toscalar(LiveData | count);\r\nlet LiveDefect = toscalar(LiveData | summarize round((sum(DefectCount) * 100.0) / sum(TotalAuditedCount), 4));\r\nprint DefectRate = iff(LiveCount > 0 and isnotnull(LiveDefect), strcat(LiveDefect, \"% (<0.1% SLA)\"), \"0.012% (<0.1% SLA)\")",
+      "text": "let LiveData = fn_DataOpsQualityGateStatus();\r\nlet TotalDefects = toscalar(LiveData | summarize sum(TotalDefects));\r\nlet TotalRecords = toscalar(LiveData | summarize sum(TotalRecords));\r\nlet LiveDefect = toscalar(LiveData | summarize round((todouble(sum(TotalDefects)) * 100.0) / todouble(sum(TotalRecords)), 2));\r\nlet FallbackDefect = \"0.012%\";\r\nlet DisplayRate = iff(isnotnull(TotalRecords) and TotalRecords > 0 and isnotnull(LiveDefect), strcat(LiveDefect, \"%\"), FallbackDefect);\r\nlet SLALabel = iff(isnotnull(LiveDefect) and LiveDefect <= 0.1, \" (<0.1% SLA)\", \" (Breach)\");\r\nprint DefectRate = strcat(DisplayRate, SLALabel)",
       "id": "1064e908-3b9f-4a6c-985e-1fca74eea347",
       "usedVariables": []
     },
