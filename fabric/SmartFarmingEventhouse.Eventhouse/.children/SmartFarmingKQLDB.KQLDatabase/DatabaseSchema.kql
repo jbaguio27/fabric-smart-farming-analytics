@@ -449,7 +449,6 @@
         high_crop_stress_count = countif(environmental_stress_index > 0.45),
         last_updated_timestamp = max(ingestion_time())
         by facility_id = toupper(facility_id), zone_id, crop_type }
-.alter table DataOpsPipelineLog policy retention @'{"SoftDeletePeriod":"30.00:00:00","Recoverability":"Enabled"}'
 .alter table QualityAuditLog policy retention @'{"SoftDeletePeriod":"30.00:00:00","Recoverability":"Enabled"}'
 .alter table IngestionLatencyTracker policy retention @'{"SoftDeletePeriod":"30.00:00:00","Recoverability":"Enabled"}'
 .alter table EnvironmentalEnriched policy update "[{\"IsEnabled\":true,\"Source\":\"EnvironmentalTelemetry\",\"Query\":\"transform_environmental_enriched()\",\"IsTransactional\":false,\"PropagateIngestionProperties\":false,\"ManagedIdentity\":null}]"
