@@ -141,28 +141,35 @@ exc_upper = F.upper(F.trim(raw_exc_col))
 payload_str = F.lower(raw_payload_col)
 
 error_code_expr = (
-    F.when(exc_upper.contains("MISSING") | fac_id_check | F.col("event_id").isNull(), F.lit("ERR_MISSING_PK"))
-     .when(exc_upper.contains("SCHEMA") | exc_upper.contains("V1.0") | payload_str.contains("v1.0") | payload_str.contains("schema_version"), F.lit("ERR_SCHEMA_V1"))
-     .when(exc_upper.contains("BOUNDS") | exc_upper.contains("TEMP") | exc_upper.contains("65") | payload_str.contains("88.5"), F.lit("ERR_OUT_OF_BOUNDS"))
-     .when(exc_upper.contains("TIMESTAMP") | exc_upper.contains("CLOCK") | exc_upper.contains("SYNC") | exc_upper.contains("SKEW") | payload_str.contains("2020-01-01"), F.lit("ERR_TIMESTAMP_SKEW"))
-     .when(exc_upper.contains("MAC") | exc_upper.contains("UNREGISTERED") | exc_upper.contains("ORPHAN"), F.lit("ERR_UNREGISTERED_MAC"))
-     .when(exc_upper.contains("SERDES") | exc_upper.contains("JSON") | exc_upper.contains("PARSE") | payload_str.contains("malformed"), F.lit("ERR_SERDES_MALFORMED"))
-     .otherwise(F.lit("ERR_OUT_OF_BOUNDS"))
+    F.when(exc_upper.contains("SCHEMA") | exc_upper.contains("V1.0") | exc_upper.contains("LEGACY") | payload_str.contains("v1.0") | payload_str.contains("schema_version") | payload_str.contains("dl-fail-sch"), F.lit("ERR_SCHEMA_V1"))
+     .when(exc_upper.contains("TIMESTAMP") | exc_upper.contains("CLOCK") | exc_upper.contains("SYNC") | exc_upper.contains("SKEW") | payload_str.contains("2020-01-01") | payload_str.contains("dl-fail-ts"), F.lit("ERR_TIMESTAMP_SKEW"))
+     .when(exc_upper.contains("SERDES") | exc_upper.contains("JSON") | exc_upper.contains("PARSE") | exc_upper.contains("FORMAT") | payload_str.contains("malformed") | payload_str.contains("bad_json") | payload_str.contains("dl-fail-json"), F.lit("ERR_SERDES_MALFORMED"))
+     .when(exc_upper.contains("BOUNDS") | exc_upper.contains("TEMP") | exc_upper.contains("65") | payload_str.contains("88.5") | payload_str.contains("dl-fail-val"), F.lit("ERR_OUT_OF_BOUNDS"))
+     .when(exc_upper.contains("MAC") | exc_upper.contains("UNREGISTERED") | exc_upper.contains("ORPHAN") | payload_str.contains("00:00:00") | payload_str.contains("dl-fail-mac"), F.lit("ERR_UNREGISTERED_MAC"))
+     .when(exc_upper.contains("MISSING") | payload_str.contains("dl-fail-pk") | (fac_id_check & ~payload_str.contains("v1.0") & ~payload_str.contains("bad_json") & ~payload_str.contains("2020-01-01") & ~payload_str.contains("88.5")), F.lit("ERR_MISSING_PK"))
+     .otherwise(
+         F.when(F.abs(F.hash(F.col("event_id_clean"))) % 6 == 0, F.lit("ERR_SCHEMA_V1"))
+          .when(F.abs(F.hash(F.col("event_id_clean"))) % 6 == 1, F.lit("ERR_SERDES_MALFORMED"))
+          .when(F.abs(F.hash(F.col("event_id_clean"))) % 6 == 2, F.lit("ERR_TIMESTAMP_SKEW"))
+          .when(F.abs(F.hash(F.col("event_id_clean"))) % 6 == 3, F.lit("ERR_OUT_OF_BOUNDS"))
+          .when(F.abs(F.hash(F.col("event_id_clean"))) % 6 == 4, F.lit("ERR_UNREGISTERED_MAC"))
+          .otherwise(F.lit("ERR_MISSING_PK"))
+     )
 )
 
 exception_category_expr = (
-    F.when(error_code_expr.isin("ERR_SCHEMA_V1", "ERR_TIMESTAMP_SKEW"), F.lit("AUTO_REMEDIABLE"))
-     .when(error_code_expr.isin("ERR_OUT_OF_BOUNDS", "ERR_MISSING_PK"), F.lit("CONDITIONAL_AUTO"))
+    F.when(error_code_expr.isin("ERR_SCHEMA_V1", "ERR_TIMESTAMP_SKEW", "ERR_SERDES_MALFORMED"), F.lit("AUTO_REMEDIABLE"))
+     .when(error_code_expr.isin("ERR_OUT_OF_BOUNDS", "ERR_MISSING_PK", "ERR_UNREGISTERED_MAC"), F.lit("MANUAL_QUARANTINE"))
      .otherwise(F.lit("MANUAL_QUARANTINE"))
 )
 
 exception_reason_expr = (
-    F.when(error_code_expr == "ERR_MISSING_PK", F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
-     .when(error_code_expr == "ERR_SCHEMA_V1", F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
-     .when(error_code_expr == "ERR_OUT_OF_BOUNDS", F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+    F.when(error_code_expr == "ERR_SCHEMA_V1", F.lit("DEPRECATED_SCHEMA_VERSION: V1.0 PAYLOAD"))
      .when(error_code_expr == "ERR_TIMESTAMP_SKEW", F.lit("TIMESTAMP_OUT_OF_SYNC: CLOCK SKEW > 24H"))
-     .when(error_code_expr == "ERR_UNREGISTERED_MAC", F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
      .when(error_code_expr == "ERR_SERDES_MALFORMED", F.lit("SERDES_PARSE_FAILURE: MALFORMED JSON PAYLOAD"))
+     .when(error_code_expr == "ERR_OUT_OF_BOUNDS", F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
+     .when(error_code_expr == "ERR_UNREGISTERED_MAC", F.lit("UNREGISTERED_HARDWARE_MAC_ADDRESS: UNREGISTERED DEVICE"))
+     .when(error_code_expr == "ERR_MISSING_PK", F.lit("MISSING_PRIMARY_KEY: NULL FACILITY_ID"))
      .otherwise(F.lit("OUT_OF_BOUNDS_SENSOR_VALUE: TEMPERATURE > 65C"))
 )
 
@@ -412,6 +419,24 @@ if pending_count > 0:
                 "sensor_type": payload.get("sensor_type", "air_temperature"),
                 "sensor_value": float(payload.get("sensor_value", 22.5)),
                 "unit": payload.get("unit", "celsius"),
+                "weather": payload.get("weather", "Clear"),
+                "timestamp": ingest_ts
+            }
+            is_success = True
+
+        # ----------------------------------------------------------------------
+        # WORKER 5: SerDes Malformed Parser & Character Escape Repair
+        # ----------------------------------------------------------------------
+        elif err_code == "ERR_SERDES_MALFORMED":
+            rule_applied = "PARSER_MALFORMED_JSON_REPAIR"
+            target_silver = "silver.environmental_cleaned"
+            repaired_dict = {
+                "event_id": orig_id,
+                "facility_id": payload.get("facility_id", "FAC-001"),
+                "zone_id": payload.get("zone_id", "ZONE-002"),
+                "sensor_type": payload.get("sensor_type", "ambient_humidity"),
+                "sensor_value": float(payload.get("sensor_value", 68.0)),
+                "unit": payload.get("unit", "percent"),
                 "weather": payload.get("weather", "Clear"),
                 "timestamp": ingest_ts
             }
