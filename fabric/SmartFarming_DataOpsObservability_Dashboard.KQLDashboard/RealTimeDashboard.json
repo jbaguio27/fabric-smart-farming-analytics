@@ -1,5 +1,5 @@
 {
-  "schema_version": 81,
+  "schema_version": 84,
   "tiles": [
     {
       "id": "4d0114b2-c888-4831-9d89-5ec68ea9984c",
@@ -632,7 +632,7 @@
             "columns": [],
             "yAxisMaximumValue": null,
             "yAxisMinimumValue": null,
-            "yAxisScale": "linear",
+            "yAxisScale": "log",
             "horizontalLines": []
           },
           "additional": [],
