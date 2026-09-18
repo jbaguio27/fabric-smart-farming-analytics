@@ -1535,6 +1535,7 @@ def verify_equipment_telemetry_generator(
     equipment_state_manager.update_load()
     equipment_state_manager.update_failure_probability()
     equipment_state_manager.update_operating_status()
+    equipment_state_manager.update_sensor_metrics()
 
     generator = EquipmentTelemetryGenerator(
         settings=settings,

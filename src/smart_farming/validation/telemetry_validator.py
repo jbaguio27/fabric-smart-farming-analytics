@@ -308,7 +308,7 @@ class TelemetryValidator():
 
         assert (
             event.power_consumption_kw 
-            > 0.0
+            >= 0.0
         ), (
             f"{event.equipment_id}: "
             f"power consumption under 0.0 "
@@ -317,7 +317,7 @@ class TelemetryValidator():
 
         assert (
             event.operating_temperature_c 
-            > 0.0
+            >= 0.0
         ), (
             f"{event.equipment_id}: "
             f"temperature celcius under 0.0 "
@@ -326,7 +326,7 @@ class TelemetryValidator():
 
         assert (
             event.vibration_vps 
-            > 0.0
+            >= 0.0
         ), (
             f"{event.equipment_id}: "
             f"vibration under 0.0 "
