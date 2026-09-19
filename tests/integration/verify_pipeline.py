@@ -1374,7 +1374,7 @@ def verify_lighting_telemetry_generator(
         .generate()
     )
 
-    expected = context.settings.zone_count
+    expected = len(context.lighting_state_manager.get_all_states())
 
     assert (
         len(events) >= expected
