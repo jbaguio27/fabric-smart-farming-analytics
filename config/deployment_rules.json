@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "pipeline_name": "SmartFarming_Deployment_Pipeline",
+  "description": "Microsoft Fabric Deployment Pipeline parameter rules for Dev -> Test -> Prod promotion",
+  "deployment_rules": [
+    {
+      "item_type": "DataPipeline",
+      "item_name": "Pipeline_Medallion_Batch_Orchestration",
+      "parameter_rules": [
+        {
+          "parameter_name": "Environment",
+          "test_value": "TEST",
+          "prod_value": "PROD"
+        },
+        {
+          "parameter_name": "LakehouseName",
+          "test_value": "SmartFarming_Lakehouse_Test",
+          "prod_value": "SmartFarming_Lakehouse_Prod"
+        },
+        {
+          "parameter_name": "WarehouseName",
+          "test_value": "SmartFarming_Warehouse_Test",
+          "prod_value": "SmartFarming_Warehouse_Prod"
+        }
+      ]
+    },
+    {
+      "item_type": "DataPipeline",
+      "item_name": "Pipeline_Medallion_Incremental_StreamSync",
+      "parameter_rules": [
+        {
+          "parameter_name": "Environment",
+          "test_value": "TEST",
+          "prod_value": "PROD"
+        },
+        {
+          "parameter_name": "IngestionFrequencyMinutes",
+          "test_value": "15",
+          "prod_value": "5"
+        }
+      ]
+    },
+    {
+      "item_type": "SemanticModel",
+      "item_name": "SemanticModel_SmartFarming_Gold",
+      "datasource_rules": [
+        {
+          "source_type": "OneLake_DirectLake",
+          "test_target_lakehouse": "SmartFarming_Lakehouse_Test",
+          "prod_target_lakehouse": "SmartFarming_Lakehouse_Prod"
+        }
+      ]
+    },
+    {
+      "item_type": "Reflex",
+      "item_name": "SmartFarming_Activator_Alerts",
+      "parameter_rules": [
+        {
+          "parameter_name": "NotificationSeverityFilter",
+          "test_value": "WARNING_OR_CRITICAL",
+          "prod_value": "CRITICAL_ONLY"
+        }
+      ]
+    }
+  ]
+}

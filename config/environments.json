@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "Microsoft Fabric Smart Farming Analytics Platform",
+  "version": "1.0.0",
+  "environments": {
+    "development": {
+      "environment_name": "Development",
+      "stage_code": "DEV",
+      "workspace_name": "fabric-smart-farming-analytics-dev",
+      "capacity_sku": "F64",
+      "git_branch": "feature/microsoft-fabric",
+      "lakehouse": {
+        "name": "SmartFarming_Lakehouse",
+        "delta_vorder_enabled": true,
+        "retention_days_raw": 7
+      },
+      "warehouse": {
+        "name": "SmartFarming_Warehouse",
+        "default_schema": "dbo",
+        "security_schema": "Security"
+      },
+      "eventhouse": {
+        "name": "SmartFarmingEventhouse",
+        "database": "SmartFarmingKQLDB",
+        "hot_cache_days": 7
+      },
+      "alerting": {
+        "reflex_name": "SmartFarming_Activator_Alerts",
+        "notification_channel": "DevOps-Webhook"
+      }
+    },
+    "test": {
+      "environment_name": "Test / Staging",
+      "stage_code": "TEST",
+      "workspace_name": "fabric-smart-farming-analytics-test",
+      "capacity_sku": "F64",
+      "git_branch": "test",
+      "lakehouse": {
+        "name": "SmartFarming_Lakehouse_Test",
+        "delta_vorder_enabled": true,
+        "retention_days_raw": 30
+      },
+      "warehouse": {
+        "name": "SmartFarming_Warehouse_Test",
+        "default_schema": "dbo",
+        "security_schema": "Security"
+      },
+      "eventhouse": {
+        "name": "SmartFarmingEventhouse_Test",
+        "database": "SmartFarmingKQLDB_Test",
+        "hot_cache_days": 15
+      },
+      "alerting": {
+        "reflex_name": "SmartFarming_Activator_Alerts_Test",
+        "notification_channel": "QA-Webhook"
+      }
+    },
+    "production": {
+      "environment_name": "Production",
+      "stage_code": "PROD",
+      "workspace_name": "fabric-smart-farming-analytics-prod",
+      "capacity_sku": "F128",
+      "git_branch": "main",
+      "lakehouse": {
+        "name": "SmartFarming_Lakehouse_Prod",
+        "delta_vorder_enabled": true,
+        "retention_days_raw": 365
+      },
+      "warehouse": {
+        "name": "SmartFarming_Warehouse_Prod",
+        "default_schema": "dbo",
+        "security_schema": "Security"
+      },
+      "eventhouse": {
+        "name": "SmartFarmingEventhouse_Prod",
+        "database": "SmartFarmingKQLDB_Prod",
+        "hot_cache_days": 30
+      },
+      "alerting": {
+        "reflex_name": "SmartFarming_Activator_Alerts_Prod",
+        "notification_channel": "Executive-Ops-Escalation"
+      }
+    }
+  }
+}
