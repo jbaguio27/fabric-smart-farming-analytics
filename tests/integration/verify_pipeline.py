@@ -1544,6 +1544,7 @@ def verify_equipment_telemetry_generator(
         equipment_state_manager=equipment_state_manager,
     )
 
+    generator._cycle_counter = 1
     events = generator.generate()
 
     validator = TelemetryValidator()
@@ -2270,7 +2271,9 @@ def verify_simulator_lifecycle() -> None:
 
     equipment_state_manager.update_failure_probability()
     equipment_state_manager.update_operating_status()
+    equipment_state_manager.update_sensor_metrics()
 
+    generator._cycle_counter = 1
     events = generator.generate()
 
     assert len(events) == len(equipment_registry)
