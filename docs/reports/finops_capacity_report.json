@@ -1,0 +1,38 @@
+{
+  "evaluation_timestamp": "2026-09-20T22:27:23.994942+00:00",
+  "selected_sku": "FT64",
+  "capacity_units": 64,
+  "is_trial": true,
+  "commitment_tier": "payg",
+  "discount_pct": 0.0,
+  "effective_hourly_rate_usd": 0.0,
+  "monthly_compute_cost_usd": 0.0,
+  "storage_report": {
+    "total_raw_data_gb": 250.0,
+    "hot_cache_days": 7,
+    "total_retention_days": 30,
+    "unoptimized_monthly_storage_usd": 30.0,
+    "tiered_optimized_monthly_storage_usd": 11.41,
+    "monthly_storage_savings_usd": 18.59,
+    "savings_percentage": 62.0
+  },
+  "workload_cu": {
+    "spark_etl_cu_seconds_per_day": 25920.0,
+    "kql_streaming_cu_seconds_per_day": 75.0,
+    "data_pipeline_cu_seconds_per_day": 300.0,
+    "direct_lake_cu_seconds_per_day": 1200.0,
+    "total_cu_seconds_per_day": 27495.0,
+    "avg_cu_demand": 0.32,
+    "peak_cu_demand": 1.11,
+    "throttling_risk_pct": 0.5
+  },
+  "total_monthly_run_rate_usd": 11.41,
+  "upgrade_projections": {
+    "FT64 (Trial)": 0.0,
+    "F64 (Pay-As-You-Go)": 8421.01,
+    "F64 (1-Yr Reserved)": 5015.12,
+    "F128 (Pay-As-You-Go)": 16830.61,
+    "F128 (1-Yr Reserved)": 10018.83
+  },
+  "summary_markdown": "# HydroGrow Platform - FinOps & Capacity Optimization Report\n**Assigned SKU**: `FT64` (64 CUs) (Trial Evaluation Tier) | **Commitment**: `PAYG` (0.0% discount)\n**Timestamp**: `2026-09-20 22:27:23 UTC`\n\n## 1. Monthly Financial Run-Rate\n- **Compute Burn**: `$0.00 / month` ($0.0000/hr)\n- **Storage (Tiered & Optimized)**: `$11.41 / month`\n- **Total Monthly Platform Run-Rate**: **`$11.41 / month`**\n\n## 2. Workload CU-Second Breakdown & Throttling Resilience\n- **Spark Batch Medallion ETL**: `25,920 CU-sec/day`\n- **KQL Streaming Ingestion & Policies**: `75 CU-sec/day`\n- **Data Factory Pipelines**: `300 CU-sec/day`\n- **Direct Lake Semantic Queries**: `1,200 CU-sec/day`\n- **Smoothed Daily Average Demand**: `0.32 CUs`\n- **Estimated Peak Burst Demand**: `1.11 CUs`\n- **Capacity Utilization / Throttling Risk**: `0.5%` (Safe Baseline < 80%)\n\n## 3. Storage Tiering & Delta Optimization Savings\n- **Total Raw Telemetry**: `250.0 GB`\n- **Hot In-Memory Cache**: `7 days` (NVMe SSD for Real-Time Querying)\n- **Cold OneLake Retention**: `30 days` (Delta Parquet with V-Order)\n- **Unoptimized Baseline Cost**: `$30.00/mo`\n- **Optimized Tiered Cost**: `$11.41/mo`\n- **Monthly FinOps Savings**: **`$18.59/mo` (`62.0%` Reduction)**\n\n## 4. Trial-to-Production Enterprise Upgrade Roadmap\n| Tier / SKU | Pricing Model | Monthly Cost | Ideal Workload |\n| :--- | :--- | :--- | :--- |\n| `FT64 (Trial)` | Fixed / Reserved | `$0.00` | PoC & Feature Development |\n| `F64 (Pay-As-You-Go)` | Fixed / Reserved | `$8,421.01` | Standard Production (1-3 Facilities) |\n| `F64 (1-Yr Reserved)` | Fixed / Reserved | `$5,015.12` | Standard Production (1-3 Facilities) |\n| `F128 (Pay-As-You-Go)` | Fixed / Reserved | `$16,830.61` | High-Throughput Enterprise (4-10 Facilities) |\n| `F128 (1-Yr Reserved)` | Fixed / Reserved | `$10,018.83` | High-Throughput Enterprise (4-10 Facilities) |"
+}
