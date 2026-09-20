@@ -1,0 +1,123 @@
+{
+  "run_timestamp": "2026-09-20T19:22:58.283055+00:00",
+  "total_events_evaluated": 300,
+  "schema_validation_passed": true,
+  "stream_quality_results": {
+    "environmental": {
+      "stream_name": "environmental",
+      "total_records": 50,
+      "valid_records": 50,
+      "invalid_records": 0,
+      "null_violations": 0,
+      "range_violations": 0,
+      "drift_violations": 0,
+      "passed": true,
+      "errors": []
+    },
+    "equipment": {
+      "stream_name": "equipment",
+      "total_records": 50,
+      "valid_records": 50,
+      "invalid_records": 0,
+      "null_violations": 0,
+      "range_violations": 0,
+      "drift_violations": 0,
+      "passed": true,
+      "errors": []
+    },
+    "crop": {
+      "stream_name": "crop",
+      "total_records": 50,
+      "valid_records": 50,
+      "invalid_records": 0,
+      "null_violations": 0,
+      "range_violations": 0,
+      "drift_violations": 0,
+      "passed": true,
+      "errors": []
+    },
+    "crop_lifecycle": {
+      "stream_name": "crop_lifecycle",
+      "total_records": 50,
+      "valid_records": 50,
+      "invalid_records": 0,
+      "null_violations": 0,
+      "range_violations": 0,
+      "drift_violations": 0,
+      "passed": true,
+      "errors": []
+    },
+    "irrigation": {
+      "stream_name": "irrigation",
+      "total_records": 50,
+      "valid_records": 50,
+      "invalid_records": 0,
+      "null_violations": 0,
+      "range_violations": 0,
+      "drift_violations": 0,
+      "passed": true,
+      "errors": []
+    },
+    "lighting": {
+      "stream_name": "lighting",
+      "total_records": 50,
+      "valid_records": 50,
+      "invalid_records": 0,
+      "null_violations": 0,
+      "range_violations": 0,
+      "drift_violations": 0,
+      "passed": true,
+      "errors": []
+    }
+  },
+  "latency_result": {
+    "sla_target_seconds": 15.0,
+    "sample_count": 110,
+    "p50_latency_seconds": 1.702,
+    "p95_latency_seconds": 4.134,
+    "p99_latency_seconds": 4.802,
+    "max_latency_seconds": 5.385,
+    "sla_passed": true
+  },
+  "dlq_result": {
+    "injected_poison_records": 15,
+    "quarantined_records": 15,
+    "remediated_records": 15,
+    "unhandled_poison_records": 0,
+    "resilience_passed": true,
+    "remediation_log": [
+      "DLQ_QUARANTINE: Packet 0 routed to DLQ (Reason: NULL_PRIMARY_KEY)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 0 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 1 routed to DLQ (Reason: MALFORMED_JSON_STRING)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 1 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 2 routed to DLQ (Reason: TYPE_MISMATCH_FLOAT_EXPECTED)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 2 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 3 routed to DLQ (Reason: NULL_PRIMARY_KEY)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 3 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 4 routed to DLQ (Reason: MALFORMED_JSON_STRING)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 4 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 5 routed to DLQ (Reason: TYPE_MISMATCH_FLOAT_EXPECTED)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 5 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 6 routed to DLQ (Reason: NULL_PRIMARY_KEY)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 6 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 7 routed to DLQ (Reason: MALFORMED_JSON_STRING)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 7 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 8 routed to DLQ (Reason: TYPE_MISMATCH_FLOAT_EXPECTED)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 8 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 9 routed to DLQ (Reason: NULL_PRIMARY_KEY)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 9 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 10 routed to DLQ (Reason: MALFORMED_JSON_STRING)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 10 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 11 routed to DLQ (Reason: TYPE_MISMATCH_FLOAT_EXPECTED)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 11 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 12 routed to DLQ (Reason: NULL_PRIMARY_KEY)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 12 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 13 routed to DLQ (Reason: MALFORMED_JSON_STRING)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 13 via fallback defaults.",
+      "DLQ_QUARANTINE: Packet 14 routed to DLQ (Reason: TYPE_MISMATCH_FLOAT_EXPECTED)",
+      "DLQ_REMEDIATION: Worker auto-healed packet 14 via fallback defaults."
+    ]
+  },
+  "overall_status": "PASSED",
+  "summary_markdown": "# HydroGrow Platform End-to-End Validation Report\n**Status**: `PASSED` | **Timestamp**: `2026-09-20 19:22:58 UTC`\n\n## 1. Multi-Stream Quality & Schema Conformance\n| Stream Name | Total Records | Valid | Drift Violations | Null Violations | Range Violations | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `environmental` | 50 | 50 | 0 | 0 | 0 | \u2705 PASS |\n| `equipment` | 50 | 50 | 0 | 0 | 0 | \u2705 PASS |\n| `crop` | 50 | 50 | 0 | 0 | 0 | \u2705 PASS |\n| `crop_lifecycle` | 50 | 50 | 0 | 0 | 0 | \u2705 PASS |\n| `irrigation` | 50 | 50 | 0 | 0 | 0 | \u2705 PASS |\n| `lighting` | 50 | 50 | 0 | 0 | 0 | \u2705 PASS |\n\n## 2. Streaming Latency SLA Benchmarking\n- **Target SLA**: `< 15.0s`\n- **p50 Latency**: `1.702s`\n- **p95 Latency**: `4.134s`\n- **p99 Latency**: `4.802s`\n- **Max Latency**: `5.385s`\n- **SLA Compliance**: `\u2705 PASSED`\n\n## 3. Dead-Letter Queue (DLQ) Chaos & Self-Healing\n- **Poison Packets Injected**: `15`\n- **Successfully Quarantined**: `15`\n- **Auto-Remediated Records**: `15`\n- **DLQ Resilience Status**: `\u2705 PASSED`\n\n**Total Events Evaluated Across Platform**: `300`"
+}
