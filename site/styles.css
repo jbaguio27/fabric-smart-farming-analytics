@@ -340,6 +340,24 @@ img {
   border-radius: var(--radius-md);
   padding: 0.75rem;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.photo-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center 25%;
+  border-radius: var(--radius-sm);
+  display: block;
+  border: 1px solid rgba(96, 108, 56, 0.3);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.photo-card:hover .photo-image {
+  transform: scale(1.015);
+  filter: brightness(1.04);
 }
 
 .photo-placeholder {
@@ -374,6 +392,7 @@ img {
   margin-top: 0.75rem;
   font-style: italic;
   padding: 0 0.25rem;
+  line-height: 1.5;
 }
 
 .origin-narrative p {
