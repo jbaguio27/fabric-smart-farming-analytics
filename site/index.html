@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HydroGrow: Real-Time Smart Farming Analytics Platform — Engineering Case Study</title>
+  <meta name="description" content="An independent data engineering case study demonstrating a Microsoft Fabric streaming and medallion lakehouse platform built with synthetic agricultural telemetry.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="site-nav">
+    <div class="container-wide nav-wrapper">
+      <a href="#hero" class="nav-brand">
+        <span class="nav-brand-dot"></span>
+        <span>HydroGrow Analytics</span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+
+      <ul class="nav-links">
+        <li><a href="#origin" class="nav-link">Story</a></li>
+        <li><a href="#problem" class="nav-link">Problem</a></li>
+        <li><a href="#build" class="nav-link">The Build</a></li>
+        <li><a href="#platform" class="nav-link">Architecture</a></li>
+        <li><a href="#results" class="nav-link">Results</a></li>
+        <li><a href="#explore" class="nav-link">Explore</a></li>
+        <li><a href="#notes" class="nav-link">Engineering Notes</a></li>
+        <li><a href="#author" class="nav-link">Contact</a></li>
+        <li><a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="nav-cta">View GitHub</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero section">
+      <div class="container">
+        <div class="hero-content">
+          <span class="hero-supertitle">Independent Data Engineering Case Study</span>
+          <h1 class="hero-title">Some portfolio projects start with a dataset.<br>This one started with a place.</h1>
+          <p class="hero-subtitle">
+            A Microsoft Fabric data platform built around a Python-generated smart farming environment, demonstrating real-time telemetry ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
+          </p>
+          <div class="hero-actions">
+            <a href="#platform" class="btn btn-primary">Explore the Architecture</a>
+            <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-secondary">View GitHub Repository</a>
+          </div>
+
+          <div class="hero-pipeline-ribbon">
+            <span>Pipeline:</span>
+            <span class="pipeline-node">Python Simulator</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Fabric Eventstream</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Eventhouse (KQL)</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">OneLake Medallion</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Fabric Warehouse</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Direct Lake BI</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Activator Reflex</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 1: The Origin -->
+    <section id="origin" class="section">
+      <div class="container">
+        <span class="chapter-badge">Chapter 01</span>
+        <h2 class="section-title">Why I Built This</h2>
+        
+        <div class="origin-grid">
+          <div class="photo-card">
+            <!-- Personal Farm Photograph Container -->
+            <div class="photo-placeholder" id="primary-photo-container">
+              <div class="photo-placeholder-icon">🌾</div>
+              <div class="photo-placeholder-text">Personal photograph from the vertical farm environment</div>
+            </div>
+            <div class="photo-caption">Personal photo from the farm environment that inspired this project.</div>
+          </div>
+
+          <div class="origin-narrative">
+            <p>
+              I spent time around a real vertical farming environment and saw firsthand how many physical variables shift throughout the day: greenhouse microclimates, irrigation line pressure, dosing pumps, lighting photoperiods, and biological crop conditions.
+            </p>
+            <p>
+              Being around that physical operation made me interested in what an end-to-end data platform behind it should look like—from high-frequency sensor ingestion to historical dimensional modeling.
+            </p>
+            <p>
+              I also had experience working around a local company in this agricultural space. Because the company's identity, internal systems, and production operational data are protected by a Non-Disclosure Agreement (NDA), I cannot publicly publish the actual implementation or proprietary telemetry.
+            </p>
+            <p>
+              Instead of setting the work aside, I recreated the entire engineering problem publicly. I built a standalone Python application that generates realistic synthetic telemetry, and then engineered a full Microsoft Fabric platform around that simulator to demonstrate the architectural patterns without disclosing confidential information.
+            </p>
+
+            <div class="nda-callout">
+              <div class="nda-callout-title">Why the Data Is Simulated</div>
+              <p>
+                <strong>HydroGrow Solutions</strong> is a fictionalized case-study identity created specifically for this public demonstration. The public repository contains 100% synthetic telemetry generated by Python, ensuring complete transparency while preserving real-world architectural integrity.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 2: The Problem -->
+    <section id="problem" class="section section-quiet">
+      <div class="container">
+        <span class="chapter-badge">Chapter 02</span>
+        <h2 class="section-title">The Physical Problem</h2>
+        <p class="section-lead">
+          In high-density indoor farming, biological health depends entirely on continuous environmental stability. A delay in detecting abnormal conditions can lead to rapid crop stress or equipment damage.
+        </p>
+
+        <div class="problem-grid">
+          <div>
+            <ul class="problem-list">
+              <li class="problem-item">
+                <span class="problem-marker">01</span>
+                <div class="problem-text">
+                  <strong>Microclimate Drift</strong>
+                  <span>Air temperature, relative humidity, CO2 levels, and Photosynthetically Active Radiation (PAR) fluctuate dynamically across growing zones.</span>
+                </div>
+              </li>
+              <li class="problem-item">
+                <span class="problem-marker">02</span>
+                <div class="problem-text">
+                  <strong>Nutrient & Irrigation Imbalances</strong>
+                  <span>Electrical conductivity (EC) and pH levels in nutrient reservoirs must remain strictly balanced to avoid root burn or nutrient lockout.</span>
+                </div>
+              </li>
+              <li class="problem-item">
+                <span class="problem-marker">03</span>
+                <div class="problem-text">
+                  <strong>Mechanical Equipment Degradation</strong>
+                  <span>Dosing pumps, chillers, and HVAC blowers experience thermal stress and mechanical vibration before outright failure.</span>
+                </div>
+              </li>
+              <li class="problem-item">
+                <span class="problem-marker">04</span>
+                <div class="problem-text">
+                  <strong>Data Quality & Sensor Anomalies</strong>
+                  <span>Physical hardware occasionally drops packets, reports null identifiers, or generates out-of-bounds electrical noise that must be quarantined.</span>
+                </div>
+              </li>
+            </ul>
+
+            <div class="engineering-question-card">
+              <div class="engineering-question-tag">The Core Engineering Question</div>
+              <div class="engineering-question-text">
+                How do you build a data platform that can observe thousands of sensor streams continuously, detect anomalies within seconds, protect downstream analytical models from malformed packets, and provide clean business reporting—all within a single unified architecture?
+              </div>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <!-- Contextual Environmental Detail Photo -->
+            <div class="photo-placeholder" id="detail-photo-container">
+              <div class="photo-placeholder-icon">💧</div>
+              <div class="photo-placeholder-text">Growing zone infrastructure, lighting, and sensor deployment</div>
+            </div>
+            <div class="photo-caption">Understanding the physical environment helped shape the simulated telemetry data model.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 3: The Build -->
+    <section id="build" class="section">
+      <div class="container">
+        <span class="chapter-badge">Chapter 03</span>
+        <h2 class="section-title">The Synthetic Data Simulator</h2>
+        <p class="section-lead">
+          To build a credible demonstration without real-world data, I wrote a modular Python telemetry generator that simulates 8 vertical farming facilities across the Philippines with 10 distinct growing zones each (80 monitored microclimates).
+        </p>
+
+        <div class="build-progression">
+          <div class="progression-step">
+            <div class="progression-number">STAGE 1</div>
+            <div class="progression-title">Physical Problem</div>
+            <div class="progression-desc">Observed real-world operational challenges: climate fluctuations, pump wear curves, lighting photoperiods, and nutrient dosing.</div>
+          </div>
+          <div class="progression-step">
+            <div class="progression-number">STAGE 2</div>
+            <div class="progression-title">Synthetic Telemetry</div>
+            <div class="progression-desc">Engineered a multi-threaded Python simulator emitting 6 continuous telemetry channels with deterministic seeds and anomaly injection.</div>
+          </div>
+          <div class="progression-step">
+            <div class="progression-number">STAGE 3</div>
+            <div class="progression-title">Microsoft Fabric</div>
+            <div class="progression-desc">Constructed an end-to-end cloud platform for streaming ingestion, Delta medallion lakehouses, Kimball dimensional modeling, and Direct Lake reporting.</div>
+          </div>
+        </div>
+
+        <!-- Real Code Showcase -->
+        <div class="code-showcase">
+          <div class="code-header">
+            <span class="code-filename">src/smart_farming/generators/environmental_telemetry_generator.py</span>
+            <button class="code-copy-btn">Copy Excerpt</button>
+          </div>
+          <div class="code-body">
+            <pre><code># Verbatim code excerpt from the simulator engine
+class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
+    """Generates continuous microclimate readings for vertical growing zones."""
+
+    def generate_event(self) -> EnvironmentalTelemetryEvent:
+        facility = self.random_manager.choice(self.settings.facilities)
+        zone = self.random_manager.choice(facility.zones)
+        
+        # Calculate diurnal solar cycle & HVAC thermal response
+        ambient_temp = self.environment_manager.get_zone_temperature(facility.id, zone.id)
+        relative_humidity = self.environment_manager.get_zone_humidity(facility.id, zone.id)
+        co2_ppm = self.environment_manager.get_zone_co2(facility.id, zone.id)
+        
+        # Intentional anomaly injection for testing Fabric Activator alerts
+        if self.settings.enable_ingestion_anomalies and self.random_manager.random() < 0.02:
+            ambient_temp += self.random_manager.uniform(8.5, 14.0)  # Thermal runaway spike
+
+        return EnvironmentalTelemetryEvent(
+            event_type=EVENT_TYPE_ENVIRONMENTAL,
+            facility_id=facility.id,
+            zone_id=zone.id,
+            sensor_type="ambient_temperature",
+            sensor_value=round(ambient_temp, 2),
+            unit="celsius",
+            sensor_status=SENSOR_STATUS_HEALTHY if ambient_temp < 32.0 else SENSOR_STATUS_WARNING,
+            is_daytime=self.environment_manager.is_daytime(),
+        )</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 4: The Data Platform -->
+    <section id="platform" class="section section-quiet">
+      <div class="container-wide">
+        <div class="container">
+          <span class="chapter-badge">Chapter 04</span>
+          <h2 class="section-title">The Microsoft Fabric Platform</h2>
+          <p class="section-lead">
+            The platform combines real-time stream processing and historical batch warehousing into a unified OneLake architecture. Below is the full end-to-end solution blueprint.
+          </p>
+        </div>
+
+        <!-- Central Solution Blueprint Visual -->
+        <div class="container-wide">
+          <div class="platform-blueprint" data-lightbox-src="assets/diagrams/microsoft-fabric-solution-architecture.png" data-lightbox-caption="Microsoft Fabric End-to-End Solution Architecture: Dual-path real-time intelligence and OneLake medallion lakehouse.">
+            <img src="assets/diagrams/microsoft-fabric-solution-architecture.png" alt="Microsoft Fabric Solution Architecture Diagram" class="blueprint-img">
+            <div class="blueprint-caption">
+              <span>Figure 1: Full-width Microsoft Fabric solution architecture across all 7 layers.</span>
+              <span class="blueprint-zoom-hint">Click diagram to expand 🔍</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="container">
+          <div class="layer-walkthrough">
+
+            <!-- Layer 1: Streaming Ingestion -->
+            <div class="layer-block">
+              <div class="layer-tag">Layer 01 — Streaming & Operational Path</div>
+              <h3 class="layer-title">Real-Time Ingestion & Eventhouse KQL Database</h3>
+              <p class="layer-desc">
+                Events from the Python simulator are received by <strong>Microsoft Fabric Eventstream</strong> via a dedicated Custom App endpoint. The stream partitions and routes events to 9 specific targets. Real-time telemetry is ingested directly into <strong>SmartFarmingKQLDB</strong> inside an Eventhouse, where continuous update policies and materialized views pre-aggregate microclimate metrics.
+              </p>
+              <div class="layer-details-grid">
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Routing Channels</div>
+                  <div class="layer-detail-val">9 Eventstream destinations including Dead-Letter sink</div>
+                </div>
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Hot Cache Policy</div>
+                  <div class="layer-detail-val">7-day NVMe in-memory cache for sub-second KQL querying</div>
+                </div>
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Operational Dashboard</div>
+                  <div class="layer-detail-val">17-tile multi-page real-time KQL dashboard</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Layer 2: Medallion Lakehouse -->
+            <div class="layer-block">
+              <div class="layer-tag">Layer 02 — Historical Analytics Path</div>
+              <h3 class="layer-title">OneLake Medallion Architecture (Bronze ➔ Silver ➔ Gold)</h3>
+              <p class="layer-desc">
+                Historical telemetry is curated within <strong>SmartFarming_Lakehouse</strong> using Microsoft Fabric custom schemas. Data quality progressively increases as records move from raw append files to cleansed tables and finally into a production Kimball Star Schema.
+              </p>
+              <div class="layer-details-grid">
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Bronze Schema</div>
+                  <div class="layer-detail-val">Immutable append-only Delta tables via 9 Zero-Copy shortcuts</div>
+                </div>
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Silver Schema</div>
+                  <div class="layer-detail-val">Cleansed, deduplicated, and SHA-256 PII-masked tables</div>
+                </div>
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Gold Schema</div>
+                  <div class="layer-detail-val">Kimball Star Schema optimized with Delta V-Order</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Layer 3: Dimensional Model -->
+            <div class="layer-block">
+              <div class="layer-tag">Layer 03 — Data Warehousing</div>
+              <h3 class="layer-title">Kimball Dimensional Model (6 Dimensions, 8 Fact Tables)</h3>
+              <p class="layer-desc">
+                Rather than building isolated KPI aggregates, the Gold layer models the farming domain into conformed dimensions (facilities, zones, crops, equipment, technicians, dates) and granular business facts (environmental daily, equipment telemetry, crop yield, maintenance SLA, and dead-letter governance).
+              </p>
+              <div class="layer-details-grid">
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Conformed Dimensions</div>
+                  <div class="layer-detail-val">dim_facility, dim_zone, dim_crop, dim_equipment, dim_technician, dim_date</div>
+                </div>
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Business Fact Tables</div>
+                  <div class="layer-detail-val">8 fact tables covering operations, biological yield, SLA, and governance</div>
+                </div>
+                <div class="layer-detail-item">
+                  <div class="layer-detail-label">Storage Optimization</div>
+                  <div class="layer-detail-val">Z-Order clustering on (facility_id, timestamp) for partition pruning</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Layer 4: Power BI Direct Lake -->
+            <div class="layer-block">
+              <div class="layer-tag">Layer 04 — Business Intelligence</div>
+              <h3 class="layer-title">Power BI Direct Lake Semantic Modeling</h3>
+              <p class="layer-desc">
+                The enterprise semantic model (defined in TMDL format) connects directly to Gold OneLake Delta Parquet files using <strong>Direct Lake mode</strong>. This queries cold storage data directly with in-memory performance, completely bypassing scheduled import refreshes and dataset size limits.
+              </p>
+            </div>
+
+            <!-- Layer 5: Alerting & DataOps -->
+            <div class="layer-block">
+              <div class="layer-tag">Layer 05 — Incident Response & DataOps</div>
+              <h3 class="layer-title">Real-Time Alerting (Fabric Activator) & 5-Worker DLQ Remediation</h3>
+              <p class="layer-desc">
+                <strong>Fabric Activator (Reflex)</strong> monitors live streaming events and triggers automated actions for operational farm anomalies (pH drift, thermal spikes) and DataOps engineering issues (ingestion latency, DLQ spikes). Corrupted payloads are quarantined into a dedicated Dead-Letter table and remediated via an automated 5-worker notebook process.
+              </p>
+            </div>
+
+            <!-- Layer 6: Security -->
+            <div class="layer-block">
+              <div class="layer-tag">Layer 06 — Security & Governance</div>
+              <h3 class="layer-title">Regional Row-Level Security (RLS) & Dynamic Data Masking (DDM)</h3>
+              <p class="layer-desc">
+                Security is enforced at the warehouse engine level using an inline table-valued predicate function (<code>fn_SecurityPredicate_FacilityRegion</code>) and Security Policies, ensuring regional facility operators can only view data from their assigned geographic jurisdiction. Sensitive operator contact info is dynamically masked using SQL DDM.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 5: The Results -->
+    <section id="results" class="metrics-section">
+      <div class="container">
+        <div class="metrics-header">
+          <span class="chapter-badge">Chapter 05</span>
+          <h2 class="section-title">Project at a Glance</h2>
+          <p class="section-lead">
+            Every metric below represents verified measurements from automated test suites, simulated facility configurations, and documented capacity models in the repository.
+          </p>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-number">8</div>
+            <div class="metric-label">Facilities Modeled</div>
+            <div class="metric-sub">Across 4 major agricultural regions in the Philippines</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">80</div>
+            <div class="metric-label">Growing Zones</div>
+            <div class="metric-sub">10 independent microclimate zones per facility</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">6</div>
+            <div class="metric-label">Telemetry Streams</div>
+            <div class="metric-sub">Climate, equipment, crop, lifecycle, irrigation, lighting</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">53/53</div>
+            <div class="metric-label">Automated Tests</div>
+            <div class="metric-sub">100% pass rate across unit and integration suites</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">5.38s</div>
+            <div class="metric-label">Max Ingestion Latency</div>
+            <div class="metric-sub">Verified against the &lt; 15.0s streaming SLA target</div>
+          </div>
+        </div>
+
+        <div class="benchmarks-split">
+          <div class="benchmark-card">
+            <div class="benchmark-title">
+              <span>Streaming Ingestion Latency Distribution</span>
+              <span class="benchmark-badge">Target: &lt; 15.0s</span>
+            </div>
+            <p class="benchmark-desc">
+              Measured ingestion-to-gold latency distribution across the automated test execution suite:
+            </p>
+            <div class="percentiles-row">
+              <div class="pct-item">
+                <div class="pct-lbl">p50</div>
+                <div class="pct-val">1.702s</div>
+              </div>
+              <div class="pct-item">
+                <div class="pct-lbl">p95</div>
+                <div class="pct-val">4.134s</div>
+              </div>
+              <div class="pct-item">
+                <div class="pct-lbl">p99</div>
+                <div class="pct-val">4.802s</div>
+              </div>
+              <div class="pct-item">
+                <div class="pct-lbl">Max</div>
+                <div class="pct-val">5.385s</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="benchmark-title">
+              <span>Modeled Storage Lifecycle Efficiency</span>
+              <span class="benchmark-badge">Modeled Scenario</span>
+            </div>
+            <p class="benchmark-desc">
+              By tiering KQL Hot Cache (7-day in-memory SSD) with cold OneLake retention (30-day Delta Parquet with V-Order), the documented FinOps model achieves a <strong>62.0% monthly storage cost reduction</strong> compared to retaining 100% of data in hot memory.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chapter 6: Explore the System -->
+    <section id="explore" class="section">
+      <div class="container">
+        <span class="chapter-badge">Chapter 06</span>
+        <h2 class="section-title">Explore the System</h2>
+        <p class="section-lead">
+          Inspect the high-resolution engineering blueprints, actual Power BI report visual exports, and real-time Reflex alert flowcards built for the project.
+        </p>
+
+        <div class="explore-tabs-nav">
+          <button class="tab-btn active" data-tab-target="tab-architecture">Architecture Blueprints (8)</button>
+          <button class="tab-btn" data-tab-target="tab-analytics">Analytics Dashboards (5)</button>
+          <button class="tab-btn" data-tab-target="tab-operations">Activator Alert Rules (10)</button>
+        </div>
+
+        <!-- Tab 1: Architecture Diagrams -->
+        <div id="tab-architecture" class="tab-panel active">
+          <div class="gallery-grid">
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/microsoft-fabric-solution-architecture.png" data-lightbox-caption="Microsoft Fabric Solution Architecture: End-to-end dataflow from IoT simulator to Power BI Direct Lake and Activator.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/microsoft-fabric-solution-architecture.png" alt="Solution Architecture" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Solution Architecture</div>
+                <div class="gallery-item-desc">End-to-end platform blueprint across streaming and OneLake medallion layers.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/streaming-architecture.png" data-lightbox-caption="Streaming Ingestion Architecture: Eventstream 9-destination routing and continuous KQL update policies.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/streaming-architecture.png" alt="Streaming Architecture" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Streaming Ingestion</div>
+                <div class="gallery-item-desc">Eventstream routing and continuous KQL update policies.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/medallion-architecture.png" data-lightbox-caption="OneLake Medallion Architecture: Bronze shortcuts, Silver cleansing/PII masking, and Gold star schema.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/medallion-architecture.png" alt="Medallion Architecture" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Medallion Lakehouse</div>
+                <div class="gallery-item-desc">Bronze raw landing, Silver PII masking, and Gold Kimball tables.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/gold_star_schema_erd.png" data-lightbox-caption="Gold Kimball Star Schema ERD: 6 conformed dimensions and 8 business fact tables.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/gold_star_schema_erd.png" alt="Star Schema ERD" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Gold Star Schema ERD</div>
+                <div class="gallery-item-desc">Dimensional entity-relationship diagram with surrogate keys.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/security-architecture.png" data-lightbox-caption="Security & Governance Architecture: Regional Row-Level Security predicate functions and SQL Dynamic Data Masking.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/security-architecture.png" alt="Security Architecture" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Security & Governance</div>
+                <div class="gallery-item-desc">Regional Row-Level Security and Dynamic Data Masking.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/monitoring-strategy.png" data-lightbox-caption="Observability Strategy: OpenTelemetry span propagation and fact_dataops_pipeline_log.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/monitoring-strategy.png" alt="Monitoring Strategy" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">DataOps Observability</div>
+                <div class="gallery-item-desc">OpenTelemetry distributed tracing and pipeline execution logging.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/data-retention-strategy.png" data-lightbox-caption="Data Retention Strategy: 7-day Hot KQL Cache vs 30-day Cold OneLake storage lifecycle.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/data-retention-strategy.png" alt="Data Retention Strategy" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Storage Tiering Lifecycle</div>
+                <div class="gallery-item-desc">7-day Hot KQL Cache vs 30-day Cold OneLake storage strategy.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/diagrams/batch-architecture.png" data-lightbox-caption="Batch Orchestration Architecture: Master orchestration pipelines and incremental CDC sync.">
+              <div class="gallery-thumb-container">
+                <img src="assets/diagrams/batch-architecture.png" alt="Batch Architecture" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Batch Orchestration</div>
+                <div class="gallery-item-desc">Master pipelines, incremental micro-batch sync, and CDC merges.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Analytics Reports -->
+        <div id="tab-analytics" class="tab-panel">
+          <div class="gallery-grid">
+            <div class="gallery-card" data-lightbox-src="assets/reports/page_1_new8373212350766734.svg" data-lightbox-caption="Power BI Executive Operations Report: Overview of nationwide facilities, harvest yield, and energy efficiency.">
+              <div class="gallery-thumb-container">
+                <img src="assets/reports/page_1_new8373212350766734.svg" alt="Executive Operations Report - Page 1" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Executive Operations Overview</div>
+                <div class="gallery-item-desc">Nationwide facility map, crop harvest yield trends, and power consumption.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/reports/page_2_new5263368445985604.svg" data-lightbox-caption="Power BI Environmental & Microclimate Telemetry: Temperature, humidity, CO2, and PAR across growing zones.">
+              <div class="gallery-thumb-container">
+                <img src="assets/reports/page_2_new5263368445985604.svg" alt="Environmental Telemetry Report - Page 2" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Environmental Microclimates</div>
+                <div class="gallery-item-desc">Zone-level air temperature, relative humidity, and lighting photoperiods.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/reports/page_3_new43834791691982256.svg" data-lightbox-caption="Power BI Equipment Health & Predictive Maintenance: Pump runtime, motor vibration, and failure probability.">
+              <div class="gallery-thumb-container">
+                <img src="assets/reports/page_3_new43834791691982256.svg" alt="Equipment Health Report - Page 3" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Equipment Health & Asset Maintenance</div>
+                <div class="gallery-item-desc">Dosing pump runtime hours, motor vibration, and failure probabilities.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/reports/page_4_new16970493384478158.svg" data-lightbox-caption="Power BI Irrigation & Nutrient Dosing: Water flow rate, pH balance, and electrical conductivity (EC).">
+              <div class="gallery-thumb-container">
+                <img src="assets/reports/page_4_new16970493384478158.svg" alt="Irrigation Report - Page 4" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Irrigation & Dosing Analytics</div>
+                <div class="gallery-item-desc">Water delivery volumes, reservoir pH levels, and electrical conductivity.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/reports/page_1_for_report5281429926439776.svg" data-lightbox-caption="Power BI DataOps Governance & Observability Hub: Pipeline runtimes, ingestion throughput, and DLQ quarantine logs.">
+              <div class="gallery-thumb-container">
+                <img src="assets/reports/page_1_for_report5281429926439776.svg" alt="DataOps Governance Report" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">DataOps Governance & Observability</div>
+                <div class="gallery-item-desc">Pipeline durations, error rates, OpenTelemetry spans, and dead-letter logs.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Activator Alert Rules -->
+        <div id="tab-operations" class="tab-panel">
+          <div class="gallery-grid">
+            <div class="gallery-card" data-lightbox-src="assets/alerts/hook1_activator_alert.png" data-lightbox-caption="Fabric Activator Rule 1: High Temperature Thermal Anomaly Detection.">
+              <div class="gallery-thumb-container">
+                <img src="assets/alerts/hook1_activator_alert.png" alt="Activator Rule 1" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Rule 01: High Temperature Thermal Spike</div>
+                <div class="gallery-item-desc">Operational trigger when ambient temperature exceeds critical 32°C threshold.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/alerts/hook2_activator_alert.png" data-lightbox-caption="Fabric Activator Rule 2: Nutrient pH Drift Warning.">
+              <div class="gallery-thumb-container">
+                <img src="assets/alerts/hook2_activator_alert.png" alt="Activator Rule 2" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Rule 02: Nutrient pH Imbalance</div>
+                <div class="gallery-item-desc">Triggers automated alert when nutrient solution pH drifts outside 5.5 - 6.5.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/alerts/hook3_activator_alert.png" data-lightbox-caption="Fabric Activator Rule 3: Dosing Pump Cavitation & Vibration Alert.">
+              <div class="gallery-thumb-container">
+                <img src="assets/alerts/hook3_activator_alert.png" alt="Activator Rule 3" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Rule 03: Pump Cavitation & Vibration</div>
+                <div class="gallery-item-desc">Detects abnormal motor vibration indicative of mechanical cavitation.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/alerts/hook4_activator_alert.png" data-lightbox-caption="Fabric Activator Rule 4: DataOps Streaming Latency SLA Breach Alert.">
+              <div class="gallery-thumb-container">
+                <img src="assets/alerts/hook4_activator_alert.png" alt="Activator Rule 4" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Rule 04: Streaming Latency SLA Breach</div>
+                <div class="gallery-item-desc">DataOps trigger alerting engineering when ingestion latency exceeds 15 seconds.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/alerts/hook5_activator_alert.png" data-lightbox-caption="Fabric Activator Rule 5: Dead-Letter Queue (DLQ) Quarantine Surge Alert.">
+              <div class="gallery-thumb-container">
+                <img src="assets/alerts/hook5_activator_alert.png" alt="Activator Rule 5" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Rule 05: Dead-Letter Queue Surge</div>
+                <div class="gallery-item-desc">Triggers incident investigation when malformed payload count spikes in DLQ sink.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Chapter 7: Engineering Notes -->
+    <section id="notes" class="section section-quiet">
+      <div class="container">
+        <span class="chapter-badge">Chapter 07</span>
+        <h2 class="section-title">Engineering Decisions & Notes</h2>
+        <p class="section-lead">
+          Detailed technical rationale behind architectural choices, honest project limitations, and production deployment considerations.
+        </p>
+
+        <div class="notes-container">
+          <details class="note-item">
+            <summary class="note-summary">Why Eventhouse and KQL for the real-time path instead of SQL?</summary>
+            <div class="note-content">
+              <p>
+                In high-frequency IoT streaming, relational databases struggle with write locks during high-concurrency append operations. KQL (Kusto Query Language) in Eventhouse is optimized specifically for append-only time-series data with automatic indexing, native time-window aggregation, and continuous update policies. This allows sub-second analytical queries on millions of records without impacting write performance.
+              </p>
+            </div>
+          </details>
+
+          <details class="note-item">
+            <summary class="note-summary">Why build a Kimball Star Schema in the Gold layer rather than querying raw Silver tables?</summary>
+            <div class="note-content">
+              <p>
+                Querying raw or semi-cleansed Silver tables directly creates high query complexity for reporting tools and risks inconsistent business calculations. A Kimball dimensional model provides conformed, reusable dimensions (facilities, zones, crops, dates) connected to business fact tables. This separation simplifies Power BI DAX calculations and optimizes Delta Parquet files for sub-second Direct Lake cache queries.
+              </p>
+            </div>
+          </details>
+
+          <details class="note-item">
+            <summary class="note-summary">How does Power BI Direct Lake mode query OneLake Delta Parquet without import refreshes?</summary>
+            <div class="note-content">
+              <p>
+                Traditional Power BI modes require either scheduled imports (copying data into memory) or DirectQuery (translating DAX into slow SQL queries). Direct Lake loads Delta Parquet files directly from OneLake into the Power BI Analysis Services VertiPaq memory engine using V-Order column compression. When Gold tables are updated by Spark, Power BI automatically sees the latest data without executing a scheduled model refresh.
+              </p>
+            </div>
+          </details>
+
+          <details class="note-item">
+            <summary class="note-summary">How does the Dead-Letter Queue (DLQ) and remediation process protect Gold tables?</summary>
+            <div class="note-content">
+              <p>
+                When malformed JSON, null identifiers, or out-of-bounds sensor readings arrive at the Eventstream, routing rules isolate those packets into a dedicated <code>Dest_DeadLetterTelemetry</code> destination. The <code>Notebook_DeadLetter_Remediation</code> job processes these quarantined records, applies schema repair rules, and logs diagnostic traces to <code>fact_dead_letter_governance</code> without blocking the primary ingestion stream.
+              </p>
+            </div>
+          </details>
+
+          <details class="note-item">
+            <summary class="note-summary">How are Regional Row-Level Security (RLS) and PII masking enforced?</summary>
+            <div class="note-content">
+              <p>
+                Row-Level Security is enforced at the warehouse database engine using an inline table-valued function (<code>Security.fn_SecurityPredicate_FacilityRegion</code>) bound via a Security Policy. When a query runs, the user's execution context is checked against assigned geographic regions. Sensitive operator contact information is masked using SQL Dynamic Data Masking (DDM) to comply with data privacy policies.
+              </p>
+            </div>
+          </details>
+        </div>
+
+        <!-- What I Would Change for Production -->
+        <div class="production-changes-box">
+          <div class="production-changes-title">What I Would Change for a Real Production Deployment</div>
+          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;">
+            While this public implementation demonstrates production-style architecture and engineering patterns using synthetic data on Microsoft Fabric Trial, a formal enterprise deployment would incorporate the following additional controls:
+          </p>
+
+          <div class="production-changes-grid">
+            <div class="prod-change-card">
+              <h4>01. Secrets Management</h4>
+              <p>Replace local environment files with Azure Key Vault and Fabric Managed Identities for automated credential rotation.</p>
+            </div>
+            <div class="prod-change-card">
+              <h4>02. Enterprise Identity (IAM)</h4>
+              <p>Bind Row-Level Security directly to Microsoft Entra ID security groups rather than manual session context simulation.</p>
+            </div>
+            <div class="prod-change-card">
+              <h4>03. Automated Release CI/CD</h4>
+              <p>Connect Microsoft Fabric Git Integration to an automated pull-request promotion pipeline with integrated integration test gating.</p>
+            </div>
+            <div class="prod-change-card">
+              <h4>04. Capacity Autoscale</h4>
+              <p>Transition from evaluation capacity (FT64) to production Reserved Instances (F64/F128) with automated bursting alerts.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Author Signature & Contact Section -->
+    <section id="author" class="author-section">
+      <div class="container">
+        <div class="author-card">
+          <div class="author-role">Project Author & Data Engineer</div>
+          <h2 class="author-name">Built by Joseph Baguio</h2>
+          <p class="author-bio">
+            Data Engineer focused on Python, SQL, cloud analytics platforms, and modern lakehouse architecture on Microsoft Fabric.
+          </p>
+          <div class="author-links">
+            <a href="https://github.com/jbaguio27" target="_blank" rel="noopener" class="author-link-btn">
+              <span>GitHub Profile</span>
+            </a>
+            <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="author-link-btn">
+              <span>Repository Source</span>
+            </a>
+            <a href="mailto:joseph.baguio@example.com" class="author-link-btn">
+              <span>Send Email</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-statement">
+        Built from a real-world vertical farming problem, recreated with synthetic telemetry, and documented as a public engineering project.
+      </p>
+
+      <div class="tech-stack-inline">
+        <span>Python</span> •
+        <span>Microsoft Fabric</span> •
+        <span>Eventstream</span> •
+        <span>Eventhouse (KQL)</span> •
+        <span>OneLake</span> •
+        <span>Delta Lake</span> •
+        <span>Fabric Warehouse</span> •
+        <span>Power BI Direct Lake</span> •
+        <span>Activator</span> •
+        <span>OpenTelemetry</span> •
+        <span>GitHub Actions</span>
+      </div>
+
+      <p class="footer-copy">
+        &copy; 2026 Joseph Baguio. Released under the MIT License.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Fullscreen Modal Lightbox -->
+  <div id="lightbox-modal" class="lightbox-modal" role="dialog" aria-modal="true">
+    <button id="lightbox-close" class="lightbox-close" aria-label="Close image preview">&times;</button>
+    <div class="lightbox-content-wrapper">
+      <img id="lightbox-img" class="lightbox-img" src="" alt="Expanded inspection preview">
+      <div id="lightbox-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
