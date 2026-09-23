@@ -9,18 +9,110 @@ document.addEventListener('DOMContentLoaded', () => {
   initCodeCopy();
   initScrollSpy();
   initMobileNav();
+  initCounters();
 });
 
 /**
- * Fullscreen Lightbox Modal Controller
+ * Fullscreen Lightbox Modal Controller with Pan & Zoom
  */
 function initLightbox() {
   const modal = document.getElementById('lightbox-modal');
   const modalImg = document.getElementById('lightbox-img');
   const modalCaption = document.getElementById('lightbox-caption');
   const closeBtn = document.getElementById('lightbox-close');
+  const zoomInBtn = document.getElementById('lightbox-zoom-in');
+  const zoomOutBtn = document.getElementById('lightbox-zoom-out');
+  const zoomResetBtn = document.getElementById('lightbox-zoom-reset');
+  const zoomLevelTag = document.getElementById('lightbox-zoom-level');
+  const loader = document.getElementById('lightbox-loader');
+  const viewport = document.getElementById('lightbox-viewport');
 
   if (!modal || !modalImg || !closeBtn) return;
+
+  let scale = 1;
+  let posX = 0;
+  let posY = 0;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+
+  function updateTransform() {
+    modalImg.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+    if (zoomLevelTag) {
+      zoomLevelTag.textContent = `${Math.round(scale * 100)}%`;
+    }
+    if (scale > 1) {
+      modalImg.style.cursor = isDragging ? 'grabbing' : 'grab';
+    } else {
+      modalImg.style.cursor = 'default';
+    }
+  }
+
+  function resetZoom() {
+    scale = 1;
+    posX = 0;
+    posY = 0;
+    updateTransform();
+  }
+
+  function zoomIn() {
+    if (scale < 3.5) {
+      scale = Math.min(3.5, scale + 0.35);
+      updateTransform();
+    }
+  }
+
+  function zoomOut() {
+    if (scale > 0.6) {
+      scale = Math.max(0.6, scale - 0.35);
+      if (scale <= 1) {
+        posX = 0;
+        posY = 0;
+      }
+      updateTransform();
+    }
+  }
+
+  // Hook up zoom buttons
+  if (zoomInBtn) zoomInBtn.addEventListener('click', (e) => { e.stopPropagation(); zoomIn(); });
+  if (zoomOutBtn) zoomOutBtn.addEventListener('click', (e) => { e.stopPropagation(); zoomOut(); });
+  if (zoomResetBtn) zoomResetBtn.addEventListener('click', (e) => { e.stopPropagation(); resetZoom(); });
+
+  // Mouse Wheel Zoom
+  if (viewport) {
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        zoomIn();
+      } else {
+        zoomOut();
+      }
+    }, { passive: false });
+  }
+
+  // Click & Drag to Pan (when zoomed in)
+  modalImg.addEventListener('mousedown', (e) => {
+    if (scale <= 1) return;
+    isDragging = true;
+    startX = e.clientX - posX;
+    startY = e.clientY - posY;
+    modalImg.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    posX = e.clientX - startX;
+    posY = e.clientY - startY;
+    updateTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      modalImg.style.cursor = scale > 1 ? 'grab' : 'default';
+    }
+  });
 
   // Click triggers for any lightbox target
   const triggerElements = document.querySelectorAll('[data-lightbox-src]');
@@ -29,6 +121,15 @@ function initLightbox() {
       const src = el.getAttribute('data-lightbox-src');
       const caption = el.getAttribute('data-lightbox-caption') || el.querySelector('.gallery-item-title')?.textContent || '';
       
+      resetZoom();
+      if (loader) loader.style.display = 'block';
+      modalImg.style.opacity = '0';
+
+      modalImg.onload = () => {
+        if (loader) loader.style.display = 'none';
+        modalImg.style.opacity = '1';
+      };
+
       modalImg.src = src;
       modalCaption.textContent = caption;
       modal.classList.add('active');
@@ -41,20 +142,29 @@ function initLightbox() {
     modal.classList.remove('active');
     modalImg.src = '';
     modalCaption.textContent = '';
+    resetZoom();
     document.body.style.overflow = '';
   };
 
   closeBtn.addEventListener('click', closeModal);
 
   modal.addEventListener('click', (e) => {
+    // Only close if clicking outside viewport or controls
     if (e.target === modal) {
       closeModal();
     }
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
+    if (!modal.classList.contains('active')) return;
+    if (e.key === 'Escape') {
       closeModal();
+    } else if (e.key === '+' || e.key === '=') {
+      zoomIn();
+    } else if (e.key === '-' || e.key === '_') {
+      zoomOut();
+    } else if (e.key === '0') {
+      resetZoom();
     }
   });
 }
@@ -104,15 +214,17 @@ function initCodeCopy() {
       try {
         await navigator.clipboard.writeText(codeText);
         const originalText = btn.textContent;
-        btn.textContent = 'Copied!';
-        btn.style.borderColor = 'var(--c-warm-amber)';
-        btn.style.color = 'var(--c-cream-light)';
+        btn.textContent = '✓ Copied!';
+        btn.style.borderColor = 'var(--c-orange-accent)';
+        btn.style.color = 'var(--c-orange-accent)';
+        btn.style.backgroundColor = 'rgba(226, 115, 36, 0.15)';
 
         setTimeout(() => {
           btn.textContent = originalText;
           btn.style.borderColor = '';
           btn.style.color = '';
-        }, 2000);
+          btn.style.backgroundColor = '';
+        }, 2200);
       } catch (err) {
         console.error('Clipboard copy failed:', err);
       }
@@ -130,7 +242,7 @@ function initScrollSpy() {
   if (!sections.length || !navLinks.length) return;
 
   const onScroll = () => {
-    const scrollPos = window.scrollY + 140;
+    const scrollPos = window.scrollY + 160;
 
     sections.forEach(section => {
       const top = section.offsetTop;
@@ -140,7 +252,8 @@ function initScrollSpy() {
       if (scrollPos >= top && scrollPos < top + height) {
         navLinks.forEach(link => {
           link.classList.remove('active');
-          if (link.getAttribute('href') === `#${id}`) {
+          const href = link.getAttribute('href');
+          if (href === `#${id}` || (id === 'problem' && href === '#origin') || (id === 'build' && href === '#platform')) {
             link.classList.add('active');
           }
         });
@@ -149,6 +262,7 @@ function initScrollSpy() {
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // initial check
 }
 
 /**
@@ -164,10 +278,56 @@ function initMobileNav() {
     navLinks.classList.toggle('mobile-open');
   });
 
-  // Close when clicking a link
   navLinks.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
       navLinks.classList.remove('mobile-open');
     });
   });
+}
+
+/**
+ * Animated Metric Number Counter Ticker
+ */
+function initCounters() {
+  const counterElements = document.querySelectorAll('[data-counter]');
+  if (!counterElements.length || !('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.25 });
+
+  counterElements.forEach(el => observer.observe(el));
+}
+
+function animateCounter(el) {
+  const target = parseFloat(el.getAttribute('data-counter'));
+  const prefix = el.getAttribute('data-prefix') || '';
+  const suffix = el.getAttribute('data-suffix') || '';
+  const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+  const duration = 1200; // ms
+  const startTime = performance.now();
+
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Ease-out cubic easing curve
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const currentVal = (target * easeOut).toFixed(decimals);
+
+    el.textContent = `${prefix}${currentVal}${suffix}`;
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      el.textContent = `${prefix}${target.toFixed(decimals)}${suffix}`;
+    }
+  }
+
+  requestAnimationFrame(update);
 }
