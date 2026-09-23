@@ -380,56 +380,96 @@ function initScrolltellingPipeline() {
 
   if (!layerBlocks.length || !navNodes.length) return;
 
-  // Click on nav node to smoothly scroll to corresponding architecture layer
-  navNodes.forEach(node => {
-    node.addEventListener('click', () => {
-      const idx = node.getAttribute('data-target-layer');
-      const targetBlock = document.querySelector(`.layer-block[data-layer-idx="${idx}"]`);
-      if (targetBlock) {
-        targetBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    });
-  });
+  let isManualClickScrolling = false;
+  let clickTimeout = null;
 
-  // Track scroll position of layers and illuminate pipeline path
-  const onScroll = () => {
-    let activeIdx = 1;
-    const windowMiddle = window.scrollY + window.innerHeight * 0.45;
-
+  function setActiveLayer(idx) {
+    // 1. Update layer blocks highlighting
     layerBlocks.forEach(block => {
-      const top = block.offsetTop;
-      const idx = parseInt(block.getAttribute('data-layer-idx'), 10);
-
-      if (windowMiddle >= top - 80) {
-        activeIdx = idx;
-      }
-    });
-
-    // Update active layer block classes
-    layerBlocks.forEach(block => {
-      const idx = parseInt(block.getAttribute('data-layer-idx'), 10);
-      if (idx === activeIdx) {
+      const blockIdx = parseInt(block.getAttribute('data-layer-idx'), 10);
+      if (blockIdx === idx) {
         block.classList.add('active-layer');
       } else {
         block.classList.remove('active-layer');
       }
     });
 
-    // Update active nav node and translate glowing telemetry packet dot
+    // 2. Update nav nodes and translate glowing tracker dot
     navNodes.forEach(node => {
-      const idx = parseInt(node.getAttribute('data-target-layer'), 10);
-      if (idx === activeIdx) {
+      const nodeIdx = parseInt(node.getAttribute('data-target-layer'), 10);
+      if (nodeIdx === idx) {
         node.classList.add('active');
         if (trackerDot) {
           const nodeTop = node.offsetTop;
-          trackerDot.style.transform = `translateY(${nodeTop}px)`;
+          const nodeHeight = node.offsetHeight;
+          const dotTop = nodeTop + (nodeHeight / 2) - 5;
+          trackerDot.style.transform = `translateY(${dotTop}px)`;
         }
       } else {
         node.classList.remove('active');
       }
     });
+  }
+
+  // Click on nav node to smoothly scroll directly to corresponding architecture layer
+  navNodes.forEach(node => {
+    node.addEventListener('click', (e) => {
+      e.preventDefault();
+      const idx = parseInt(node.getAttribute('data-target-layer'), 10);
+      const targetBlock = document.querySelector(`.layer-block[data-layer-idx="${idx}"]`);
+      
+      if (targetBlock) {
+        isManualClickScrolling = true;
+        clearTimeout(clickTimeout);
+        setActiveLayer(idx);
+
+        // Account for sticky header height
+        const headerOffset = 100;
+        const elementPosition = targetBlock.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+
+        // Re-enable free scroll tracking after smooth scroll completes
+        clickTimeout = setTimeout(() => {
+          isManualClickScrolling = false;
+        }, 800);
+      }
+    });
+  });
+
+  // Track scroll position dynamically relative to viewport
+  const onScroll = () => {
+    if (isManualClickScrolling) return;
+
+    let closestIdx = 1;
+    let minDistance = Infinity;
+    const triggerY = window.innerHeight * 0.35; // Trigger line at 35% from viewport top
+
+    layerBlocks.forEach(block => {
+      const rect = block.getBoundingClientRect();
+      const idx = parseInt(block.getAttribute('data-layer-idx'), 10);
+      const distance = Math.abs(rect.top - triggerY);
+
+      if (rect.top <= triggerY && rect.bottom >= triggerY) {
+        closestIdx = idx;
+        minDistance = -1;
+      } else if (minDistance !== -1 && distance < minDistance) {
+        minDistance = distance;
+        closestIdx = idx;
+      }
+    });
+
+    setActiveLayer(closestIdx);
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  
+  // Set initial layer on page load
+  setTimeout(() => {
+    setActiveLayer(1);
+  }, 100);
 }
