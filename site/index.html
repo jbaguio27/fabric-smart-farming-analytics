@@ -37,34 +37,85 @@
   <main>
 
     <!-- Hero Section -->
-    <section id="hero" class="hero section">
-      <div class="container">
-        <div class="hero-content">
-          <span class="hero-supertitle">Independent Data Engineering Case Study</span>
-          <h1 class="hero-title">Some portfolio projects start with a dataset.<br>This one started with a place.</h1>
-          <p class="hero-subtitle">
-            A Microsoft Fabric data platform built around a Python-generated smart farming environment, demonstrating real-time telemetry ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
-          </p>
-          <div class="hero-actions">
-            <a href="#platform" class="btn btn-primary">Explore the Architecture</a>
-            <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-secondary">View GitHub Repository</a>
-          </div>
+    <section id="hero" class="hero-section">
+      <div class="container-wide">
+        <div class="hero-card">
+          <div class="hero-backdrop" style="background-image: url('assets/images/hero-greenhouse-bg.jpg');"></div>
+          <div class="hero-overlay"></div>
+          
+          <div class="hero-content">
+            <div class="hero-badge-pill">
+              <span class="badge-dot"></span>
+              <span>Independent Engineering Project • Microsoft Fabric</span>
+            </div>
 
-          <div class="hero-pipeline-ribbon">
-            <span>Pipeline:</span>
-            <span class="pipeline-node">Python Simulator</span>
-            <span class="pipeline-arrow">➔</span>
-            <span class="pipeline-node">Fabric Eventstream</span>
-            <span class="pipeline-arrow">➔</span>
-            <span class="pipeline-node">Eventhouse (KQL)</span>
-            <span class="pipeline-arrow">➔</span>
-            <span class="pipeline-node">OneLake Medallion</span>
-            <span class="pipeline-arrow">➔</span>
-            <span class="pipeline-node">Fabric Warehouse</span>
-            <span class="pipeline-arrow">➔</span>
-            <span class="pipeline-node">Direct Lake BI</span>
-            <span class="pipeline-arrow">➔</span>
-            <span class="pipeline-node">Activator Reflex</span>
+            <h1 class="hero-title">
+              Some portfolio projects start with a dataset.<br>
+              <span class="hero-title-highlight">This one started with a place.</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              An end-to-end data platform built around a Python-generated smart farming environment—demonstrating real-time telemetry ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
+            </p>
+
+            <!-- Architecture Category Filter Pills -->
+            <div class="hero-filter-pills">
+              <span class="filter-pill active">Streaming (KQL)</span>
+              <span class="filter-pill">Lakehouse (Delta Parquet)</span>
+              <span class="filter-pill">Warehouse (Kimball)</span>
+              <span class="filter-pill">Direct Lake (Power BI)</span>
+              <span class="filter-pill">Activator (10 Reflex Rules)</span>
+            </div>
+
+            <div class="hero-actions">
+              <a href="#platform" class="btn btn-primary">
+                <span>Explore the Architecture</span>
+                <span class="btn-arrow">→</span>
+              </a>
+              <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-secondary">
+                <span>View GitHub Repository</span>
+              </a>
+            </div>
+
+            <div class="hero-pipeline-ribbon">
+              <span class="ribbon-label">Pipeline:</span>
+              <span class="pipeline-node">Python Simulator</span>
+              <span class="pipeline-arrow">➔</span>
+              <span class="pipeline-node">Fabric Eventstream</span>
+              <span class="pipeline-arrow">➔</span>
+              <span class="pipeline-node">Eventhouse (KQL)</span>
+              <span class="pipeline-arrow">➔</span>
+              <span class="pipeline-node">OneLake Medallion</span>
+              <span class="pipeline-arrow">➔</span>
+              <span class="pipeline-node">Fabric Warehouse</span>
+              <span class="pipeline-arrow">➔</span>
+              <span class="pipeline-node">Direct Lake BI</span>
+              <span class="pipeline-arrow">➔</span>
+              <span class="pipeline-node">Activator Reflex</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Showcase Strip -->
+        <div class="hero-stats-strip">
+          <div class="hero-stat-item">
+            <div class="hero-stat-value">&lt; 15s</div>
+            <div class="hero-stat-label">Target Alerting SLA (Max 5.38s Ingestion)</div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-value">53 / 53</div>
+            <div class="hero-stat-label">Automated Tests Passing (100% Green)</div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-value">62%</div>
+            <div class="hero-stat-label">Modeled Storage Reduction (Cold Tiering)</div>
+          </div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-value">12</div>
+            <div class="hero-stat-label">End-to-End Fabric Milestones Verified</div>
           </div>
         </div>
       </div>
