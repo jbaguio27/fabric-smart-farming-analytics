@@ -380,24 +380,24 @@ function initScrolltellingPipeline() {
 
   if (!layerBlocks.length || !navNodes.length) return;
 
-  let isManualClickScrolling = false;
+  let isManualClick = false;
   let clickTimeout = null;
 
-  function setActiveLayer(idx) {
-    // 1. Update layer blocks highlighting
+  function setActive(idx) {
+    // 1. Highlight target layer block
     layerBlocks.forEach(block => {
-      const blockIdx = parseInt(block.getAttribute('data-layer-idx'), 10);
-      if (blockIdx === idx) {
+      const bIdx = parseInt(block.getAttribute('data-layer-idx'), 10);
+      if (bIdx === idx) {
         block.classList.add('active-layer');
       } else {
         block.classList.remove('active-layer');
       }
     });
 
-    // 2. Update nav nodes and translate glowing tracker dot
+    // 2. Activate nav node & animate tracker dot
     navNodes.forEach(node => {
-      const nodeIdx = parseInt(node.getAttribute('data-target-layer'), 10);
-      if (nodeIdx === idx) {
+      const nIdx = parseInt(node.getAttribute('data-target-layer'), 10);
+      if (nIdx === idx) {
         node.classList.add('active');
         if (trackerDot) {
           const nodeTop = node.offsetTop;
@@ -411,65 +411,60 @@ function initScrolltellingPipeline() {
     });
   }
 
-  // Click on nav node to smoothly scroll directly to corresponding architecture layer
+  // Click on pipeline choice
   navNodes.forEach(node => {
     node.addEventListener('click', (e) => {
       e.preventDefault();
       const idx = parseInt(node.getAttribute('data-target-layer'), 10);
       const targetBlock = document.querySelector(`.layer-block[data-layer-idx="${idx}"]`);
-      
-      if (targetBlock) {
-        isManualClickScrolling = true;
-        clearTimeout(clickTimeout);
-        setActiveLayer(idx);
 
-        // Account for sticky header height
-        const headerOffset = 100;
-        const elementPosition = targetBlock.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - headerOffset;
+      if (targetBlock) {
+        isManualClick = true;
+        clearTimeout(clickTimeout);
+        setActive(idx);
+
+        // Scroll target layer into view just below sticky navbar
+        const headerOffset = 140;
+        const targetTop = targetBlock.getBoundingClientRect().top + window.scrollY - headerOffset;
 
         window.scrollTo({
-          top: offsetPosition,
+          top: targetTop,
           behavior: 'smooth'
         });
 
-        // Re-enable free scroll tracking after smooth scroll completes
+        // Release scroll lock after smooth scroll animation completes
         clickTimeout = setTimeout(() => {
-          isManualClickScrolling = false;
-        }, 800);
+          isManualClick = false;
+        }, 850);
       }
     });
   });
 
-  // Track scroll position dynamically relative to viewport
+  // Dynamic onScroll spy using top threshold
   const onScroll = () => {
-    if (isManualClickScrolling) return;
+    if (isManualClick) return;
 
-    let closestIdx = 1;
-    let minDistance = Infinity;
-    const triggerY = window.innerHeight * 0.35; // Trigger line at 35% from viewport top
+    // Viewport threshold just below sticky header
+    const threshold = 180;
+    let activeIdx = 1;
 
     layerBlocks.forEach(block => {
       const rect = block.getBoundingClientRect();
-      const idx = parseInt(block.getAttribute('data-layer-idx'), 10);
-      const distance = Math.abs(rect.top - triggerY);
+      const bIdx = parseInt(block.getAttribute('data-layer-idx'), 10);
 
-      if (rect.top <= triggerY && rect.bottom >= triggerY) {
-        closestIdx = idx;
-        minDistance = -1;
-      } else if (minDistance !== -1 && distance < minDistance) {
-        minDistance = distance;
-        closestIdx = idx;
+      // As user scrolls down, each layer whose top has crossed the threshold becomes active
+      if (rect.top <= threshold) {
+        activeIdx = bIdx;
       }
     });
 
-    setActiveLayer(closestIdx);
+    setActive(activeIdx);
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
   
-  // Set initial layer on page load
+  // Set initial Layer 1 on page load
   setTimeout(() => {
-    setActiveLayer(1);
+    setActive(1);
   }, 100);
 }
