@@ -36,67 +36,69 @@
 
   <main>
 
-    <!-- Hero Section -->
-    <section id="hero" class="hero-section">
-      <div class="container-wide">
-        <div class="hero-card">
-          <div class="hero-backdrop" style="background-image: url('assets/images/hero-greenhouse-bg.jpg');"></div>
-          <div class="hero-overlay"></div>
-          
-          <div class="hero-content">
-            <div class="hero-badge-pill">
-              <span class="badge-dot"></span>
-              <span>Independent Engineering Project • Microsoft Fabric</span>
-            </div>
+    <!-- Hero Section (Full-Bleed Photographic Header) -->
+    <section id="hero" class="hero-fullbleed">
+      <div class="hero-backdrop" style="background-image: url('assets/images/hero-greenhouse-bg.jpg');"></div>
+      <div class="hero-overlay"></div>
+      
+      <div class="container-wide hero-content-wrapper">
+        <div class="hero-content">
+          <div class="hero-badge-pill">
+            <span class="badge-dot"></span>
+            <span>Independent Engineering Project • Microsoft Fabric</span>
+          </div>
 
-            <h1 class="hero-title">
-              Some portfolio projects start with a dataset.<br>
-              <span class="hero-title-highlight">This one started with a place.</span>
-            </h1>
+          <h1 class="hero-title">
+            Some portfolio projects start with a dataset.<br>
+            <span class="hero-title-highlight">This one started with a place.</span>
+          </h1>
 
-            <p class="hero-subtitle">
-              An end-to-end data platform built around a Python-generated smart farming environment—demonstrating real-time telemetry ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
-            </p>
+          <p class="hero-subtitle">
+            An end-to-end data platform built around a Python-generated smart farming environment—demonstrating real-time telemetry ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
+          </p>
 
-            <!-- Architecture Category Filter Pills -->
-            <div class="hero-filter-pills">
-              <span class="filter-pill active">Streaming (KQL)</span>
-              <span class="filter-pill">Lakehouse (Delta Parquet)</span>
-              <span class="filter-pill">Warehouse (Kimball)</span>
-              <span class="filter-pill">Direct Lake (Power BI)</span>
-              <span class="filter-pill">Activator (10 Reflex Rules)</span>
-            </div>
+          <!-- Architecture Category Filter Pills -->
+          <div class="hero-filter-pills">
+            <span class="filter-pill active">Streaming (KQL)</span>
+            <span class="filter-pill">Lakehouse (Delta Parquet)</span>
+            <span class="filter-pill">Warehouse (Kimball)</span>
+            <span class="filter-pill">Direct Lake (Power BI)</span>
+            <span class="filter-pill">Activator (10 Reflex Rules)</span>
+          </div>
 
-            <div class="hero-actions">
-              <a href="#platform" class="btn btn-primary">
-                <span>Explore the Architecture</span>
-                <span class="btn-arrow">→</span>
-              </a>
-              <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-secondary">
-                <span>View GitHub Repository</span>
-              </a>
-            </div>
+          <div class="hero-actions">
+            <a href="#platform" class="btn btn-primary">
+              <span>Explore the Architecture</span>
+              <span class="btn-arrow">→</span>
+            </a>
+            <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-secondary">
+              <span>View GitHub Repository</span>
+            </a>
+          </div>
 
-            <div class="hero-pipeline-ribbon">
-              <span class="ribbon-label">Pipeline:</span>
-              <span class="pipeline-node">Python Simulator</span>
-              <span class="pipeline-arrow">➔</span>
-              <span class="pipeline-node">Fabric Eventstream</span>
-              <span class="pipeline-arrow">➔</span>
-              <span class="pipeline-node">Eventhouse (KQL)</span>
-              <span class="pipeline-arrow">➔</span>
-              <span class="pipeline-node">OneLake Medallion</span>
-              <span class="pipeline-arrow">➔</span>
-              <span class="pipeline-node">Fabric Warehouse</span>
-              <span class="pipeline-arrow">➔</span>
-              <span class="pipeline-node">Direct Lake BI</span>
-              <span class="pipeline-arrow">➔</span>
-              <span class="pipeline-node">Activator Reflex</span>
-            </div>
+          <div class="hero-pipeline-ribbon">
+            <span class="ribbon-label">Pipeline:</span>
+            <span class="pipeline-node">Python Simulator</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Fabric Eventstream</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Eventhouse (KQL)</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">OneLake Medallion</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Fabric Warehouse</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Direct Lake BI</span>
+            <span class="pipeline-arrow">➔</span>
+            <span class="pipeline-node">Activator Reflex</span>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Metric Showcase Strip -->
+    <!-- Metric Showcase Strip (Directly Below Full-Bleed Hero) -->
+    <section class="hero-stats-section">
+      <div class="container-wide">
         <div class="hero-stats-strip">
           <div class="hero-stat-item">
             <div class="hero-stat-value">&lt; 15s</div>
