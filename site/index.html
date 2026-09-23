@@ -588,23 +588,24 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
           </div>
           <div class="quests-grid">
             <div class="quest-card">
-              <span class="quest-step">Quest 01 • Operations Control</span>
-              <p>In <strong>Analytics Dashboards</strong>, inspect <em>Executive Operations Overview</em> to examine how CALABARZON and Central Luzon facility yields compare across Grade A vs Grade B crops.</p>
+              <span class="quest-step">Quest 01 • Operations Control Tower</span>
+              <p>In <strong>Real-Time KQL Dashboards</strong>, inspect <em>Executive Facility Operations</em> to observe live nationwide facility health scores (Benguet 92.94, Clark 93.13), power draw, and equipment wear heatmaps.</p>
             </div>
             <div class="quest-card">
-              <span class="quest-step">Quest 02 • Reflex Alerting</span>
+              <span class="quest-step">Quest 02 • DataOps & Streaming Governance</span>
+              <p>In <strong>Real-Time KQL Dashboards</strong>, inspect <em>Streaming Ingress & DLQ Governance</em> to audit sub-3s ingestion lag, schema violation quarantines, and 100.0% pipeline success rates.</p>
+            </div>
+            <div class="quest-card">
+              <span class="quest-step">Quest 03 • Real-Time Reflex Alerting</span>
               <p>In <strong>Activator Alert Rules</strong>, inspect <em>Rule 03 (Pump Cavitation)</em> and <em>Rule 04 (Streaming Latency SLA)</em> to see how telemetry anomalies trigger automated escalations.</p>
-            </div>
-            <div class="quest-card">
-              <span class="quest-step">Quest 03 • DataOps Governance</span>
-              <p>In <strong>Analytics Dashboards</strong>, inspect <em>DataOps Governance</em> to review the 66.1% automated dead-letter remediation workflow and exception distribution.</p>
             </div>
           </div>
         </div>
 
         <div class="explore-tabs-nav">
           <button class="tab-btn active" data-tab-target="tab-architecture">Architecture Blueprints (8)</button>
-          <button class="tab-btn" data-tab-target="tab-analytics">Analytics Dashboards (5)</button>
+          <button class="tab-btn" data-tab-target="tab-kql-dashboards">Real-Time KQL Dashboards (3)</button>
+          <button class="tab-btn" data-tab-target="tab-analytics">Direct Lake Reports (5)</button>
           <button class="tab-btn" data-tab-target="tab-operations">Activator Alert Rules (10)</button>
         </div>
 
@@ -693,7 +694,42 @@ class EnvironmentalTelemetryGenerator(BaseTelemetryGenerator):
           </div>
         </div>
 
-        <!-- Tab 2: Analytics Reports -->
+        <!-- Tab 2: Real-Time KQL Dashboards -->
+        <div id="tab-kql-dashboards" class="tab-panel">
+          <div class="gallery-grid">
+            <div class="gallery-card" data-lightbox-src="assets/dashboards/kql_dashboard_business_operations.png" data-lightbox-caption="Microsoft Fabric Real-Time KQL Dashboard: Executive Facility Operational Overview — Real-time facility health indices (Benguet 92.94, Tagaytay 93.08, Clark 93.13), equipment wear heatmap, micro-climate stability across hydroponic rooms, crop biological stress index, and emergency maintenance work order SLA resolutions.">
+              <div class="gallery-thumb-container">
+                <img src="assets/dashboards/kql_dashboard_business_operations.png" alt="Executive Facility Operations Dashboard" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Executive Facility Operations Control Tower</div>
+                <div class="gallery-item-desc">Nationwide facility health indices, equipment wear heatmap, micro-climate stability, and maintenance work order SLAs.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/dashboards/kql_dashboard_pipeline_observability.png" data-lightbox-caption="Microsoft Fabric Real-Time KQL Dashboard: DataOps Observability & Pipeline Traces — 100.0% Pipeline Run Success Rate, Medallion Pipeline Trace & Execution History, 2.84 min End-to-End Batch SLA Duration, Data Quality Gate & Ingress SLA Compliance Audit.">
+              <div class="gallery-thumb-container">
+                <img src="assets/dashboards/kql_dashboard_pipeline_observability.png" alt="DataOps Pipeline Trace Dashboard" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">DataOps Pipeline Trace & SLA Governance</div>
+                <div class="gallery-item-desc">Real-time Medallion execution history, stage duration benchmarks, batch SLA metrics, and data quality gate audits.</div>
+              </div>
+            </div>
+
+            <div class="gallery-card" data-lightbox-src="assets/dashboards/kql_dashboard_streaming_sla_governance.png" data-lightbox-caption="Microsoft Fabric Real-Time KQL Dashboard: Streaming Ingestion SLA & Real-Time Telemetry Observability — Per-stream ingestion lag tracking (SLA < 3.0s), Ingress Data Quality Scorecard, Dead-Letter Queue anomaly rates, multi-stream ingestion velocity, and raw DLQ exception payload logs.">
+              <div class="gallery-thumb-container">
+                <img src="assets/dashboards/kql_dashboard_streaming_sla_governance.png" alt="Streaming Ingress SLA Governance Dashboard" class="gallery-thumb">
+              </div>
+              <div class="gallery-info">
+                <div class="gallery-item-title">Streaming Ingress & DLQ Governance</div>
+                <div class="gallery-item-desc">Per-stream ingestion lag latency percentiles, schema violation detection, DLQ quarantine logs, and ingress velocity.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Direct Lake Analytics Reports -->
         <div id="tab-analytics" class="tab-panel">
           <div class="gallery-grid">
             <div class="gallery-card" data-lightbox-src="assets/reports/page_1_executive_operations.png" data-lightbox-caption="Power BI Executive Operations Report: Nationwide facility control tower, harvest yield realization (80% Grade A), wholesale revenue (₱137.83M), and regional production distribution.">
