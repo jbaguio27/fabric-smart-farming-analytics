@@ -683,60 +683,299 @@ img {
   line-height: 1.6;
 }
 
-/* Chapter 2: The Physical Problem */
-.problem-grid {
+/* Chapter 2: The Physical Problem (3D Coverflow Slider) */
+.problem-coverflow-wrapper {
+  margin: 3rem 0 3.5rem 0;
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem 0 3.5rem 0;
+}
+
+.problem-swiper {
+  width: 100%;
+  padding-top: 1.5rem;
+  padding-bottom: 3.5rem;
+}
+
+.challenge-slide {
+  width: 380px;
+  max-width: 90vw;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  user-select: none;
+}
+
+.challenge-slide.swiper-slide-active {
+  border-color: var(--c-orange-accent);
+  box-shadow: 0 20px 50px rgba(226, 115, 36, 0.25), 0 0 20px rgba(0, 0, 0, 0.8);
+  transform: scale(1.03);
+}
+
+.challenge-card {
+  padding: 2.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.challenge-num {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--c-orange-accent);
+  background-color: var(--bg-surface-elev);
+  border: 1px solid var(--border-accent);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.challenge-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+
+.badge-red {
+  color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.badge-green {
+  color: #10B981;
+  background-color: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.badge-orange {
+  color: var(--c-orange-accent);
+  background-color: rgba(226, 115, 36, 0.12);
+  border-color: rgba(226, 115, 36, 0.3);
+}
+
+.badge-purple {
+  color: #A855F7;
+  background-color: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.challenge-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--c-cream-light);
+  margin-bottom: 0.85rem;
+  line-height: 1.3;
+}
+
+.challenge-desc {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 1.5rem;
+}
+
+/* Dynamic Live Visual Telemetry in Challenge Cards */
+.challenge-visual {
+  background-color: #0B0F08;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pulsing Gradient Overlays */
+.challenge-thermal .challenge-visual {
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.15);
+}
+
+.challenge-nutrient .challenge-visual {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.challenge-equipment .challenge-visual {
+  border-color: rgba(226, 115, 36, 0.35);
+  box-shadow: inset 0 0 20px rgba(226, 115, 36, 0.15);
+}
+
+.challenge-sensor .challenge-visual {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.15);
+}
+
+.telemetry-pill-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.telemetry-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(20, 26, 15, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.telemetry-pill.warn {
+  border-color: rgba(226, 115, 36, 0.5);
+  background-color: rgba(226, 115, 36, 0.12);
+}
+
+.telemetry-pill.critical {
+  border-color: rgba(239, 68, 68, 0.5);
+  background-color: rgba(239, 68, 68, 0.15);
+}
+
+.telemetry-pill.ok {
+  border-color: rgba(16, 185, 129, 0.4);
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.pill-label {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.pill-val {
+  color: var(--c-cream-light);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pill-tag {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background-color: var(--c-orange-accent);
+  color: #000;
+  font-weight: 800;
+}
+
+.challenge-impact {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+}
+
+.challenge-impact strong {
+  color: var(--c-cream-light);
+}
+
+/* Swiper Controls for Chapter 2 */
+.problem-pagination .swiper-pagination-bullet {
+  background: var(--text-muted);
+  opacity: 0.4;
+  width: 9px;
+  height: 9px;
+  transition: all 0.3s ease;
+}
+
+.problem-pagination .swiper-pagination-bullet-active {
+  background: var(--c-orange-accent);
+  opacity: 1;
+  width: 28px;
+  border-radius: 6px;
+  box-shadow: 0 0 10px var(--c-orange-accent);
+}
+
+.problem-nav-prev, .problem-nav-next {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--bg-surface-elev);
+  border: 1px solid var(--c-orange-accent);
+  color: var(--c-orange-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.problem-nav-prev::after, .problem-nav-next::after {
+  content: '';
+}
+
+.problem-nav-prev:hover, .problem-nav-next:hover {
+  background-color: var(--c-orange-accent);
+  color: #000;
+  box-shadow: 0 0 18px var(--c-orange-glow);
+}
+
+/* Context Row Underneath Coverflow */
+.problem-context-row {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: 3.5rem;
   align-items: center;
-  margin-top: 2.5rem;
+  margin-top: 1.5rem;
 }
 
-.problem-list {
-  list-style: none;
+.engineering-question-card {
+  background: linear-gradient(135deg, rgba(226, 115, 36, 0.08) 0%, rgba(17, 22, 12, 0.95) 100%);
+  border: 1px solid rgba(226, 115, 36, 0.35);
+  border-left: 4px solid var(--c-orange-accent);
+  border-radius: var(--radius-md);
+  padding: 1.75rem 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-.problem-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.problem-item:first-child {
-  padding-top: 0;
-}
-
-.problem-item:last-child {
-  border-bottom: none;
-}
-
-.problem-marker {
+.engineering-question-tag {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
+  text-transform: uppercase;
   color: var(--c-orange-accent);
-  background-color: var(--bg-surface-elev);
-  border: 1px solid var(--border-subtle);
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
 }
 
-.problem-text strong {
-  display: block;
-  font-size: 1.05rem;
+.engineering-question-text {
+  font-size: 1.08rem;
   color: var(--c-cream-light);
-  margin-bottom: 0.35rem;
+  line-height: 1.7;
 }
 
-.problem-text span {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-/* Chapter 3: The Build */
+/* Chapter 3: The Build Progression */
 .build-progression {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -780,66 +1019,82 @@ img {
   line-height: 1.6;
 }
 
-/* Code Container (Terminal Style) */
-.code-showcase {
-  background-color: var(--bg-surface-elev);
-  border: 1px solid var(--border-subtle);
+/* Mock Terminal Window & Developer Experience */
+.mock-terminal {
+  background-color: #0A0E07;
+  border: 1px solid rgba(226, 115, 36, 0.3);
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  margin-top: 2rem;
 }
 
-.code-header {
-  background-color: #0E140A;
-  padding: 0.8rem 1.25rem;
+.terminal-topbar {
+  background-color: #12180E;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.75rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
 }
 
-.code-filename {
+.terminal-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-red { background-color: #FF5F56; }
+.dot-yellow { background-color: #FFBD2E; }
+.dot-green { background-color: #27C93F; }
+
+.terminal-tab-title {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.code-copy-btn {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  color: var(--text-muted);
-  padding: 0.35rem 0.8rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.code-copy-btn:hover {
-  border-color: var(--c-orange-accent);
+.terminal-prompt-icon {
   color: var(--c-orange-accent);
-  background-color: rgba(226, 115, 36, 0.1);
+  font-weight: 700;
 }
 
-.code-body {
+.terminal-code-body {
   padding: 1.5rem;
   overflow-x: auto;
+  background-color: #070A05;
 }
 
-.code-body pre {
+.terminal-code-body pre {
   margin: 0;
-}
-
-.code-body code {
-  font-family: var(--font-mono);
+  font-family: 'JetBrains Mono', 'Fira Code', var(--font-mono);
   font-size: 0.88rem;
-  line-height: 1.7;
-  color: var(--c-cream-light);
+  line-height: 1.75;
+  font-variant-ligatures: normal;
+  font-feature-settings: "liga" 1, "calt" 1;
 }
 
-/* Chapter 4: The Platform */
+/* Syntax Highlighting Tokens */
+.syn-kw { color: #E27324; font-weight: 700; } /* Python keywords (class, def, return, if) */
+.syn-fn { color: #60A5FA; } /* Function names */
+.syn-cls { color: #FCD34D; font-weight: 600; } /* Class names */
+.syn-str { color: #34D399; } /* Strings */
+.syn-num { color: #C084FC; } /* Numbers */
+.syn-comm { color: #6B7280; font-style: italic; } /* Comments */
+.syn-dec { color: #F472B6; } /* Decorators */
+.syn-self { color: #93C5FD; font-style: italic; } /* self */
+
+/* Chapter 4: Architecture & Scrolltelling Pipeline */
 .platform-blueprint {
   margin: 3rem 0;
   background-color: var(--bg-surface);
@@ -869,11 +1124,83 @@ img {
   font-family: var(--font-mono);
 }
 
-.layers-walkthrough {
+/* Scrolltelling Pipeline Layout */
+.scrolltelling-container {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 3rem;
+  margin-top: 3.5rem;
+  position: relative;
+}
+
+.pipeline-scrolltelling-rail {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+}
+
+.pipeline-rail-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-orange-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.25rem;
+}
+
+.pipeline-nodes-list {
   display: flex;
   flex-direction: column;
-  gap: 3.5rem;
-  margin-top: 4rem;
+  gap: 1.25rem;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.pipeline-svg-line {
+  position: absolute;
+  left: 5px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background-color: var(--border-subtle);
+}
+
+.pipeline-packet-tracker {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--c-orange-accent);
+  box-shadow: 0 0 12px var(--c-orange-accent);
+  transition: transform 0.25s ease-out;
+  z-index: 2;
+}
+
+.pipeline-nav-node {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pipeline-nav-node.active {
+  color: var(--c-cream-light);
+  font-weight: 700;
+}
+
+.pipeline-nav-node.active .node-idx {
+  color: var(--c-orange-accent);
 }
 
 .layer-block {
@@ -881,9 +1208,16 @@ img {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+  margin-bottom: 2rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.layer-badge {
+.layer-block.active-layer {
+  border-color: var(--c-orange-accent);
+  box-shadow: 0 10px 30px rgba(226, 115, 36, 0.15);
+}
+
+.layer-tag {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
@@ -907,117 +1241,224 @@ img {
   margin-bottom: 1.5rem;
 }
 
-.layer-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+.layer-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-.layer-chip {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
+.layer-detail-item {
   background-color: var(--bg-surface-elev);
   border: 1px solid var(--border-subtle);
-  color: var(--c-cream-light);
-  padding: 0.25rem 0.65rem;
   border-radius: var(--radius-sm);
+  padding: 1rem;
 }
 
-/* Chapter 5: Results */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1.25rem;
-  margin: 3rem 0;
-}
-
-.metric-box {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 1.75rem 1.25rem;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.metric-box:hover {
-  border-color: var(--border-accent);
-  transform: translateY(-2px);
-}
-
-.metric-number {
-  font-family: var(--font-mono);
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: var(--c-cream-light);
-  line-height: 1.1;
-  margin-bottom: 0.5rem;
-}
-
-.metric-label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--c-orange-accent);
-  margin-bottom: 0.35rem;
-}
-
-.metric-sub {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.benchmarks-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.benchmark-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 2rem;
-}
-
-.benchmark-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--c-cream-light);
-  margin-bottom: 1rem;
-}
-
-.benchmark-badge {
+.layer-detail-label {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--c-orange-accent);
-  background-color: var(--bg-surface-elev);
-  border: 1px solid var(--border-accent);
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-sm);
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
 }
 
-.benchmark-desc {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.65;
-  margin-bottom: 1.5rem;
+.layer-detail-val {
+  font-size: 0.88rem;
+  color: var(--c-cream-light);
+  line-height: 1.45;
 }
 
-.percentiles-row {
+/* Chapter 5: Bento Box UI Layout */
+.bento-results-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  margin-top: 3rem;
 }
 
-.pct-item {
+.bento-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bento-card:hover {
+  border-color: var(--c-orange-accent);
+  box-shadow: 0 12px 35px rgba(226, 115, 36, 0.2), 0 0 15px rgba(0, 0, 0, 0.8);
+  transform: translateY(-3px);
+}
+
+.bento-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-orange-accent);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bento-val-huge {
+  font-family: var(--font-mono);
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--c-cream-light);
+  line-height: 1.1;
+  margin-bottom: 0.4rem;
+}
+
+.bento-val-large {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--c-cream-light);
+  line-height: 1.1;
+  margin-bottom: 0.4rem;
+}
+
+.bento-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-cream-light);
+  margin-bottom: 0.5rem;
+}
+
+.bento-card-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Bento Card Placements */
+.bento-sparkline-hero {
+  grid-column: span 8;
+  background: radial-gradient(circle at 0% 0%, rgba(226, 115, 36, 0.08) 0%, rgba(17, 22, 12, 1) 100%);
+}
+
+.bento-tests-card {
+  grid-column: span 4;
+  background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.1) 0%, rgba(17, 22, 12, 1) 100%);
+}
+
+.bento-stack-tall {
+  grid-column: span 4;
+  grid-row: span 2;
+  background: linear-gradient(180deg, rgba(28, 38, 21, 0.6) 0%, rgba(17, 22, 12, 1) 100%);
+}
+
+.bento-finops-card {
+  grid-column: span 4;
+}
+
+.bento-dlq-card {
+  grid-column: span 4;
+}
+
+.bento-topology-card {
+  grid-column: span 8;
+  background: radial-gradient(circle at 50% 100%, rgba(226, 115, 36, 0.06) 0%, rgba(17, 22, 12, 1) 100%);
+}
+
+/* Sparkline SVG Chart Container */
+.sparkline-container {
+  margin: 1.25rem 0;
+  background-color: #0A0E06;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.sparkline-svg {
+  width: 100%;
+  height: 80px;
+  overflow: visible;
+}
+
+.sparkline-stats-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sparkline-stats-row span strong {
+  color: var(--c-orange-accent);
+}
+
+/* Test Suite Verification Shield */
+.tests-shield-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.shield-icon-wrapper {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: rgba(16, 185, 129, 0.15);
+  border: 2px solid #10B981;
+  color: #10B981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Tech Stack Bento Items */
+.bento-stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.bento-stack-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   background-color: var(--bg-surface-elev);
   border: 1px solid var(--border-subtle);
+  padding: 0.65rem 0.9rem;
   border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.bento-stack-item:hover {
+  border-color: var(--c-orange-accent);
+  transform: translateX(4px);
+}
+
+.stack-item-icon {
+  font-size: 1.1rem;
+}
+
+.stack-item-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--c-cream-light);
+}
+
+.stack-item-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
   padding: 0.85rem 0.5rem;
   text-align: center;
 }
@@ -1792,15 +2233,41 @@ img {
   .hero-stat-divider {
     display: none;
   }
-  .origin-grid, .problem-grid, .benchmarks-split {
+  .origin-grid, .problem-grid, .benchmarks-split, .problem-context-row {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
-  .metrics-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .scrolltelling-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .pipeline-scrolltelling-rail {
+    display: none;
   }
   .build-progression, .quests-grid {
     grid-template-columns: 1fr;
+  }
+  .bento-results-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .bento-sparkline-hero {
+    grid-column: span 6;
+  }
+  .bento-tests-card {
+    grid-column: span 6;
+  }
+  .bento-stack-tall {
+    grid-column: span 6;
+    grid-row: auto;
+  }
+  .bento-finops-card {
+    grid-column: span 3;
+  }
+  .bento-dlq-card {
+    grid-column: span 3;
+  }
+  .bento-topology-card {
+    grid-column: span 6;
   }
 }
 
@@ -1840,8 +2307,21 @@ img {
   .nav-toggle {
     display: block;
   }
-  .metrics-grid {
-    grid-template-columns: 1fr 1fr;
+  .challenge-slide {
+    width: 300px;
+  }
+  .bento-results-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-sparkline-hero, .bento-tests-card, .bento-stack-tall, .bento-finops-card, .bento-dlq-card, .bento-topology-card {
+    grid-column: span 1;
+  }
+  .sparkline-stats-row {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .layer-details-grid {
+    grid-template-columns: 1fr;
   }
   .percentiles-row {
     grid-template-columns: repeat(2, 1fr);

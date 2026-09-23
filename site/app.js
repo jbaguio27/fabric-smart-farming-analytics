@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollSpy();
   initMobileNav();
   initCounters();
+  initProblemSwiper();
+  initScrolltellingPipeline();
 });
 
 /**
@@ -206,7 +208,8 @@ function initCodeCopy() {
 
   copyBtns.forEach(btn => {
     btn.addEventListener('click', async () => {
-      const codeBlock = btn.closest('.code-showcase')?.querySelector('code');
+      const container = btn.closest('.mock-terminal') || btn.closest('.code-showcase');
+      const codeBlock = container?.querySelector('code');
       if (!codeBlock) return;
 
       const codeText = codeBlock.textContent;
@@ -330,4 +333,103 @@ function animateCounter(el) {
   }
 
   requestAnimationFrame(update);
+}
+
+/**
+ * 3D Coverflow Controller for Chapter 2 Physical Challenges
+ */
+function initProblemSwiper() {
+  if (typeof Swiper === 'undefined') return;
+  const swiperEl = document.querySelector('.problem-swiper');
+  if (!swiperEl) return;
+
+  new Swiper('.problem-swiper', {
+    effect: 'coverflow',
+    grabCursor: true,
+    centeredSlides: true,
+    slidesPerView: 'auto',
+    initialSlide: 0,
+    coverflowEffect: {
+      rotate: 20,
+      stretch: 0,
+      depth: 120,
+      modifier: 1.2,
+      slideShadows: false,
+    },
+    pagination: {
+      el: '.problem-pagination',
+      clickable: true,
+    },
+    navigation: {
+      nextEl: '.problem-nav-next',
+      prevEl: '.problem-nav-prev',
+    },
+    keyboard: {
+      enabled: true,
+    },
+  });
+}
+
+/**
+ * Scrolltelling Data Pipeline Visualization Controller for Chapter 4
+ */
+function initScrolltellingPipeline() {
+  const layerBlocks = document.querySelectorAll('.layer-block[data-layer-idx]');
+  const navNodes = document.querySelectorAll('.pipeline-nav-node[data-target-layer]');
+  const trackerDot = document.getElementById('pipeline-packet-dot');
+
+  if (!layerBlocks.length || !navNodes.length) return;
+
+  // Click on nav node to smoothly scroll to corresponding architecture layer
+  navNodes.forEach(node => {
+    node.addEventListener('click', () => {
+      const idx = node.getAttribute('data-target-layer');
+      const targetBlock = document.querySelector(`.layer-block[data-layer-idx="${idx}"]`);
+      if (targetBlock) {
+        targetBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  });
+
+  // Track scroll position of layers and illuminate pipeline path
+  const onScroll = () => {
+    let activeIdx = 1;
+    const windowMiddle = window.scrollY + window.innerHeight * 0.45;
+
+    layerBlocks.forEach(block => {
+      const top = block.offsetTop;
+      const idx = parseInt(block.getAttribute('data-layer-idx'), 10);
+
+      if (windowMiddle >= top - 80) {
+        activeIdx = idx;
+      }
+    });
+
+    // Update active layer block classes
+    layerBlocks.forEach(block => {
+      const idx = parseInt(block.getAttribute('data-layer-idx'), 10);
+      if (idx === activeIdx) {
+        block.classList.add('active-layer');
+      } else {
+        block.classList.remove('active-layer');
+      }
+    });
+
+    // Update active nav node and translate glowing telemetry packet dot
+    navNodes.forEach(node => {
+      const idx = parseInt(node.getAttribute('data-target-layer'), 10);
+      if (idx === activeIdx) {
+        node.classList.add('active');
+        if (trackerDot) {
+          const nodeTop = node.offsetTop;
+          trackerDot.style.transform = `translateY(${nodeTop}px)`;
+        }
+      } else {
+        node.classList.remove('active');
+      }
+    });
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 }
