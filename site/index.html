@@ -934,8 +934,250 @@
         <span class="chapter-badge">Chapter 06</span>
         <h2 class="section-title">Explore the System</h2>
         <p class="section-lead">
-          Inspect the high-resolution engineering blueprints, actual Power BI report visual exports, and real-time Reflex alert flowcards built for the project.
+          Explore the live Microsoft Fabric operational dashboards, Power BI Direct Lake reports, and interactive telemetry intelligence built for this platform.
         </p>
+
+        <!-- 1. The Focal Point: Interactive Dashboard Walkthrough Theater -->
+        <div class="dashboard-theater-wrapper">
+          <div class="theater-header-row">
+            <div class="theater-title-wrap">
+              <span class="theater-badge">Live Intelligence Showcase</span>
+              <h3 class="theater-title">Interactive Dashboard Walkthrough</h3>
+              <p class="theater-subtitle">
+                Switch views to inspect production Direct Lake and Real-Time KQL screens. Hover or tap the <span class="hotspot-highlight-text"><span class="pulse-indicator"></span>pulsing hotspots</span> to reveal underlying architecture and BI design decisions.
+              </p>
+            </div>
+
+            <!-- View Switcher Tabs -->
+            <div class="walkthrough-nav">
+              <button class="walkthrough-tab-btn active" data-view="executive-ops">
+                <span class="tab-icon">🏛️</span>
+                <span>Executive Overview</span>
+              </button>
+              <button class="walkthrough-tab-btn" data-view="streaming-sla">
+                <span class="tab-icon">⚡</span>
+                <span>Real-Time Ingress SLA</span>
+              </button>
+              <button class="walkthrough-tab-btn" data-view="microclimates">
+                <span class="tab-icon">🌱</span>
+                <span>Environmental Direct Lake</span>
+              </button>
+              <button class="walkthrough-tab-btn" data-view="pipeline-observability">
+                <span class="tab-icon">🔭</span>
+                <span>DataOps Pipeline Trace</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Thematic Browser Mockup Frame -->
+          <div class="dashboard-browser-mockup">
+            <div class="browser-topbar">
+              <div class="browser-dots">
+                <span class="browser-dot dot-red"></span>
+                <span class="browser-dot dot-yellow"></span>
+                <span class="browser-dot dot-green"></span>
+              </div>
+              <div class="browser-url-bar">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span id="theater-url-display">https://app.fabric.microsoft.com/groups/smart-farming/reports/executive-operations</span>
+              </div>
+              <div class="browser-status-strip">
+                <span class="browser-status-badge" id="theater-mode-badge">● DIRECT LAKE (VERTIPAQ)</span>
+                <button class="theater-expand-btn" id="theater-expand-lightbox" title="Expand Fullscreen Lightbox">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                  </svg>
+                  <span>Expand View 🔍</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Viewport with Interactive Hotspots Layer -->
+            <div class="theater-viewport">
+              <img id="theater-img" src="assets/reports/page_1_executive_operations.png" alt="Executive Operations Dashboard" class="theater-display-img">
+              
+              <!-- Hotspots Container (Populated dynamically by app.js) -->
+              <div class="hotspots-overlay" id="theater-hotspots">
+                <!-- Injected via JavaScript -->
+              </div>
+
+              <!-- Theater Caption Bar -->
+              <div class="theater-caption-bar">
+                <span id="theater-caption-text">Executive Operations Overview: Real-time nationwide facility health indices, Grade-A harvest yield realization, wholesale revenue (₱137.83M), and regional production.</span>
+                <span class="theater-hotspot-hint">💡 Hover or tap orange dots to inspect architectural details</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Highlight Advanced UI Components -->
+        <div class="component-spotlight-section">
+          <div class="spotlight-section-header">
+            <span class="spotlight-badge">BI Architecture Breakdown</span>
+            <h3 class="spotlight-title">Deconstructing the Dashboard Architecture</h3>
+            <p class="spotlight-lead">
+              Enterprise BI design is about cognitive hierarchy—structuring data so executives gain situational awareness in seconds while allowing operators to slice to root causes.
+            </p>
+          </div>
+
+          <div class="component-spotlight-grid">
+            <!-- Component 1: Single-Row KPI Tracking -->
+            <div class="spotlight-card">
+              <div class="spotlight-card-top">
+                <span class="spotlight-num">01</span>
+                <span class="spotlight-card-tag">EXECUTIVE COGNITION</span>
+              </div>
+              <h4 class="spotlight-card-title">Single-Row Executive KPI Tracking</h4>
+              <p class="spotlight-card-desc">
+                High-level operational health sits permanently anchored at the top of the canvas. Before inspecting granular heatmaps, operators see aggregated health scores, ingestion velocity, and work order resolution SLAs.
+              </p>
+              
+              <div class="spotlight-preview-frame">
+                <div class="kpi-mini-strip">
+                  <div class="kpi-mini-card">
+                    <span class="kpi-mini-lbl">BENGUET HEALTH</span>
+                    <span class="kpi-mini-val val-green">92.94%</span>
+                  </div>
+                  <div class="kpi-mini-card">
+                    <span class="kpi-mini-lbl">TAGAYTAY HEALTH</span>
+                    <span class="kpi-mini-val val-green">93.08%</span>
+                  </div>
+                  <div class="kpi-mini-card">
+                    <span class="kpi-mini-lbl">CLARK HEALTH</span>
+                    <span class="kpi-mini-val val-green">93.13%</span>
+                  </div>
+                  <div class="kpi-mini-card">
+                    <span class="kpi-mini-lbl">INGRESS SLA</span>
+                    <span class="kpi-mini-val val-orange">1.70s (p50)</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="spotlight-engineering-footer">
+                <span class="footer-tag">ENGINEERING BACKING:</span>
+                <span>Pre-aggregated via continuous KQL materialized views and Kimball Gold fact tables to guarantee sub-second initial canvas load.</span>
+              </div>
+            </div>
+
+            <!-- Component 2: Native Filter Sidebars -->
+            <div class="spotlight-card">
+              <div class="spotlight-card-top">
+                <span class="spotlight-num">02</span>
+                <span class="spotlight-card-tag">DATA DISCOVERY</span>
+              </div>
+              <h4 class="spotlight-card-title">User-Centric Native Filter Sidebars</h4>
+              <p class="spotlight-card-desc">
+                Multi-dimensional slicing is cleanly isolated to a dedicated vertical filter pane. Users slice by facility region, growing room, timeframe grain, and anomaly type in one predictable control surface without cluttering visual charts.
+              </p>
+              
+              <div class="spotlight-preview-frame">
+                <div class="filter-mini-strip">
+                  <div class="filter-mini-item active">
+                    <span class="filter-check">✓</span>
+                    <span>Facility: Benguet Vertical-01</span>
+                  </div>
+                  <div class="filter-mini-item">
+                    <span class="filter-check">✓</span>
+                    <span>Microclimate: Canopy VPD</span>
+                  </div>
+                  <div class="filter-mini-item">
+                    <span class="filter-check">✓</span>
+                    <span>Time Window: Real-Time 15m</span>
+                  </div>
+                  <div class="filter-mini-item filter-warn">
+                    <span class="filter-check">!</span>
+                    <span>Anomaly: Thermal Spike &gt; 32°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="spotlight-engineering-footer">
+                <span class="footer-tag">ENGINEERING BACKING:</span>
+                <span>Powered by conformed dimensions (dim_facility, dim_zone, dim_crop) ensuring star-schema join pruning without Cartesian explosions.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Interactive Before & After Telemetry Transformation Slider -->
+        <div class="before-after-section">
+          <div class="before-after-header">
+            <span class="before-after-badge">Pipeline Transformation Impact</span>
+            <h3 class="before-after-title">From Raw Telemetry to Direct Lake Intelligence</h3>
+            <p class="before-after-lead">
+              Drag the interactive vertical divider below to compare raw, malformed sensor packets arriving at the Eventstream against the final, polished Direct Lake visual intelligence.
+            </p>
+          </div>
+
+          <div class="interactive-slider-container" id="before-after-widget">
+            <!-- After Layer (Clean Polished Dashboard) -->
+            <div class="slider-after-layer">
+              <img src="assets/dashboards/kql_dashboard_business_operations.png" alt="Polished Fabric Dashboard Visualization" class="slider-img">
+              <div class="slider-label-pill label-after">
+                <span class="pill-dot dot-green"></span>
+                <span>AFTER: Polished Fabric Intelligence</span>
+              </div>
+            </div>
+
+            <!-- Before Layer (Messy Raw Telemetry Stream) -->
+            <div class="slider-before-layer" id="slider-before-layer">
+              <div class="raw-telemetry-canvas">
+                <div class="raw-code-header">
+                  <span class="raw-dot dot-red"></span>
+                  <span class="raw-dot dot-yellow"></span>
+                  <span class="raw-dot dot-green"></span>
+                  <span class="raw-title">RAW_EVENTSTREAM_INGRESS_STREAM // MALFORMED &amp; JITTER</span>
+                </div>
+                <pre class="raw-json-stream"><code>{
+  "timestamp": "2026-09-25T00:14:02.184Z",
+  "facility_id": "FAC-BGT-01",
+  "zone_id": null,  <span class="json-err">&lt;-- MISSING PRIMARY KEY</span>
+  "payload": {
+    "raw_analog_mv": 892.4,
+    "temperature_c": 34.82, <span class="json-warn">&lt;-- THERMAL RUNAWAY SPIKE</span>
+    "humidity_pct": 78.4,
+    "clock_skew_sec": +420.0,
+    "crc_checksum": "ERR_MISMATCH_0x4F"
+  },
+  "ingestion_status": "QUARANTINED_TO_DLQ",
+  "auto_remediation": "WORKER_02_PRIMARY_KEY_LOOKUP"
+}
+{
+  "timestamp": "2026-09-25T00:14:02.392Z",
+  "facility_id": "FAC-TAG-02",
+  "zone_id": "ZONE-04",
+  "payload": {
+    "ph_val": 5.48, <span class="json-warn">&lt;-- NUTRIENT LOCKOUT DRIFT</span>
+    "ec_val": "2.65mS", <span class="json-err">&lt;-- UNPARSED STRING TYPE</span>
+    "pump_vibration_mms": 7.82 <span class="json-warn">&lt;-- CAVITATION SPIKE</span>
+  }
+}</code></pre>
+              </div>
+              <div class="slider-label-pill label-before">
+                <span class="pill-dot dot-red"></span>
+                <span>BEFORE: Raw Unstructured Stream</span>
+              </div>
+            </div>
+
+            <!-- Draggable Handle Divider -->
+            <div class="slider-divider" id="slider-divider">
+              <div class="slider-handle">
+                <span class="handle-arrow">◄</span>
+                <span class="handle-line"></span>
+                <span class="handle-arrow">►</span>
+              </div>
+            </div>
+          </div>
+          <div class="slider-instruction-hint">
+            <span>◄ Drag the divider left or right to inspect the transformation ►</span>
+          </div>
+        </div>
 
         <!-- Guided Discovery Exploration Quests -->
         <div class="guided-quests-box">

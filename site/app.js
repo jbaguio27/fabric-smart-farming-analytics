@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initCounters();
   initProblemSwiper();
   initScrolltellingPipeline();
+  initDashboardWalkthrough();
+  initBeforeAfterSlider();
 });
 
 /**
@@ -467,4 +469,299 @@ function initScrolltellingPipeline() {
   setTimeout(() => {
     setActive(1);
   }, 100);
+}
+
+
+/**
+ * Interactive Dashboard Walkthrough Theater & Hotspot Tooltips
+ */
+const WALKTHROUGH_DATA = {
+  'executive-ops': {
+    title: 'Executive Operations Overview',
+    url: 'https://app.fabric.microsoft.com/groups/smart-farming/reports/executive-operations',
+    mode: '● DIRECT LAKE (VERTIPAQ)',
+    img: 'assets/reports/page_1_executive_operations.png',
+    caption: 'Executive Operations Control Tower: Real-time nationwide facility health indices, Grade-A harvest yield realization, wholesale revenue (₱137.83M), and regional production.',
+    hotspots: [
+      {
+        top: '14%', left: '38%',
+        tag: 'BI ARCHITECTURE',
+        title: 'Single-Row KPI Tracking',
+        desc: 'High-level facility health (92.94% - 93.13%) and power draw pre-aggregated via Gold Kimball facts and KQL materialized views to establish instant situational awareness.',
+        align: 'tooltip-bottom'
+      },
+      {
+        top: '36%', left: '9%',
+        tag: 'DATA DISCOVERY',
+        title: 'Native Multi-Select Filter Sidebar',
+        desc: 'Dedicated vertical pane allows operators to slice by facility region, growing room, timeframe, or anomaly type without Cartesian product query lag.',
+        align: 'tooltip-right'
+      },
+      {
+        top: '58%', left: '64%',
+        tag: 'DIRECT LAKE MODE',
+        title: 'Direct Lake Storage Engine',
+        desc: 'Power BI queries OneLake Delta Parquet directly using VertiPaq memory compression—delivering sub-second rendering without scheduled import refreshes.',
+        align: 'tooltip-left'
+      }
+    ]
+  },
+  'streaming-sla': {
+    title: 'Streaming Ingress SLA & Governance',
+    url: 'https://app.fabric.microsoft.com/groups/smart-farming/kql-dashboards/streaming-sla-governance',
+    mode: '● STREAMING (3.0s KQL REFRESH)',
+    img: 'assets/dashboards/kql_dashboard_streaming_sla_governance.png',
+    caption: 'Streaming Ingestion SLA & Real-Time Telemetry Observability: Per-stream ingestion lag tracking (SLA < 3.0s), data quality scorecard, DLQ quarantine logs, and ingress velocity.',
+    hotspots: [
+      {
+        top: '18%', left: '32%',
+        tag: 'REAL-TIME SLA',
+        title: 'Sub-3.0s Ingestion SLA Tracking',
+        desc: 'Tracks real-time telemetry lag percentiles (p50: 1.70s, max: 5.38s), proving high-throughput streaming arrival far exceeds the 15-second SLA target.',
+        align: 'tooltip-bottom'
+      },
+      {
+        top: '48%', left: '78%',
+        tag: 'DATA QUALITY',
+        title: 'Dead-Letter Queue Quarantine',
+        desc: 'Eventstream routes schema violations, missing keys, and electrical jitter to a dedicated DLQ sink before reaching downstream Silver tables.',
+        align: 'tooltip-left'
+      },
+      {
+        top: '74%', left: '42%',
+        tag: 'STREAM PROCESSING',
+        title: 'Continuous Multi-Stream Velocity',
+        desc: 'Monitors 6 continuous telemetry streams across 8 vertical farming facilities with sub-second KQL window aggregations.',
+        align: 'tooltip-top'
+      }
+    ]
+  },
+  'microclimates': {
+    title: 'Environmental Microclimates',
+    url: 'https://app.fabric.microsoft.com/groups/smart-farming/reports/environmental-microclimates',
+    mode: '● DIRECT LAKE (VERTIPAQ)',
+    img: 'assets/reports/page_2_environmental_microclimates.png',
+    caption: 'Environmental Telemetry & Crop Biological Health: Microclimate stability across 80 growing zones, canopy VPD (1.64 kPa), DLI photoperiods (16.88 mol/m²/d), and biomass growth.',
+    hotspots: [
+      {
+        top: '22%', left: '45%',
+        tag: 'CROP BIOLOGY',
+        title: 'Canopy Vapor Pressure Deficit (VPD)',
+        desc: 'Calculates live transpiration pressure differential (1.64 kPa) to prevent stomatal closure and vegetative tip burn on high-value greens.',
+        align: 'tooltip-bottom'
+      },
+      {
+        top: '52%', left: '76%',
+        tag: 'LIGHTING TELEMETRY',
+        title: 'Daily Light Integral (DLI) Tracking',
+        desc: 'Correlates lighting fixture power draw with PAR sensor telemetry to ensure crops reach optimal photosynthetic photon flux daily.',
+        align: 'tooltip-left'
+      },
+      {
+        top: '78%', left: '30%',
+        tag: 'ANOMALY DETECTION',
+        title: 'Zone Microclimate Variance',
+        desc: 'Cross-zone statistical variance triggers automated HVAC blower adjustments before biological crop damage occurs.',
+        align: 'tooltip-top'
+      }
+    ]
+  },
+  'pipeline-observability': {
+    title: 'DataOps Observability & Pipeline Traces',
+    url: 'https://app.fabric.microsoft.com/groups/smart-farming/kql-dashboards/dataops-observability',
+    mode: '● DATAOPS OBSERVE (OPENTELEMETRY)',
+    img: 'assets/dashboards/kql_dashboard_pipeline_observability.png',
+    caption: 'DataOps Observability & Pipeline Traces: 100.0% Pipeline Run Success Rate, Medallion Pipeline Trace & Execution History, 2.84 min End-to-End Batch Duration, Data Quality Gate Compliance.',
+    hotspots: [
+      {
+        top: '16%', left: '22%',
+        tag: 'RELIABILITY',
+        title: '100.0% Pipeline Run Success Rate',
+        desc: 'Continuous verification of Medallion orchestration runs, tracking end-to-end execution reliability across Bronze, Silver, and Gold stages.',
+        align: 'tooltip-bottom'
+      },
+      {
+        top: '28%', left: '78%',
+        tag: 'SLA BENCHMARK',
+        title: '2.84 min End-to-End Batch Duration',
+        desc: 'Measures full delta sync across Bronze shortcuts, Silver deduplication/PII masking, and Gold Star Schema aggregation.',
+        align: 'tooltip-left'
+      },
+      {
+        top: '68%', left: '50%',
+        tag: 'OPENTELEMETRY',
+        title: 'Span Propagation & Execution Logging',
+        desc: 'Every Spark task and master pipeline run instruments OpenTelemetry spans stored in fact_dataops_pipeline_log for full operational auditability.',
+        align: 'tooltip-top'
+      }
+    ]
+  }
+};
+
+function initDashboardWalkthrough() {
+  const tabBtns = document.querySelectorAll('.walkthrough-tab-btn');
+  const displayImg = document.getElementById('theater-img');
+  const urlDisplay = document.getElementById('theater-url-display');
+  const modeBadge = document.getElementById('theater-mode-badge');
+  const captionText = document.getElementById('theater-caption-text');
+  const hotspotsContainer = document.getElementById('theater-hotspots');
+  const expandBtn = document.getElementById('theater-expand-lightbox');
+
+  if (!tabBtns.length || !displayImg || !hotspotsContainer) return;
+
+  function renderHotspots(hotspotList) {
+    hotspotsContainer.innerHTML = '';
+    hotspotList.forEach(hs => {
+      const item = document.createElement('div');
+      item.className = 'hotspot-item';
+      item.style.top = hs.top;
+      item.style.left = hs.left;
+
+      item.innerHTML = `
+        <div class="hotspot-dot">
+          <span class="hotspot-ring"></span>
+          <span class="hotspot-core"></span>
+        </div>
+        <div class="hotspot-tooltip ${hs.align || 'tooltip-bottom'}">
+          <div class="tooltip-header">
+            <span class="tooltip-tag">${hs.tag}</span>
+            <span class="tooltip-title">${hs.title}</span>
+          </div>
+          <p class="tooltip-desc">${hs.desc}</p>
+        </div>
+      `;
+
+      // Touch toggle for mobile
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wasActive = item.classList.contains('active');
+        document.querySelectorAll('.hotspot-item').forEach(el => el.classList.remove('active'));
+        if (!wasActive) item.classList.add('active');
+      });
+
+      hotspotsContainer.appendChild(item);
+    });
+  }
+
+  function setView(viewKey) {
+    const data = WALKTHROUGH_DATA[viewKey];
+    if (!data) return;
+
+    // Update Buttons
+    tabBtns.forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-view') === viewKey);
+    });
+
+    // Fade transition on image
+    displayImg.style.opacity = '0';
+    setTimeout(() => {
+      displayImg.src = data.img;
+      displayImg.alt = data.title;
+      if (urlDisplay) urlDisplay.textContent = data.url;
+      if (modeBadge) modeBadge.textContent = data.mode;
+      if (captionText) captionText.textContent = data.caption;
+      displayImg.style.opacity = '1';
+      renderHotspots(data.hotspots);
+    }, 200);
+  }
+
+  // Bind click listeners on view tabs
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const viewKey = btn.getAttribute('data-view');
+      setView(viewKey);
+    });
+  });
+
+  // Expand in Fullscreen Lightbox
+  if (expandBtn) {
+    expandBtn.addEventListener('click', () => {
+      const activeBtn = document.querySelector('.walkthrough-tab-btn.active');
+      const viewKey = activeBtn ? activeBtn.getAttribute('data-view') : 'executive-ops';
+      const data = WALKTHROUGH_DATA[viewKey];
+      if (!data) return;
+
+      const modal = document.getElementById('lightbox-modal');
+      const modalImg = document.getElementById('lightbox-img');
+      const modalCaption = document.getElementById('lightbox-caption');
+      if (modal && modalImg && modalCaption) {
+        modalImg.src = data.img;
+        modalCaption.textContent = data.caption;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  }
+
+  // Dismiss open tooltips when clicking anywhere in viewport
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.hotspot-item').forEach(el => el.classList.remove('active'));
+  });
+
+  // Initial load
+  setView('executive-ops');
+}
+
+/**
+ * Interactive Before & After Telemetry Transformation Slider
+ */
+function initBeforeAfterSlider() {
+  const container = document.getElementById('before-after-widget');
+  const beforeLayer = document.getElementById('slider-before-layer');
+  const divider = document.getElementById('slider-divider');
+
+  if (!container || !beforeLayer || !divider) return;
+
+  let isDragging = false;
+
+  function updateSlider(clientX) {
+    const rect = container.getBoundingClientRect();
+    const offsetX = clientX - rect.left;
+    let percentage = (offsetX / rect.width) * 100;
+
+    // Clamp between 5% and 95%
+    percentage = Math.max(5, Math.min(95, percentage));
+
+    beforeLayer.style.width = `${percentage}%`;
+    divider.style.left = `${percentage}%`;
+  }
+
+  // Mouse Events
+  divider.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    e.preventDefault();
+  });
+
+  container.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    updateSlider(e.clientX);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    updateSlider(e.clientX);
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
+  // Touch Events
+  divider.addEventListener('touchstart', (e) => {
+    isDragging = true;
+  }, { passive: true });
+
+  container.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    if (e.touches[0]) updateSlider(e.touches[0].clientX);
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!isDragging || !e.touches[0]) return;
+    updateSlider(e.touches[0].clientX);
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    isDragging = false;
+  });
 }
