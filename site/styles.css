@@ -2357,3 +2357,387 @@ img {
     display: none;
   }
 }
+
+
+/* ==============================================================================
+   Positioning, Engineering Maturity & Interview Defensibility Components
+   ============================================================================== */
+
+/* Recruiter Summary Card in Hero */
+.recruiter-summary-card {
+  margin-top: 1.75rem;
+  padding: 1.25rem 1.5rem;
+  background-color: rgba(17, 22, 12, 0.85);
+  border: 1px solid var(--border-accent);
+  border-left: 4px solid var(--c-orange-accent);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.recruiter-summary-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--c-orange-accent);
+  margin-bottom: 0.5rem;
+}
+
+.recruiter-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--c-orange-accent);
+  box-shadow: 0 0 8px var(--c-orange-accent);
+  animation: pulse-dot 1.6s infinite ease-in-out;
+}
+
+.recruiter-summary-text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.recruiter-summary-text strong {
+  color: var(--c-cream-light);
+}
+
+/* Chapter 1: Intent Highlight */
+.origin-intent-highlight {
+  padding: 1rem 1.25rem;
+  background-color: var(--bg-surface-elev);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.95rem !important;
+  line-height: 1.65;
+}
+
+/* The Learning-to-Building Progression Journey */
+.learning-journey-box {
+  margin-top: 4rem;
+  padding: 2.25rem 2rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.learning-journey-header {
+  margin-bottom: 2rem;
+}
+
+.journey-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--c-orange-accent);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.journey-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--c-cream-light);
+  margin-bottom: 0.4rem;
+}
+
+.journey-sub {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.journey-steps-track {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding-top: 0.5rem;
+}
+
+.journey-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-surface-elev);
+  border: 1px solid var(--border-subtle);
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.journey-step-item:hover {
+  border-color: var(--c-orange-accent);
+  transform: translateY(-2px);
+}
+
+.step-circle {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  background-color: rgba(226, 115, 36, 0.15);
+  color: var(--c-orange-accent);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-accent);
+}
+
+.step-circle.highlight {
+  background-color: var(--c-orange-accent);
+  color: #FFFFFF;
+}
+
+.step-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.step-label.highlight {
+  color: var(--c-orange-accent);
+  font-weight: 700;
+}
+
+.journey-step-arrow {
+  color: var(--c-orange-accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+/* Portfolio vs Production Positioning Callout */
+.portfolio-vs-prod-note {
+  margin-top: 3.5rem;
+  padding: 2rem 2.25rem;
+  background: linear-gradient(135deg, rgba(28, 38, 21, 0.95) 0%, rgba(17, 22, 12, 0.95) 100%);
+  border: 1px solid var(--border-accent);
+  border-left: 5px solid var(--c-orange-accent);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.portfolio-vs-prod-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--c-orange-accent);
+  margin-bottom: 0.4rem;
+}
+
+.portfolio-vs-prod-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--c-cream-light);
+  margin-bottom: 0.75rem;
+}
+
+.portfolio-vs-prod-body {
+  font-size: 0.98rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Production Dual-Card Grid (Portfolio vs Enterprise) */
+.production-changes-sub {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
+}
+
+.prod-changes-dual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.prod-dual-card {
+  background-color: var(--bg-surface-elev);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.prod-dual-card:hover {
+  border-color: var(--border-accent);
+}
+
+.prod-dual-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.prod-dual-num {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--c-orange-accent);
+  background-color: rgba(226, 115, 36, 0.12);
+  border: 1px solid var(--border-accent);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.prod-dual-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-cream-light);
+  margin: 0;
+}
+
+.dual-env-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  flex: 1;
+}
+
+.dual-env-block {
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+}
+
+.dual-env-block.env-portfolio {
+  border-left: 3px solid var(--c-warm-amber);
+}
+
+.dual-env-block.env-prod {
+  border-left: 3px solid #10B981;
+}
+
+.dual-env-tag {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+}
+
+.env-portfolio .dual-env-tag {
+  color: var(--c-warm-amber);
+}
+
+.env-prod .dual-env-tag {
+  color: #10B981;
+}
+
+.dual-env-block p {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.dual-env-block p strong {
+  color: var(--c-cream-light);
+}
+
+/* Limitations & Measurement Boundaries Container */
+.limitations-container {
+  margin-top: 3.5rem;
+  padding: 2.25rem 2rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.limitations-header {
+  margin-bottom: 1.75rem;
+}
+
+.limitations-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--c-warm-amber);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.limitations-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--c-cream-light);
+  margin-bottom: 0.5rem;
+}
+
+.limitations-lead {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.limitations-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.limitation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background-color: var(--bg-surface-elev);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 1.15rem;
+}
+
+.limitation-icon {
+  color: var(--c-orange-accent);
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.limitation-content {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.limitation-content strong {
+  color: var(--c-cream-light);
+}
+
+/* Responsive Rules for New Components */
+@media (max-width: 992px) {
+  .prod-changes-dual-grid {
+    grid-template-columns: 1fr;
+  }
+  .limitations-grid {
+    grid-template-columns: 1fr;
+  }
+}
