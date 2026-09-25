@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HydroGrow: Real-Time Smart Farming Analytics Platform — Engineering Case Study</title>
-  <meta name="description" content="An independent data engineering case study demonstrating a Microsoft Fabric streaming and medallion lakehouse platform built with synthetic agricultural telemetry.">
+  <title>HydroGrow: Real-Time Smart Farming Analytics Platform — Engineering Proof of Concept</title>
+  <meta name="description" content="An independent data engineering proof of concept demonstrating a Microsoft Fabric streaming and medallion lakehouse platform inspired by real agricultural operational challenges and built with synthetic telemetry.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -52,7 +52,7 @@
         <div class="hero-content">
           <div class="hero-badge-pill">
             <span class="badge-dot"></span>
-            <span>Independent Engineering Case Study • Microsoft Fabric</span>
+            <span>Independent Engineering Case Study • Microsoft Fabric Proof of Concept</span>
           </div>
 
           <h1 class="hero-title">
@@ -61,7 +61,7 @@
           </h1>
 
           <p class="hero-subtitle">
-            An end-to-end data platform built around a Python-generated smart farming environment—demonstrating real-time telemetry ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
+            An end-to-end data platform proof of concept inspired by real operational farming challenges—demonstrating how fragmented IoT telemetry, manual records, and equipment data can be modernized using Microsoft Fabric, real-time ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
           </p>
 
           <!-- Architecture Category Filter Pills -->
@@ -93,7 +93,7 @@
               <span>Project Summary &amp; Scope</span>
             </div>
             <p class="recruiter-summary-text">
-              <strong>End-to-end real-time data engineering platform</strong> demonstrating streaming ingestion, medallion lakehouse architecture, Kimball dimensional modeling, automated data-quality remediation, security and governance, observability, and Power BI Direct Lake analytics using Microsoft Fabric.
+              <strong>End-to-end real-time data engineering proof of concept</strong> demonstrating streaming ingestion, medallion lakehouse architecture, Kimball dimensional modeling, automated data-quality remediation, security and governance, observability, and Power BI Direct Lake analytics using Microsoft Fabric and synthetic telemetry.
             </p>
           </div>
 
@@ -221,30 +221,36 @@
               class="photo-image"
               loading="lazy"
             >
-            <div class="photo-caption">Inspecting hydroponic leafy green tiers and ambient monitoring points in a vertical farm.</div>
+            <div class="photo-caption">Observed environment: Reviewing hydroponic leafy green tiers, ambient monitoring points, and fragmented logging routines during operational exposure at a local farm.</div>
           </div>
 
           <div class="origin-narrative">
             <p>
-              I spent time around a real vertical farming environment and saw firsthand how many physical variables shift throughout the day: greenhouse microclimates, irrigation line pressure, dosing pumps, lighting photoperiods, and biological crop conditions.
+              I had the opportunity to work with a local farming operation where operational data was collected through several existing processes and systems. The environment was not yet modernized from a data-platform perspective.
             </p>
             <p>
-              Being around that physical operation created the initial engineering question: <em>what does an end-to-end data platform behind modern CEA look like—from high-frequency sensor streams to historical dimensional modeling?</em>
+              The farm had data coming from different sources, including IoT and equipment-related information, manual records, spreadsheets, and other operational systems. The problem was not that there was no data. The problem was that the data was fragmented across disparate places and often required manual consolidation before it could be reviewed or used for broader analysis.
             </p>
             <p>
-              Because the local agricultural company's identity, operational telemetry, and internal architecture are strictly protected by a Non-Disclosure Agreement (NDA), I cannot publicly publish proprietary datasets or internal systems.
+              This exposed me to a real data engineering problem: data silos, manual data collection, inconsistent records, limited centralized visibility, and the difficulty of turning operational data into timely information for decisions.
             </p>
             <p>
-              Instead of abandoning the engineering problem, I chose to recreate it publicly. I built a standalone multi-threaded Python telemetry generator and engineered a full-lifecycle Microsoft Fabric platform around it.
+              I became interested in what this environment could look like if all those data sources were brought into a centralized modern data platform capable of supporting both real-time operational monitoring and structured historical analysis.
+            </p>
+            <p>
+              However, the organization was not ready to replace its existing processes with a modern platform. There were practical, understandable concerns around introducing new technology, changing established daily workflows, platform cost, and operational risk to live crop cycles.
             </p>
             <p class="origin-intent-highlight">
-              <strong>Why I built the public platform:</strong> I did not build this to collect another technology badge or claim years of enterprise senior expertise. I built the public version to understand whether I could take an engineering problem from data generation through streaming ingestion, medallion curation, dimensional modeling, analytics, monitoring, and operational alerting—and critically evaluate its tradeoffs.
+              <strong>The engineering decision:</strong> Instead of claiming that I implemented such a platform for the farm, I created a separate proof of concept based on the type of operational problems I had observed. That became the Microsoft Fabric Smart Farming Analytics Platform.
+            </p>
+            <p>
+              The public project uses synthetic data and a fictionalized farm identity (<strong>HydroGrow Solutions</strong>). It demonstrates how I would approach the modernization problem technically—from Python-generated synthetic telemetry and IoT-style equipment and environmental events, to Microsoft Fabric Eventstreams, Eventhouse (KQL), OneLake, Delta-based medallion layers (Bronze, Silver, Gold), Kimball dimensional star-schema modeling, Slowly Changing Dimensions, Fabric Warehouse, Power BI Direct Lake analytics, Activator alerting, dead-letter self-healing, and DataOps observability.
             </p>
 
             <div class="nda-callout">
-              <div class="nda-callout-title">Public Recreation Under NDA</div>
+              <div class="nda-callout-title">Independent Proof of Concept • Synthetic Data Foundation</div>
               <p>
-                <strong>HydroGrow Solutions</strong> is a fictionalized case-study identity created specifically for this public demonstration. The public repository contains 100% synthetic telemetry generated by Python, ensuring complete transparency and interview defensibility while preserving confidentiality.
+                <strong>Important Distinction:</strong> This platform is an independent technical proof of concept inspired by real operational observations—it was not deployed at the local farm, nor was it formally commissioned or approved by them. All telemetry, facility counts, equipment readings, and sensor streams are synthetically generated using Python to demonstrate architectural design without proprietary dependencies.
               </p>
             </div>
           </div>
@@ -256,59 +262,59 @@
             <span class="journey-badge">Engineering Progression</span>
             <h3 class="journey-title">The Learning-to-Building Journey</h3>
             <p class="journey-sub">
-              &ldquo;I learned the core data engineering concepts, then built something substantial enough to test whether I actually understood them.&rdquo;
+              &ldquo;I saw a real operational data problem in a farming environment. The organization was not ready to modernize it, so I built a separate proof of concept to explore how I would solve that problem as a data engineer.&rdquo;
             </p>
           </div>
 
           <div class="journey-steps-track">
             <div class="journey-step-item">
               <div class="step-circle">01</div>
-              <div class="step-label">Starting Point</div>
+              <div class="step-label">Farm Exposure</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">02</div>
-              <div class="step-label">Learn DE Concepts</div>
+              <div class="step-label">Observe Data Silos</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">03</div>
-              <div class="step-label">Real-World Problem</div>
+              <div class="step-label">Engineering Need</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">04</div>
-              <div class="step-label">Design Architecture</div>
+              <div class="step-label">Org Constraints</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">05</div>
-              <div class="step-label">Master Fabric Tools</div>
+              <div class="step-label">PoC Decision</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">06</div>
-              <div class="step-label">Build Simulator</div>
+              <div class="step-label">Python Simulator</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">07</div>
-              <div class="step-label">Implement Platform</div>
+              <div class="step-label">Fabric Real-Time</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">08</div>
-              <div class="step-label">Test &amp; Validate (53/53)</div>
+              <div class="step-label">Lakehouse &amp; Warehouse</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">09</div>
-              <div class="step-label">Document Decisions</div>
+              <div class="step-label">Direct Lake &amp; Alerts</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
               <div class="step-circle">10</div>
-              <div class="step-label">Identify Prod Gaps</div>
+              <div class="step-label">Test &amp; Audit (53/53)</div>
             </div>
             <div class="journey-step-arrow">&rarr;</div>
             <div class="journey-step-item">
@@ -326,7 +332,7 @@
         <span class="chapter-badge">Chapter 02</span>
         <h2 class="section-title">The Physical Problem</h2>
         <p class="section-lead">
-          In high-density indoor farming, biological health depends entirely on continuous environmental stability. A delay in detecting abnormal conditions leads to rapid crop stress, nutrient lockout, or pump failure.
+          In farming environments, biological health depends on continuous environmental stability. During my exposure to the local farm, I observed how physical variables—microclimate drift, nutrient balance, and equipment wear—were tracked across manual records and isolated systems. In this proof of concept, those challenges are modeled into four core operational failure scenarios:
         </p>
 
         <!-- 3D Coverflow Slider for the 4 Physical Challenges -->
@@ -499,7 +505,7 @@
               class="photo-image"
               loading="lazy"
             >
-            <div class="photo-caption">Manual logging whiteboard (pH/EC levels & watering intervals) and pump control panels in the greenhouse facility.</div>
+            <div class="photo-caption">Observed environment: Manual logging whiteboard (pH/EC levels and watering intervals) alongside pump control panels in the greenhouse facility, illustrating the fragmented, manual records that inspired this modernization proof of concept.</div>
           </div>
         </div>
       </div>
@@ -511,24 +517,24 @@
         <span class="chapter-badge">Chapter 03</span>
         <h2 class="section-title">The Synthetic Data Simulator</h2>
         <p class="section-lead">
-          To build a credible demonstration without real-world data, I wrote a modular Python telemetry generator that simulates 8 vertical farming facilities across the Philippines with 10 distinct growing zones each (80 monitored microclimates).
+          Because the real farm's systems were not modernized and could not be used for a public platform, I wrote a modular Python telemetry generator. It simulates 8 vertical farming facilities with 10 distinct growing zones each (80 monitored microclimates), generating the realistic data volumes needed to test a modern architecture.
         </p>
 
         <div class="build-progression">
           <div class="progression-step">
             <div class="progression-number">STAGE 1</div>
-            <div class="progression-title">Physical Problem</div>
-            <div class="progression-desc">Observed real-world operational challenges: climate fluctuations, pump wear curves, lighting photoperiods, and nutrient dosing.</div>
+            <div class="progression-title">Observed Farm Reality</div>
+            <div class="progression-desc">Encountered fragmented operational records, manual whiteboards, isolated equipment logs, and the practical constraints that prevented immediate on-site modernization.</div>
           </div>
           <div class="progression-step">
             <div class="progression-number">STAGE 2</div>
-            <div class="progression-title">Synthetic Telemetry</div>
-            <div class="progression-desc">Engineered a multi-threaded Python simulator emitting 6 continuous telemetry channels with deterministic seeds and anomaly injection.</div>
+            <div class="progression-title">Synthetic Telemetry Simulator</div>
+            <div class="progression-desc">Engineered a multi-threaded Python simulator emitting 6 continuous IoT-style channels with deterministic seeds, clock skew, and injected anomalies to model the problem without proprietary data.</div>
           </div>
           <div class="progression-step">
             <div class="progression-number">STAGE 3</div>
-            <div class="progression-title">Microsoft Fabric</div>
-            <div class="progression-desc">Constructed an end-to-end cloud platform for streaming ingestion, Delta medallion lakehouses, Kimball dimensional modeling, and Direct Lake reporting.</div>
+            <div class="progression-title">Microsoft Fabric Proof of Concept</div>
+            <div class="progression-desc">Constructed an end-to-end cloud platform demonstrating how those fragmented sources could be unified through Eventstream, KQL, Delta Medallion Lakehouse, Kimball modeling, and Direct Lake reporting.</div>
           </div>
         </div>
 
@@ -668,7 +674,7 @@
                 <div class="layer-tag">Layer 02 — Historical Analytics Path</div>
                 <h3 class="layer-title">OneLake Medallion Architecture (Bronze ➔ Silver ➔ Gold)</h3>
                 <p class="layer-desc">
-                  Historical telemetry is curated within <strong>SmartFarming_Lakehouse</strong> using Microsoft Fabric custom schemas. Data quality progressively increases as records move from raw append files to cleansed tables and finally into a production Kimball Star Schema.
+                  Historical telemetry is curated within <strong>SmartFarming_Lakehouse</strong> using Microsoft Fabric custom schemas. Data quality progressively increases as records move from raw append files to cleansed tables and finally into a business-ready Gold Kimball Star Schema.
                 </p>
                 <div class="layer-details-grid">
                   <div class="layer-detail-item">
@@ -833,7 +839,7 @@
                 </svg>
                 <span>Core Unified Tech Stack</span>
               </div>
-              <div class="bento-card-title">Production Tooling</div>
+              <div class="bento-card-title">Platform &amp; DataOps Tooling</div>
               
               <div class="bento-stack-list">
                 <div class="bento-stack-item">
@@ -944,7 +950,7 @@
               <span class="theater-badge">Live Intelligence Showcase</span>
               <h3 class="theater-title">Interactive Dashboard Walkthrough</h3>
               <p class="theater-subtitle">
-                Switch views to inspect production Direct Lake and Real-Time KQL screens. Hover or tap the <span class="hotspot-highlight-text"><span class="pulse-indicator"></span>pulsing hotspots</span> to reveal underlying architecture and BI design decisions.
+                Switch views to inspect the proof-of-concept Direct Lake and Real-Time KQL screens. Hover or tap the <span class="hotspot-highlight-text"><span class="pulse-indicator"></span>pulsing hotspots</span> to reveal underlying architecture and BI design decisions.
               </p>
             </div>
 
@@ -1608,9 +1614,9 @@
         <!-- Portfolio Implementation vs. Production Deployment Note -->
         <div class="portfolio-vs-prod-note">
           <div class="portfolio-vs-prod-badge">Positioning &amp; Maturity Statement</div>
-          <h3 class="portfolio-vs-prod-title">Portfolio Implementation vs. Production Deployment</h3>
+          <h3 class="portfolio-vs-prod-title">Proof-of-Concept Implementation vs. Enterprise Production</h3>
           <p class="portfolio-vs-prod-body">
-            This project demonstrates how I approached the architecture, implementation, testing, and operational concerns of an end-to-end data platform in a public environment. It is not a claim of operating the same platform in a production organization with real paying users, formal SLAs, enterprise identity federation, production capacity sizing, and multi-team operational ownership.
+            This project is an independent technical proof of concept inspired by real operational observations at a local farm. It was not deployed at the farm, nor was it formally commissioned or approved by them. It demonstrates how I would approach solving fragmented operational data problems as a data engineer—contrasting the implemented architecture with what would still be required for an enterprise-grade rollout with real paying users, enterprise identity federation, production capacity sizing, and multi-team operational ownership.
           </p>
         </div>
 
@@ -1778,7 +1784,7 @@
               <div class="author-quote-box">
                 <div class="author-quote-icon">“</div>
                 <div class="author-quote-text">
-                  I did not build this platform to claim years of enterprise senior experience. I built it to test whether I could take an engineering problem from raw data generation through ingestion, medallion modeling, analytics, and self-healing alerting—and explain every architectural tradeoff along the way.
+                  I saw a real operational data problem in a farming environment where valuable data was trapped across silos, spreadsheets, and manual logs. The organization was not ready to modernize it, so I built this independent proof of concept to explore how I would solve that problem as a data engineer using Microsoft Fabric.
                 </div>
                 <div class="author-quote-meta">— Joseph Baguio, Data Engineer</div>
               </div>
@@ -1860,7 +1866,7 @@
   <footer class="site-footer">
     <div class="container">
       <p class="footer-statement">
-        Built from a real-world vertical farming problem, recreated with synthetic telemetry, and documented as a public engineering project.
+        Inspired by real-world operational farming challenges, modeled with synthetic telemetry, and built as an independent Microsoft Fabric proof of concept.
       </p>
 
       <div class="tech-stack-inline">
