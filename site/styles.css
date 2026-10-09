@@ -4,7 +4,7 @@
    Vibrant Developer Accent: #E27324 (Sharp Orange)
    ============================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 :root {
   /* Core Natural Farming & Developer Palette */
@@ -31,14 +31,21 @@
   --border-accent:   rgba(226, 115, 36, 0.35);
   --border-active:   #E27324;
 
+  /* Ambient Multi-Layer Shadows (Tinted with Moss-Obsidian Base) */
+  --shadow-sm:       0 2px 8px -2px rgba(10, 13, 8, 0.7), 0 0 0 1px var(--border-subtle);
+  --shadow-md:       0 8px 24px -4px rgba(10, 13, 8, 0.8), 0 0 0 1px var(--border-subtle);
+  --shadow-lg:       0 18px 48px -8px rgba(10, 13, 8, 0.92), 0 0 0 1px var(--border-subtle);
+  --shadow-glow:     0 0 24px rgba(226, 115, 36, 0.22);
+  --ease-spring:     cubic-bezier(0.16, 1, 0.3, 1);
+
   /* Typography Colors */
   --text-primary:    #FEFAE0;
   --text-secondary:  rgba(254, 250, 224, 0.82);
   --text-muted:      rgba(254, 250, 224, 0.58);
   --text-faint:      rgba(254, 250, 224, 0.38);
 
-  /* Typography Scales */
-  --font-sans:       'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Typography Scales (Anti-Slop Modern Technical Standards) */
+  --font-sans:       'Geist', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono:       'JetBrains Mono', monospace;
 
   /* Layout & Geometry */
@@ -64,10 +71,50 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Taste-Skill Anti-Slop Typography Disciplines */
+h1, h2, h3, h4, .section-title, .hero-title, .theater-title {
+  text-wrap: balance;
+  letter-spacing: -0.028em;
+}
+
+p, .section-lead, .story-p, .lead, .theater-subtitle {
+  text-wrap: pretty;
+  max-width: 68ch;
+}
+
+/* Tabular figures for telemetry, metrics, KPIs, and code data */
+.kpi-value, .metric-value, .stat-value, .stat-number, .hud-stat-value,
+.code-inline, .badge, .counter, .exec-kpi-val, .metric-pill,
+.stream-stat-val, .hud-metric-val, table td, .kpi-sub-badge {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Tactile micro-interactions on interactive elements */
+button, .btn, .btn-primary, .btn-secondary, .tab-btn,
+.walkthrough-tab-btn, .hotspot-pin, .filter-option,
+.nav-link, .nav-github-icon-btn, .view-switch-btn, .hero-metric-chip {
+  transition: transform 0.22s var(--ease-spring), background-color 0.22s var(--ease-spring), border-color 0.22s var(--ease-spring), color 0.22s var(--ease-spring), box-shadow 0.22s var(--ease-spring);
+}
+
+button:active, .btn:active, .btn-primary:active, .btn-secondary:active,
+.walkthrough-tab-btn:active, .hotspot-pin:active, .filter-option:active,
+.nav-github-icon-btn:active, .view-switch-btn:active, .hero-metric-chip:active {
+  transform: scale(0.975) translateY(1px);
+}
+
+/* Clear, accessible keyboard focus indicators */
+:focus-visible {
+  outline: 2px solid var(--c-orange-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
 }
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   background: radial-gradient(circle at 50% -10%, rgba(40, 54, 24, 0.45), transparent 50%),
               radial-gradient(circle at 85% 35%, rgba(226, 115, 36, 0.08), transparent 40%),
               var(--bg-base);
@@ -78,7 +125,7 @@ body {
 a {
   color: var(--c-orange-accent);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-spring);
 }
 
 a:hover {
