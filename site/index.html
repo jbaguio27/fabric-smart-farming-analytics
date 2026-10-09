@@ -76,7 +76,9 @@
           <div class="hero-actions">
             <a href="#platform" class="btn btn-primary">
               <span>Explore the Architecture</span>
-              <span class="btn-arrow">→</span>
+              <span class="btn-arrow-capsule">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </span>
             </a>
             <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-ghost">
               <svg class="btn-github-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -102,37 +104,51 @@
             <span class="ribbon-label">PIPELINE FLOW</span>
             <div class="pipeline-track">
               <div class="micro-node" title="Python Edge Simulator">
-                <span class="micro-node-icon">🐍</span>
+                <span class="micro-node-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                </span>
                 <span class="micro-node-text">Python Edge</span>
               </div>
               <span class="micro-arrow">→</span>
               <div class="micro-node" title="Fabric Eventstream (9 Destinations)">
-                <span class="micro-node-icon">⚡</span>
+                <span class="micro-node-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
                 <span class="micro-node-text">Eventstream</span>
               </div>
               <span class="micro-arrow">→</span>
               <div class="micro-node" title="Eventhouse KQL DB">
-                <span class="micro-node-icon">📊</span>
+                <span class="micro-node-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                </span>
                 <span class="micro-node-text">KQL DB</span>
               </div>
               <span class="micro-arrow">→</span>
               <div class="micro-node" title="OneLake Medallion Lakehouse">
-                <span class="micro-node-icon">🏔️</span>
+                <span class="micro-node-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </span>
                 <span class="micro-node-text">Medallion</span>
               </div>
               <span class="micro-arrow">→</span>
               <div class="micro-node" title="Kimball Star Schema Warehouse">
-                <span class="micro-node-icon">🏛️</span>
+                <span class="micro-node-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="5 6 12 3 19 6"></polyline><line x1="4" y1="10" x2="4" y2="21"></line><line x1="20" y1="10" x2="20" y2="21"></line><line x1="8" y1="14" x2="8" y2="17"></line><line x1="12" y1="14" x2="12" y2="17"></line><line x1="16" y1="14" x2="16" y2="17"></line></svg>
+                </span>
                 <span class="micro-node-text">Warehouse</span>
               </div>
               <span class="micro-arrow">→</span>
               <div class="micro-node" title="Power BI Direct Lake">
-                <span class="micro-node-icon">📈</span>
+                <span class="micro-node-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                </span>
                 <span class="micro-node-text">Direct Lake</span>
               </div>
               <span class="micro-arrow">→</span>
               <div class="micro-node" title="Fabric Activator Reflex Alerting">
-                <span class="micro-node-icon">🔔</span>
+                <span class="micro-node-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </span>
                 <span class="micro-node-text">Activator</span>
               </div>
             </div>
@@ -209,7 +225,7 @@
     <!-- Chapter 1: The Origin -->
     <section id="origin" class="section">
       <div class="container">
-        <span class="chapter-badge">Chapter 01</span>
+        <span class="chapter-badge">FIELD ORIGIN // BENGUET, PHILIPPINES</span>
         <h2 class="section-title">Why I Built This</h2>
         
         <div class="origin-grid">
@@ -329,7 +345,7 @@
     <!-- Chapter 2: The Problem -->
     <section id="problem" class="section section-quiet">
       <div class="container">
-        <span class="chapter-badge">Chapter 02</span>
+        <span class="chapter-badge">OPERATIONAL REALITY &amp; DATA SILOS</span>
         <h2 class="section-title">The Physical Problem</h2>
         <p class="section-lead">
           In farming environments, biological health depends on continuous environmental stability. During my exposure to the local farm, I observed how physical variables—microclimate drift, nutrient balance, and equipment wear—were tracked across manual records and isolated systems. In this proof of concept, those challenges are modeled into four core operational failure scenarios:
@@ -514,7 +530,7 @@
     <!-- Chapter 3: The Build -->
     <section id="build" class="section">
       <div class="container">
-        <span class="chapter-badge">Chapter 03</span>
+        <span class="chapter-badge">SYNTHETIC TELEMETRY &amp; EDGE SIMULATOR</span>
         <h2 class="section-title">The Synthetic Data Simulator</h2>
         <p class="section-lead">
           Because the real farm's systems were not modernized and could not be used for a public platform, I wrote a modular Python telemetry generator. It simulates 8 vertical farming facilities with 10 distinct growing zones each (80 monitored microclimates), generating the realistic data volumes needed to test a modern architecture.
@@ -589,7 +605,7 @@
     <section id="platform" class="section section-quiet">
       <div class="container-wide">
         <div class="container">
-          <span class="chapter-badge">Chapter 04</span>
+          <span class="chapter-badge">MEDALLION ARCHITECTURE &amp; STREAMING ENGINES</span>
           <h2 class="section-title">The Microsoft Fabric Platform</h2>
           <p class="section-lead">
             The platform combines real-time stream processing and historical batch warehousing into a unified OneLake architecture. Below is the full end-to-end solution blueprint.
@@ -602,7 +618,7 @@
             <img src="assets/diagrams/microsoft-fabric-solution-architecture.png" alt="Microsoft Fabric Solution Architecture Diagram" class="blueprint-img">
             <div class="blueprint-caption">
               <span>Figure 1: Full-width Microsoft Fabric solution architecture across all 7 layers.</span>
-              <span class="blueprint-zoom-hint">Click diagram to expand 🔍</span>
+              <span class="blueprint-zoom-hint">Click diagram to expand <svg class="inline-svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
             </div>
           </div>
         </div>
@@ -752,7 +768,7 @@
     <section id="results" class="metrics-section">
       <div class="container">
         <div class="metrics-header">
-          <span class="chapter-badge">Chapter 05</span>
+          <span class="chapter-badge">VERIFIED BENCHMARKS &amp; FINOPS</span>
           <h2 class="section-title">Project at a Glance</h2>
           <p class="section-lead">
             Every metric below represents verified measurements from automated test suites, simulated facility configurations, and documented capacity models in the repository.
@@ -843,42 +859,54 @@
               
               <div class="bento-stack-list">
                 <div class="bento-stack-item">
-                  <span class="stack-item-icon">⚡</span>
+                  <span class="stack-item-icon">
+                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </span>
                   <div>
                     <div class="stack-item-name">Microsoft Fabric</div>
                     <div class="stack-item-sub">Eventstream • KQL • OneLake • Direct Lake</div>
                   </div>
                 </div>
                 <div class="bento-stack-item">
-                  <span class="stack-item-icon">🐍</span>
+                  <span class="stack-item-icon">
+                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                  </span>
                   <div>
                     <div class="stack-item-name">Python 3.12 Engine</div>
                     <div class="stack-item-sub">Async Event Dispatcher • Math Models</div>
                   </div>
                 </div>
                 <div class="bento-stack-item">
-                  <span class="stack-item-icon">📦</span>
+                  <span class="stack-item-icon">
+                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                  </span>
                   <div>
                     <div class="stack-item-name">Delta Lake &amp; Spark</div>
                     <div class="stack-item-sub">Medallion Cleansing • SHA-256 Masking</div>
                   </div>
                 </div>
                 <div class="bento-stack-item">
-                  <span class="stack-item-icon">🏛️</span>
+                  <span class="stack-item-icon">
+                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  </span>
                   <div>
                     <div class="stack-item-name">Kimball Star Schema</div>
                     <div class="stack-item-sub">6 Dimensions • 8 Fact Tables • SQL DDL</div>
                   </div>
                 </div>
                 <div class="bento-stack-item">
-                  <span class="stack-item-icon">📊</span>
+                  <span class="stack-item-icon">
+                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                  </span>
                   <div>
                     <div class="stack-item-name">Power BI Direct Lake</div>
                     <div class="stack-item-sub">TMDL Modeling • Sub-Second Queries</div>
                   </div>
                 </div>
                 <div class="bento-stack-item">
-                  <span class="stack-item-icon">🔭</span>
+                  <span class="stack-item-icon">
+                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+                  </span>
                   <div>
                     <div class="stack-item-name">OpenTelemetry &amp; CI/CD</div>
                     <div class="stack-item-sub">Span Logging • GitHub Actions CI</div>
@@ -937,7 +965,7 @@
     <!-- Chapter 6: Explore the System -->
     <section id="explore" class="section">
       <div class="container">
-        <span class="chapter-badge">Chapter 06</span>
+        <span class="chapter-badge">INTERACTIVE DIRECT LAKE SUITE</span>
         <h2 class="section-title">Explore the System</h2>
         <p class="section-lead">
           Explore the live Microsoft Fabric operational dashboards, Power BI Direct Lake reports, and interactive telemetry intelligence built for this platform.
@@ -957,19 +985,27 @@
             <!-- View Switcher Tabs -->
             <div class="walkthrough-nav">
               <button class="walkthrough-tab-btn active" data-view="executive-ops">
-                <span class="tab-icon">🏛️</span>
+                <span class="tab-icon">
+                  <svg class="tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                </span>
                 <span>Executive Overview</span>
               </button>
               <button class="walkthrough-tab-btn" data-view="streaming-sla">
-                <span class="tab-icon">⚡</span>
+                <span class="tab-icon">
+                  <svg class="tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </span>
                 <span>Real-Time Ingress SLA</span>
               </button>
               <button class="walkthrough-tab-btn" data-view="microclimates">
-                <span class="tab-icon">🌱</span>
+                <span class="tab-icon">
+                  <svg class="tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10S2 17.5 2 12A10 10 0 0 1 12 2z"></path><path d="M12 6v6l4 2"></path></svg>
+                </span>
                 <span>Environmental Direct Lake</span>
               </button>
               <button class="walkthrough-tab-btn" data-view="pipeline-observability">
-                <span class="tab-icon">🔭</span>
+                <span class="tab-icon">
+                  <svg class="tab-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </span>
                 <span>DataOps Pipeline Trace</span>
               </button>
             </div>
@@ -999,7 +1035,7 @@
                     <line x1="21" y1="3" x2="14" y2="10"></line>
                     <line x1="3" y1="21" x2="10" y2="14"></line>
                   </svg>
-                  <span>Expand View 🔍</span>
+                  <span>Fullscreen View</span>
                 </button>
               </div>
             </div>
@@ -1016,7 +1052,7 @@
               <!-- Theater Caption Bar -->
               <div class="theater-caption-bar">
                 <span id="theater-caption-text">Executive Operations Overview: Real-time nationwide facility health indices, Grade-A harvest yield realization, wholesale revenue (₱137.83M), and regional production.</span>
-                <span class="theater-hotspot-hint">💡 Hover or tap orange dots to inspect architectural details</span>
+                <span class="theater-hotspot-hint"><svg class="inline-svg-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Hover or tap orange dots to inspect architectural details</span>
               </div>
             </div>
           </div>
@@ -1188,7 +1224,7 @@
         <!-- Guided Discovery Exploration Quests -->
         <div class="guided-quests-box">
           <div class="quests-header">
-            <span class="quests-badge">💡 Guided Exploration Quests</span>
+            <span class="quests-badge"><svg class="inline-svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Guided Exploration Quests</span>
             <span class="quests-sub">Key engineering scenarios to inspect across the hubs below:</span>
           </div>
           <div class="quests-grid">
@@ -1500,7 +1536,7 @@
     <!-- Chapter 7: Engineering Notes & Defensibility -->
     <section id="notes" class="section section-quiet">
       <div class="container">
-        <span class="chapter-badge">Chapter 07</span>
+        <span class="chapter-badge">TECHNICAL DEFENSIBILITY &amp; GOVERNANCE</span>
         <h2 class="section-title">Engineering Decisions &amp; Defensibility</h2>
         <p class="section-lead">
           Detailed technical rationale behind architectural choices, interview-defensible tradeoffs, honest platform boundaries, and production deployment contrasts.
@@ -1827,7 +1863,7 @@
                 </svg>
                 <span>Verified Technical Certifications & Credentials</span>
               </div>
-              <div class="badges-hint">🔍 Click banner to inspect in fullscreen pan & zoom</div>
+              <div class="badges-hint"><svg class="inline-svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Click banner to inspect in fullscreen pan &amp; zoom</div>
             </div>
 
             <div class="badges-banner-container" data-lightbox-src="assets/images/author-certifications-badges.png" data-lightbox-caption="Joseph Baguio - Verified Technical Certifications & Credentials across Microsoft Fabric/Azure, Databricks Data Engineer Associate, Snowflake Essentials, dbt Learn, Google Analytics, and DataCamp.">
@@ -1897,7 +1933,7 @@
         <button id="lightbox-zoom-out" class="lightbox-btn" title="Zoom Out (-)">−</button>
         <button id="lightbox-zoom-reset" class="lightbox-btn" title="Reset Zoom">⟲ Reset</button>
         <span id="lightbox-zoom-level" class="lightbox-zoom-tag">100%</span>
-        <span class="lightbox-pan-hint">💡 Drag to Pan • Scroll to Zoom</span>
+        <span class="lightbox-pan-hint"><svg class="inline-svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Drag to Pan • Scroll to Zoom</span>
       </div>
       <button id="lightbox-close" class="lightbox-close" aria-label="Close image preview">&times;</button>
     </div>
