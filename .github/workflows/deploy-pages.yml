@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/microsoft-fabric
     paths:
       - 'site/**'
       - '.github/workflows/deploy-pages.yml'

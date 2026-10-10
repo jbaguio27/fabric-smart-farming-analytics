@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Apple/Google Keynote Aesthetic: Microsoft Fabric Eventstream Prototype</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background-color: #0B0D11;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        color: #FFFFFF;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* =========================================================================
+         STUDIO STAGE & LIGHTING (APPLE / GOOGLE MINIMALIST EDITORIAL)
+         ========================================================================= */
+      #studio-stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: 
+          radial-gradient(1100px 700px at 50% 36%, rgba(255, 255, 255, 0.038) 0%, rgba(11, 13, 17, 0) 100%),
+          linear-gradient(180deg, #0D1016 0%, #080A0E 100%);
+        box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.85);
+        perspective: 1800px;
+        transform-style: preserve-3d;
+      }
+
+      /* 3D Camera Rig */
+      #camera-rig {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transform-origin: 960px 540px;
+      }
+
+      /* =========================================================================
+         APPLE-STYLE LARGE KINETIC TYPOGRAPHY
+         ========================================================================= */
+      .keynote-typo-container {
+        position: absolute;
+        left: 120px;
+        top: 80px;
+        z-index: 80;
+        pointer-events: none;
+      }
+
+      #scene1-typo {
+        opacity: 0;
+        filter: blur(10px);
+      }
+
+      .eyebrow-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #A1A1A6;
+        margin-bottom: 16px;
+      }
+
+      .eyebrow-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #4ADE80;
+        box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+      }
+
+      .keynote-headline {
+        font-size: 60px;
+        line-height: 1.06;
+        letter-spacing: -0.035em;
+      }
+
+      .keynote-headline .title-line {
+        display: block;
+      }
+
+      .keynote-headline .primary {
+        color: #FFFFFF;
+        font-weight: 600;
+      }
+
+      .keynote-headline .secondary {
+        color: #A1A1A6;
+        font-weight: 400;
+      }
+
+      /* Scene 2 Headline (Top Left, Compact & Poised) */
+      #scene2-typo {
+        position: absolute;
+        left: 100px;
+        top: 36px;
+        z-index: 85;
+        opacity: 0;
+        filter: blur(8px);
+        pointer-events: none;
+      }
+
+      #scene2-typo .eyebrow-tag {
+        margin-bottom: 8px;
+      }
+
+      #scene2-typo .keynote-headline {
+        font-size: 40px;
+        line-height: 1.1;
+      }
+
+      /* =========================================================================
+         SCENE 1: FLOATING GLASS TERMINAL WINDOW (3D HARDWARE SLAB)
+         ========================================================================= */
+      #terminal-slab {
+        position: absolute;
+        left: 500px;
+        top: 330px;
+        width: 920px;
+        height: 480px;
+        transform-style: preserve-3d;
+        transform-origin: 460px 240px;
+        z-index: 40;
+        opacity: 0;
+      }
+
+      /* Double-Bezel Architecture */
+      .slab-outer-bezel {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        padding: 5px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        box-shadow: 
+          0 40px 100px -20px rgba(0, 0, 0, 0.85),
+          0 20px 40px -10px rgba(0, 0, 0, 0.6);
+      }
+
+      .slab-inner-core {
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        background: #11141C;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* Terminal Header Bar */
+      .term-header {
+        height: 42px;
+        background: rgba(255, 255, 255, 0.025);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        position: relative;
+      }
+
+      .term-dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .term-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+      }
+
+      .term-dot.close { background: #FF5F56; border: 1px solid #E0443E; }
+      .term-dot.min   { background: #FFBD2E; border: 1px solid #DEA123; }
+      .term-dot.max   { background: #27C93F; border: 1px solid #1AAB29; }
+
+      .term-title {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: #A1A1A6;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+
+      /* Terminal Body & Streaming Logs */
+      .term-body {
+        flex: 1;
+        padding: 20px 24px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        line-height: 1.65;
+        color: #E2E8F0;
+        overflow: hidden;
+      }
+
+      .term-cmd-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .term-prompt {
+        color: #4ADE80;
+        font-weight: 600;
+      }
+
+      .term-cmd-text {
+        color: #FFFFFF;
+        font-weight: 500;
+      }
+
+      .term-cursor {
+        display: inline-block;
+        width: 8px;
+        height: 16px;
+        background: #4ADE80;
+        vertical-align: middle;
+        margin-left: 2px;
+      }
+
+      .term-logs {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .log-row {
+        opacity: 0;
+        transform: translateY(6px);
+        font-size: 12.5px;
+        color: #94A3B8;
+      }
+
+      .log-row .time { color: #CBD5E1; }
+      .log-row .tag-info { color: #38BDF8; font-weight: 600; }
+      .log-row .tag-event { color: #4ADE80; font-weight: 600; }
+      .log-row .tag-stream { color: #A78BFA; font-weight: 600; }
+      .log-row .tag-sla { color: #F59E0B; font-weight: 600; }
+      .log-row .val { color: #F8FAFC; }
+
+      /* =========================================================================
+         SCENE 2: FLOATING FABRIC EVENTSTREAM GLASS SLAB (AUTHENTIC SCREENSHOT)
+         ========================================================================= */
+      #eventstream-slab {
+        position: absolute;
+        left: 240px;
+        top: 180px;
+        width: 1440px;
+        height: 810px;
+        transform-style: preserve-3d;
+        transform-origin: 720px 405px;
+        opacity: 0;
+        z-index: 50;
+      }
+
+      .fabric-outer-bezel {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        padding: 5px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 
+          0 40px 100px -20px rgba(0, 0, 0, 0.80),
+          0 20px 40px -10px rgba(0, 0, 0, 0.50);
+        position: relative;
+      }
+
+      .fabric-inner-core {
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        background: #000000;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .fabric-screenshot {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      /* Contextual Interactive Target Node (SQL Filter & DeadLetter Operator) */
+      #eventstream-target-node {
+        position: absolute;
+        left: 710px;
+        top: 242px;
+        width: 160px;
+        height: 72px;
+        border-radius: 8px;
+        border: 1.5px solid transparent;
+        background: transparent;
+        cursor: pointer;
+        z-index: 60;
+      }
+
+      /* Frosted Inspection Callout Overlay */
+      #eventstream-inspection-callout {
+        position: absolute;
+        right: 60px;
+        top: 120px;
+        width: 480px;
+        padding: 18px 22px;
+        border-radius: 16px;
+        background: rgba(14, 18, 26, 0.92);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+        opacity: 0;
+        z-index: 70;
+        pointer-events: none;
+      }
+
+      .callout-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #F8FAFC;
+        margin-bottom: 10px;
+      }
+
+      .callout-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: #94A3B8;
+        background: rgba(0, 0, 0, 0.45);
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .callout-code .kw { color: #38BDF8; font-weight: 600; }
+      .callout-code .fn { color: #F59E0B; }
+      .callout-code .dest { color: #4ADE80; font-weight: 600; }
+
+      /* Synthetic Proof-of-Concept Safeguard Badge */
+      .safeguard-badge {
+        position: absolute;
+        right: 28px;
+        bottom: 18px;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        color: #CBD5E1;
+        font-weight: 500;
+        z-index: 65;
+        background: rgba(11, 13, 17, 0.75);
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      /* =========================================================================
+         INTENTIONAL PRESENTER CURSOR
+         ========================================================================= */
+      #presenter-cursor {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 30px;
+        height: 38px;
+        z-index: 90;
+        pointer-events: none;
+        opacity: 0;
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.7));
+        transform-origin: 3px 2px;
+      }
+
+      #presenter-click-ring {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 44px;
+        height: 44px;
+        margin-left: -22px;
+        margin-top: -22px;
+        border-radius: 50%;
+        border: 1.5px solid #FFFFFF;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 89;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="studio-stage" data-composition-id="proto-keynote-aesthetic" data-width="1920" data-height="1080">
+      <!-- 3D Camera Rig -->
+      <div id="camera-rig" data-layout-allow-overflow>
+
+        <!-- ===================================================================
+             SCENE 1: HOOK & TELEMETRY LAUNCH (0.00s - 5.00s)
+             =================================================================== -->
+        <!-- Kinetic Typography Header (Scene 1) -->
+        <div id="scene1-typo" class="keynote-typo-container">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot"></span>
+            <span>TELEMETRY INCEPTION · BENGUET HIGHLANDS IOT GATEWAY</span>
+          </div>
+          <h1 class="keynote-headline">
+            <span class="title-line primary" id="line1-primary">Every second.</span>
+            <span class="title-line secondary" id="line1-secondary">Across every facility.</span>
+          </h1>
+        </div>
+
+        <!-- Floating Glass Terminal Window -->
+        <div id="terminal-slab">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="term-header">
+                <div class="term-dots">
+                  <div class="term-dot close"></div>
+                  <div class="term-dot min"></div>
+                  <div class="term-dot max"></div>
+                </div>
+                <div class="term-title">edge@benguet-iot-gateway: ~/smart-farming (main)</div>
+              </div>
+              <div class="term-body">
+                <div class="term-cmd-row">
+                  <span class="term-prompt">edge@benguet-gateway:~$</span>
+                  <span class="term-cmd-text" id="cmd-typed"></span>
+                  <span class="term-cursor" id="cmd-cursor"></span>
+                </div>
+                <div class="term-logs" id="term-logs">
+                  <div class="log-row" id="log-1">
+                    <span class="time">[10:18:01]</span> <span class="tag-info">INFO</span> &nbsp;[gateway.mqtt] Handshake complete: Benguet-Highlands-Zone04 (TLS v1.3)
+                  </div>
+                  <div class="log-row" id="log-2">
+                    <span class="time">[10:18:01]</span> <span class="tag-event">EVENT</span> [telemetry.env] sensor=DHT22-04 temp=<span class="val">21.84°C</span> hum=<span class="val">76.3%</span> co2=<span class="val">820ppm</span>
+                  </div>
+                  <div class="log-row" id="log-3">
+                    <span class="time">[10:18:02]</span> <span class="tag-event">EVENT</span> [telemetry.soil] sensor=SOIL-09 ph=<span class="val">6.12</span> ec=<span class="val">1.84mS/cm</span> moisture=<span class="val">42.1%</span>
+                  </div>
+                  <div class="log-row" id="log-4">
+                    <span class="time">[10:18:02]</span> <span class="tag-stream">STREAM</span> [fabric.ingress] Batch buffered: 256 events &rarr; FarmingTelemetryEventstream
+                  </div>
+                  <div class="log-row" id="log-5">
+                    <span class="time">[10:18:03]</span> <span class="tag-sla">SLA</span> &nbsp;&nbsp;&nbsp;[ingress.p50] Latency: <span class="val">1.70s</span> | Throughput: <span class="val">10,480 events/min</span> [PASS]
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 2: FLOATING FABRIC EVENTSTREAM GLASS SLAB (5.00s - 10.00s)
+             =================================================================== -->
+        <!-- Kinetic Typography Header (Scene 2) -->
+        <div id="scene2-typo" class="keynote-typo-container">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot"></span>
+            <span>MICROSOFT FABRIC EVENTSTREAM · DIRECT ENGINE INGRESS</span>
+          </div>
+          <h2 class="keynote-headline">
+            <span class="title-line primary">Real-time ingestion.</span>
+            <span class="title-line secondary">Zero middleware.</span>
+          </h2>
+        </div>
+
+        <!-- Floating 3D Fabric Eventstream Screenshot Slab -->
+        <div id="eventstream-slab">
+          <div class="fabric-outer-bezel">
+            <div class="fabric-inner-core">
+              <img id="fabric-img" class="fabric-screenshot" src="assets/screenshots/02-eventstream-1080p.png" alt="Microsoft Fabric Eventstream Routing Hub" />
+              
+              <!-- Contextual Interactive Target Operator Node -->
+              <div id="eventstream-target-node"></div>
+
+              <!-- Frosted Inspection Callout -->
+              <div id="eventstream-inspection-callout" data-layout-allow-occlusion data-layout-allow-overflow>
+                <div class="callout-title">
+                  <span class="eyebrow-dot"></span>
+                  <span>Eventstream SQL DeadLetter Routing Filter</span>
+                </div>
+                <div class="callout-code">
+                  <span class="kw">SELECT</span> *, <span class="fn">System.Timestamp</span>() <span class="kw">AS</span> IngestionTime<br/>
+                  <span class="kw">INTO</span> <span class="dest">[Dest_DeadLetterTelemetry]</span><br/>
+                  <span class="kw">WHERE</span> event_type = <span class="val">'legacy.deprecated_sensor'</span><br/>
+                  &nbsp;&nbsp; <span class="kw">OR</span> facility_id <span class="kw">IS NULL</span>;
+                </div>
+              </div>
+
+              <!-- Synthetic Safeguard Badge -->
+              <div class="safeguard-badge">
+                Independent Architectural Proof of Concept | Synthetic Demonstration Data
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- /camera-rig -->
+
+      <!-- Presenter Cursor & Click Ring -->
+      <div id="presenter-cursor">
+        <svg viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4L4 32L10 26L15.5 37L18.5 35.5L13 24.5L20 24.5L4 4Z" 
+                fill="#FFFFFF" 
+                stroke="#0B0D11" 
+                stroke-width="1.8" 
+                stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div id="presenter-click-ring"></div>
+
+    </div> <!-- /studio-stage -->
+
+    <script>
+      // Immediate property setup before timeline
+      gsap.set("#scene1-typo", { y: 28 });
+      gsap.set("#scene2-typo", { y: 24 });
+      gsap.set("#camera-rig", { z: 0, x: 0, y: 0, rotationY: 0, rotationX: 0 });
+      gsap.set("#presenter-cursor", { x: 1400, y: 920, opacity: 0, scale: 1 });
+      gsap.set("#presenter-click-ring", { opacity: 0, scale: 0.2 });
+      gsap.set("#eventstream-inspection-callout", { y: 12, scale: 0.96 });
+
+      gsap.set("#terminal-slab", {
+        opacity: 0,
+        z: -120,
+        x: -40,
+        rotationY: -8,
+        rotationX: 5,
+        scale: 0.94
+      });
+
+      gsap.set("#eventstream-slab", {
+        opacity: 0,
+        z: -260,
+        rotationY: 9,
+        rotationX: -4,
+        scale: 0.88
+      });
+
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["proto-keynote-aesthetic"] = tl;
+
+      // =======================================================================
+      // PHASE 1: EDITORIAL HOOK & TYPOGRAPHY REVEAL (0.10s - 1.20s)
+      // =======================================================================
+      tl.to("#scene1-typo", {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 0.90,
+        ease: "power3.out"
+      }, 0.20);
+
+      // Terminal slab floats gracefully into center focus (0.60s - 1.80s)
+      tl.to("#terminal-slab", {
+        opacity: 1,
+        z: 0,
+        x: 0,
+        rotationY: -5,
+        rotationX: 3,
+        scale: 1.0,
+        duration: 1.20,
+        ease: "power2.out"
+      }, 0.60);
+
+      // =======================================================================
+      // PHASE 2: TACTILE TERMINAL EXECUTION & TELEMETRY SURGE (1.30s - 4.60s)
+      // =======================================================================
+      // Typewriter sequence for: "python -m smart_farming.main"
+      const cmdString = "python -m smart_farming.main";
+      for (let i = 1; i <= cmdString.length; i++) {
+        const sub = cmdString.substring(0, i);
+        const t = 1.30 + (i * 0.038); // ~0.038s per keystroke rhythm
+        tl.set("#cmd-typed", { innerText: sub }, t);
+      }
+
+      // Enter key moment on Bar 1 Downbeat (~2.247s) -> cursor solid, logs fire
+      tl.set("#cmd-cursor", { display: "none" }, 2.35);
+
+      // Log lines cascade down as telemetry surges
+      tl.to("#log-1", { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" }, 2.50);
+      tl.to("#log-2", { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" }, 2.80);
+      tl.to("#log-3", { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" }, 3.10);
+      tl.to("#log-4", { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" }, 3.40);
+      tl.to("#log-5", { opacity: 1, y: 0, duration: 0.20, ease: "power2.out" }, 3.70);
+
+      // Scene 1 Typography gently dissolves up into space (2.80s - 3.60s)
+      tl.to("#scene1-typo", {
+        opacity: 0,
+        y: -24,
+        filter: "blur(8px)",
+        duration: 0.80,
+        ease: "power2.in"
+      }, 2.80);
+
+      // Subtle dynamic camera drift during telemetry influx (2.0s - 4.5s)
+      tl.to("#camera-rig", {
+        rotationY: 2,
+        rotationX: -1,
+        z: 60,
+        duration: 2.50,
+        ease: "sine.inOut"
+      }, 2.00);
+
+      // =======================================================================
+      // PHASE 3: SPATIAL GLIDE THROUGH TERMINAL INTO FABRIC SLAB (4.60s - 5.80s)
+      // =======================================================================
+      // Terminal zooms forward into camera with fluid motion blur dissipation
+      tl.to("#terminal-slab", {
+        z: 460,
+        scale: 1.85,
+        opacity: 0,
+        duration: 1.10,
+        ease: "power2.inOut"
+      }, 4.60);
+
+      // Camera transitions toward the emerging 3D Fabric Eventstream slab
+      tl.to("#camera-rig", {
+        z: 0,
+        x: 0,
+        y: 0,
+        rotationY: 0,
+        rotationX: 0,
+        duration: 1.20,
+        ease: "power2.inOut"
+      }, 4.80);
+
+      // Floating 3D Fabric Eventstream slab arrives with poised studio poise
+      tl.to("#eventstream-slab", {
+        opacity: 1,
+        z: 0,
+        rotationY: -4.5,
+        rotationX: 2.8,
+        scale: 1.0,
+        duration: 1.30,
+        ease: "power2.out"
+      }, 5.10);
+
+      // Scene 2 Kinetic Typography reveals (5.50s - 6.40s)
+      tl.to("#scene2-typo", {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 0.90,
+        ease: "power3.out"
+      }, 5.50);
+
+      // =======================================================================
+      // PHASE 4: CONTEXTUAL PRESENTER CURSOR & TACTILE NODE ELEVATION (7.00s - 10.00s)
+      // =======================================================================
+      // Presenter cursor enters smoothly from bottom-right (7.20s - 8.60s)
+      // Target Node center on screen: x = 240 + 710 + 80 = 1030px, y = 180 + 242 + 36 = 458px
+      tl.to("#presenter-cursor", {
+        opacity: 1,
+        x: 1026,
+        y: 454,
+        duration: 1.40,
+        ease: "power2.inOut"
+      }, 7.20);
+
+      // Subtle hover feedback on target node (8.60s)
+      tl.to("#eventstream-target-node", {
+        borderColor: "rgba(74, 222, 128, 0.45)",
+        background: "rgba(74, 222, 128, 0.08)",
+        duration: 0.25
+      }, 8.60);
+
+      // Tactile Click on Musical Bar 4 Downbeat @ 8.988s!
+      tl.to("#presenter-cursor", { scale: 0.85, duration: 0.08, ease: "power2.in" }, 8.988);
+      tl.set("#presenter-click-ring", { x: 1030, y: 458, opacity: 0.9, scale: 0.2 }, 8.988);
+      tl.to("#presenter-click-ring", { opacity: 0, scale: 2.5, duration: 0.45, ease: "power2.out" }, 8.988);
+
+      // Node Physical Elevation in 3D (Z-lift, soft emerald shadow, scale)
+      tl.to("#eventstream-target-node", {
+        borderColor: "#4ADE80",
+        background: "rgba(74, 222, 128, 0.18)",
+        boxShadow: "0 16px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(74, 222, 128, 0.45)",
+        z: 14,
+        scale: 0.98,
+        duration: 0.12,
+        ease: "power2.out"
+      }, 8.988);
+
+      // Cursor returns to rest with soft spring
+      tl.to("#presenter-cursor", { scale: 1.0, duration: 0.18, ease: "back.out(2)" }, 9.08);
+
+      // Soft Depth-of-Field Blur on surrounding screenshot surface
+      tl.to("#fabric-img", {
+        filter: "blur(2.5px) brightness(0.92)",
+        duration: 0.40,
+        ease: "power2.out"
+      }, 9.08);
+
+      // Frosted Inspection Callout expands gracefully (9.12s - 9.60s)
+      tl.to("#eventstream-inspection-callout", {
+        opacity: 1,
+        y: 0,
+        scale: 1.0,
+        duration: 0.45,
+        ease: "back.out(1.3)"
+      }, 9.12);
+
+      // Poised Hold through 10.00s
+      tl.to("#camera-rig", {
+        rotationY: -3.8,
+        rotationX: 2.2,
+        duration: 1.00,
+        ease: "sine.out"
+      }, 9.00);
+    </script>
+  </body>
+</html>

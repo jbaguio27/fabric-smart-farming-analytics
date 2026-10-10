@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Microsoft Fabric: Real-Time Smart Farming Analytics (Master 10-Scene Film)</title>
+    <link rel="stylesheet" href="assets/kit.css" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0A0D08;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      #master-stage {
+        position: absolute;
+        inset: 0;
+        perspective: 1866px;
+        perspective-origin: 50% 50%;
+        overflow: hidden;
+      }
+
+      .master-3d-layer {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+      }
+
+      /* Base ground & ambient lighting */
+      .master-ground {
+        position: absolute;
+        inset: -20%;
+        background: radial-gradient(circle at 50% 35%, #141C10 0%, #0A0D08 60%, #050704 100%);
+      }
+
+      /* 3D World Container */
+      .master-world {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 1920px;
+        height: 1080px;
+        margin-left: -960px;
+        margin-top: -540px;
+        transform-style: preserve-3d;
+      }
+
+      /* Common Screen Plate Style */
+      .scene-plate {
+        position: absolute;
+        inset: 0;
+        border-radius: 10px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+        background: #1B1A19;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .plate-img {
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+        display: block;
+      }
+
+      /* Scene 1: Brand Intro Card */
+      #s01-brand-card {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 1280px;
+        height: 680px;
+        margin-left: -640px;
+        margin-top: -340px;
+        border-radius: 20px;
+        background: rgba(14, 20, 12, 0.94);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        box-shadow: 0 30px 90px rgba(0,0,0,0.8), 0 0 50px rgba(74, 222, 128, 0.15);
+        backdrop-filter: blur(12px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 48px;
+        opacity: 1;
+      }
+
+      .brand-prism {
+        width: 88px;
+        height: 88px;
+        margin-bottom: 24px;
+        filter: drop-shadow(0 0 24px rgba(74, 222, 128, 0.5));
+      }
+
+      .brand-title {
+        font-size: 46px;
+        font-weight: 700;
+        color: #F4F6F0;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        margin-bottom: 14px;
+      }
+
+      .brand-subtitle {
+        font-size: 19px;
+        font-weight: 500;
+        color: #BAC5B0;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 28px;
+      }
+
+      .safeguard-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 20px;
+        background: rgba(226, 115, 36, 0.14);
+        border: 1px solid rgba(226, 115, 36, 0.45);
+        font-size: 12px;
+        font-weight: 600;
+        color: #FDBA74;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      /* Scene 2: IoT Gateway Card Overlay */
+      #s02-iot-card {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 880px;
+        height: 520px;
+        margin-left: -440px;
+        margin-top: -260px;
+        border-radius: 16px;
+        background: rgba(12, 17, 10, 0.92);
+        border: 1px solid rgba(74, 222, 128, 0.4);
+        box-shadow: 0 24px 70px rgba(0,0,0,0.8), 0 0 35px rgba(74, 222, 128, 0.2);
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        opacity: 0;
+      }
+
+      .card-header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 14px;
+      }
+
+      .card-facility-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #F4F6F0;
+      }
+
+      .card-sla-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 12px;
+        background: rgba(74, 222, 128, 0.15);
+        border: 1px solid rgba(74, 222, 128, 0.4);
+        font-size: 11px;
+        font-weight: 700;
+        color: #4ADE80;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .iot-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin: 20px 0;
+      }
+
+      .iot-metric-box {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+      }
+
+      .iot-metric-label {
+        font-size: 11px;
+        color: #BAC5B0;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+
+      .iot-metric-val {
+        font-size: 22px;
+        font-weight: 700;
+        color: #F4F6F0;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      #s02-ingress-port {
+        background: rgba(74, 222, 128, 0.12);
+        border: 1.5px solid rgba(74, 222, 128, 0.5);
+        border-radius: 10px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+      }
+
+      /* Inspection Callout Card (Used across scenes) */
+      .inspect-callout {
+        position: absolute;
+        border-radius: 12px;
+        background: #090D13;
+        border: 1.5px solid rgba(56, 189, 248, 0.6);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.85), 0 0 25px rgba(56, 189, 248, 0.2);
+        padding: 20px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .callout-header {
+        font-size: 13px;
+        font-weight: 700;
+        color: #E0F2FE;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .callout-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #F4F6F0;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 6px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* Universal Interactive Target Highlight Overlays */
+      .tactile-target {
+        position: absolute;
+        border-radius: 6px;
+        border: 1.5px solid transparent;
+        background: transparent;
+        pointer-events: none;
+        transition: none;
+      }
+
+      /* Tactile Cursor & Ripple Ring */
+      #master-cursor {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 34px;
+        height: 48px;
+        pointer-events: none;
+        z-index: 1000;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65));
+        transform-origin: 3px 2px;
+      }
+
+      #master-click-ring {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 48px;
+        height: 48px;
+        margin-left: -24px;
+        margin-top: -24px;
+        border-radius: 50%;
+        border: 2px solid #4ADE80;
+        background: radial-gradient(circle, rgba(74, 222, 128, 0.45) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 999;
+        opacity: 0;
+      }
+
+      /* Lineage Breadcrumb HUD */
+      #lineage-hud {
+        position: absolute;
+        left: 48px;
+        top: 32px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 18px;
+        border-radius: 20px;
+        background-color: #060905;
+        border: 1px solid #4ADE80;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        opacity: 0;
+      }
+
+      .hud-stage {
+        font-size: 12px;
+        font-weight: 700;
+        color: #4ADE80;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .hud-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #4ADE80;
+        box-shadow: 0 0 8px #4ADE80;
+      }
+
+      /* Scene 10: Master Architecture Summary Card */
+      #s10-arch-summary {
+        position: absolute;
+        left: 50%;
+        bottom: 40px;
+        width: 1400px;
+        margin-left: -700px;
+        border-radius: 14px;
+        background: #0A0D08;
+        border: 1px solid rgba(74, 222, 128, 0.35);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.8);
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 700;
+        opacity: 0;
+      }
+
+      .arch-metric-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .arch-metric-num {
+        font-size: 24px;
+        font-weight: 700;
+        color: #F4F6F0;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .arch-metric-desc {
+        font-size: 11px;
+        color: #BAC5B0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="master-stage" data-composition-id="master-showcase-film" data-width="1920" data-height="1080">
+      <div class="master-3d-layer">
+        <div class="master-ground"></div>
+
+        <!-- 3D Camera Container -->
+        <div id="master-cam" class="master-world">
+
+          <!-- Scene 1: Brand Ingress & Workspace Plate -->
+          <div id="plate-01" class="scene-plate" style="opacity: 1; transform-origin: 374.5px 345.5px;">
+            <img class="plate-img" src="assets/screenshots/01-workspace-1080p.png" alt="Microsoft Fabric Workspace" />
+            <!-- Row 1 Text Hotspot Target -->
+            <div id="target-01-row" class="tactile-target" style="left: 45px; top: 320px; width: 1830px; height: 48px;"></div>
+            <div id="target-01-link" class="tactile-target" style="left: 248px; top: 330px; width: 254px; height: 28px;"></div>
+          </div>
+
+          <!-- Brand Intro Surface (Reveals and fades into Workspace) -->
+          <div id="s01-brand-card">
+            <svg class="brand-prism" viewBox="0 0 48 48" fill="none">
+              <path d="M24 4L42 14V34L24 44L6 34V14L24 4Z" fill="url(#prism-grad)" stroke="#4ADE80" stroke-width="2"/>
+              <path d="M24 4V44M6 14L42 34M6 34L42 14" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+              <defs>
+                <linearGradient id="prism-grad" x1="6" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#107C41" />
+                  <stop offset="0.5" stop-color="#008272" />
+                  <stop offset="1" stop-color="#0078D4" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <h1 class="brand-title">MICROSOFT FABRIC REAL-TIME SMART FARMING</h1>
+            <p class="brand-subtitle">Enterprise Data Engineering & Real-Time Intelligence Architecture</p>
+            <div class="safeguard-badge">
+              <span class="hud-dot" style="background:#E27324; box-shadow:0 0 8px #E27324;"></span>
+              Independent Proof of Concept · Synthetic Demonstration Workload
+            </div>
+          </div>
+
+          <!-- Scene 2: Benguet Facility Plate & IoT Card -->
+          <div id="plate-02" class="scene-plate" style="transform-origin: 960px 510px;">
+            <img class="plate-img" src="assets/images/hero-greenhouse-bg.jpg" alt="Benguet Highland Vertical Farm" />
+            <!-- IoT Gateway Overlay Card -->
+            <div id="s02-iot-card">
+              <div class="card-header-bar">
+                <div class="card-facility-title">BENGUET HIGHLANDS · FACILITY 001 · ZONE 04</div>
+                <div class="card-sla-pill">INGRESS SLA: 1.70s p50 (SUB-3s SLA GUARANTEED)</div>
+              </div>
+              <div class="iot-metrics-grid">
+                <div class="iot-metric-box">
+                  <div class="iot-metric-label">Air Temperature</div>
+                  <div class="iot-metric-val">21.84 °C</div>
+                </div>
+                <div class="iot-metric-box">
+                  <div class="iot-metric-label">Relative Humidity</div>
+                  <div class="iot-metric-val">76.3 %</div>
+                </div>
+                <div class="iot-metric-box">
+                  <div class="iot-metric-label">Substrate pH</div>
+                  <div class="iot-metric-val">6.12 pH</div>
+                </div>
+                <div class="iot-metric-box">
+                  <div class="iot-metric-label">Electrical Cond.</div>
+                  <div class="iot-metric-val">1.84 mS/cm</div>
+                </div>
+              </div>
+              <div id="s02-ingress-port">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span class="hud-dot"></span>
+                  <span style="font-size:13px; font-weight:700; color:#F4F6F0;">IoT Gateway Port: PythonIoTSimulator &rarr; Eventstream</span>
+                </div>
+                <span style="font-family:'JetBrains Mono', monospace; font-size:12px; color:#4ADE80; font-weight:700;">10,480 events/min</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 3: Eventstream Studio Routing Canvas -->
+          <div id="plate-03" class="scene-plate" style="transform-origin: 1330px 555px;">
+            <img class="plate-img" src="assets/screenshots/02-eventstream-1080p.png" alt="Fabric Eventstream Editor" />
+            <div id="target-03-dest" class="tactile-target" style="left: 1240px; top: 530px; width: 180px; height: 50px;"></div>
+            <!-- SQL Inspection Callout -->
+            <div id="s03-sql-callout" class="inspect-callout" data-layout-allow-overflow style="right: 50px; top: 140px; width: 520px;">
+              <div class="callout-header">
+                <span class="hud-dot" style="background:#38BDF8; box-shadow:0 0 8px #38BDF8;"></span>
+                Eventstream SQL Routing Filter
+              </div>
+              <div class="callout-code">
+                SELECT *, System.Timestamp() AS IngestionTime<br/>
+                INTO [Dest_DeadLetterTelemetry]<br/>
+                WHERE event_type = 'legacy.deprecated_sensor'<br/>
+                &nbsp;&nbsp; OR facility_id IS NULL;
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 4: KQL Eventhouse Database -->
+          <div id="plate-04" class="scene-plate" style="transform-origin: 840px 555px;">
+            <img class="plate-img" src="assets/screenshots/03-eventhouse-kql-1080p.png" alt="Fabric Eventhouse KQL Database" />
+            <div id="target-04-card" class="tactile-target" style="left: 750px; top: 530px; width: 180px; height: 50px;"></div>
+            <!-- KQL Activity Callout -->
+            <div id="s04-kql-callout" class="inspect-callout" data-layout-allow-overflow style="left: 80px; bottom: 80px; width: 560px;">
+              <div class="callout-header">
+                <span class="hud-dot" style="background:#38BDF8; box-shadow:0 0 8px #38BDF8;"></span>
+                SmartFarmingKQLDB Storage & Caching Policy
+              </div>
+              <div class="callout-code">
+                .alter-merge table EnvironmentalTelemetry policy caching hot = 7d;<br/>
+                // 18.1k Queries Evaluated · 54MB In-Memory Cache · 365d Retention
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 5: OneLake Lakehouse & Shortcuts -->
+          <div id="plate-05" class="scene-plate" style="transform-origin: 440px 467.5px;">
+            <img class="plate-img" src="assets/screenshots/04-lakehouse-1080p.png" alt="Fabric Lakehouse Explorer" />
+            <div id="target-05-shortcut" class="tactile-target" style="left: 320px; top: 450px; width: 240px; height: 35px;"></div>
+            <!-- OneLake Zero-Copy Callout -->
+            <div id="s05-shortcut-callout" class="inspect-callout" data-layout-allow-overflow style="right: 80px; top: 180px; width: 540px;">
+              <div class="callout-header">
+                <span class="hud-dot"></span>
+                OneLake Zero-Copy Delta Shortcuts
+              </div>
+              <div class="callout-code">
+                Direct cross-engine virtualization without ETL duplication.<br/>
+                9 Enterprise Shortcuts active across Bronze Delta tables.
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 6: PySpark Delta Lakehouse Notebook -->
+          <div id="plate-06" class="scene-plate" style="transform-origin: 535px 210px;">
+            <img class="plate-img" src="assets/screenshots/05-notebooks-1080p.png" alt="PySpark Delta Notebook" />
+            <div id="target-06-cell" class="tactile-target" style="left: 510px; top: 190px; width: 60px; height: 40px;"></div>
+            <!-- PySpark Code Focus Callout -->
+            <div id="s06-code-callout" class="inspect-callout" data-layout-allow-overflow style="right: 60px; bottom: 130px; width: 640px;">
+              <div class="callout-header">
+                <span class="hud-dot"></span>
+                PySpark Silver ACID MERGE & OCC Concurrency Contract
+              </div>
+              <div class="callout-code">
+                spark.conf.set("spark.databricks.delta.isolationLevel", "Serializable")<br/>
+                deltaTable.alias("t").merge(sourceDF.alias("s"), "t.reading_id = s.reading_id")<br/>
+                .whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 7: Data Pipeline & DLQ Remediation Orchestration -->
+          <div id="plate-07" class="scene-plate" style="transform-origin: 230px 460px;">
+            <img class="plate-img" src="assets/screenshots/06-pipelines-1080p.png" alt="Data Pipeline Orchestrator" />
+            <div id="target-07-pipe" class="tactile-target" style="left: 160px; top: 430px; width: 140px; height: 60px;"></div>
+            <!-- DLQ Remediation Workers Callout -->
+            <div id="s07-dlq-callout" class="inspect-callout" data-layout-allow-overflow style="right: 80px; top: 160px; width: 580px;">
+              <div class="callout-header">
+                <span class="hud-dot" style="background:#E27324; box-shadow:0 0 8px #E27324;"></span>
+                5 Automated DLQ Remediation Workers (Circuit Breaker: 3 Retries)
+              </div>
+              <div class="callout-code">
+                1. ERR_SCHEMA_V1 &rarr; Canonical V2.0 Translation Adapter<br/>
+                2. ERR_TIMESTAMP_SKEW &rarr; Clock Skew Arrival Clamper<br/>
+                3. ERR_OUT_OF_BOUNDS &rarr; Physical Spike Attenuator<br/>
+                4. ERR_MISSING_PK &rarr; Facility MAC Address Resolver<br/>
+                5. ERR_SERDES_MALFORMED &rarr; JSON String Parser Repair
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 8: Gold Warehouse Star Schema -->
+          <div id="plate-08" class="scene-plate" style="transform-origin: 280px 645px;">
+            <img class="plate-img" src="assets/screenshots/07-warehouse-1080p.png" alt="Fabric Warehouse Star Schema" />
+            <div id="target-08-table" class="tactile-target" style="left: 180px; top: 625px; width: 200px; height: 40px;"></div>
+            <!-- Warehouse Query Preview Callout -->
+            <div id="s08-wh-callout" class="inspect-callout" data-layout-allow-overflow style="right: 80px; bottom: 100px; width: 560px;">
+              <div class="callout-header">
+                <span class="hud-dot"></span>
+                fact_environmental_daily (1000 Rows · Succeeded in 1.316s)
+              </div>
+              <div class="callout-code">
+                avg_ambient_temp: 22.1°C · avg_humidity_pct: 74.8%<br/>
+                avg_co2_ppm: 820 · avg_vpd_kpa: 0.94 kPa (Optimal Transpiration)
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 9: Power BI Direct Lake & Activator Monitoring -->
+          <div id="plate-09-pbi" class="scene-plate" style="transform-origin: 1320px 180px;">
+            <img class="plate-img" src="assets/screenshots/08-powerbi-1080p.png" alt="Power BI Executive Operations Report" />
+            <div id="target-09-slicer" class="tactile-target" style="left: 1180px; top: 160px; width: 280px; height: 40px;"></div>
+          </div>
+
+          <div id="plate-09-activator" class="scene-plate" style="transform-origin: 600px 265px;">
+            <img class="plate-img" src="assets/screenshots/09-activator-monitoring-1080p.png" alt="Activator Real-Time Alerting" />
+            <div id="target-09-card" class="tactile-target" style="left: 420px; top: 240px; width: 360px; height: 50px;"></div>
+            <!-- Alert Callout -->
+            <div id="s09-alert-callout" class="inspect-callout" data-layout-allow-overflow style="right: 80px; top: 200px; width: 540px; border-color: rgba(226,115,36,0.6);">
+              <div class="callout-header" style="color:#FDBA74;">
+                <span class="hud-dot" style="background:#E27324; box-shadow:0 0 8px #E27324;"></span>
+                Activator Emergency Trigger Evaluated
+              </div>
+              <div class="callout-code">
+                Rule: Executive Facility Operational Emergency<br/>
+                Action: Automated Alert to Fabric_user on Threshold Breach<br/>
+                Evaluated: 24 Facility Zones · Sub-3s End-to-End Latency
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 10: Master Architecture Lockup -->
+          <div id="plate-10-arch" class="scene-plate" style="transform-origin: 960px 540px;">
+            <img class="plate-img" src="assets/images/architecture-diagram.png" alt="Microsoft Fabric Solution Architecture Blueprint" />
+          </div>
+
+        </div> <!-- /master-cam -->
+      </div> <!-- /master-3d-layer -->
+
+      <!-- Universal HUD Overlay -->
+      <div id="lineage-hud">
+        <span class="hud-dot"></span>
+        <span id="hud-s01" class="hud-stage">FABRIC PIPELINE: 01. WORKSPACE INGRESS</span>
+        <span id="hud-s02" class="hud-stage" style="display:none;">FABRIC PIPELINE: 02. BENGUET HIGHLAND IOT INGRESS</span>
+        <span id="hud-s03" class="hud-stage" style="display:none;">FABRIC PIPELINE: 03. EVENTSTREAM 9-NODE ROUTING</span>
+        <span id="hud-s04" class="hud-stage" style="display:none;">FABRIC PIPELINE: 04. EVENTHOUSE KQL REAL-TIME DB</span>
+        <span id="hud-s05" class="hud-stage" style="display:none;">FABRIC PIPELINE: 05. ONELAKE ZERO-COPY LAKEHOUSE</span>
+        <span id="hud-s06" class="hud-stage" style="display:none;">FABRIC PIPELINE: 06. PYSPARK DELTA ACID MERGE</span>
+        <span id="hud-s07" class="hud-stage" style="display:none;">FABRIC PIPELINE: 07. SELF-HEALING DLQ PIPELINE</span>
+        <span id="hud-s08" class="hud-stage" style="display:none;">FABRIC PIPELINE: 08. GOLD FABRIC WAREHOUSE</span>
+        <span id="hud-s09" class="hud-stage" style="display:none;">FABRIC PIPELINE: 09. DIRECT LAKE POWER BI & ACTIVATOR</span>
+        <span id="hud-s10" class="hud-stage" style="display:none;">FABRIC PIPELINE: 10. END-TO-END ARCHITECTURE LOCKUP</span>
+      </div>
+
+      <!-- Master Architecture Outro Summary HUD -->
+      <div id="s10-arch-summary">
+        <div class="arch-metric-item">
+          <span class="arch-metric-num" style="color:#4ADE80;">10,480</span>
+          <span class="arch-metric-desc">Events / Min Ingress</span>
+        </div>
+        <div class="arch-metric-item">
+          <span class="arch-metric-num" style="color:#38BDF8;">1.70s</span>
+          <span class="arch-metric-desc">p50 Ingress SLA</span>
+        </div>
+        <div class="arch-metric-item">
+          <span class="arch-metric-num" style="color:#4ADE80;">99.98%</span>
+          <span class="arch-metric-desc">Quality Pass</span>
+        </div>
+        <div class="arch-metric-item">
+          <span class="arch-metric-num" style="color:#FDBA74;">0 DOWNTIME</span>
+          <span class="arch-metric-desc">Self-Healing DLQ</span>
+        </div>
+        <div class="arch-metric-item" style="border-left:1px solid rgba(255,255,255,0.1); padding-left:24px;">
+          <span style="font-size:12px; font-weight:700; color:#F4F6F0;">INDEPENDENT PROOF OF CONCEPT</span>
+          <span style="font-size:10px; color:#BAC5B0;">Synthetic Demonstration Workload</span>
+        </div>
+      </div>
+
+      <!-- Universal Cursor Element -->
+      <div id="master-cursor">
+        <svg width="34" height="48" viewBox="0 0 34 48" fill="none">
+          <path d="M3 2L3 42L11.5 33.5L18 47L23 44.5L16.5 31L26 31L3 2Z" 
+                fill="#0E130C" 
+                stroke="#4ADE80" 
+                stroke-width="2.5" 
+                stroke-linejoin="round"/>
+          <path d="M5.5 6.5L5.5 37.5L12 31L17.8 43L20.2 41.8L14.4 29.8L21.5 29.8L5.5 6.5Z" 
+                fill="#4ADE80"/>
+        </svg>
+      </div>
+
+      <!-- Universal Click Ripple Ring -->
+      <div id="master-click-ring"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["master-showcase-film"] = tl;
+
+      // -----------------------------------------------------------------------
+      // INITIAL CAMERA & STAGE SETUP (t = 0.00s)
+      // Virtual 35mm lens (1866px perspective)
+      // -----------------------------------------------------------------------
+      tl.set("#master-stage", { perspective: 1866, transformStyle: "preserve-3d" });
+      tl.set("#master-cam", { z: 0, x: 0, y: 0, rotationY: 0, rotationX: 0 });
+      tl.set("#master-cursor", { x: 960, y: 780, opacity: 1, scale: 1 });
+      tl.set("#master-click-ring", { scale: 0.2, opacity: 0 });
+
+      // =======================================================================
+      // SCENE 1: Brand Ingress & Workspace Screen (0.00s - 11.236s / Bars 0-5)
+      // =======================================================================
+      // Establish Brand Card (0.00s - 5.00s)
+      tl.to("#s01-brand-card", { opacity: 0, scale: 1.08, z: 60, duration: 1.20, ease: "power2.inOut" }, 5.50);
+
+      // Workspace Plate reveals & establishes 1.0s wide hold (7.00s - 8.50s)
+      tl.to("#lineage-hud", { opacity: 1, duration: 0.50 }, 7.00);
+
+      // Targeted Cursor Guidance to FarmingTelemetryEventstream (8.50s - 9.20s)
+      // Hotspot Center: (374.5, 345.5) -> Pointer landing: (372.0, 343.8)
+      tl.to("#master-cursor", { x: 372.0, y: 343.8, duration: 0.70, ease: "power2.inOut" }, 8.50);
+
+      // Tactile Hover Elevation Lift (Y = -2px, soft drop shadow)
+      tl.to("#target-01-row", {
+        borderColor: "rgba(74, 222, 128, 0.40)",
+        background: "rgba(74, 222, 128, 0.08)",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
+        y: -2,
+        duration: 0.20,
+        ease: "power2.out"
+      }, 9.00);
+
+      // Tactile Click on Bar 4 Downbeat @ 9.259s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 9.259);
+      tl.set("#master-click-ring", { x: 374.5, y: 345.5, opacity: 0.95, scale: 0.2 }, 9.259);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 9.259);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 9.34);
+
+      // Confirmation hold until 9.80s, then Anchored Plunge through (374.5, 345.5)
+      tl.to("#master-cam", {
+        z: 340,
+        x: 585.5,
+        y: 194.5,
+        duration: 0.75,
+        ease: "power2.in"
+      }, 9.80);
+      tl.to("#plate-01", { scale: 2.1, opacity: 0, duration: 0.75, ease: "power2.in" }, 9.80);
+
+      // =======================================================================
+      // SCENE 2: Benguet Highland IoT Telemetry Gateway (11.236s - 20.225s / Bars 5-9)
+      // =======================================================================
+      tl.set("#plate-02", { opacity: 1, scale: 0.85, z: -60 }, 10.55);
+      tl.to("#plate-02", { scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" }, 10.55);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.50, ease: "power2.out" }, 11.236);
+      tl.set(".hud-stage", { display: "none" }, 11.236);
+      tl.set("#hud-s02", { display: "inline" }, 11.236);
+
+      // IoT Gateway Card reveals (11.80s)
+      tl.to("#s02-iot-card", { opacity: 1, scale: 1.0, duration: 0.60, ease: "back.out(1.2)" }, 11.80);
+
+      // Guided Cursor motion toward Ingress Port (960, 510)
+      tl.to("#master-cursor", { x: 957.5, y: 508.3, duration: 1.20, ease: "power2.inOut" }, 14.50);
+
+      // Click Ingress Port on Bar 7 Downbeat @ 15.730s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 15.730);
+      tl.set("#master-click-ring", { x: 960, y: 510, opacity: 0.95, scale: 0.2 }, 15.730);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 15.730);
+      tl.to("#s02-ingress-port", { borderColor: "#4ADE80", background: "rgba(74,222,128,0.28)", duration: 0.15 }, 15.730);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 15.81);
+
+      // Confirmation hold and Spatial Plunge into Eventstream (18.50s - 20.225s)
+      tl.to("#master-cam", { z: 300, y: 30, duration: 0.90, ease: "power2.in" }, 18.50);
+      tl.to("#plate-02", { scale: 1.9, opacity: 0, duration: 0.90, ease: "power2.in" }, 18.50);
+
+      // =======================================================================
+      // SCENE 3: Eventstream Studio Routing Hub (20.225s - 29.213s / Bars 9-13)
+      // =======================================================================
+      tl.set("#plate-03", { opacity: 1, scale: 0.85, z: -60 }, 19.80);
+      tl.to("#plate-03", { scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" }, 19.80);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.40, ease: "power2.out" }, 20.225);
+      tl.set(".hud-stage", { display: "none" }, 20.225);
+      tl.set("#hud-s03", { display: "inline" }, 20.225);
+
+      // Inspection Zoom onto SQL DeadLetter Node & Callout
+      tl.to("#master-cam", { x: -320, y: 60, z: 280, duration: 1.40, ease: "power3.out" }, 21.20);
+      tl.to("#master-cursor", { x: 978, y: 278, duration: 1.00, ease: "power2.inOut" }, 21.20);
+      tl.to("#s03-sql-callout", { opacity: 1, scale: 1.0, duration: 0.50, ease: "back.out(1.4)" }, 22.00);
+
+      // Sweep cursor to Destination node KQL_EnvironmentalTelemetry (1330, 555)
+      tl.to("#master-cam", { x: 80, y: -20, z: 120, duration: 1.50, ease: "power2.inOut" }, 24.50);
+      tl.to("#master-cursor", { x: 1327.5, y: 553.3, duration: 1.40, ease: "power2.inOut" }, 24.80);
+
+      // Hover elevation on destination node
+      tl.to("#target-03-dest", {
+        borderColor: "rgba(74, 222, 128, 0.7)",
+        background: "rgba(74, 222, 128, 0.15)",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
+        y: -2,
+        duration: 0.20
+      }, 26.20);
+
+      // Click destination node on Bar 12 Downbeat @ 26.966s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 26.966);
+      tl.set("#master-click-ring", { x: 1330, y: 555, opacity: 0.95, scale: 0.2 }, 26.966);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 26.966);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 27.05);
+
+      // Confirmation hold and Spatial Plunge through (1330, 555)
+      tl.to("#master-cam", {
+        z: 340,
+        x: -370.0,
+        y: -15.0,
+        duration: 0.85,
+        ease: "power2.in"
+      }, 27.60);
+      tl.to("#plate-03", { scale: 2.1, opacity: 0, duration: 0.85, ease: "power2.in" }, 27.60);
+
+      // =======================================================================
+      // SCENE 4: Eventhouse KQL Database (29.213s - 38.202s / Bars 13-17)
+      // =======================================================================
+      tl.set("#plate-04", { opacity: 1, scale: 0.85, z: -60 }, 28.80);
+      tl.to("#plate-04", { scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" }, 28.80);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.40, ease: "power2.out" }, 29.213);
+      tl.set(".hud-stage", { display: "none" }, 29.213);
+      tl.set("#hud-s04", { display: "inline" }, 29.213);
+
+      // Guide cursor to EnvironmentalTelemetry table card (840, 555)
+      tl.to("#master-cursor", { x: 837.5, y: 553.3, duration: 1.20, ease: "power2.inOut" }, 30.00);
+
+      // Hover elevation
+      tl.to("#target-04-card", {
+        borderColor: "rgba(74, 222, 128, 0.6)",
+        background: "rgba(74, 222, 128, 0.12)",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
+        y: -2,
+        duration: 0.20
+      }, 31.00);
+
+      // Click table card on Bar 14 Downbeat @ 31.461s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 31.461);
+      tl.set("#master-click-ring", { x: 840, y: 555, opacity: 0.95, scale: 0.2 }, 31.461);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 31.461);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 31.55);
+
+      // Optical Zoom onto storage metrics and KQL callout
+      tl.to("#master-cam", { x: 200, y: -40, z: 220, duration: 1.40, ease: "power3.out" }, 32.20);
+      tl.to("#s04-kql-callout", { opacity: 1, scale: 1.0, duration: 0.50, ease: "back.out(1.3)" }, 32.60);
+
+      // Spatial Plunge through (840, 555) into Lakehouse
+      tl.to("#master-cam", {
+        z: 340,
+        x: 120.0,
+        y: -15.0,
+        duration: 0.85,
+        ease: "power2.in"
+      }, 36.80);
+      tl.to("#plate-04", { scale: 2.1, opacity: 0, duration: 0.85, ease: "power2.in" }, 36.80);
+
+      // =======================================================================
+      // SCENE 5: OneLake Lakehouse & Zero-Copy Shortcuts (38.202s - 47.191s / Bars 17-21)
+      // =======================================================================
+      tl.set("#plate-05", { opacity: 1, scale: 0.85, z: -60 }, 37.80);
+      tl.to("#plate-05", { scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" }, 37.80);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.40, ease: "power2.out" }, 38.202);
+      tl.set(".hud-stage", { display: "none" }, 38.202);
+      tl.set("#hud-s05", { display: "inline" }, 38.202);
+
+      // Guide cursor to shortcut link (440, 467.5)
+      tl.to("#master-cursor", { x: 437.5, y: 465.8, duration: 1.60, ease: "power2.inOut" }, 40.50);
+
+      // Hover elevation
+      tl.to("#target-05-shortcut", {
+        borderColor: "rgba(74, 222, 128, 0.6)",
+        background: "rgba(74, 222, 128, 0.12)",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
+        y: -2,
+        duration: 0.20
+      }, 42.20);
+
+      // Click shortcut on Bar 19 Downbeat @ 42.697s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 42.697);
+      tl.set("#master-click-ring", { x: 440, y: 467.5, opacity: 0.95, scale: 0.2 }, 42.697);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 42.697);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 42.78);
+      tl.to("#s05-shortcut-callout", { opacity: 1, scale: 1.0, duration: 0.50 }, 43.00);
+
+      // Spatial Plunge through (440, 467.5)
+      tl.to("#master-cam", {
+        z: 340,
+        x: 520.0,
+        y: 72.5,
+        duration: 0.85,
+        ease: "power2.in"
+      }, 45.80);
+      tl.to("#plate-05", { scale: 2.1, opacity: 0, duration: 0.85, ease: "power2.in" }, 45.80);
+
+      // =======================================================================
+      // SCENE 6: PySpark Delta Lakehouse Notebook (47.191s - 58.427s / Bars 21-26)
+      // =======================================================================
+      tl.set("#plate-06", { opacity: 1, scale: 0.85, z: -60 }, 46.80);
+      tl.to("#plate-06", { scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" }, 46.80);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.40, ease: "power2.out" }, 47.191);
+      tl.set(".hud-stage", { display: "none" }, 47.191);
+      tl.set("#hud-s06", { display: "inline" }, 47.191);
+
+      // Guide cursor to Cell 1 (535, 210)
+      tl.to("#master-cursor", { x: 532.5, y: 208.3, duration: 1.20, ease: "power2.inOut" }, 48.00);
+
+      // Click Cell 1 on Bar 22 Downbeat @ 49.438s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 49.438);
+      tl.set("#master-click-ring", { x: 535, y: 210, opacity: 0.95, scale: 0.2 }, 49.438);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 49.438);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 49.52);
+
+      // Optical inspection pan down code editor and callout
+      tl.to("#master-cam", { x: -160, y: 120, z: 240, duration: 2.00, ease: "power2.out" }, 50.20);
+      tl.to("#s06-code-callout", { opacity: 1, scale: 1.0, duration: 0.50 }, 50.80);
+
+      // Buildup riser into Climax Drop impact @ 58.427s
+      tl.to("#master-cam", {
+        z: 360,
+        x: 425.0,
+        y: 330.0,
+        duration: 1.10,
+        ease: "power2.in"
+      }, 56.50);
+      tl.to("#plate-06", { scale: 2.2, opacity: 0, duration: 1.10, ease: "power2.in" }, 56.50);
+
+      // =======================================================================
+      // SCENE 7: Data Pipeline & DLQ Remediation (58.427s - 67.416s / Bars 26-30)
+      // SECOND DROP IMPACT @ 58.427s!
+      // =======================================================================
+      tl.set("#plate-07", { opacity: 1, scale: 0.80, z: -80 }, 58.00);
+      tl.to("#plate-07", { scale: 1.0, z: 0, duration: 0.60, ease: "elastic.out(1, 0.75)" }, 58.427);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.35, ease: "power2.out" }, 58.427);
+      tl.set(".hud-stage", { display: "none" }, 58.427);
+      tl.set("#hud-s07", { display: "inline" }, 58.427);
+
+      // Guide cursor to Notebook_Batch_Master_Orchestrator (230, 460)
+      tl.to("#master-cursor", { x: 227.5, y: 458.3, duration: 1.20, ease: "power2.inOut" }, 59.20);
+
+      // Click node on Bar 27 Downbeat @ 60.674s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 60.674);
+      tl.set("#master-click-ring", { x: 230, y: 460, opacity: 0.95, scale: 0.2 }, 60.674);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 60.674);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 60.76);
+      tl.to("#s07-dlq-callout", { opacity: 1, scale: 1.0, duration: 0.50 }, 61.20);
+
+      // Plunge through (230, 460) into Warehouse
+      tl.to("#master-cam", {
+        z: 340,
+        x: 730.0,
+        y: 80.0,
+        duration: 0.85,
+        ease: "power2.in"
+      }, 66.00);
+      tl.to("#plate-07", { scale: 2.1, opacity: 0, duration: 0.85, ease: "power2.in" }, 66.00);
+
+      // =======================================================================
+      // SCENE 8: Gold Warehouse Star Schema (67.416s - 76.404s / Bars 30-34)
+      // =======================================================================
+      tl.set("#plate-08", { opacity: 1, scale: 0.85, z: -60 }, 66.90);
+      tl.to("#plate-08", { scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" }, 66.90);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.40, ease: "power2.out" }, 67.416);
+      tl.set(".hud-stage", { display: "none" }, 67.416);
+      tl.set("#hud-s08", { display: "inline" }, 67.416);
+
+      // Guide cursor to fact_environmental_daily row (280, 645)
+      tl.to("#master-cursor", { x: 277.5, y: 643.3, duration: 1.30, ease: "power2.inOut" }, 68.20);
+
+      // Click table on Bar 31 Downbeat @ 69.663s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 69.663);
+      tl.set("#master-click-ring", { x: 280, y: 645, opacity: 0.95, scale: 0.2 }, 69.663);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 69.663);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 69.75);
+
+      // Optical zoom into data preview grid
+      tl.to("#master-cam", { x: -280, y: -60, z: 240, duration: 1.50, ease: "power2.out" }, 70.40);
+      tl.to("#s08-wh-callout", { opacity: 1, scale: 1.0, duration: 0.50 }, 71.00);
+
+      // Plunge through (280, 645) into Power BI
+      tl.to("#master-cam", {
+        z: 340,
+        x: 680.0,
+        y: -105.0,
+        duration: 0.85,
+        ease: "power2.in"
+      }, 75.00);
+      tl.to("#plate-08", { scale: 2.1, opacity: 0, duration: 0.85, ease: "power2.in" }, 75.00);
+
+      // =======================================================================
+      // SCENE 9: Power BI Direct Lake & Activator (76.404s - 87.640s / Bars 34-39)
+      // =======================================================================
+      tl.set("#plate-09-pbi", { opacity: 1, scale: 0.85, z: -60 }, 75.80);
+      tl.to("#plate-09-pbi", { scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" }, 75.80);
+      tl.to("#master-cam", { x: 0, y: 0, z: 0, duration: 0.40, ease: "power2.out" }, 76.404);
+      tl.set(".hud-stage", { display: "none" }, 76.404);
+      tl.set("#hud-s09", { display: "inline" }, 76.404);
+
+      // Guide cursor to Regional Slicer (1320, 180)
+      tl.to("#master-cursor", { x: 1317.5, y: 178.3, duration: 1.20, ease: "power2.inOut" }, 77.20);
+
+      // Click slicer on Bar 35 Downbeat @ 78.652s
+      tl.to("#master-cursor", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 78.652);
+      tl.set("#master-click-ring", { x: 1320, y: 180, opacity: 0.95, scale: 0.2 }, 78.652);
+      tl.to("#master-click-ring", { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" }, 78.652);
+      tl.to("#master-cursor", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 78.74);
+
+      // Transition smoothly into Activator Reflex Console (80.00s)
+      tl.to("#plate-09-pbi", { opacity: 0, duration: 0.60 }, 80.00);
+      tl.to("#plate-09-activator", { opacity: 1, duration: 0.60 }, 80.00);
+
+      // Move cursor to Activator trigger card (600, 265)
+      tl.to("#master-cursor", { x: 597.5, y: 263.3, duration: 0.80, ease: "power2.inOut" }, 80.20);
+
+      // Alert highlight and chime on Bar 36 Downbeat @ 80.899s
+      tl.to("#target-09-card", {
+        borderColor: "rgba(226, 115, 36, 0.9)",
+        background: "rgba(226, 115, 36, 0.18)",
+        duration: 0.15,
+        yoyo: true,
+        repeat: 1
+      }, 80.899);
+      tl.to("#s09-alert-callout", { opacity: 1, scale: 1.0, duration: 0.40 }, 81.10);
+
+      // Crane pullback initiation into Architecture blueprint
+      tl.to("#master-cursor", { x: 1400, y: 920, opacity: 0, duration: 1.50, ease: "power2.in" }, 85.00);
+      tl.to("#plate-09-activator", { opacity: 0, scale: 0.92, duration: 1.20, ease: "power2.inOut" }, 86.40);
+
+      // =======================================================================
+      // SCENE 10: Master Architecture Lockup (87.640s - 102.015s / Bars 39-45.4)
+      // =======================================================================
+      tl.set("#plate-10-arch", { opacity: 1, scale: 0.88, z: -100 }, 87.00);
+      tl.to("#plate-10-arch", { scale: 1.0, z: 0, duration: 1.20, ease: "power2.out" }, 87.00);
+      tl.set(".hud-stage", { display: "none" }, 87.640);
+      tl.set("#hud-s10", { display: "inline" }, 87.640);
+
+      // Outro Summary Card reveals
+      tl.to("#s10-arch-summary", { opacity: 1, y: 0, duration: 0.80, ease: "back.out(1.2)" }, 89.00);
+
+      // Final Sub-Bass Chord Impact @ 94.382s
+      tl.to("#s10-arch-summary", {
+        boxShadow: "0 20px 60px rgba(74, 222, 128, 0.35)",
+        borderColor: "#4ADE80",
+        duration: 0.20,
+        yoyo: true,
+        repeat: 1
+      }, 94.382);
+
+      // Majestic Crane Pullback & Resolution
+      tl.to("#master-cam", {
+        z: -120,
+        duration: 6.00,
+        ease: "sine.inOut"
+      }, 94.50);
+
+      // Gentle fade to black at completion
+      tl.to(["#plate-10-arch", "#s10-arch-summary", "#lineage-hud"], {
+        opacity: 0,
+        duration: 1.80,
+        ease: "power2.inOut"
+      }, 100.20);
+    </script>
+  </body>
+</html>

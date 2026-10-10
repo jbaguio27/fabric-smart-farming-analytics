@@ -1,0 +1,145 @@
+<template>
+<link rel="stylesheet" href="assets/kit.css">
+<style>
+@font-face { font-family: 'Poppins'; font-weight: 500; src: url('assets/fonts/poppins-500.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-weight: 700; src: url('assets/fonts/poppins-700.woff2') format('woff2'); }
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Poppins', sans-serif; background: #11160C; }
+.s06-layer { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.s06-world { position: absolute; left: 50%; top: 50%; will-change: transform; }
+
+/* 3D Split Reflex & Hook Alert Layout */
+.s06-reflex-card {
+  width: 660px; height: 580px; margin-left: -680px; margin-top: -290px;
+  border-radius: 16px; background: #0D1109; border: 1px solid rgba(249,115,22,0.35);
+  box-shadow: var(--float); padding: 28px; display: flex; flex-direction: column; justify-content: space-between;
+}
+.s06-hook-card {
+  width: 580px; height: 580px; margin-left: 20px; margin-top: -290px;
+  border-radius: 16px; background: #080B06; border: 1px solid rgba(74,222,128,0.35);
+  box-shadow: var(--float); overflow: hidden; display: flex; flex-direction: column;
+}
+
+.s06-breadcrumb { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #8A997E; margin-bottom: 6px; }
+.s06-card-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 14px; }
+.s06-card-title { font-size: 19px; font-weight: 700; color: #F4F6F0; display: flex; align-items: center; gap: 10px; }
+
+.s06-rule-box { background: #070905; border: 1px solid rgba(249,115,22,0.25); border-radius: 10px; padding: 16px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.6; color: #BAC5B0; margin: 12px 0; }
+.s06-kw { color: #FB923C; font-weight: 700; }
+.s06-fn { color: #38BDF8; font-weight: 600; }
+.s06-act { color: #4ADE80; font-weight: 700; }
+
+.s06-actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.s06-action-tile { background: #11160C; border: 1px solid rgba(104,121,65,0.25); border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: #F4F6F0; font-weight: 600; }
+.s06-action-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 8px #4ADE80; flex-shrink: 0; }
+
+.s06-hook-head { height: 42px; background: #0D120A; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; color: #BAC5B0; }
+.s06-hook-body { flex: 1; position: relative; background: #0A0D08; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.s06-hook-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); }
+</style>
+
+<div id="root" data-composition-id="s06-activator-reflex" data-width="1920" data-height="1080">
+  <div id="s06-ground" class="clip kit-ground" data-start="0" data-duration="5.4545" data-track-index="0"></div>
+
+  <div id="s06-stage" class="clip" data-start="0" data-duration="5.4545" data-track-index="1" style="position:absolute; inset:0; perspective:1866px; perspective-origin:50% 50%;">
+    <div id="s06-drift" class="s06-layer">
+      <div id="s06-cam" class="s06-layer">
+
+        <!-- Left: SmartFarming_Activator_Alerts.Reflex Rule Engine -->
+        <div id="s06-card" class="s06-world s06-reflex-card">
+          <div>
+            <div class="s06-breadcrumb">Fabric › Smart-Farming-Analytics-Prod › SmartFarming_Activator_Alerts.Reflex</div>
+            <div class="s06-card-head">
+              <div class="s06-card-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Fabric Activator Reflex
+              </div>
+              <span class="kit-chip warn">TRIGGER ACTIVE</span>
+            </div>
+          </div>
+
+          <div class="s06-rule-box">
+            <span class="s06-kw">WHEN</span> ZoneId <span class="s06-fn">IN</span> ("Z-NFT-08", "Z-AERO-02")<br>
+            <span class="s06-kw">AND</span> (TempC &gt; 26.5°C <span class="s06-kw">OR</span> EC &gt; 2.40 mS/cm)<br>
+            <span class="s06-act">THEN EXECUTE AUTOMATED INCIDENT ACTION</span>
+          </div>
+
+          <div class="s06-actions-grid">
+            <div class="s06-action-tile">
+              <span class="s06-action-dot"></span>
+              Automated Dosing Actuator
+            </div>
+            <div class="s06-action-tile">
+              <span class="s06-action-dot"></span>
+              OneLake Audit Commit
+            </div>
+            <div class="s06-action-tile">
+              <span class="s06-action-dot"></span>
+              Teams Alert Dispatched
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+            <span style="font-size:12px; color:#BAC5B0; font-family:'JetBrains Mono'">OpenTelemetry Trace: Sub-second</span>
+            <span style="font-size:12px; color:#4ADE80; font-weight:700; font-family:'JetBrains Mono'">End-to-End SLA: 1.70s</span>
+          </div>
+        </div>
+
+        <!-- Right: Real Microsoft Fabric Activator Hook Alert Screen -->
+        <div id="s06-hook" class="s06-world s06-hook-card">
+          <div class="s06-hook-head">
+            <span style="display:flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              Microsoft Teams · Incident Channel
+            </span>
+            <span style="color:#4ADE80">● Verified Live Hook</span>
+          </div>
+          <div class="s06-hook-body">
+            <img src="assets/fabric/hook1_activator_alert.png" class="s06-hook-img" alt="Fabric Activator Teams Alert Hook">
+          </div>
+          <div style="padding:10px 16px; background:#0D120A; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; font-size:11px; font-family:'JetBrains Mono'; color:#8A997E;">
+            <span>Payload: hook1_activator_alert.png</span>
+            <span style="color:#4ADE80; font-weight:700;">Status: Action Triggered</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Seam plates -->
+  <div id="s06-in-plate" class="clip" data-start="0" data-duration="5.4545" data-track-index="5" style="position:absolute; inset:0; background:#11160C; opacity:1;"></div>
+  <div id="s06-out-plate" class="clip" data-layout-allow-occlusion="true" data-start="0" data-duration="5.4545" data-track-index="6" style="position:absolute; inset:0; background:#0A0D08; opacity:0;"></div>
+  <div id="s06-grain" class="clip kit-grain" data-start="0" data-duration="5.4545" data-track-index="9"></div>
+</div>
+
+<script>
+(function () {
+  var D = 5.4545;
+  var tl = gsap.timeline({ paused: true });
+
+  // Initial sets
+  gsap.set('#s06-card', { z: -300, rotationX: -5, rotationY: 8, force3D: true });
+  gsap.set('#s06-hook', { z: -320, rotationX: 4, rotationY: -8, force3D: true });
+
+  // Drift
+  tl.fromTo('#s06-drift', { scale: 1, rotationY: -0.4 }, { scale: 1.02, rotationY: 0.4, duration: D, ease: 'sine.inOut', force3D: true }, 0);
+
+  // Authoring camera movement: dolly forward through the reflex stage
+  tl.fromTo('#s06-cam', { z: -100, x: -30, rotationY: 2 }, { z: 320, x: 20, rotationY: -2, duration: D, ease: 'power2.inOut', force3D: true }, 0);
+
+  // Card spring arrival
+  tl.fromTo('#s06-card', { z: -300, rotationX: -5, rotationY: 8 }, { z: -20, rotationX: 0, rotationY: 2, duration: 1.4, ease: 'back.out(1.5)', force3D: true }, 0.2);
+  tl.fromTo('#s06-hook', { z: -320, rotationX: 4, rotationY: -8 }, { z: -10, rotationX: 0, rotationY: -2, duration: 1.4, ease: 'back.out(1.5)', force3D: true }, 0.35);
+
+  // Seam in
+  tl.fromTo('#s06-in-plate', { opacity: 1 }, { opacity: 0, duration: 0.22, ease: 'power2.inOut' }, 0.1);
+
+  // Seam out: dolly out to Architecture Lockup (#0A0D08)
+  tl.fromTo('#s06-out-plate', { opacity: 0 }, { opacity: 1, duration: 0.16, ease: 'power2.inOut', immediateRender: false }, D - 0.22);
+  tl.set('#s06-cam', { display: 'none' }, D - 0.05);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['s06-activator-reflex'] = tl;
+})();
+</script>
+</template>

@@ -1,0 +1,10 @@
+# Renders, harness, caches and re-downloadable sources stay local.
+renders/
+.hyperframes/
+.media/
+scratch/
+snapshots/
+assets/audio/source-*.mp3
+src/captures/.tmp-*
+.thumbnails/
+

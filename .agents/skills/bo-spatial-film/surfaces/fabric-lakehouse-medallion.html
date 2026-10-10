@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Microsoft Fabric Lakehouse - Medallion Delta Architecture</title>
+  <link rel="stylesheet" href="platform.css">
+  <style>
+    body { background: #0A0D08; color: #F4F6F0; width: 1440px; height: 900px; overflow: hidden; margin: 0; }
+    .lakehouse-canvas { position: relative; width: 1440px; height: 900px; background: radial-gradient(ellipse at 50% 30%, #121A0E 0%, #0A0D08 80%); display: flex; flex-direction: column; }
+    
+    .topbar { height: 52px; background: #0D130B; border-bottom: 1px solid rgba(104,121,65,0.25); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .topbar-left { display: flex; align-items: center; gap: 14px; font-weight: 700; font-size: 15px; }
+    .lakehouse-tag { font-size: 11px; padding: 3px 8px; border-radius: 6px; background: rgba(163,191,101,0.15); color: #A3BF65; font-weight: 600; border: 1px solid rgba(163,191,101,0.3); font-family: 'JetBrains Mono', monospace; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #BAC5B0; }
+    
+    .main-grid { flex: 1; padding: 24px 32px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+    
+    .tier-card { background: #11160C; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 36px rgba(0,0,0,0.5); }
+    .tier-card.bronze { border-top: 4px solid #CD7F32; }
+    .tier-card.silver { border-top: 4px solid #C0C0C0; }
+    .tier-card.gold { border-top: 4px solid #FFD700; }
+
+    .tier-header { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
+    .tier-title { font-weight: 700; font-size: 16px; color: #F4F6F0; display: flex; align-items: center; gap: 8px; }
+    .tier-badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+    .tier-card.bronze .tier-badge { background: rgba(205,127,50,0.15); color: #CD7F32; }
+    .tier-card.silver .tier-badge { background: rgba(192,192,192,0.15); color: #E0E0E0; }
+    .tier-card.gold .tier-badge { background: rgba(255,215,0,0.15); color: #FFD700; }
+
+    .tier-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+    .table-spec { background: #0A0D08; border-radius: 8px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.05); font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+    .table-name { font-weight: 700; color: #4ADE80; margin-bottom: 6px; font-size: 13px; }
+    .table-meta { color: #BAC5B0; font-size: 11px; line-height: 1.6; }
+
+    .code-box { background: #080B07; border-radius: 8px; padding: 12px; border: 1px solid rgba(104,121,65,0.25); font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.5; color: #BAC5B0; }
+    .py-kw { color: #38BDF8; }
+    .py-fn { color: #A3BF65; }
+    .py-str { color: #E27324; }
+
+    .stat-row { display: flex; justify-content: space-between; font-size: 12px; color: #BAC5B0; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; margin-top: auto; }
+    .stat-row strong { color: #F4F6F0; font-family: 'JetBrains Mono'; }
+  </style>
+</head>
+<body>
+  <div id="surface" class="lakehouse-canvas">
+    <div class="topbar">
+      <div class="topbar-left">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#A3BF65" stroke-width="2"/></svg>
+        Microsoft Fabric · OneLake Medallion Lakehouse
+        <span class="lakehouse-tag">DELTA LAKE 3.0 · ACID PROTOCOL</span>
+      </div>
+      <div class="topbar-right">
+        <span>PySpark 3.4 Notebooks</span>
+        <span style="color:#4ADE80">Direct Lake Enabled</span>
+        <span>Storage: 14.8M Parquet Rows</span>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <!-- Bronze Tier -->
+      <div class="tier-card bronze">
+        <div class="tier-header">
+          <div class="tier-title">
+            <span>BRONZE TIER</span>
+          </div>
+          <span class="tier-badge">RAW INGESTION</span>
+        </div>
+        <div class="tier-body">
+          <div class="table-spec">
+            <div class="table-name">bronze_telemetry_raw</div>
+            <div class="table-meta">
+              • Format: Delta Parquet (Snappy)<br>
+              • Ingestion: Append-Only Eventstream<br>
+              • Partitions: Date(UTC) / FacilityId<br>
+              • Checkpoint: Sub-minute ACID commits
+            </div>
+          </div>
+          <div class="code-box">
+            <span class="py-kw">df_stream</span> = spark.readStream \<br>
+            &nbsp;&nbsp;.<span class="py-fn">format</span>(<span class="py-str">"eventhubs"</span>) \<br>
+            &nbsp;&nbsp;.<span class="py-fn">load</span>()<br>
+            <span class="py-kw">df_stream</span>.writeStream \<br>
+            &nbsp;&nbsp;.<span class="py-fn">format</span>(<span class="py-str">"delta"</span>) \<br>
+            &nbsp;&nbsp;.<span class="py-fn">outputMode</span>(<span class="py-str">"append"</span>) \<br>
+            &nbsp;&nbsp;.<span class="py-fn">toTable</span>(<span class="py-str">"bronze_telemetry_raw"</span>)
+          </div>
+          <div class="stat-row">
+            <span>Total Events:</span>
+            <strong>14,812,490</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Silver Tier -->
+      <div class="tier-card silver">
+        <div class="tier-header">
+          <div class="tier-title">
+            <span>SILVER TIER</span>
+          </div>
+          <span class="tier-badge">CLEANED &amp; CONFORMED</span>
+        </div>
+        <div class="tier-body">
+          <div class="table-spec">
+            <div class="table-name">silver_telemetry_cleaned</div>
+            <div class="table-meta">
+              • Schema Validation: Strict typing<br>
+              • Deduplication: Watermarked 30m window<br>
+              • Outlier Boundary: pH [4.0, 9.0], Temp [0, 45]<br>
+              • Quality Contract: Great Expectations
+            </div>
+          </div>
+          <div class="code-box">
+            deltaTable.<span class="py-fn">alias</span>(<span class="py-str">"t"</span>).<span class="py-fn">merge</span>(<br>
+            &nbsp;&nbsp;silver_updates.<span class="py-fn">alias</span>(<span class="py-str">"s"</span>),<br>
+            &nbsp;&nbsp;<span class="py-str">"t.reading_id = s.reading_id"</span><br>
+            ).<span class="py-fn">whenMatchedUpdateAll</span>() \<br>
+            .<span class="py-fn">whenNotMatchedInsertAll</span>() \<br>
+            .<span class="py-fn">execute</span>()
+          </div>
+          <div class="stat-row">
+            <span>Clean Quality Pass:</span>
+            <strong style="color:#4ADE80">99.98% (2,960 quarantined)</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gold Tier -->
+      <div class="tier-card gold">
+        <div class="tier-header">
+          <div class="tier-title">
+            <span>GOLD TIER</span>
+          </div>
+          <span class="tier-badge">KIMBALL STAR SCHEMA</span>
+        </div>
+        <div class="tier-body">
+          <div class="table-spec">
+            <div class="table-name">fact_telemetry_reading</div>
+            <div class="table-meta">
+              • Dimensional Conforming:<br>
+              &nbsp;&nbsp;→ dim_facility (FacilitySK, Region)<br>
+              &nbsp;&nbsp;→ dim_sensor (SensorSK, Calibration)<br>
+              &nbsp;&nbsp;→ dim_crop (CropSK, TargetThresholds)<br>
+              &nbsp;&nbsp;→ dim_date (DateSK, FiscalPeriod)
+            </div>
+          </div>
+          <div class="code-box">
+            <span class="py-kw">SELECT</span><br>
+            &nbsp;&nbsp;f.FacilitySK, s.SensorSK,<br>
+            &nbsp;&nbsp;c.CropSK, d.DateSK,<br>
+            &nbsp;&nbsp;<span class="py-fn">AVG</span>(t.TempC) <span class="py-kw">AS</span> AvgTemp,<br>
+            &nbsp;&nbsp;<span class="py-fn">SUM</span>(t.YieldKg) <span class="py-kw">AS</span> GrossYield<br>
+            <span class="py-kw">FROM</span> silver_telemetry t ...
+          </div>
+          <div class="stat-row">
+            <span>Direct Lake Query SLA:</span>
+            <strong style="color:#FFD700">&lt; 0.85s (VertiPaq)</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

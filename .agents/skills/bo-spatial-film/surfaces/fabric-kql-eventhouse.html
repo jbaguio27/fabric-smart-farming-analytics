@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Microsoft Fabric Eventhouse - KQL Real-Time Query</title>
+  <link rel="stylesheet" href="platform.css">
+  <style>
+    body { background: #0A0D08; color: #F4F6F0; width: 1440px; height: 900px; overflow: hidden; margin: 0; }
+    .kql-canvas { position: relative; width: 1440px; height: 900px; background: radial-gradient(ellipse at 70% 30%, #0F160C 0%, #0A0D08 75%); display: flex; flex-direction: column; }
+    
+    /* Top Bar */
+    .topbar { height: 52px; background: #0D130B; border-bottom: 1px solid rgba(104,121,65,0.25); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex: none; }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .kql-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: #F4F6F0; }
+    .db-badge { font-size: 11px; padding: 3px 8px; border-radius: 6px; background: rgba(56,189,248,0.15); color: #38BDF8; font-weight: 600; border: 1px solid rgba(56,189,248,0.3); font-family: 'JetBrains Mono', monospace; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .run-btn { background: #687941; color: #F4F6F0; border: none; border-radius: 6px; padding: 6px 16px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+    /* Main Area Split: Left DB Explorer (260px), Center/Right Query & Results */
+    .main-body { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 260px; background: #0B0F09; border-right: 1px solid rgba(255,255,255,0.06); padding: 16px; }
+    .sidebar-section { font-size: 11px; text-transform: uppercase; color: #6D7A64; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 10px; }
+    .table-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #BAC5B0; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.02); margin-bottom: 6px; }
+    .table-item.active { background: rgba(104,121,65,0.2); color: #F4F6F0; border-left: 2px solid #A3BF65; }
+
+    .content-area { flex: 1; display: flex; flex-direction: column; background: #0A0D08; }
+    
+    /* Query Editor Pane */
+    .editor-pane { height: 380px; background: #0B0E09; border-bottom: 1px solid rgba(104,121,65,0.2); padding: 20px 24px; position: relative; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.6; }
+    .editor-tabs { position: absolute; top: -34px; left: 0; display: flex; }
+    .tab { background: #0B0E09; padding: 6px 16px; font-size: 12px; color: #BAC5B0; border-top-left-radius: 6px; border-top-right-radius: 6px; border: 1px solid rgba(255,255,255,0.06); border-bottom: none; }
+    .tab.active { color: #F4F6F0; border-top: 2px solid #38BDF8; font-weight: 600; }
+
+    .kw { color: #38BDF8; font-weight: 600; }
+    .fn { color: #A3BF65; }
+    .str { color: #E27324; }
+    .num { color: #F472B6; }
+    .comment { color: #6D7A64; font-style: italic; }
+
+    /* Results Grid */
+    .results-pane { flex: 1; background: #0D110A; display: flex; flex-direction: column; overflow: hidden; }
+    .results-header { height: 38px; background: #0F140C; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 12px; color: #BAC5B0; }
+    .results-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    .results-table th { background: #11160C; color: #6D7A64; text-align: left; padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 600; }
+    .results-table td { padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #BAC5B0; }
+    .results-table tr:hover td { background: rgba(104,121,65,0.08); }
+    .status-alert { color: #E27324; font-weight: 700; background: rgba(226,115,36,0.15); padding: 2px 6px; border-radius: 4px; }
+    .status-ok { color: #4ADE80; font-weight: 700; background: rgba(74,222,128,0.15); padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div id="surface" class="kql-canvas">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="kql-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#38BDF8" stroke-width="2"/><path d="M7 8h10M7 12h7M7 16h10" stroke="#38BDF8" stroke-width="2"/></svg>
+          Fabric Eventhouse · KQL Database
+        </div>
+        <span class="db-badge">kql_smart_farming_analytics</span>
+      </div>
+      <div class="topbar-right">
+        <span style="color:#6D7A64">Last Execution: 42ms · 1,440 rows</span>
+        <button class="run-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run KQL
+        </button>
+      </div>
+    </div>
+
+    <div class="main-body">
+      <!-- Left DB Explorer -->
+      <div class="sidebar">
+        <div class="sidebar-section">Tables</div>
+        <div class="table-item active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          kql_telemetry_live
+        </div>
+        <div class="table-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6D7A64" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          kql_anomaly_alerts
+        </div>
+        <div class="table-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6D7A64" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          kql_facility_zones
+        </div>
+
+        <div class="sidebar-section" style="margin-top:24px">Materialized Views</div>
+        <div class="table-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A3BF65" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          mv_hourly_microclimate
+        </div>
+      </div>
+
+      <!-- Center Query + Grid -->
+      <div class="content-area">
+        <div class="editor-pane">
+          <span class="comment">// Query: Microclimate Anomaly Detection across Benguet Facility 01-08</span><br>
+          <span class="kw">kql_telemetry_live</span><br>
+          | <span class="kw">where</span> Timestamp &gt; <span class="fn">ago</span>(<span class="num">15m</span>) <span class="kw">and</span> FacilityId == <span class="str">"FAC-BENGUET-01"</span><br>
+          | <span class="kw">summarize</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;AvgTemp = <span class="fn">round</span>(<span class="fn">avg</span>(TempC), <span class="num">2</span>),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;AvgHumidity = <span class="fn">round</span>(<span class="fn">avg</span>(HumidityPct), <span class="num">1</span>),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;MaxEC = <span class="fn">round</span>(<span class="fn">max</span>(EC), <span class="num">2</span>)<br>
+          &nbsp;&nbsp;<span class="kw">by</span> <span class="fn">bin</span>(Timestamp, <span class="num">1m</span>), ZoneId<br>
+          | <span class="kw">extend</span> Status = <span class="fn">iff</span>(AvgTemp &gt; <span class="num">26.5</span> <span class="kw">or</span> MaxEC &gt; <span class="num">2.4</span>, <span class="str">"ANOMALY"</span>, <span class="str">"NORMAL"</span>)<br>
+          | <span class="kw">order by</span> Timestamp <span class="kw">desc</span><br>
+          | <span class="kw">take</span> <span class="num">10</span>
+        </div>
+
+        <div class="results-pane">
+          <div class="results-header">
+            <span>Query Results: 10 rows returned (execution: 42ms)</span>
+            <span style="color:#4ADE80; font-family:'JetBrains Mono'">Direct Engine · 0.04s SLA</span>
+          </div>
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>ZoneId</th>
+                <th>AvgTemp (°C)</th>
+                <th>AvgHumidity (%)</th>
+                <th>MaxEC (mS/cm)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-10-09 08:35:00</td>
+                <td>Z-HYPO-04</td>
+                <td>22.14</td>
+                <td>74.2</td>
+                <td>1.82</td>
+                <td><span class="status-ok">NORMAL</span></td>
+              </tr>
+              <tr>
+                <td>2026-10-09 08:34:00</td>
+                <td>Z-AERO-02</td>
+                <td>21.80</td>
+                <td>76.5</td>
+                <td>1.79</td>
+                <td><span class="status-ok">NORMAL</span></td>
+              </tr>
+              <tr>
+                <td>2026-10-09 08:33:00</td>
+                <td>Z-NFT-08</td>
+                <td>27.10</td>
+                <td>61.2</td>
+                <td>2.48</td>
+                <td><span class="status-alert">ANOMALY</span></td>
+              </tr>
+              <tr>
+                <td>2026-10-09 08:32:00</td>
+                <td>Z-HYPO-01</td>
+                <td>21.95</td>
+                <td>75.1</td>
+                <td>1.80</td>
+                <td><span class="status-ok">NORMAL</span></td>
+              </tr>
+              <tr>
+                <td>2026-10-09 08:31:00</td>
+                <td>Z-AERO-05</td>
+                <td>22.30</td>
+                <td>73.8</td>
+                <td>1.85</td>
+                <td><span class="status-ok">NORMAL</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

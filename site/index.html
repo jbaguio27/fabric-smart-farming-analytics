@@ -27,6 +27,7 @@
       <ul class="nav-links">
         <li><a href="#origin" class="nav-link">Story</a></li>
         <li><a href="#platform" class="nav-link">Architecture</a></li>
+        <li><a href="#spatial-film" class="nav-link nav-link-film"><span class="nav-film-dot"></span><span>3D Film</span></a></li>
         <li><a href="#results" class="nav-link">Results</a></li>
         <li><a href="#explore" class="nav-link">Explore</a></li>
         <li><a href="#notes" class="nav-link">Notes</a></li>
@@ -79,6 +80,12 @@
               <span class="btn-arrow-capsule">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </span>
+            </a>
+            <a href="#spatial-film" class="btn btn-film-watch">
+              <span class="btn-film-play-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+              </span>
+              <span>Watch 3D Film (48s)</span>
             </a>
             <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-ghost">
               <svg class="btn-github-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -612,7 +619,45 @@
           </p>
         </div>
 
-        <!-- Central Solution Blueprint Visual -->
+        <!-- Central Solution Blueprint Visual & 3D Spatial Walkthrough Film -->
+        <div class="container-wide">
+          <div class="spatial-film-showcase" id="spatial-film">
+            <div class="spatial-film-header">
+              <div class="spatial-film-title-group">
+                <span class="spatial-film-dot"></span>
+                <span class="spatial-film-title">MICROSOFT FABRIC SPATIAL FILM · 3D SYSTEM WALKTHROUGH</span>
+              </div>
+              <span class="spatial-film-spec-badge">1080p60 · Continuous 3D Spatial Flythrough · 19 Fabric Artifacts</span>
+            </div>
+            <div class="spatial-film-player-wrapper">
+              <video 
+                class="spatial-film-video"
+                src="assets/videos/fabric-smart-farming-film-web.mp4" 
+                poster="assets/videos/fabric-smart-farming-film-poster.jpg" 
+                controls 
+                autoplay 
+                muted 
+                loop 
+                playsinline
+              ></video>
+            </div>
+            <div class="spatial-film-footer">
+              <span class="spatial-film-path-label">
+                Flight path: Fabric Workspace Portal ➔ Eventstream Studio ➔ KQL Queryset ➔ Delta Lakehouse ➔ Self-Healing DLQ ➔ Direct Lake ➔ Activator Reflex ➔ Architecture Loop
+              </span>
+              <div class="spatial-film-btn-group">
+                <a href="assets/videos/fabric-smart-farming-film-web.mp4" download class="spatial-film-download-btn">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Web MP4 (15MB)</span>
+                </a>
+                <a href="assets/videos/fabric-smart-farming-film.mp4" download class="spatial-film-download-btn spatial-film-btn-secondary">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Master 1080p60 (57MB)</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="container-wide">
           <div class="platform-blueprint" data-lightbox-src="assets/diagrams/microsoft-fabric-solution-architecture.png" data-lightbox-caption="Microsoft Fabric End-to-End Solution Architecture: Dual-path real-time intelligence and OneLake medallion lakehouse.">
             <img src="assets/diagrams/microsoft-fabric-solution-architecture.png" alt="Microsoft Fabric Solution Architecture Diagram" class="blueprint-img">

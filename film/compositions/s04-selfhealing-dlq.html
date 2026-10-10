@@ -1,0 +1,141 @@
+<template>
+<link rel="stylesheet" href="assets/kit.css">
+<style>
+@font-face { font-family: 'Poppins'; font-weight: 500; src: url('assets/fonts/poppins-500.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-weight: 700; src: url('assets/fonts/poppins-700.woff2') format('woff2'); }
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Poppins', sans-serif; background: #11160C; }
+.s04-layer { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.s04-world { position: absolute; left: 50%; top: 50%; will-change: transform; }
+
+/* 3D DLQ Remediation Cards */
+.s04-card {
+  width: 600px; height: 580px; margin-top: -290px; border-radius: 16px; background: #0D1109;
+  border: 1px solid rgba(226,115,36,0.35); box-shadow: var(--float); padding: 28px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.s04-card.left { margin-left: -630px; }
+.s04-card.right { margin-left: 30px; border-color: rgba(74,222,128,0.35); }
+
+.s04-breadcrumb { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #8A997E; margin-bottom: 6px; }
+.s04-card-title { font-size: 19px; font-weight: 700; color: #F4F6F0; display: flex; align-items: center; gap: 10px; }
+.s04-code-preview { background: #070905; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.55; color: #BAC5B0; }
+.s04-err { color: #E27324; font-weight: 700; background: rgba(226,115,36,0.15); padding: 1px 6px; border-radius: 4px; }
+.s04-ok { color: #4ADE80; font-weight: 700; background: rgba(74,222,128,0.15); padding: 1px 6px; border-radius: 4px; }
+
+.s04-step-item { background: #11160C; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+.s04-step-head { display: flex; justify-content: space-between; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #A3BF65; margin-bottom: 2px; font-weight: 700; }
+.s04-step-title { font-size: 12.5px; font-weight: 600; color: #F4F6F0; }
+</style>
+
+<div id="root" data-composition-id="s04-selfhealing-dlq" data-width="1920" data-height="1080">
+  <div id="s04-ground" class="clip kit-ground" data-start="0" data-duration="6.5455" data-track-index="0"></div>
+
+  <div id="s04-stage" class="clip" data-start="0" data-duration="6.5455" data-track-index="1" style="position:absolute; inset:0; perspective:1866px; perspective-origin:50% 50%;">
+    <div id="s04-drift" class="s04-layer">
+      <div id="s04-cam" class="s04-layer">
+
+        <!-- Left: Pipeline_Medallion_Batch_Orchestration.DataPipeline -->
+        <div id="s04-left" class="s04-world s04-card left">
+          <div>
+            <div class="s04-breadcrumb">Fabric › Pipeline_Medallion_Batch_Orchestration.DataPipeline</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div class="s04-card-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E27324" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                DLQ Quarantine Router
+              </div>
+              <span class="kit-chip warn">SCHEMA DRIFT ISOLATED</span>
+            </div>
+          </div>
+
+          <div class="s04-code-preview">
+            <span style="color:#8A997E">// Pipeline Activity: OnFailure Isolation</span><br>
+            {<br>
+            &nbsp;&nbsp;<span style="color:#A3BF65">"pipeline"</span>: "Pipeline_Medallion_Batch_Orchestration",<br>
+            &nbsp;&nbsp;<span style="color:#A3BF65">"target_dlq"</span>: "lakehouse/quarantine/dlq_unparsed",<br>
+            &nbsp;&nbsp;<span style="color:#A3BF65">"facility_id"</span>: "FAC-BENGUET-02",<br>
+            &nbsp;&nbsp;<span style="color:#A3BF65">"ph_reading"</span>: <span class="s04-err">"MALFORMED_NAN_VAL"</span>,<br>
+            &nbsp;&nbsp;<span style="color:#A3BF65">"quarantine_action"</span>: <span style="color:#E27324">"Bypass &amp; Trigger Remediation"</span><br>
+            }
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+            <span style="font-size:11.5px; color:#BAC5B0; font-family:'JetBrains Mono'">Main Stream: 10,480 EPS Uninterrupted</span>
+            <span style="font-size:11.5px; color:#4ADE80; font-weight:700">0 Pipeline Downtime</span>
+          </div>
+        </div>
+
+        <!-- Right: Notebook_DeadLetter_Remediation.Notebook -->
+        <div id="s04-right" class="s04-world s04-card right">
+          <div>
+            <div class="s04-breadcrumb">Fabric › Notebook_DeadLetter_Remediation.Notebook</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div class="s04-card-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                Self-Healing PySpark Loop
+              </div>
+              <span class="kit-chip ok">AUTO-REPAIRED</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="s04-step-item">
+              <div class="s04-step-head">STAGE 1 · QUARANTINE PARSE</div>
+              <div class="s04-step-title">Extract corrupt payloads from dlq_unparsed partition</div>
+            </div>
+            <div class="s04-step-item">
+              <div class="s04-step-head">STAGE 2 · PYSPARK TYPE COERCION</div>
+              <div class="s04-step-title">Notebook_DeadLetter_Remediation coerces &amp; fills defaults</div>
+            </div>
+            <div class="s04-step-item">
+              <div class="s04-step-head">STAGE 3 · ACID MERGE REPLAY</div>
+              <div class="s04-step-title">Re-injected into Silver Delta Table with 100% audit trail</div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+            <span style="font-size:11.5px; color:#BAC5B0; font-family:'JetBrains Mono'">Audit Trail: 100% Lakehouse Persisted</span>
+            <span style="font-size:11.5px; color:#4ADE80; font-weight:700">0 Data Loss</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Seam plates -->
+  <div id="s04-in-plate" class="clip" data-start="0" data-duration="6.5455" data-track-index="5" style="position:absolute; inset:0; background:#11160C; opacity:1;"></div>
+  <div id="s04-out-plate" class="clip" data-layout-allow-occlusion="true" data-start="0" data-duration="6.5455" data-track-index="6" style="position:absolute; inset:0; background:#0A0D08; opacity:0;"></div>
+  <div id="s04-grain" class="clip kit-grain" data-start="0" data-duration="6.5455" data-track-index="9"></div>
+</div>
+
+<script>
+(function () {
+  var D = 6.5455;
+  var tl = gsap.timeline({ paused: true });
+
+  // Initial sets
+  gsap.set('#s04-left', { z: -300, rotationY: 8, force3D: true });
+  gsap.set('#s04-right', { z: -350, rotationY: -8, force3D: true });
+
+  // Drift
+  tl.fromTo('#s04-drift', { scale: 1, rotationY: -0.5 }, { scale: 1.025, rotationY: 0.5, duration: D, ease: 'sine.inOut', force3D: true }, 0);
+
+  // Authoring camera movement: pans across error isolation to the healed resolution
+  tl.fromTo('#s04-cam', { z: -100, x: -60, rotationY: 3 }, { z: 280, x: 40, rotationY: -2, duration: D, ease: 'power2.inOut', force3D: true }, 0);
+
+  // Staggered card arrivals
+  tl.fromTo('#s04-left', { z: -300, rotationY: 8 }, { z: 0, rotationY: 3, duration: 1.4, ease: 'back.out(1.5)', force3D: true }, 0.2);
+  tl.fromTo('#s04-right', { z: -350, rotationY: -8 }, { z: 0, rotationY: -3, duration: 1.4, ease: 'back.out(1.5)', force3D: true }, 0.4);
+
+  // Seam in
+  tl.fromTo('#s04-in-plate', { opacity: 1 }, { opacity: 0, duration: 0.22, ease: 'power2.inOut' }, 0.1);
+
+  // Seam out: push into Direct Lake (#0A0D08)
+  tl.fromTo('#s04-out-plate', { opacity: 0 }, { opacity: 1, duration: 0.16, ease: 'power2.inOut', immediateRender: false }, D - 0.22);
+  tl.set('#s04-cam', { display: 'none' }, D - 0.05);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['s04-selfhealing-dlq'] = tl;
+})();
+</script>
+</template>

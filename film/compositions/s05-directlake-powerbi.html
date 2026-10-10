@@ -1,0 +1,117 @@
+<template>
+<link rel="stylesheet" href="assets/kit.css">
+<style>
+@font-face { font-family: 'Poppins'; font-weight: 500; src: url('assets/fonts/poppins-500.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-weight: 700; src: url('assets/fonts/poppins-700.woff2') format('woff2'); }
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Poppins', sans-serif; background: #0A0D08; }
+.s05-layer { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.s05-world { position: absolute; left: 50%; top: 50%; will-change: transform; }
+
+/* 3D Power BI Canvas & Callout Cards */
+.s05-pbi-frame {
+  width: 1300px; height: 740px; margin-left: -650px; margin-top: -370px;
+  border-radius: 16px; overflow: hidden; background: #0D1109;
+  border: 1px solid rgba(104,121,65,0.4); box-shadow: var(--float);
+  display: flex; flex-direction: column;
+}
+.s05-pbi-top {
+  height: 42px; background: #0B0E09; border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+}
+.s05-breadcrumb { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #8A997E; display: flex; align-items: center; gap: 6px; }
+.s05-mode-tag {
+  background: rgba(234,179,8,0.15); color: #FACC15; border: 1px solid rgba(234,179,8,0.3);
+  padding: 3px 10px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700;
+}
+.s05-pbi-view { flex: 1; overflow: hidden; position: relative; }
+.s05-pbi-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.s05-callout { position: absolute; background: #11160C; border: 1px solid rgba(104,121,65,0.4); border-radius: 14px; padding: 18px 22px; box-shadow: var(--float); }
+.s05-callout-1 { margin-left: -580px; margin-top: 150px; width: 330px; border-left: 5px solid #4ADE80; }
+.s05-callout-2 { margin-left: 250px; margin-top: 150px; width: 340px; border-left: 5px solid #38BDF8; }
+
+.s05-callout-lbl { font-size: 11px; text-transform: uppercase; color: #BAC5B0; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 4px; }
+.s05-callout-val { font-size: 36px; font-weight: 800; color: #F4F6F0; font-family: 'JetBrains Mono', monospace; line-height: 1.1; }
+.s05-callout-sub { font-size: 11.5px; color: #A3BF65; margin-top: 6px; }
+</style>
+
+<div id="root" data-composition-id="s05-directlake-powerbi" data-width="1920" data-height="1080">
+  <div id="s05-ground" class="clip kit-ground" data-start="0" data-duration="7.6364" data-track-index="0"></div>
+
+  <div id="s05-stage" class="clip" data-start="0" data-duration="7.6364" data-track-index="1" style="position:absolute; inset:0; perspective:1866px; perspective-origin:50% 50%;">
+    <div id="s05-drift" class="s05-layer">
+      <div id="s05-cam" class="s05-layer">
+
+        <!-- 3D Power BI Dashboard Surface with Fabric Chrome -->
+        <div id="s05-frame" class="s05-world s05-pbi-frame">
+          <div class="s05-pbi-top">
+            <div class="s05-breadcrumb">
+              <span>Fabric › Smart-Farming-Analytics-Prod ›</span>
+              <strong style="color:#FACC15">Report_HydroGrow_Executive_Operations.Report</strong>
+            </div>
+            <div class="s05-mode-tag">
+              ⚡ DIRECT LAKE MODE · VERTIPAQ ACCELERATED
+            </div>
+          </div>
+          <div class="s05-pbi-view">
+            <img src="assets/captures/directlake-executive.png" class="s05-pbi-img" alt="Direct Lake Report">
+          </div>
+        </div>
+
+        <!-- Floating Callout Card 1: Revenue -->
+        <div id="s05-c1" class="s05-world s05-callout s05-callout-1">
+          <div class="s05-callout-lbl">GROSS CROP REVENUE</div>
+          <div class="s05-callout-val">₱137.83M</div>
+          <div class="s05-callout-sub">SemanticModel_SmartFarming_Gold · 80 Zones</div>
+        </div>
+
+        <!-- Floating Callout Card 2: Direct Lake Engine -->
+        <div id="s05-c2" class="s05-world s05-callout s05-callout-2">
+          <div class="s05-callout-lbl">DIRECT LAKE · VERTIPAQ ENGINE</div>
+          <div class="s05-callout-val" style="color:#38BDF8">0.12s SLA</div>
+          <div class="s05-callout-sub">Zero-Copy Direct Lakehouse Delta Parquet Query</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Seam plates -->
+  <div id="s05-in-plate" class="clip" data-start="0" data-duration="7.6364" data-track-index="5" style="position:absolute; inset:0; background:#0A0D08; opacity:1;"></div>
+  <div id="s05-out-plate" class="clip" data-layout-allow-occlusion="true" data-start="0" data-duration="7.6364" data-track-index="6" style="position:absolute; inset:0; background:#11160C; opacity:0;"></div>
+  <div id="s05-grain" class="clip kit-grain" data-start="0" data-duration="7.6364" data-track-index="9"></div>
+</div>
+
+<script>
+(function () {
+  var D = 7.6364;
+  var tl = gsap.timeline({ paused: true });
+
+  // Initial sets
+  gsap.set('#s05-frame', { z: -300, rotationX: 8, rotationY: -10, force3D: true });
+  gsap.set('#s05-c1', { z: -150, force3D: true });
+  gsap.set('#s05-c2', { z: -100, force3D: true });
+
+  // Drift
+  tl.fromTo('#s05-drift', { scale: 1, rotationY: -0.4 }, { scale: 1.025, rotationY: 0.4, duration: D, ease: 'sine.inOut', force3D: true }, 0);
+
+  // Authoring camera movement: sweeping zoom and pan across the Direct Lake dashboard
+  tl.fromTo('#s05-cam', { z: -80, x: -30, rotationY: 3 }, { z: 160, x: 20, rotationY: -2, duration: D, ease: 'power2.inOut', force3D: true }, 0);
+
+  // Dashboard & Callout arrivals
+  tl.fromTo('#s05-frame', { z: -300, rotationX: 8, rotationY: -10 }, { z: -40, rotationX: 0, rotationY: 0, duration: 1.5, ease: 'back.out(1.4)', force3D: true }, 0.2);
+  tl.fromTo('#s05-c1', { z: -150, opacity: 0 }, { z: 40, opacity: 1, duration: 1.2, ease: 'back.out(1.6)', force3D: true }, 0.5);
+  tl.fromTo('#s05-c2', { z: -100, opacity: 0 }, { z: 60, opacity: 1, duration: 1.2, ease: 'back.out(1.6)', force3D: true }, 0.8);
+
+  // Seam in
+  tl.fromTo('#s05-in-plate', { opacity: 1 }, { opacity: 0, duration: 0.22, ease: 'power2.inOut' }, 0.1);
+
+  // Seam out: push into Activator (#11160C)
+  tl.fromTo('#s05-out-plate', { opacity: 0 }, { opacity: 1, duration: 0.16, ease: 'power2.inOut', immediateRender: false }, D - 0.22);
+  tl.set('#s05-cam', { display: 'none' }, D - 0.05);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['s05-directlake-powerbi'] = tl;
+})();
+</script>
+</template>

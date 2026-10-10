@@ -1,0 +1,140 @@
+<template>
+<link rel="stylesheet" href="assets/kit.css">
+<style>
+@font-face { font-family: 'Poppins'; font-weight: 500; src: url('assets/fonts/poppins-500.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-weight: 700; src: url('assets/fonts/poppins-700.woff2') format('woff2'); }
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Poppins', sans-serif; background: #0E120A; }
+.s03-layer { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.s03-world { position: absolute; left: 50%; top: 50%; will-change: transform; }
+
+/* 3-Tier Cascading Medallion Cards */
+.s03-card {
+  width: 400px; height: 580px; margin-top: -290px; border-radius: 16px; background: #11160C;
+  border: 1px solid rgba(255,255,255,0.08); box-shadow: var(--float); padding: 26px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.s03-card.bronze { margin-left: -620px; border-top: 5px solid #CD7F32; }
+.s03-card.silver { margin-left: -200px; border-top: 5px solid #E0E0E0; }
+.s03-card.gold   { margin-left: 220px;  border-top: 5px solid #FFD700; }
+
+.s03-breadcrumb { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #8A997E; margin-bottom: 6px; }
+.s03-tier-badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
+.s03-card.bronze .s03-tier-badge { background: rgba(205,127,50,0.2); color: #CD7F32; }
+.s03-card.silver .s03-tier-badge { background: rgba(224,224,224,0.2); color: #E0E0E0; }
+.s03-card.gold   .s03-tier-badge { background: rgba(255,215,0,0.2); color: #FFD700; }
+
+.s03-tier-title { font-size: 20px; font-weight: 800; color: #F4F6F0; margin-bottom: 12px; }
+.s03-spec-box { background: #070A06; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.55; color: #BAC5B0; }
+.s03-metric-line { display: flex; justify-content: space-between; font-size: 12.5px; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; color: #BAC5B0; }
+</style>
+
+<div id="root" data-composition-id="s03-medallion-lakehouse" data-width="1920" data-height="1080">
+  <div id="s03-ground" class="clip kit-ground" data-start="0" data-duration="7.6364" data-track-index="0"></div>
+
+  <div id="s03-stage" class="clip" data-start="0" data-duration="7.6364" data-track-index="1" style="position:absolute; inset:0; perspective:1866px; perspective-origin:50% 50%;">
+    <div id="s03-drift" class="s03-layer">
+      <div id="s03-cam" class="s03-layer">
+
+        <!-- Bronze Tier Card -->
+        <div id="s03-bronze" class="s03-world s03-card bronze">
+          <div>
+            <div class="s03-breadcrumb">SmartFarming_Lakehouse.Lakehouse</div>
+            <span class="s03-tier-badge">TIER 1 · BRONZE DELTA</span>
+            <div class="s03-tier-title">RAW TELEMETRY</div>
+            <div class="s03-spec-box">
+              <strong style="color:#CD7F32">bronze_greenhouse_telemetry</strong><br><br>
+              • Protocol: Delta Lake 3.0 (OneLake)<br>
+              • Ingestion: Append-Only Partitioned<br>
+              • Script: Notebook_Load_Bronze_History<br>
+              • ACID Commit Log Checkpoints
+            </div>
+          </div>
+          <div class="s03-metric-line">
+            <span>Ingested Events:</span>
+            <strong style="color:#F4F6F0">14,812,490 Rows</strong>
+          </div>
+        </div>
+
+        <!-- Silver Tier Card -->
+        <div id="s03-silver" class="s03-world s03-card silver">
+          <div>
+            <div class="s03-breadcrumb">Notebook_Silver_ETL.Notebook</div>
+            <span class="s03-tier-badge">TIER 2 · SILVER DELTA</span>
+            <div class="s03-tier-title">CLEANED & MERGED</div>
+            <div class="s03-spec-box">
+              <strong style="color:#E0E0E0">silver_sensor_readings</strong><br><br>
+              • Transformation: PySpark Structured ETL<br>
+              • Logic: DeltaTable MERGE on reading_id<br>
+              • Data Quality: 100% Schema Conformance<br>
+              • Z-Order: (facility_id, timestamp)
+            </div>
+          </div>
+          <div class="s03-metric-line">
+            <span>Quality Pass Rate:</span>
+            <strong style="color:#4ADE80">99.98% Clean</strong>
+          </div>
+        </div>
+
+        <!-- Gold Tier Card -->
+        <div id="s03-gold" class="s03-world s03-card gold">
+          <div>
+            <div class="s03-breadcrumb">Notebook_Gold_ETL.Notebook</div>
+            <span class="s03-tier-badge">TIER 3 · KIMBALL STAR</span>
+            <div class="s03-tier-title">GOLD STAR SCHEMA</div>
+            <div class="s03-spec-box">
+              <strong style="color:#FFD700">gold_crop_yield_metrics</strong><br><br>
+              • Model: SemanticModel_SmartFarming_Gold<br>
+              • Dimensions: dim_facility, dim_zone, dim_crop<br>
+              • Mode: Direct Lake (Zero ETL Refresh)<br>
+              • Consumers: Power BI & Activator Reflex
+            </div>
+          </div>
+          <div class="s03-metric-line">
+            <span>Direct Lake SLA:</span>
+            <strong style="color:#FFD700">&lt; 0.15s (VertiPaq)</strong>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Seam plates -->
+  <div id="s03-in-plate" class="clip" data-start="0" data-duration="7.6364" data-track-index="5" style="position:absolute; inset:0; background:#0E120A; opacity:1;"></div>
+  <div id="s03-out-plate" class="clip" data-layout-allow-occlusion="true" data-start="0" data-duration="7.6364" data-track-index="6" style="position:absolute; inset:0; background:#11160C; opacity:0;"></div>
+  <div id="s03-grain" class="clip kit-grain" data-start="0" data-duration="7.6364" data-track-index="9"></div>
+</div>
+
+<script>
+(function () {
+  var D = 7.6364;
+  var tl = gsap.timeline({ paused: true });
+
+  // Initial sets: cascading depths
+  gsap.set('#s03-bronze', { z: -350, rotationY: 14, force3D: true });
+  gsap.set('#s03-silver', { z: -250, rotationY: 0, force3D: true });
+  gsap.set('#s03-gold',   { z: -150, rotationY: -14, force3D: true });
+
+  // Drift
+  tl.fromTo('#s03-drift', { scale: 1, rotationY: -0.5 }, { scale: 1.03, rotationY: 0.5, duration: D, ease: 'sine.inOut', force3D: true }, 0);
+
+  // Authoring camera movement: sweeping from bronze through silver to gold
+  tl.fromTo('#s03-cam', { z: -80, x: -60, rotationY: 4 }, { z: 180, x: 50, rotationY: -3, duration: D, ease: 'power2.inOut', force3D: true }, 0);
+
+  // Staggered card arrivals
+  tl.fromTo('#s03-bronze', { z: -350, rotationY: 14 }, { z: -60, rotationY: 4, duration: 1.4, ease: 'back.out(1.5)', force3D: true }, 0.2);
+  tl.fromTo('#s03-silver', { z: -250, rotationY: 0 }, { z: 0, rotationY: 0, duration: 1.4, ease: 'back.out(1.5)', force3D: true }, 0.4);
+  tl.fromTo('#s03-gold',   { z: -150, rotationY: -14 }, { z: 60, rotationY: -4, duration: 1.4, ease: 'back.out(1.5)', force3D: true }, 0.6);
+
+  // Seam in
+  tl.fromTo('#s03-in-plate', { opacity: 1 }, { opacity: 0, duration: 0.22, ease: 'power2.inOut' }, 0.1);
+
+  // Seam out: push into DLQ (#11160C)
+  tl.fromTo('#s03-out-plate', { opacity: 0 }, { opacity: 1, duration: 0.16, ease: 'power2.inOut', immediateRender: false }, D - 0.22);
+  tl.set('#s03-cam', { display: 'none' }, D - 0.05);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['s03-medallion-lakehouse'] = tl;
+})();
+</script>
+</template>

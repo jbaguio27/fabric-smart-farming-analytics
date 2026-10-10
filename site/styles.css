@@ -284,6 +284,28 @@ img {
   font-weight: 600;
 }
 
+.nav-link-film {
+  color: #4ADE80;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.nav-link-film:hover {
+  color: #86EFAC;
+}
+
+.nav-film-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #4ADE80;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #4ADE80;
+  animation: pulse-dot 2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
 .nav-link.active::after {
   content: '';
   position: absolute;
@@ -383,7 +405,7 @@ img {
 
 .hero-badge-pill {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.6rem;
   background-color: rgba(17, 22, 12, 0.88);
   border: 1px solid rgba(226, 115, 36, 0.45);
@@ -405,6 +427,8 @@ img {
   border-radius: 50%;
   box-shadow: 0 0 8px #55E083;
   animation: pulse-dot 2s infinite ease-in-out;
+  flex-shrink: 0;
+  margin-top: 0.35rem;
 }
 
 @keyframes pulse-dot {
@@ -517,6 +541,41 @@ img {
 .btn-primary:hover .btn-arrow-capsule {
   transform: translateX(3px) scale(1.08);
   background: rgba(255, 255, 255, 0.32);
+}
+
+.btn-film-watch {
+  background-color: rgba(14, 24, 16, 0.88);
+  color: #4ADE80;
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.btn-film-watch:hover {
+  background-color: rgba(74, 222, 128, 0.16);
+  border-color: rgba(74, 222, 128, 0.75);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(74, 222, 128, 0.25);
+}
+
+.btn-film-play-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(74, 222, 128, 0.18);
+  color: #4ADE80;
+  transition: transform 0.25s var(--ease-spring), background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-film-watch:hover .btn-film-play-icon {
+  transform: scale(1.1);
+  background: #4ADE80;
+  color: #080C06;
 }
 
 .btn-ghost {
@@ -1173,7 +1232,174 @@ img {
 .syn-dec { color: #F472B6; } /* Decorators */
 .syn-self { color: #93C5FD; font-style: italic; } /* self */
 
-/* Chapter 4: Architecture & Scrolltelling Pipeline */
+/* Chapter 4: Architecture & 3D Spatial Walkthrough Film */
+.spatial-film-showcase {
+  margin: 2.5rem 0 2rem 0;
+  background: #090E08;
+  border: 1px solid rgba(104, 121, 65, 0.4);
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.spatial-film-header {
+  padding: 1rem 1.5rem;
+  background: #0D120A;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.spatial-film-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.spatial-film-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4ADE80;
+  box-shadow: 0 0 10px #4ADE80;
+  flex-shrink: 0;
+  margin-top: 4px;
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+.spatial-film-title {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #F4F6F0;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.spatial-film-spec-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: #BAC5B0;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  white-space: nowrap;
+}
+
+.spatial-film-player-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000000;
+}
+
+.spatial-film-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spatial-film-footer {
+  padding: 0.875rem 1.5rem;
+  background: #0C1009;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #BAC5B0;
+  font-family: var(--font-mono);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.spatial-film-path-label {
+  line-height: 1.5;
+  max-width: 75ch;
+}
+
+.spatial-film-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.spatial-film-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.95rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: #4ADE80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  border-radius: var(--radius-sm, 6px);
+  text-decoration: none;
+  transition: transform 0.18s var(--ease-spring), background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.spatial-film-download-btn:hover {
+  background: rgba(74, 222, 128, 0.16);
+  border-color: rgba(74, 222, 128, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.18);
+  color: #FFFFFF;
+}
+
+.spatial-film-download-btn:active {
+  transform: scale(0.97) translateY(0.5px);
+}
+
+.spatial-film-btn-secondary {
+  color: #BAC5B0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.spatial-film-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.38);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+  .spatial-film-header {
+    padding: 0.85rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .spatial-film-spec-badge {
+    white-space: normal;
+  }
+  .spatial-film-footer {
+    padding: 0.85rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .spatial-film-btn-group {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .spatial-film-download-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+  }
+}
+
 .platform-blueprint {
   margin: 3rem 0;
   background-color: var(--bg-surface);

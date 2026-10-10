@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Prototype: Interactive Fabric Workspace Navigation</title>
+    <link rel="stylesheet" href="assets/kit.css" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0A0D08;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      #proto-stage {
+        position: absolute;
+        inset: 0;
+        perspective: 1866px;
+        perspective-origin: 50% 50%;
+        overflow: hidden;
+      }
+
+      .proto-3d-layer {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+      }
+
+      /* Base ground & ambient lighting */
+      .proto-ground {
+        position: absolute;
+        inset: -20%;
+        background: radial-gradient(circle at 50% 35%, #141C10 0%, #0A0D08 60%, #050704 100%);
+      }
+
+      /* Container for workspace plates */
+      .proto-world {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 1920px;
+        height: 1080px;
+        margin-left: -960px;
+        margin-top: -540px;
+        transform-style: preserve-3d;
+      }
+
+      /* Plate 1: Fabric Workspace Screen (Pixel-Perfect 1920x1080 Native Frame) */
+      #proto-workspace-plate {
+        position: absolute;
+        inset: 0;
+        border-radius: 10px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        background: #1B1A19;
+        transform-origin: 374.5px 345.5px;
+        overflow: hidden;
+      }
+
+      #proto-workspace-img {
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+        display: block;
+      }
+
+      /* Verified Row 1 Bounds in Native 1080p: Y=320..368 */
+      #proto-target-row {
+        position: absolute;
+        left: 45px;
+        top: 320px;
+        width: 1830px;
+        height: 48px;
+        border-radius: 6px;
+        border: 1.5px solid transparent;
+        background: transparent;
+        pointer-events: none;
+      }
+
+      /* Verified Clickable Text Link Bounds: X=253..496, Y=337..354 */
+      #proto-target-link {
+        position: absolute;
+        left: 248px;
+        top: 330px;
+        width: 254px;
+        height: 28px;
+        border-radius: 4px;
+        border: 1.5px solid transparent;
+        background: transparent;
+        pointer-events: none;
+      }
+
+      /* Tactile Selection Badge */
+      #proto-item-badge {
+        position: absolute;
+        left: 248px;
+        top: 285px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px;
+        border-radius: 16px;
+        background: rgba(18, 26, 14, 0.94);
+        border: 1px solid rgba(74, 222, 128, 0.5);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        font-size: 12px;
+        font-weight: 700;
+        color: #4ADE80;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* Plate 2: Eventstream Studio Canvas */
+      #proto-eventstream-plate {
+        position: absolute;
+        inset: 0;
+        border-radius: 10px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
+        background: #1B1A19;
+        opacity: 0;
+        transform-origin: 50% 50%;
+        overflow: hidden;
+      }
+
+      #proto-eventstream-img {
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+        display: block;
+      }
+
+      /* Inspection Magnifier Callout for SQL Code Panel */
+      #proto-sql-callout {
+        position: absolute;
+        right: 48px;
+        top: 130px;
+        width: 530px;
+        height: 600px;
+        border-radius: 14px;
+        border: 2px solid rgba(56, 189, 248, 0.6);
+        background: rgba(10, 14, 20, 0.88);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 30px rgba(56, 189, 248, 0.2);
+        padding: 24px;
+        opacity: 0;
+        transform-origin: right top;
+      }
+
+      .proto-callout-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 16px;
+      }
+
+      .proto-callout-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #38BDF8;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .proto-callout-status {
+        font-size: 11px;
+        font-family: 'JetBrains Mono', monospace;
+        color: #BAC5B0;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+
+      .proto-sql-editor {
+        background: #060905;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #E2E8F0;
+        white-space: pre-wrap;
+      }
+
+      .proto-sql-keyword { color: #38BDF8; font-weight: 700; }
+      .proto-sql-fn { color: #FACC15; }
+      .proto-sql-str { color: #4ADE80; }
+
+      .proto-metrics-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .proto-metric-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .proto-metric-label {
+        font-size: 11px;
+        color: #BAC5B0;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 4px;
+      }
+
+      .proto-metric-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #F4F6F0;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      /* Tactile Cursor & Click Ripple Ring */
+      #proto-cursor {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 28px;
+        height: 40px;
+        pointer-events: none;
+        z-index: 1000;
+        transform-origin: 3px 2px; /* Hotspot at pointer tip */
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+      }
+
+      /* Ripple ring centered precisely on click hotspot (X=374.5, Y=345.5) */
+      #proto-click-ring {
+        position: absolute;
+        left: 374.5px;
+        top: 345.5px;
+        width: 50px;
+        height: 50px;
+        margin-left: -25px;
+        margin-top: -25px;
+        border-radius: 50%;
+        border: 2px solid #4ADE80;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 999;
+        transform-origin: 50% 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="proto-stage" data-composition-id="proto-workspace-nav" data-width="1920" data-height="1080">
+      <div class="proto-ground" data-layout-allow-overflow></div>
+      
+      <!-- Virtual 35mm Camera Rig -->
+      <div id="proto-cam" class="proto-3d-layer" data-layout-allow-overflow>
+        <div class="proto-world">
+          
+          <!-- Plate 1: Microsoft Fabric Workspace (1920x1080 Native UI) -->
+          <div id="proto-workspace-plate">
+            <img id="proto-workspace-img" src="assets/screenshots/01-workspace-1080p.png" alt="Microsoft Fabric Workspace">
+            
+            <!-- Row 1 Highlight Boundary -->
+            <div id="proto-target-row"></div>
+            
+            <!-- Exact Text Link Highlight Boundary -->
+            <div id="proto-target-link"></div>
+            
+            <!-- Tactile Selection Badge -->
+            <div id="proto-item-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Eventstream Ingestion Hub</span>
+            </div>
+          </div>
+
+          <!-- Click Ripple Ring centered on Hotspot (374.5, 345.5) -->
+          <div id="proto-click-ring"></div>
+
+          <!-- Plate 2: Fabric Eventstream Editor Canvas -->
+          <div id="proto-eventstream-plate">
+            <img id="proto-eventstream-img" src="assets/screenshots/02-eventstream-1080p.png" alt="Fabric Eventstream Canvas">
+            
+            <!-- SQL Inspection Callout Card -->
+            <div id="proto-sql-callout">
+              <div class="proto-callout-header">
+                <div class="proto-callout-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  <span>SQL Routing Transformation</span>
+                </div>
+                <div class="proto-callout-status">Node: SQLNode_DeadLetter</div>
+              </div>
+
+              <div class="proto-sql-editor"><span class="proto-sql-keyword">SELECT</span> *,
+  <span class="proto-sql-fn">System.Timestamp</span>() <span class="proto-sql-keyword">AS</span> IngestionTime
+<span class="proto-sql-keyword">INTO</span> [Dest_DeadLetterTelemetry]
+<span class="proto-sql-keyword">FROM</span> [PythonIoTSimulator]
+<span class="proto-sql-keyword">WHERE</span> event_type = <span class="proto-sql-str">'legacy.deprecated_sensor'</span>
+  <span class="proto-sql-keyword">OR</span> facility_id <span class="proto-sql-keyword">IS NULL</span>;</div>
+
+              <div class="proto-metrics-grid">
+                <div class="proto-metric-card">
+                  <div class="proto-metric-label">Ingress Rate</div>
+                  <div class="proto-metric-value" style="color: #4ADE80;">10,480 /min</div>
+                </div>
+                <div class="proto-metric-card">
+                  <div class="proto-metric-label">Ingress SLA</div>
+                  <div class="proto-metric-value" style="color: #38BDF8;">1.70s p50</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- High-Precision Cursor with Tip Hotspot at (3, 2) -->
+          <div id="proto-cursor">
+            <svg viewBox="0 0 34 48" width="28" height="40">
+              <path d="M3 2 L3 38 L12 30 L18 45 L25 42 L19 28 L31 28 Z" fill="#08102b" stroke="#ffffff" stroke-width="2.6" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // GSAP Master Timeline (7.0s duration)
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["proto-workspace-nav"] = tl;
+
+      // -----------------------------------------------------------------------
+      // 1. ESTABLISH HOLD (t = 0.00s to 1.00s): Show Complete Authentic Fabric Workspace
+      // -----------------------------------------------------------------------
+      // Camera stays completely wide, level, and centered (Z = 0) for a full second
+      // so the viewer clearly registers the workspace UI context, header
+      // ('fabric-smart-farming-analytics-dev'), left rail, and item hierarchy.
+      tl.set("#proto-stage", { perspective: 1866, transformStyle: "preserve-3d" });
+      tl.set("#proto-cam", { z: 0, x: 0, y: 0, rotationY: 0, rotationX: 0 });
+      tl.set("#proto-workspace-plate", { transformOrigin: "374.5px 345.5px" });
+      
+      // Cursor starts naturally from an idle position over the table
+      tl.set("#proto-cursor", { x: 780, y: 560, opacity: 1, scale: 1 });
+
+      // -----------------------------------------------------------------------
+      // 2. GUIDE (t = 1.00s to 2.00s): Natural Cursor Movement Toward Target
+      // -----------------------------------------------------------------------
+      // Hotspot Target: Center of 'FarmingTelemetryEventstream' text link
+      // Text bounds: X=[253, 496], Y=[337, 354] -> Center = (374.5, 345.5)
+      // Cursor tip offset = (2.5, 1.7) -> Cursor element position = (372, 344)
+      tl.to("#proto-cursor", {
+        x: 372,
+        y: 344,
+        duration: 1.00,
+        ease: "power2.inOut"
+      }, 1.00);
+
+      // Very subtle camera ease (Z: 0 -> 25) during approach to preserve full context
+      tl.to("#proto-cam", {
+        z: 25,
+        duration: 1.00,
+        ease: "sine.inOut"
+      }, 1.00);
+
+      // -----------------------------------------------------------------------
+      // Hover Settle & Tactile Elevation (t = 2.00s to 2.247s)
+      // -----------------------------------------------------------------------
+      // Apply tactile elevation lift (translateY -2px) and soft spatial card shadow
+      tl.to("#proto-target-row", {
+        borderColor: "rgba(74, 222, 128, 0.40)",
+        background: "rgba(74, 222, 128, 0.08)",
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.35)",
+        y: -2,
+        duration: 0.20,
+        ease: "power2.out"
+      }, 2.00);
+
+      tl.to("#proto-target-link", {
+        borderColor: "rgba(74, 222, 128, 0.70)",
+        background: "rgba(74, 222, 128, 0.15)",
+        boxShadow: "0 4px 14px rgba(74, 222, 128, 0.25)",
+        duration: 0.20,
+        ease: "power2.out"
+      }, 2.00);
+
+      tl.to("#proto-item-badge", {
+        opacity: 1,
+        y: 0,
+        duration: 0.24,
+        ease: "back.out(1.5)"
+      }, 2.04);
+
+      // -----------------------------------------------------------------------
+      // 3. TACTILE CLICK (t = 2.247s / Bar 1 Downbeat): Synchronized Hotspot Click
+      // -----------------------------------------------------------------------
+      // Cursor scale depression
+      tl.to("#proto-cursor", {
+        scale: 0.82,
+        duration: 0.08,
+        ease: "power2.in"
+      }, 2.247);
+
+      // Tactile click ripple ring expands directly from hotspot (374.5, 345.5)
+      tl.fromTo("#proto-click-ring", 
+        { opacity: 0.95, scale: 0.2 },
+        { opacity: 0, scale: 2.6, duration: 0.45, ease: "power2.out" },
+        2.247
+      );
+
+      // Click depression & flash confirmation on row and link
+      tl.to("#proto-target-row", {
+        y: 0,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.25)",
+        background: "rgba(74, 222, 128, 0.24)",
+        borderColor: "rgba(74, 222, 128, 0.95)",
+        duration: 0.10,
+        yoyo: true,
+        repeat: 1
+      }, 2.247);
+
+      // Cursor release back to full scale
+      tl.to("#proto-cursor", {
+        scale: 1.0,
+        duration: 0.16,
+        ease: "back.out(2)"
+      }, 2.33);
+
+      // -----------------------------------------------------------------------
+      // 4. CONFIRMATION HOLD (t = 2.25s to 2.80s): Hold Click State (~0.55s)
+      // -----------------------------------------------------------------------
+      // Workspace and target remain stably visible so the viewer clearly
+      // registers user intent before the spatial push-through initiates.
+
+      // -----------------------------------------------------------------------
+      // 5. ANCHORED SPATIAL PLUNGE (t = 2.80s to 3.80s): Fly Through Target Hotspot
+      // -----------------------------------------------------------------------
+      // Camera pushes directly through coordinate bounds (374.5, 345.5)
+      // Target offset from center (960, 540) is X = +585.5px, Y = +194.5px
+      tl.to("#proto-cam", {
+        z: 340,
+        x: 585.5,
+        y: 194.5,
+        duration: 0.70,
+        ease: "power2.in"
+      }, 2.80);
+
+      // Workspace plate scales outward directly from target origin (374.5px, 345.5px) and fades
+      tl.to("#proto-workspace-plate", {
+        transformOrigin: "374.5px 345.5px",
+        scale: 2.1,
+        opacity: 0,
+        duration: 0.70,
+        ease: "power2.in"
+      }, 2.80);
+
+      tl.to("#proto-item-badge", {
+        opacity: 0,
+        duration: 0.16
+      }, 2.80);
+
+      // Child plate (Eventstream Canvas) expands smoothly from depth into center frame
+      tl.fromTo("#proto-eventstream-plate",
+        { opacity: 0, scale: 0.75, z: -80 },
+        { opacity: 1, scale: 1.0, z: 0, duration: 0.80, ease: "power2.out" },
+        2.95
+      );
+
+      // Re-center camera over Eventstream canvas as child settles (3.50s to 3.80s)
+      tl.to("#proto-cam", {
+        x: 0,
+        y: 0,
+        z: 50,
+        duration: 0.30,
+        ease: "power2.out"
+      }, 3.50);
+
+      // Cursor glides naturally into Eventstream canvas
+      tl.to("#proto-cursor", {
+        x: 480,
+        y: 450,
+        opacity: 0.6,
+        duration: 0.90,
+        ease: "power2.inOut"
+      }, 2.90);
+
+      // -----------------------------------------------------------------------
+      // 6. INSPECT (t = 3.80s to 5.30s): Optical Zoom onto SQL Code Editor
+      // -----------------------------------------------------------------------
+      // Camera smoothly pans and zooms (1.8x) into the right-side SQL panel
+      tl.to("#proto-cam", {
+        x: -360,
+        y: 80,
+        z: 380,
+        duration: 1.50,
+        ease: "power3.out"
+      }, 3.80);
+
+      // SQL callout panel reveals with high contrast and razor-sharp text
+      tl.to("#proto-sql-callout", {
+        opacity: 1,
+        scale: 1.0,
+        duration: 0.60,
+        ease: "back.out(1.4)"
+      }, 4.10);
+
+      // Cursor points directly to the WHERE clause in SQL code
+      tl.to("#proto-cursor", {
+        x: 1680,
+        y: 350,
+        opacity: 1,
+        scale: 0.95,
+        duration: 0.90,
+        ease: "power2.out"
+      }, 4.30);
+
+      // -----------------------------------------------------------------------
+      // 7. HOLD (t = 5.30s to 7.00s): Gentle Float Preserving Complete Legibility
+      // -----------------------------------------------------------------------
+      tl.to("#proto-cam", {
+        z: 395,
+        duration: 1.70,
+        ease: "sine.inOut"
+      }, 5.30);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,158 @@
+<template>
+<link rel="stylesheet" href="assets/kit.css">
+<style>
+@font-face { font-family: 'Poppins'; font-weight: 500; src: url('assets/fonts/poppins-500.woff2') format('woff2'); }
+@font-face { font-family: 'Poppins'; font-weight: 700; src: url('assets/fonts/poppins-700.woff2') format('woff2'); }
+#root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Poppins', sans-serif; background: #0A0D08; }
+.s07-layer { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+.s07-world { position: absolute; left: 50%; top: 50%; will-change: transform; }
+
+/* Master Architecture Lockup */
+.s07-arch-card {
+  width: 1240px; height: 680px; margin-left: -620px; margin-top: -340px;
+  border-radius: 20px; overflow: hidden; background: #0E120A;
+  border: 1px solid rgba(104,121,65,0.4); box-shadow: var(--float); position: relative;
+}
+.s07-arch-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.28; filter: saturate(1.2); }
+
+.s07-lockup-overlay {
+  position: absolute; inset: 0; padding: 42px 48px; display: flex; flex-direction: column; justify-content: space-between;
+  background: radial-gradient(circle at 50% 50%, rgba(10,13,8,0.72) 0%, rgba(10,13,8,0.94) 100%);
+}
+
+.s07-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: #A3BF65; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.s07-headline { font-size: 38px; font-weight: 800; color: #F4F6F0; letter-spacing: -0.03em; line-height: 1.15; max-width: 960px; margin-top: 8px; }
+.s07-sub { font-size: 15px; color: #BAC5B0; margin-top: 8px; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+
+/* 6-Pillar Fabric Architecture Strip */
+.s07-pillars-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 20px 0; }
+.s07-pillar-box {
+  background: #0B0E09; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.s07-pillar-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; margin-bottom: 4px; }
+.s07-pillar-title { font-size: 12px; font-weight: 700; color: #F4F6F0; margin-bottom: 6px; }
+.s07-pillar-sub { font-size: 10px; color: #8A997E; font-family: 'JetBrains Mono', monospace; }
+
+.s07-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+.s07-stat-box { background: #0A0D08; border: 1px solid rgba(104,121,65,0.25); border-radius: 10px; padding: 12px 18px; }
+.s07-stat-val { font-size: 26px; font-weight: 800; color: #F4F6F0; font-family: 'JetBrains Mono', monospace; }
+.s07-stat-lbl { font-size: 11px; text-transform: uppercase; color: #BAC5B0; letter-spacing: 0.05em; font-weight: 600; margin-top: 2px; }
+</style>
+
+<div id="root" data-composition-id="s07-architecture-lockup" data-width="1920" data-height="1080">
+  <div id="s07-ground" class="clip kit-ground" data-start="0" data-duration="6.5455" data-track-index="0"></div>
+
+  <div id="s07-stage" class="clip" data-start="0" data-duration="6.5455" data-track-index="1" style="position:absolute; inset:0; perspective:1866px; perspective-origin:50% 50%;">
+    <div id="s07-drift" class="s07-layer">
+      <div id="s07-cam" class="s07-layer">
+
+        <!-- 3D Master Solution Architecture Lockup Card -->
+        <div id="s07-card" class="s07-world s07-arch-card">
+          <img src="assets/captures/fabric-solution-architecture.png" class="s07-arch-img" alt="Fabric Architecture Blueprint">
+          
+          <div class="s07-lockup-overlay">
+            <div>
+              <div class="s07-eyebrow">
+                <span class="kit-pulse"></span>
+                MICROSOFT FABRIC ENTERPRISE SOLUTION ARCHITECTURE
+              </div>
+              <div class="s07-headline">Real-Time Smart Farming Analytics Platform</div>
+              <div class="s07-sub">All 19 Created Fabric Artifacts · Ingestion, Medallion Lakehouse, KQL, Power BI &amp; Activator</div>
+            </div>
+
+            <!-- Pillars of the Fabric Solution -->
+            <div class="s07-pillars-grid">
+              <div class="s07-pillar-box">
+                <div class="s07-pillar-tag" style="color:#C084FC">EVENTSTREAM</div>
+                <div class="s07-pillar-title">Telemetry Ingress</div>
+                <div class="s07-pillar-sub">10,480 EPS · 80 Zones</div>
+              </div>
+              <div class="s07-pillar-box">
+                <div class="s07-pillar-tag" style="color:#38BDF8">EVENTHOUSE</div>
+                <div class="s07-pillar-title">KQL Real-Time</div>
+                <div class="s07-pillar-sub">42ms Query Execution</div>
+              </div>
+              <div class="s07-pillar-box">
+                <div class="s07-pillar-tag" style="color:#4ADE80">LAKEHOUSE</div>
+                <div class="s07-pillar-title">Delta Medallion</div>
+                <div class="s07-pillar-sub">PySpark ACID Merge</div>
+              </div>
+              <div class="s07-pillar-box">
+                <div class="s07-pillar-tag" style="color:#E27324">DATA FACTORY</div>
+                <div class="s07-pillar-title">Self-Healing DLQ</div>
+                <div class="s07-pillar-sub">0 Downtime Replay</div>
+              </div>
+              <div class="s07-pillar-box">
+                <div class="s07-pillar-tag" style="color:#FACC15">DIRECT LAKE</div>
+                <div class="s07-pillar-title">Power BI Reports</div>
+                <div class="s07-pillar-sub">Sub-second VertiPaq</div>
+              </div>
+              <div class="s07-pillar-box">
+                <div class="s07-pillar-tag" style="color:#FB923C">ACTIVATOR</div>
+                <div class="s07-pillar-title">Reflex Automation</div>
+                <div class="s07-pillar-sub">Sub-3s Trigger SLA</div>
+              </div>
+            </div>
+
+            <div class="s07-stats-row">
+              <div class="s07-stat-box">
+                <div class="s07-stat-val" style="color:#4ADE80">1.70s p50</div>
+                <div class="s07-stat-lbl">Ingress SLA Guaranteed</div>
+              </div>
+              <div class="s07-stat-box">
+                <div class="s07-stat-val" style="color:#38BDF8">19 Items</div>
+                <div class="s07-stat-lbl">Fabric Workspace Synced</div>
+              </div>
+              <div class="s07-stat-box">
+                <div class="s07-stat-val" style="color:#FFD700">₱137.83M</div>
+                <div class="s07-stat-lbl">Gross Crop Revenue</div>
+              </div>
+              <div class="s07-stat-box">
+                <div class="s07-stat-val" style="color:#4ADE80">53 / 53</div>
+                <div class="s07-stat-lbl">Automated Tests Passed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Seam plates -->
+  <div id="s07-in-plate" class="clip" data-start="0" data-duration="6.5455" data-track-index="5" style="position:absolute; inset:0; background:#0A0D08; opacity:1;"></div>
+  <!-- Loop plate to match s01 frame 0: #0A0D08 -->
+  <div id="s07-out-plate" class="clip" data-layout-allow-occlusion="true" data-start="0" data-duration="6.5455" data-track-index="6" style="position:absolute; inset:0; background:#0A0D08; opacity:0;"></div>
+  <div id="s07-grain" class="clip kit-grain" data-start="0" data-duration="6.5455" data-track-index="9"></div>
+</div>
+
+<script>
+(function () {
+  var D = 6.5455;
+  var tl = gsap.timeline({ paused: true });
+
+  // Initial sets
+  gsap.set('#s07-card', { z: -350, rotationX: 8, force3D: true });
+
+  // Drift
+  tl.fromTo('#s07-drift', { scale: 1, rotationY: -0.4 }, { scale: 1.025, rotationY: 0.4, duration: D, ease: 'sine.inOut', force3D: true }, 0);
+
+  // Authoring camera movement: sweeping reveal then focus rack settling into the loop pose
+  tl.fromTo('#s07-cam', { z: -100, x: -40 }, { z: 280, x: 10, duration: D, ease: 'power2.inOut', force3D: true }, 0);
+
+  // Lockup arrival
+  tl.fromTo('#s07-card', { z: -350, rotationX: 8 }, { z: -20, rotationX: 0, duration: 1.5, ease: 'back.out(1.5)', force3D: true }, 0.2);
+
+  // Seam in
+  tl.fromTo('#s07-in-plate', { opacity: 1 }, { opacity: 0, duration: 0.22, ease: 'power2.inOut' }, 0.1);
+
+  // Seam out: fade into #0A0D08 loop frame to seamlessly match s01 frame 0
+  tl.fromTo('#s07-out-plate', { opacity: 0 }, { opacity: 1, duration: 0.16, ease: 'power2.inOut', immediateRender: false }, D - 0.22);
+  tl.set('#s07-cam', { display: 'none' }, D - 0.05);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['s07-architecture-lockup'] = tl;
+})();
+</script>
+</template>

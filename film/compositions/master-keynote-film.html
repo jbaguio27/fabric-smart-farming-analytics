@@ -1,0 +1,2074 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Microsoft Fabric: Real-Time Smart Farming Analytics Platform (Master Keynote Film)</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background-color: #080412;
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        color: #FFFFFF;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* =========================================================================
+         STUDIO STAGE & 3D LIGHTING (REFERENCE PHYSICS · PERSPECTIVE 1600px)
+         ========================================================================= */
+      #studio-stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: radial-gradient(1400px 900px at 50% 55%, #170B25 0%, #0D071E 55%, #080412 100%);
+        box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.85);
+        perspective: 1600px;
+        transform-style: preserve-3d;
+      }
+
+      /* 3D Dynamic Camera Rig */
+      #camera-rig {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transform-origin: 960px 540px;
+        z-index: 20;
+      }
+
+      /* =========================================================================
+         COHESIVE DEEP MOODY STAGE WITH ATMOSPHERIC VIOLET ILLUMINATION
+         ========================================================================= */
+      #moody-stage-backdrop {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        background: radial-gradient(900px 560px at 50% 85%, rgba(139, 92, 246, 0.40) 0%, rgba(88, 28, 135, 0.20) 45%, transparent 100%);
+      }
+
+      #hero-hook-container {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 1720px;
+        text-align: center;
+        z-index: 95;
+        pointer-events: none;
+        transform-style: preserve-3d;
+        transform-origin: 50% 50%;
+      }
+
+      #hook-typewriter {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 88px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: pre;
+      }
+
+      .type-caret {
+        display: inline-block;
+        width: 4px;
+        height: 72px;
+        background: #C084FC;
+        margin-left: 8px;
+        border-radius: 1.5px;
+        box-shadow: 0 0 16px rgba(192, 132, 252, 0.9), 0 0 32px rgba(168, 85, 247, 0.55);
+      }
+
+      /* Depth Layering: Authentic Microsoft Fabric Telemetry & UI Crop Cards */
+      .telemetry-crop-card {
+        position: absolute;
+        border-radius: 14px;
+        background: rgba(15, 9, 30, 0.90);
+        border: 1.5px solid rgba(139, 92, 246, 0.45);
+        box-shadow: 
+          0 24px 60px -8px rgba(0, 0, 0, 0.70),
+          0 0 30px rgba(139, 92, 246, 0.20),
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        overflow: hidden;
+        transform-style: preserve-3d;
+        pointer-events: none;
+        backdrop-filter: blur(12px);
+      }
+
+      .crop-card-header {
+        height: 36px;
+        background: rgba(20, 11, 40, 0.96);
+        border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 14px;
+      }
+
+      .crop-card-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .crop-card-badge.blue { color: #38BDF8; }
+      .crop-card-badge.purple { color: #C084FC; }
+      .crop-card-badge.green { color: #34D399; }
+      .crop-card-badge.orange { color: #FB923C; }
+      .crop-card-badge.amber { color: #FBBF24; }
+
+      .crop-card-status {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 600;
+        color: #94A3B8;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+
+      .crop-card-preview {
+        position: relative;
+        overflow: hidden;
+        background: #080412;
+      }
+
+      /* GENERATE DATA integrated as Scene 2 cinematic editorial title #scene1-typo */
+
+      /* =========================================================================
+         EDITORIAL TYPOGRAPHY (SCENES 2 - 10)
+         ========================================================================= */
+      .keynote-typo-container {
+        position: absolute;
+        left: 90px;
+        top: 36px;
+        z-index: 85;
+        pointer-events: none;
+        opacity: 0;
+        filter: blur(8px);
+      }
+
+      .eyebrow-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border-radius: 9999px;
+        background: rgba(23, 11, 37, 0.85);
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #C084FC;
+        margin-bottom: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 15px rgba(139, 92, 246, 0.15);
+        backdrop-filter: blur(12px);
+      }
+
+      .eyebrow-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #A855F7;
+        box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+      }
+
+      .eyebrow-dot.blue {
+        background-color: #38BDF8;
+        box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+      }
+
+      .eyebrow-dot.green {
+        background-color: #10B981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+      }
+
+      .eyebrow-dot.orange {
+        background-color: #F59E0B;
+        box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+      }
+
+      .keynote-headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 38px;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+      }
+
+      .keynote-headline .title-line {
+        display: block;
+        line-height: 1.25;
+      }
+
+      .keynote-headline .primary {
+        color: #FFFFFF;
+        font-weight: 700;
+      }
+
+      .keynote-headline .secondary {
+        color: #94A3B8;
+        font-weight: 400;
+      }
+
+      /* =========================================================================
+         FLOATING PHYSICAL UI SLABS & SPECULAR NEON RIM LIGHTING
+         ========================================================================= */
+      .floating-slab {
+        position: absolute;
+        transform-style: preserve-3d;
+        opacity: 0;
+      }
+
+      .slab-outer-bezel {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        padding: 3.5px;
+        border: 1.5px solid transparent;
+        background-image: 
+          linear-gradient(to bottom, #0D071E, #0D071E), 
+          linear-gradient(135deg, rgba(16, 185, 129, 0.85) 0%, rgba(56, 189, 248, 0.70) 30%, rgba(139, 92, 246, 0.85) 70%, rgba(192, 132, 252, 0.75) 100%);
+        background-clip: padding-box, border-box; 
+        background-origin: padding-box, border-box;
+        box-shadow: 
+          0 45px 120px -15px rgba(0, 0, 0, 0.80), 
+          0 0 60px -5px rgba(139, 92, 246, 0.28), 
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        position: relative;
+      }
+
+      .slab-inner-core {
+        width: 100%;
+        height: 100%;
+        border-radius: 17px;
+        overflow: hidden;
+        position: relative;
+        background: #0B0D14;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transform-style: preserve-3d;
+      }
+
+      /* Clean Dark Chrome Header with >7:1 WCAG AA Compliant Contrast */
+      .slab-browser-chrome {
+        height: 38px;
+        background: #110B22;
+        border-bottom: 1px solid rgba(139, 92, 246, 0.22);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        position: relative;
+        z-index: 10;
+      }
+
+      .chrome-dots {
+        display: flex;
+        gap: 7px;
+      }
+
+      .chrome-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .chrome-dot.close { background: #EF4444; }
+      .chrome-dot.min { background: #F59E0B; }
+      .chrome-dot.max { background: #10B981; }
+
+      .chrome-address-bar {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0B0D14;
+        border: 1px solid rgba(139, 92, 246, 0.40);
+        padding: 3px 14px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: #F1F5F9;
+      }
+
+      .chrome-address-bar .lock {
+        color: #10B981;
+        font-size: 10px;
+      }
+
+      .chrome-address-bar strong {
+        color: #FFFFFF;
+      }
+
+      .slab-img-content {
+        width: 100%;
+        height: calc(100% - 38px);
+        object-fit: cover;
+        display: block;
+      }
+
+      /* Physical Multi-Layer Elevation Callouts (Zelios Floating Card Physics) */
+      .frosted-callout {
+        position: absolute;
+        padding: 16px 20px;
+        border-radius: 16px;
+        background: rgba(17, 11, 34, 0.94);
+        border: 1.5px solid rgba(139, 92, 246, 0.50);
+        box-shadow: 
+          0 35px 80px -10px rgba(0, 0, 0, 0.75),
+          0 0 40px -4px rgba(139, 92, 246, 0.35),
+          inset 0 1px 2px rgba(255, 255, 255, 0.15);
+        opacity: 0;
+        z-index: 70;
+        pointer-events: none;
+        transform-style: preserve-3d;
+        backdrop-filter: blur(16px);
+      }
+
+      .callout-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin-bottom: 8px;
+      }
+
+      .callout-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: #F1F5F9;
+        background: #080412;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        margin: 0;
+        white-space: pre;
+      }
+
+      /* Safeguard Badges */
+      .safeguard-badge {
+        position: absolute;
+        right: 20px;
+        bottom: 14px;
+        font-size: 10.5px;
+        letter-spacing: 0.04em;
+        color: #F8FAFC;
+        font-weight: 600;
+        z-index: 65;
+        background: #0B0D14;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(139, 92, 246, 0.45);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.60);
+      }
+
+      /* =========================================================================
+         HAND POINTER PRESENTER CURSORS (1:1 REFERENCE MATCH)
+         Fingertip hotspot @ (11.5px, 0.5px), micro-dip on beat + localized ripple ping
+         ========================================================================= */
+      .local-cursor {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 28px;
+        height: 32px;
+        z-index: 100;
+        pointer-events: none;
+        opacity: 0;
+        filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.35));
+        transform-origin: 11.5px 0.5px;
+        margin-left: -11.5px;
+        margin-top: -0.5px;
+      }
+
+      /* Click feedback communicated purely through authentic cursor micro-dip & UI elevation */
+
+      /* =========================================================================
+         TERMINAL SPECIFIC COMPONENTS & LIVE GENERATOR HEADER (SCENE 2)
+         Spacious 1380px x 680px Panel with Crisp Legible 16.5px Typography
+         ========================================================================= */
+      #terminal-slab {
+        position: absolute;
+        left: 270px;
+        top: 215px;
+        width: 1380px;
+        height: 655px;
+        transform-style: preserve-3d;
+        transform-origin: 690px 327px;
+        z-index: 40;
+        opacity: 0;
+      }
+
+      #term-generator-header {
+        position: absolute;
+        top: -46px;
+        left: 50%;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 22px;
+        border-radius: 9999px;
+        background: rgba(18, 9, 32, 0.94);
+        border: 1px solid rgba(16, 185, 129, 0.50);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 20px rgba(16, 185, 129, 0.25);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #FFFFFF;
+        letter-spacing: 0.06em;
+        z-index: 50;
+        opacity: 0;
+        white-space: nowrap;
+        transform-style: preserve-3d;
+      }
+
+      .pulse-dot-green {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #10B981;
+        box-shadow: 0 0 12px #10B981;
+        animation: livePulse 1.2s infinite ease-in-out;
+      }
+
+      @keyframes livePulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.35); opacity: 0.7; }
+      }
+
+      .term-header {
+        height: 48px;
+        background: #110B22;
+        border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        position: relative;
+      }
+
+      .term-dots { display: flex; gap: 9px; }
+      .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+      .term-dot.close { background: #FF5F56; }
+      .term-dot.min { background: #FFBD2E; }
+      .term-dot.max { background: #27C93F; }
+
+      .term-title {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: #94A3B8;
+        font-weight: 600;
+      }
+
+      .term-body {
+        flex: 1;
+        padding: 28px 36px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16.5px;
+        line-height: 1.7;
+        color: #F8FAFC;
+        background: #080412;
+        overflow: hidden;
+      }
+
+      .term-cmd-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        font-size: 17px;
+      }
+
+      .term-prompt { color: #4ADE80; font-weight: 600; }
+      .term-cmd-text { color: #FFFFFF; font-weight: 500; }
+      .term-cursor {
+        display: inline-block;
+        width: 9px;
+        height: 19px;
+        background: #A855F7;
+        vertical-align: middle;
+      }
+
+      .log-row {
+        opacity: 0;
+        font-size: 15px;
+        color: #CBD5E1;
+        margin-bottom: 8px;
+        white-space: nowrap;
+      }
+
+      .log-row .time { color: #94A3B8; }
+      .log-row .tag-info { color: #38BDF8; font-weight: 600; }
+      .log-row .tag-event { color: #4ADE80; font-weight: 600; }
+      .log-row .tag-stream { color: #C084FC; font-weight: 600; }
+      .log-row .tag-sla { color: #F59E0B; font-weight: 600; }
+      .log-row .val { color: #F8FAFC; }
+
+      /* Scene 5: Glowing Animated Bezier Particle Conduit */
+      #scene5-cable-svg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        pointer-events: none;
+        z-index: 60;
+        opacity: 0;
+      }
+
+      /* Scene 8: Dimensional Pill Tags */
+      .dim-pill-grid {
+        position: absolute;
+        right: 50px;
+        bottom: 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 70;
+        transform-style: preserve-3d;
+      }
+
+      .dim-pill {
+        padding: 7px 15px;
+        border-radius: 9999px;
+        background: rgba(18, 9, 32, 0.92);
+        border: 1.5px solid rgba(139, 92, 246, 0.45);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #C084FC;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform-style: preserve-3d;
+        backdrop-filter: blur(12px);
+      }
+
+      /* Scene 10: Summary Outro Cards (Clean Horizontal 4-Pill Row) */
+      .arch-summary-grid {
+        position: absolute;
+        left: 50%;
+        bottom: 35px;
+        width: 1420px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        z-index: 85;
+        opacity: 0;
+        transform-style: preserve-3d;
+      }
+
+      .arch-card {
+        flex: 1 1 0;
+        padding: 12px 20px;
+        border-radius: 12px;
+        background: rgba(18, 9, 32, 0.92);
+        border: 1.5px solid rgba(139, 92, 246, 0.35);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.60), 0 0 20px rgba(139, 92, 246, 0.15);
+        text-align: center;
+        transform-style: preserve-3d;
+        backdrop-filter: blur(12px);
+      }
+
+      .arch-num {
+        display: block;
+        font-size: 20px;
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+        margin-bottom: 3px;
+      }
+
+      .arch-lbl {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        color: #94A3B8;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="studio-stage" data-composition-id="master-keynote-film" data-width="1920" data-height="1080">
+      
+      <!-- Deep Moody Stage Backdrop with Violet Ambient Glow (Inverts to light @ 04.2s) -->
+      <div id="moody-stage-backdrop"></div>
+
+      <!-- 3D Camera Rig -->
+      <div id="camera-rig" data-layout-allow-overflow>
+
+        <!-- ===================================================================
+             SCENE 1: FLOATING TELEMETRY FRAGMENTS & INVOICE SCATTER (00:00 - 04.20s)
+             1:1 Replication of the spatial depth scatter in the reference video
+             =================================================================== -->
+        <div id="hook-bg-fragments" data-layout-allow-occlusion data-layout-allow-overflow style="position: absolute; inset: 0; pointer-events: none; transform-style: preserve-3d; z-index: 25; opacity: 0; display: none;">
+          
+          <!-- Card 1 (Top Left, Mid Depth, Sharp 0px blur): PySpark Delta Lake Notebook -->
+          <div id="crop-card-1" class="telemetry-crop-card" style="left: 70px; top: 65px; width: 380px; height: 215px; filter: blur(0px);">
+            <div class="crop-card-header">
+              <span class="crop-card-badge green">PYSPARK · DELTA LAKE</span>
+              <span class="crop-card-status">RUNNING · 1,000 ROWS</span>
+            </div>
+            <div class="crop-card-preview" style="height: 179px;">
+              <img src="assets/screenshots/05-notebooks-1080p.png" alt="PySpark Notebook Crop" style="width: 760px; height: auto; margin-left: -40px; margin-top: -65px; opacity: 0.88; display: block;" />
+            </div>
+          </div>
+
+          <!-- Card 2 (Top Center-Left, Deeper layer, mild blur 1.2px): Real-Time Monitoring -->
+          <div id="crop-card-2" class="telemetry-crop-card" style="left: 490px; top: 55px; width: 340px; height: 190px; filter: blur(1.2px);">
+            <div class="crop-card-header">
+              <span class="crop-card-badge purple">ACTIVATOR · 17 STREAMS</span>
+              <span class="crop-card-status">10,480 EVT/MIN</span>
+            </div>
+            <div class="crop-card-preview" style="height: 154px;">
+              <img src="assets/screenshots/09-activator-monitoring-1080p.png" alt="Activator Monitoring Crop" style="width: 680px; height: auto; margin-left: -50px; margin-top: -70px; opacity: 0.85; display: block;" />
+            </div>
+          </div>
+
+          <!-- Card 3 (Top Center-Right, Deeper layer, mild blur 1.5px): OneLake Lakehouse -->
+          <div id="crop-card-3" class="telemetry-crop-card" style="left: 1100px; top: 55px; width: 340px; height: 195px; filter: blur(1.5px);">
+            <div class="crop-card-header">
+              <span class="crop-card-badge blue">ONELAKE LAKEHOUSE</span>
+              <span class="crop-card-status">ZERO-COPY DELTA</span>
+            </div>
+            <div class="crop-card-preview" style="height: 159px;">
+              <img src="assets/screenshots/04-lakehouse-1080p.png" alt="OneLake Lakehouse Crop" style="width: 680px; height: auto; margin-left: -45px; margin-top: -55px; opacity: 0.85; display: block;" />
+            </div>
+          </div>
+
+          <!-- Card 4 (Top Right, Mid-Deep layer, mild blur 0.8px): Eventstream Routing -->
+          <div id="crop-card-4" class="telemetry-crop-card" style="right: 70px; top: 120px; width: 370px; height: 215px; filter: blur(0.8px);">
+            <div class="crop-card-header">
+              <span class="crop-card-badge purple">FABRIC EVENTSTREAM</span>
+              <span class="crop-card-status">1.70s P50 SLA</span>
+            </div>
+            <div class="crop-card-preview" style="height: 179px;">
+              <img src="assets/screenshots/02-eventstream-1080p.png" alt="Eventstream Crop" style="width: 740px; height: auto; margin-left: -120px; margin-top: -50px; opacity: 0.88; display: block;" />
+            </div>
+          </div>
+
+          <!-- Card 5 (Bottom Left, Near-Mid layer, Sharp 0px blur): Data Pipelines -->
+          <div id="crop-card-5" class="telemetry-crop-card" style="left: 80px; bottom: 75px; width: 410px; height: 225px; filter: blur(0px);">
+            <div class="crop-card-header">
+              <span class="crop-card-badge orange">DATA PIPELINE · DLQ</span>
+              <span class="crop-card-status">5 WORKERS READY</span>
+            </div>
+            <div class="crop-card-preview" style="height: 189px;">
+              <img src="assets/screenshots/06-pipelines-1080p.png" alt="Pipelines Crop" style="width: 820px; height: auto; margin-left: -35px; margin-top: -60px; opacity: 0.88; display: block;" />
+            </div>
+          </div>
+
+          <!-- Card 6 (Bottom Center-Left, Mid layer, 0.5px blur): Gold Warehouse -->
+          <div id="crop-card-6" class="telemetry-crop-card" style="left: 530px; bottom: 65px; width: 350px; height: 200px; filter: blur(0.5px);">
+            <div class="crop-card-header">
+              <span class="crop-card-badge amber">GOLD WAREHOUSE</span>
+              <span class="crop-card-status">STAR SCHEMA</span>
+            </div>
+            <div class="crop-card-preview" style="height: 164px;">
+              <img src="assets/screenshots/07-warehouse-1080p.png" alt="Warehouse Crop" style="width: 700px; height: auto; margin-left: -30px; margin-top: -55px; opacity: 0.85; display: block;" />
+            </div>
+          </div>
+
+          <!-- Card 7 (Bottom Right, Near layer, Sharp 0px blur): Power BI Executive Report -->
+          <div id="crop-card-7" class="telemetry-crop-card" style="right: 75px; bottom: 80px; width: 430px; height: 240px; filter: blur(0px);">
+            <div class="crop-card-header">
+              <span class="crop-card-badge blue">POWER BI DIRECT LAKE</span>
+              <span class="crop-card-status">42ms CACHE HIT</span>
+            </div>
+            <div class="crop-card-preview" style="height: 204px;">
+              <img src="assets/screenshots/08-powerbi-1080p.png" alt="Power BI Crop" style="width: 860px; height: auto; margin-left: -50px; margin-top: -70px; opacity: 0.90; display: block;" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ===================================================================
+             SCENE 1: CENTERED 104px DISPLAY TYPEWRITER (00:00 - 03.30s)
+             Pure White prefix with Electric Violet/Magenta "silos?" accent
+             =================================================================== -->
+        <div id="hero-hook-container" data-layout-allow-overflow data-layout-allow-occlusion>
+          <div id="hook-typewriter">
+            <span id="hook-typed-prefix" style="color: #FFFFFF;"></span><span id="hook-typed-violet" style="color: #C084FC; font-weight: 600;"></span><span id="hook-caret" class="type-caret"></span>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 2: CINEMATIC EDITORIAL TITLE & FLOATING TERMINAL (04.00s - 08.80s)
+             Commanding "GENERATE DATA" title positioned above titanium terminal
+             =================================================================== -->
+        <div id="scene1-typo" class="keynote-typo-container" style="left: 50%; top: 36px; width: 1400px; text-align: center; z-index: 85;" data-layout-allow-overflow>
+          <div class="eyebrow-tag" style="justify-content: center; margin: 0 auto 10px auto;">
+            <span class="eyebrow-dot green"></span>
+            <span>EDGE TELEMETRY INGRESS · LIVE SIMULATOR</span>
+          </div>
+          <h2 class="keynote-headline" style="text-align: center;">
+            <span class="title-line primary" style="font-size: 58px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;">
+              <span style="color: #FFFFFF; text-shadow: 0 0 50px rgba(192, 132, 252, 0.65), 0 0 100px rgba(139, 92, 246, 0.35);">GENERATE</span>&nbsp;<span style="color: #C084FC; text-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 120px rgba(168, 85, 247, 0.4);">DATA</span>
+            </span>
+          </h2>
+        </div>
+
+        <div id="terminal-slab" data-layout-allow-overflow>
+          <!-- Floating Synthetic Data Generator Header -->
+          <div id="term-generator-header">
+            <span class="pulse-dot-green"></span>
+            <span style="color: #10B981; font-weight: 700;">LIVE SIMULATOR</span>
+            <span style="color: #64748B;">&middot;</span>
+            <span style="color: #F8FAFC;">GENERATING SYNTHETIC AG-IOT TELEMETRY &middot; 4 GREENHOUSE ZONES</span>
+          </div>
+
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="term-header">
+                <div class="term-dots">
+                  <div class="term-dot close"></div>
+                  <div class="term-dot min"></div>
+                  <div class="term-dot max"></div>
+                </div>
+                <div class="term-title">edge@benguet-iot-gateway: ~/smart-farming (main)</div>
+              </div>
+              <div class="term-body">
+                <div class="term-cmd-row">
+                  <span class="term-prompt">edge@benguet-gateway:~$</span>
+                  <span class="term-cmd-text" id="cmd-typed"></span>
+                  <span id="cmd-ghost" style="color: #94A3B8; font-style: italic; opacity: 0; font-weight: 400;">main [IoT Gateway: Benguet Highlands]</span>
+                  <span class="term-cursor" id="cmd-cursor"></span>
+                </div>
+                <div class="term-logs">
+                  <div class="log-row" id="s01-log-1">
+                    <span class="time">[10:18:01]</span> <span class="tag-info">INFO</span> &nbsp;[gateway.mqtt] Handshake complete: Benguet-Highlands-Zone04 (TLS v1.3)
+                  </div>
+                  <div class="log-row" id="s01-log-2">
+                    <span class="time">[10:18:01]</span> <span class="tag-event">EVENT</span> [telemetry.env] sensor=DHT22-04 temp=<span class="val">21.84°C</span> hum=<span class="val">76.3%</span> co2=<span class="val">820ppm</span>
+                  </div>
+                  <div class="log-row" id="s01-log-3">
+                    <span class="time">[10:18:02]</span> <span class="tag-event">EVENT</span> [telemetry.soil] sensor=SOIL-09 ph=<span class="val">6.12</span> ec=<span class="val">1.84mS/cm</span> moisture=<span class="val">42.1%</span>
+                  </div>
+                  <div class="log-row" id="s01-log-4">
+                    <span class="time">[10:18:02]</span> <span class="tag-event">EVENT</span> [telemetry.flow] sensor=FLOW-02 flow_rate=<span class="val">14.2L/min</span> pressure=<span class="val">2.4bar</span>
+                  </div>
+                  <div class="log-row" id="s01-log-5">
+                    <span class="time">[10:18:02]</span> <span class="tag-stream">STREAM</span> [fabric.ingress] Batch buffered: 256 events &rarr; FarmingTelemetryEventstream
+                  </div>
+                  <div class="log-row" id="s01-log-6">
+                    <span class="time">[10:18:03]</span> <span class="tag-sla">SLA</span> &nbsp;&nbsp;&nbsp;[ingress.p50] Latency: <span class="val">1.70s</span> | Throughput: <span class="val">10,480 events/min</span> [PASS]
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 2: EVENTSTREAM MULTI-ROUTE HUB (07.15s - 11.95s)
+             Dynamic slide-in from depth: rotateY: -22deg, rotateX: 13deg
+             Physical 3D callout elevation: translateZ: 80px
+             =================================================================== -->
+        <div id="slab-02" class="floating-slab" data-layout-allow-overflow style="left: 240px; top: 170px; width: 1440px; height: 810px; transform-origin: 720px 405px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/groups/smart-farming/<strong>eventstream</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" id="img-02" src="assets/screenshots/02-eventstream-1080p.png" alt="Fabric Eventstream Routing" />
+              
+              <!-- Hand Pointer Presenter Cursor (Lands Dead-Center on SQLNode_DeadLetter at 1001, 216) -->
+              <div id="cursor-02" class="local-cursor">
+                <svg viewBox="0 0 28 32" fill="none">
+                  <path d="M9.5 2.5C9.5 1.4 10.4 0.5 11.5 0.5C12.6 0.5 13.5 1.4 13.5 2.5V13C14.2 12.4 15.1 12 16 12C17.4 12 18.5 13.1 18.5 14.5V15C19.1 14.7 19.8 14.5 20.5 14.5C22.2 14.5 23.5 15.8 23.5 17.5V19.5C23.5 24.5 19.5 28.5 14.5 28.5C10.7 28.5 7.4 25.8 6.6 22L4.6 14.6C4.3 13.5 4.9 12.3 6 11.9C7.1 11.5 8.3 12 8.7 13L9.5 15V2.5Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+              </div>
+              
+              <!-- Physical 3D Elevated Inspection Callout (translateZ: 80px) -->
+              <div id="callout-02" class="frosted-callout" data-layout-allow-occlusion data-layout-allow-overlap style="right: 50px; top: 130px; width: 440px;">
+                <div class="callout-header"><span class="eyebrow-dot"></span><span>Eventstream SQL DeadLetter Filter</span></div>
+                <pre class="callout-code" data-layout-allow-overlap><code>SELECT *, System.Timestamp() AS IngestionTime
+INTO [Dest_DeadLetterTelemetry]
+WHERE event_type = 'legacy.deprecated'
+   OR facility_id IS NULL;</code></pre>
+              </div>
+
+              <div class="safeguard-badge">Synthetic Demonstration Workload</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 3: REAL-TIME KQL ENGINE (11.95s - 16.25s)
+             Dynamic slide-in: rotateY: -22deg, rotateX: 12deg; translateZ: 80px
+             =================================================================== -->
+        <div id="slab-03" class="floating-slab" data-layout-allow-overflow style="left: 220px; top: 170px; width: 1440px; height: 810px; transform-origin: 720px 405px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/groups/smart-farming/<strong>eventhouse-kql</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" id="img-03" src="assets/screenshots/03-eventhouse-kql-1080p.png" alt="Eventhouse KQL Database" />
+
+              <!-- Physical 3D Elevated Query Code Card (translateZ: 80px) -->
+              <div id="callout-03-code" class="frosted-callout" data-layout-allow-occlusion data-layout-allow-overlap style="left: 50px; bottom: 70px; width: 520px;">
+                <div class="callout-header"><span class="eyebrow-dot blue"></span><span>Continuous KQL Analytical Query</span></div>
+                <pre class="callout-code" data-layout-allow-overlap><code>EnvironmentalTelemetry
+| where timestamp &gt; ago(1h)
+| summarize avg_temp = avg(ambient_temp)
+    by bin(timestamp, 1m), facility_id</code></pre>
+              </div>
+
+              <!-- Hand Pointer Presenter Cursor for Query Trigger -->
+              <div id="cursor-03" class="local-cursor">
+                <svg viewBox="0 0 28 32" fill="none">
+                  <path d="M9.5 2.5C9.5 1.4 10.4 0.5 11.5 0.5C12.6 0.5 13.5 1.4 13.5 2.5V13C14.2 12.4 15.1 12 16 12C17.4 12 18.5 13.1 18.5 14.5V15C19.1 14.7 19.8 14.5 20.5 14.5C22.2 14.5 23.5 15.8 23.5 17.5V19.5C23.5 24.5 19.5 28.5 14.5 28.5C10.7 28.5 7.4 25.8 6.6 22L4.6 14.6C4.3 13.5 4.9 12.3 6 11.9C7.1 11.5 8.3 12 8.7 13L9.5 15V2.5Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+              </div>
+              
+              <div class="safeguard-badge">Sub-Second KQL Ingestion Cache</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="slab-04" class="floating-slab" data-layout-allow-overflow style="left: 200px; top: 170px; width: 1480px; height: 832px; transform-origin: 740px 416px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/groups/smart-farming/<strong>realtime-dashboard</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" id="img-04" src="assets/screenshots/09-activator-monitoring-1080p.png" alt="17-Tile Real-Time Dashboard" />
+
+              <!-- Gauge Tile 3D Pop Element (translateZ: 85px) -->
+              <div id="tile-04-pop" class="frosted-callout" data-layout-allow-occlusion data-layout-allow-overlap style="right: 100px; top: 150px; width: 420px; border-color: rgba(168,85,247,0.5);">
+                <div class="callout-header"><span class="eyebrow-dot green"></span><span>Benguet Zone 04 · Transpiration Equilibrium</span></div>
+                <pre class="callout-code" data-layout-allow-overlap><code>VPD: 0.94 kPa (Optimal: 0.8–1.2)
+Substrate EC: 1.84 mS/cm · pH: 6.12
+Streaming Ingress: 10,480 events/min</code></pre>
+              </div>
+
+              <div class="safeguard-badge">17 Operational Sensor Streams</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 5: ONELAKE ZERO-COPY ARCHITECTURE (20.45s - 24.95s)
+             Dimensional Staggered Layout: Left rotateY: -18deg, Right rotateY: -8deg
+             Folder Shortcut Badge lifts in 3D (translateZ: 60px) and lands with ripple
+             =================================================================== -->
+        <!-- Left Slab: KQL DB Source (Tilted rotateY: -18deg) -->
+        <div id="slab-05-left" class="floating-slab" data-layout-allow-overflow style="left: 100px; top: 170px; width: 780px; height: 480px; transform-origin: 390px 240px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/.../<strong>kql-database</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" src="assets/screenshots/03-eventhouse-kql.png" alt="KQL DB Source Table" />
+              <div class="safeguard-badge" style="left:16px; right:auto;">Eventhouse Source Delta</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flowing SVG Bezier Cable with Traveling Light Pulses (Top Conductor) -->
+        <svg id="scene5-cable-svg" viewBox="0 0 1920 1080" data-layout-allow-overflow>
+          <defs>
+            <linearGradient id="cableGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#A855F7" stop-opacity="0.9" />
+              <stop offset="50%" stop-color="#EC4899" stop-opacity="0.95" />
+              <stop offset="100%" stop-color="#6366F1" stop-opacity="0.9" />
+            </linearGradient>
+            <filter id="cableGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <path id="cable-bg" d="M 860,410 C 910,380 940,430 990,410" fill="none" stroke="rgba(168, 85, 247, 0.25)" stroke-width="5" stroke-linecap="round"/>
+          <path id="cable-core" d="M 860,410 C 910,380 940,430 990,410" fill="none" stroke="url(#cableGrad)" stroke-width="3" stroke-linecap="round" filter="url(#cableGlow)"/>
+          <path id="cable-pulse" d="M 860,410 C 910,380 940,430 990,410" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-dasharray="14 26" filter="url(#cableGlow)"/>
+        </svg>
+
+        <!-- Right Slab: Lakehouse Zero-Copy Shortcut (Tilted rotateY: -8deg) -->
+        <div id="slab-05-right" class="floating-slab" data-layout-allow-overflow style="left: 970px; top: 160px; width: 840px; height: 500px; transform-origin: 420px 250px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/.../<strong>lakehouse-onelake</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" src="assets/screenshots/04-lakehouse-1080p.png" alt="OneLake Lakehouse Shortcut" />
+              
+
+              <div class="frosted-callout" data-layout-allow-occlusion style="right: 36px; top: 60px; width: 320px; transform: translateZ(35px);">
+                <div class="callout-header"><span class="eyebrow-dot blue"></span><span>Zero-Copy Direct Lake</span></div>
+                <div style="font-size:12px; color:#CBD5E1; line-height:1.5;">Direct Delta pointers link KQL ingestion straight into OneLake without copy overhead.</div>
+              </div>
+              <div class="safeguard-badge">OneLake Virtual Shortcut</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lower Animated OneLake Folder Shortcut Conduit (Fills Lower Canvas) -->
+        <div id="scene5-lower-conduit" style="position: absolute; left: 0; top: 680px; width: 1920px; height: 320px; pointer-events: none; z-index: 75; opacity: 0; transform-style: preserve-3d;" data-layout-allow-overflow>
+          <svg id="s05-lower-svg" viewBox="0 0 1920 320" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%;">
+            <defs>
+              <linearGradient id="lowerCableGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#0284C7" stop-opacity="0.8" />
+                <stop offset="50%" stop-color="#A855F7" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="#10B981" stop-opacity="0.8" />
+              </linearGradient>
+            </defs>
+            <path id="lower-curve-bg" d="M 460,70 C 720,150 1200,150 1460,70" fill="none" stroke="rgba(168, 85, 247, 0.2)" stroke-width="3" stroke-dasharray="6 8"/>
+            <path id="lower-curve-glow" d="M 460,70 C 720,150 1200,150 1460,70" fill="none" stroke="url(#lowerCableGrad)" stroke-width="2.5" stroke-dasharray="10 16"/>
+          </svg>
+
+          <!-- Floating OneLake Folder Shortcut Token (Lifts in 3D: translateZ: 60px) -->
+          <div id="s05-folder-token" style="position: absolute; left: 460px; top: 70px; display: flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 14px; background: rgba(18, 9, 32, 0.92); border: 1.5px solid rgba(139, 92, 246, 0.45); box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), 0 0 30px rgba(139, 92, 246, 0.30); transform-style: preserve-3d;">
+            <img src="assets/images/folder.png" alt="OneLake Folder Shortcut" style="width: 30px; height: 30px; object-fit: contain;" />
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-size: 10px; font-weight: 700; color: #38BDF8; letter-spacing: 0.08em; text-transform: uppercase;">OneLake Shortcut</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #FFFFFF;">Benguet_Telemetry_Delta</span>
+            </div>
+            <span style="font-size: 14px; color: #C084FC; margin-left: 4px;">➔</span>
+          </div>
+
+          <!-- Center Floating Pill Label -->
+          <div id="s05-center-pill" style="position: absolute; left: 50%; top: 195px; transform-style: preserve-3d;">
+            <div class="eyebrow-tag" style="padding: 8px 22px; font-size: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.50); border-color: rgba(139, 92, 246, 0.45);">
+              <span class="eyebrow-dot blue"></span>
+              <span style="color: #FFFFFF; font-weight: 700;">Zero-Copy OneLake Shortcut &middot; Delta Virtualization</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 6: PYSPARK SILVER TRANSFORMS (24.95s - 29.20s)
+             Dimensional slide-in: rotateY: 18deg, rotateX: 12deg; translateZ: 80px
+             =================================================================== -->
+        <div id="slab-06" class="floating-slab" data-layout-allow-overflow style="left: 260px; top: 195px; width: 1400px; height: 788px; transform-origin: 700px 394px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/groups/smart-farming/<strong>synapse-notebook</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" id="img-06" src="assets/screenshots/05-notebooks-1080p.png" alt="PySpark Delta Lake Notebook" />
+              
+              <!-- Hand Pointer Presenter Cursor (Lands on Connect at 560, 156) -->
+              <div id="cursor-06" class="local-cursor">
+                <svg viewBox="0 0 28 32" fill="none">
+                  <path d="M9.5 2.5C9.5 1.4 10.4 0.5 11.5 0.5C12.6 0.5 13.5 1.4 13.5 2.5V13C14.2 12.4 15.1 12 16 12C17.4 12 18.5 13.1 18.5 14.5V15C19.1 14.7 19.8 14.5 20.5 14.5C22.2 14.5 23.5 15.8 23.5 17.5V19.5C23.5 24.5 19.5 28.5 14.5 28.5C10.7 28.5 7.4 25.8 6.6 22L4.6 14.6C4.3 13.5 4.9 12.3 6 11.9C7.1 11.5 8.3 12 8.7 13L9.5 15V2.5Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+              </div>
+              
+              <!-- Physical 3D Elevated Silver Result Card (translateZ: 80px) -->
+              <div id="card-06-silver" class="frosted-callout" data-layout-allow-occlusion data-layout-allow-overlap style="right: 50px; top: 130px; width: 480px; padding: 14px 18px;">
+                <div class="callout-header"><span class="eyebrow-dot green"></span><span>Delta Table ACID Merge · Silver Tier</span></div>
+                <pre class="callout-code" data-layout-allow-overlap style="padding: 8px 10px; font-size: 11px;"><code>deltaTable.as("t").merge(updatesDF.as("s"), "t.id = s.id")
+  .whenMatchedUpdateAll()
+  .whenNotMatchedInsertAll()
+  .execute() &rarr; [SUCCESS: 1,000 ROWS COMMITTED]</code></pre>
+              </div>
+
+              <div class="safeguard-badge">Medallion Silver Conformance</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="slab-07" class="floating-slab" data-layout-allow-overflow style="left: 200px; top: 170px; width: 1440px; height: 736px; transform-origin: 720px 368px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/groups/smart-farming/<strong>data-pipelines</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" id="img-07" src="assets/screenshots/06-pipelines-1080p.png" alt="Fabric Data Pipeline Orchestration" />
+
+              <!-- Hand Pointer Presenter Cursor (Lands on Activity Node at 338, 298) -->
+              <div id="cursor-07" class="local-cursor">
+                <svg viewBox="0 0 28 32" fill="none">
+                  <path d="M9.5 2.5C9.5 1.4 10.4 0.5 11.5 0.5C12.6 0.5 13.5 1.4 13.5 2.5V13C14.2 12.4 15.1 12 16 12C17.4 12 18.5 13.1 18.5 14.5V15C19.1 14.7 19.8 14.5 20.5 14.5C22.2 14.5 23.5 15.8 23.5 17.5V19.5C23.5 24.5 19.5 28.5 14.5 28.5C10.7 28.5 7.4 25.8 6.6 22L4.6 14.6C4.3 13.5 4.9 12.3 6 11.9C7.1 11.5 8.3 12 8.7 13L9.5 15V2.5Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+              </div>
+              
+              <!-- Physical 3D Elevated 5-Worker Card (translateZ: 80px) -->
+              <div id="callout-07-dlq" class="frosted-callout" data-layout-allow-occlusion data-layout-allow-overlap style="right: 50px; top: 120px; width: 480px; padding: 14px 18px;">
+                <div class="callout-header"><span class="eyebrow-dot orange"></span><span>5 Automated Remediation Workers</span></div>
+                <pre class="callout-code" data-layout-allow-overlap style="padding: 8px 10px; font-size: 11px;"><code>1. ERR_SCHEMA_V1 &rarr; Canonical V2.0 Translation
+2. ERR_TIMESTAMP_SKEW &rarr; Clock Arrival Clamper
+3. ERR_OUT_OF_BOUNDS &rarr; Physical Spike Attenuator
+4. ERR_MISSING_PK &rarr; MAC Address Resolver
+5. ERR_SERDES_MALFORMED &rarr; JSON String Parser Repair</code></pre>
+              </div>
+
+              <div class="safeguard-badge">Zero Pipeline Downtime</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 8: GOLD STAR SCHEMA & FABRIC WAREHOUSE (34.25s - 38.75s)
+             Dimensional Pills cascading at multi-tiered Z-depths (30px to 102px)
+             =================================================================== -->
+        <div id="slab-08" class="floating-slab" data-layout-allow-overflow style="left: 200px; top: 170px; width: 1440px; height: 810px; transform-origin: 720px 405px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>fabric.microsoft.com/groups/smart-farming/<strong>warehouse-schema</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" id="img-08" src="assets/screenshots/07-warehouse-1080p.png" alt="Fabric Warehouse Star Schema" />
+
+              <!-- Dimensional Tags Floating Around the Table in Multi-Tier Z-Depth -->
+              <div class="dim-pill-grid">
+                <div class="dim-pill" id="dim-1">&bull; dim_facility (Highlands & Davao)</div>
+                <div class="dim-pill" id="dim-2">&bull; dim_zone (Zones 01–24)</div>
+                <div class="dim-pill" id="dim-3">&bull; dim_crop (Strawberries / Salads)</div>
+                <div class="dim-pill" id="dim-4">&bull; dim_equipment (Dosing / HVAC)</div>
+                <div class="dim-pill" id="dim-5">&bull; fact_environmental_daily (1,000 Rows)</div>
+              </div>
+
+              <div class="safeguard-badge">Gold Tier Fabric Warehouse</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 9: DIRECT LAKE POWER BI & MULTI-TIER POPUPS (38.75s - 42.55s)
+             Dramatic Isometric Tilt: rotateY: -18deg, rotateX: 8deg
+             Multi-tiered Z-Depth Cards: Top Z=50px, Bottom Z=80px
+             =================================================================== -->
+        <div id="slab-09-pbi" class="floating-slab" data-layout-allow-overflow style="left: 120px; top: 170px; width: 1120px; height: 630px; transform-origin: 560px 315px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core">
+              <div class="slab-browser-chrome">
+                <div class="chrome-dots">
+                  <span class="chrome-dot close"></span>
+                  <span class="chrome-dot min"></span>
+                  <span class="chrome-dot max"></span>
+                </div>
+                <div class="chrome-address-bar">
+                  <span class="lock">&#128274;</span>
+                  <span>app.powerbi.com/groups/smart-farming/<strong>reports/exec-view</strong></span>
+                </div>
+              </div>
+              <img class="slab-img-content" id="img-09" src="assets/screenshots/08-powerbi-1080p.png" alt="Power BI Executive Report" />
+
+              <!-- Hand Pointer Presenter Cursor on Slicer -->
+              <div id="cursor-09" class="local-cursor">
+                <svg viewBox="0 0 28 32" fill="none">
+                  <path d="M9.5 2.5C9.5 1.4 10.4 0.5 11.5 0.5C12.6 0.5 13.5 1.4 13.5 2.5V13C14.2 12.4 15.1 12 16 12C17.4 12 18.5 13.1 18.5 14.5V15C19.1 14.7 19.8 14.5 20.5 14.5C22.2 14.5 23.5 15.8 23.5 17.5V19.5C23.5 24.5 19.5 28.5 14.5 28.5C10.7 28.5 7.4 25.8 6.6 22L4.6 14.6C4.3 13.5 4.9 12.3 6 11.9C7.1 11.5 8.3 12 8.7 13L9.5 15V2.5Z" fill="#FFFFFF" stroke="#0F172A" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+              </div>
+                          </div>
+          </div>
+        </div>
+
+        <!-- Right Side Enriched Card 1 (Top Tier: translateZ: 50px) -->
+        <div id="slab-09-alert" class="frosted-callout" data-layout-allow-occlusion data-layout-allow-overlap style="right: 80px; top: 170px; width: 480px; border-color: rgba(245, 158, 11, 0.45);">
+          <div class="callout-header" style="color:#D97706;">
+            <span class="eyebrow-dot orange"></span>
+            <span>Activator Reflex Alert Triggered</span>
+          </div>
+          <pre class="callout-code" data-layout-allow-overlap><code>Rule: Executive Facility Operational Emergency
+Threshold: Substrate pH &lt; 5.8 &middot; EC &gt; 2.2 mS/cm
+Action: Automated Fabric_user Alert via Teams
+Response Time: Sub-3s End-to-End Latency</code></pre>
+        </div>
+
+        <!-- Right Side Enriched Card 2 (Bottom Tier: translateZ: 80px) -->
+        <div id="slab-09-directlake" class="frosted-callout" data-layout-allow-occlusion data-layout-allow-overlap style="right: 80px; top: 385px; width: 480px; border-color: rgba(14, 165, 233, 0.45);">
+          <div class="callout-header" style="color:#0284C7;">
+            <span class="eyebrow-dot blue"></span>
+            <span>Direct Lake Query Cache</span>
+          </div>
+          <pre class="callout-code" data-layout-allow-overlap><code>Metric: 42ms Sub-Second Cache Hit
+Architecture: Direct Lake In-Memory V-Order
+Sync Mode: Zero Import Refresh Delay
+Storage: Direct Delta Parquet in OneLake</code></pre>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 10: END-TO-END ARCHITECTURE LOCKUP (42.55s - 45.40s)
+             Centered Showcase Frame with 114px Headline Clearance
+             4 Metric HUD Pills animate upward from depth (translateZ: 20px)
+             =================================================================== -->
+        <!-- 100% Un-Truncated Architecture Diagram Slab (Expanded Scale) -->
+        <div id="slab-10-arch" class="floating-slab" data-layout-allow-overflow style="left: 50%; top: 132px; width: 1650px; height: 675px; transform-origin: 825px 337px;">
+          <div class="slab-outer-bezel">
+            <div class="slab-inner-core" style="background:#0D071E; padding: 8px; display: flex; align-items: center; justify-content: center;">
+              <img class="slab-img-content" src="assets/images/architecture-diagram.png" alt="Microsoft Fabric Solution Architecture Diagram" style="object-fit: contain; width: 100%; height: 100%;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Architecture Bottom Metrics HUD (Clean Horizontal 4-Pill Row) -->
+        <div id="s10-metrics" class="arch-summary-grid" style="left: 50%; bottom: 35px; width: 1420px; height: 86px;">
+          <div class="arch-card" id="card-metric-1">
+            <span class="arch-num" style="color:#10B981;">10,480</span>
+            <span class="arch-lbl">Events / Min (Simulated)</span>
+          </div>
+          <div class="arch-card" id="card-metric-2">
+            <span class="arch-num" style="color:#38BDF8;">1.70s</span>
+            <span class="arch-lbl">p50 Ingress SLA</span>
+          </div>
+          <div class="arch-card" id="card-metric-3">
+            <span class="arch-num" style="color:#C084FC;">99.98%</span>
+            <span class="arch-lbl">Quality Pass Rate</span>
+          </div>
+          <div class="arch-card" id="card-metric-4">
+            <span class="arch-num" style="color:#F59E0B;">ZERO</span>
+            <span class="arch-lbl">Pipeline Downtime</span>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             SCENE 12: BRAND FINALE · FABRIC LOGO "WINK" OUTRO (45.20s - 48.11s)
+             Cohesive Dark Violet Stage Lockup with Luminous Facet Glint Sweep
+             =================================================================== -->
+        <div id="brand-finale-lockup" style="position: absolute; left: 50%; top: 50%; text-align: center; z-index: 95; pointer-events: none; opacity: 0; transform-style: preserve-3d;" data-layout-allow-overflow>
+          <!-- Logo wrapper with 3D tilt & Sheen Wink Mask -->
+          <div id="fabric-logo-wrapper" style="position: relative; display: inline-block; width: 130px; height: 130px; margin-bottom: 20px; transform-style: preserve-3d;">
+            <img id="fabric-logo-img" src="assets/images/fabric icon.png" alt="Microsoft Fabric Icon" style="width: 130px; height: 130px; object-fit: contain; filter: drop-shadow(0 15px 35px rgba(16, 185, 129, 0.35)); display: block;" />
+            
+            <!-- Sheen Layer Masked to the Exact Logo Shape -->
+            <div id="fabric-logo-sheen-mask" style="position: absolute; top: 0; left: 0; width: 130px; height: 130px; pointer-events: none; overflow: hidden; -webkit-mask-image: url('assets/images/fabric icon.png'); -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; mask-image: url('assets/images/fabric icon.png'); mask-size: contain; mask-repeat: no-repeat;">
+              <div id="fabric-sheen-beam" style="position: absolute; top: -50%; left: 0; width: 55px; height: 200%; background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.95) 50%, transparent 100%); transform: rotate(25deg); filter: blur(3px);"></div>
+            </div>
+          </div>
+
+          <!-- Editorial Typography Signature -->
+          <div id="finale-titles">
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 44px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 6px;">
+              Microsoft Fabric
+            </div>
+            <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 600; background: linear-gradient(135deg, #10B981 0%, #38BDF8 45%, #C084FC 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.015em; margin-bottom: 18px;">
+              Real-Time Intelligence
+            </div>
+            <div class="safeguard-badge" style="position: static; display: inline-block; font-size: 11px; padding: 6px 16px; border-radius: 9999px;">
+              Independent Architectural Proof of Concept &middot; Synthetic Demo Data
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- /camera-rig -->
+
+      <!-- ===================================================================
+           2D VIEWPORT EDITORIAL HUD (VARIED ART-DIRECTED TYPOGRAPHY PLACEMENT)
+           Anchored on 2D stage — immune to 3D camera pan/push-in clipping
+           =================================================================== -->
+      <div id="keynote-editorial-hud" style="position: absolute; inset: 0; pointer-events: none; z-index: 85;" data-layout-allow-overflow data-layout-allow-occlusion>
+        
+        <!-- Scene 3 (Eventstream): Left-Aligned Editorial Statement -->
+        <div id="scene2-typo" class="keynote-typo-container" data-layout-allow-overlap style="left: 90px; top: 40px;">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot"></span>
+            <span>MICROSOFT FABRIC EVENTSTREAM · DIRECT ENGINE INGRESS</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>Real-time ingestion.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>Zero middleware.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 4 (KQL Query Engine): Top-Right Editorial Statement (Balances Lower-Left Code Popup) -->
+        <div id="scene3-typo" class="keynote-typo-container" data-layout-allow-overlap style="right: 100px; top: 40px; left: auto; text-align: right;">
+          <div class="eyebrow-tag" style="justify-content: flex-end; margin-left: auto;">
+            <span class="eyebrow-dot blue"></span>
+            <span>EVENTHOUSE REAL-TIME KQL ENGINE · SUB-SECOND ANALYTICS</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>Sub-second telemetry queries.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>Automated retention tiers.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 5 (KQL 17-Tile Dashboard): Top-Left Editorial Statement -->
+        <div id="scene4-typo" class="keynote-typo-container" data-layout-allow-overlap style="left: 90px; top: 40px;">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot green"></span>
+            <span>REAL-TIME OPERATIONAL DASHBOARD · HIGH HORIZON TILT</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>Instant visibility.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>Across 17 operational streams.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 6 (OneLake Zero-Copy): Symmetrical Centered Title (Crowns Dual Slabs) -->
+        <div id="scene5-typo" class="keynote-typo-container" data-layout-allow-overlap style="left: 50%; top: 36px; width: 1200px; text-align: center;">
+          <div class="eyebrow-tag" style="justify-content: center; margin: 0 auto 8px auto;">
+            <span class="eyebrow-dot"></span>
+            <span>ONELAKE VIRTUALIZATION · ZERO DATA MOVEMENT</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>OneLake shortcuts.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>Zero ETL movement. Continuous delta virtualization.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 7 (PySpark Medallion ETL): Left-Aligned Editorial Statement -->
+        <div id="scene6-typo" class="keynote-typo-container" data-layout-allow-overlap style="left: 90px; top: 40px;">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot blue"></span>
+            <span>PYSPARK MEDALLION ETL · SILVER CONFORMANCE</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>Automated cleansing.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>ACID Delta merges.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 8 (Self-Healing Pipelines): Left-Aligned Editorial Statement -->
+        <div id="scene7-typo" class="keynote-typo-container" data-layout-allow-overlap style="left: 90px; top: 40px;">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot orange"></span>
+            <span>SELF-HEALING PIPELINE · AUTOMATED DLQ TRIAGE</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>Dead-letter triage.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>Self-healing data pipelines.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 9 (Gold Star Schema): Left-Aligned Editorial Statement -->
+        <div id="scene8-typo" class="keynote-typo-container" data-layout-allow-overlap style="left: 90px; top: 40px;">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot"></span>
+            <span>ENTERPRISE GOLD WAREHOUSE · KIMBALL STAR SCHEMA</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>Kimball star schema.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>Sub-second warehouse analytics.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 10 (Direct Lake Power BI): Left Edge Aligned with Power BI Slab (left: 120px) -->
+        <div id="scene9-typo" class="keynote-typo-container" data-layout-allow-overlap style="left: 120px; top: 40px;">
+          <div class="eyebrow-tag">
+            <span class="eyebrow-dot"></span>
+            <span>EXECUTIVE INTELLIGENCE · DIRECT LAKE & REAL-TIME ALERTS</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap>
+            <div class="title-line primary" data-layout-allow-overlap>Direct Lake speed.</div>
+            <div class="title-line secondary" data-layout-allow-overlap>Proactive operational alerts.</div>
+          </h2>
+        </div>
+
+        <!-- Scene 11 (Architecture Lockup): Symmetrical Centered Monumental Title -->
+        <div id="scene10-typo" class="keynote-typo-container" data-layout-allow-overlap style="top: 24px; left: 50%; width: 1600px; text-align: center;">
+          <div class="eyebrow-tag" style="justify-content: center; margin: 0 auto 8px auto;">
+            <span class="eyebrow-dot"></span>
+            <span>ENTERPRISE DATA ARCHITECTURE · COMPLETE SOLUTION LINEAGE</span>
+          </div>
+          <h2 class="keynote-headline" data-layout-allow-overlap style="font-size: 26px; line-height: 1.15;">
+            <span class="title-line primary" data-layout-allow-overlap>Microsoft Fabric.</span>
+            <span class="title-line secondary" data-layout-allow-overlap>The complete agricultural intelligence platform.</span>
+          </h2>
+        </div>
+
+      </div>
+
+    </div> <!-- /studio-stage -->
+
+    <script>
+      // -----------------------------------------------------------------------
+      // IMMEDIATE INITIAL PROPERTY SETUP (Zero CSS Transform Conflicts)
+      // -----------------------------------------------------------------------
+      gsap.set("#camera-rig", { z: 0, x: 0, y: 0, rotationY: 0, rotationX: 0 });
+
+      // Centered Hero Hook Initial State
+      gsap.set("#hero-hook-container", { xPercent: -50, yPercent: -50, opacity: 1, z: 20 });
+
+      // Terminal Header Pill Initial State
+      gsap.set("#term-generator-header", { xPercent: -50, opacity: 0, z: 35 });
+
+      // Initial Scene 1 hook & moody stage setup (GSAP owns all transform state)
+      gsap.set("#moody-stage-backdrop", { opacity: 1 });
+      gsap.set("#hook-bg-fragments", { opacity: 0, display: "none" });
+      gsap.set("#crop-card-1", { z: 40 });
+      gsap.set("#crop-card-2", { z: -80 });
+      gsap.set("#crop-card-3", { z: -120 });
+      gsap.set("#crop-card-4", { z: -50 });
+      gsap.set("#crop-card-5", { z: 60 });
+      gsap.set("#crop-card-6", { z: -30 });
+      gsap.set("#crop-card-7", { z: 70 });
+
+      // Headlines initial states
+      gsap.set("#scene2-typo", { y: 20, display: "none" });
+      gsap.set("#scene3-typo", { y: 20, display: "none" });
+      gsap.set("#scene4-typo", { y: 20, display: "none" });
+      gsap.set("#scene5-typo", { xPercent: -50, y: 20, display: "none" });
+      gsap.set("#scene6-typo", { y: 20, display: "none" });
+      gsap.set("#scene7-typo", { y: 20, display: "none" });
+      gsap.set("#scene8-typo", { y: 20, display: "none" });
+      gsap.set("#scene9-typo", { y: 20, display: "none" });
+      gsap.set("#scene10-typo", { xPercent: -50, y: 20, display: "none" });
+
+      // Slabs initial states (Confident 3D angles & depth slide-in positions)
+      gsap.set("#terminal-slab", { opacity: 0, z: -280, y: -40, rotationX: 18, rotationY: -10, scale: 0.88, display: "none" });
+      gsap.set("#slab-02", { opacity: 0, z: -350, rotationY: -32, rotationX: 18, scale: 0.88, display: "none" });
+      gsap.set("#slab-03", { opacity: 0, z: -350, rotationY: -30, rotationX: 16, scale: 0.88, display: "none" });
+      gsap.set("#slab-04", { opacity: 0, z: -360, rotationX: 20, rotationY: -18, scale: 0.86, display: "none" });
+      gsap.set("#slab-05-left", { opacity: 0, z: -250, rotationY: -24, rotationX: 14, scale: 0.88, display: "none" });
+      gsap.set("#slab-05-right", { opacity: 0, z: -250, rotationY: -14, rotationX: 10, scale: 0.88, display: "none" });
+      gsap.set("#scene5-cable-svg", { opacity: 0, display: "none" });
+      gsap.set("#scene5-lower-conduit", { opacity: 0, display: "none" });
+      gsap.set("#s05-center-pill", { xPercent: -50, opacity: 0, y: 15, z: 35 });
+      gsap.set("#s05-folder-token", { xPercent: -50, yPercent: -50, z: 20 });
+      gsap.set("#slab-06", { opacity: 0, z: -350, rotationY: 28, rotationX: 16, scale: 0.88, display: "none" });
+      gsap.set("#slab-07", { opacity: 0, z: -350, rotationY: -28, rotationX: 16, scale: 0.88, display: "none" });
+      gsap.set("#slab-08", { opacity: 0, z: -320, rotationY: -26, rotationX: 14, scale: 0.88, display: "none" });
+      gsap.set("#slab-09-pbi", { opacity: 0, z: -350, rotationY: -28, rotationX: 12, scale: 0.88, display: "none" });
+      gsap.set("#slab-10-arch", { xPercent: -50, opacity: 0, z: -120, scale: 0.94, display: "none" });
+
+      // Callouts & nested elements initial states
+      gsap.set("#callout-02", { y: 12, scale: 0.96, z: 20 });
+      gsap.set("#callout-03-code", { y: 16, scale: 0.96, z: 20 });
+      gsap.set("#tile-04-pop", { y: 16, scale: 0.95, z: 20 });
+      gsap.set("#card-06-silver", { y: 16, scale: 0.96, opacity: 0, z: 20 });
+      gsap.set("#callout-07-dlq", { y: 16, scale: 0.96, z: 20 });
+      gsap.set("#slab-09-alert", { y: 16, scale: 0.96, opacity: 0, z: 20, display: "none" });
+      gsap.set("#slab-09-directlake", { y: 16, scale: 0.96, opacity: 0, z: 20, display: "none" });
+      gsap.set("#s10-metrics", { xPercent: -50, y: 35, z: -30, display: "none" });
+
+      // Brand Finale Outro initial states
+      gsap.set("#brand-finale-lockup", { xPercent: -50, yPercent: -50, opacity: 0, scale: 0.90, y: 25, z: 0, display: "none" });
+      gsap.set("#fabric-sheen-beam", { x: -160 });
+
+      // Nested local cursors initial setups
+      gsap.set("#cursor-02", { x: 1200, y: 500, opacity: 0 });
+      gsap.set("#cursor-03", { x: 750, y: 500, opacity: 0 });
+      gsap.set("#cursor-06", { x: 500, y: 300, opacity: 0 });
+      gsap.set("#cursor-07", { x: 450, y: 450, opacity: 0 });
+      gsap.set("#cursor-09", { x: 900, y: 250, opacity: 0 });
+      gsap.set("#camera-rig", { scale: 1.0, z: 0, x: 0, y: 0, rotationX: 0, rotationY: 0 });
+
+      // Hero Hook initial setup: Clean stage at frame 0, caret ready, zoomed in close
+      gsap.set("#hero-hook-container", { xPercent: -50, yPercent: -50, scale: 1.45, z: 220, opacity: 1 });
+      gsap.set("#hook-typed-prefix", { innerText: "" });
+      gsap.set("#hook-typed-violet", { innerText: "" });
+      gsap.set("#hook-caret", { opacity: 1 });
+      gsap.set("#hook-bg-fragments", { opacity: 0, scale: 0.90, display: "none" });
+      gsap.set("#scene1-typo", { xPercent: -50, y: 15, opacity: 0, display: "none" });
+
+      // -----------------------------------------------------------------------
+      // GSAP PAUSED MASTER TIMELINE (48.11s @ SaaS Demo Audio BPM ~130.4)
+      // -----------------------------------------------------------------------
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["master-keynote-film"] = tl;
+
+      // =======================================================================
+      // SCENE 1: HERO KINETIC HOOK (00:00 - 04:00)
+      // 1:1 Reference Video Alignment:
+      // Part 1: Type phrase 1 ("Still tracking") close-up (0.04s - 0.63s)
+      // Part 2: Hold & smooth zoom-out revealing 7 floating batch cards (0.65s - 1.35s)
+      // Part 3: Resume typing (" farm data") (0.95s - 1.42s)
+      // Part 4: Comfortable reading hold on "Still tracking farm data" (1.42s - 2.18s)
+      // Part 5: Clean cut to centered active caret (2.18s)
+      // Part 6: Type phrase 2 ("across silos?") with violet accent (2.24s - 3.03s)
+      // Part 7: Comprehension hold on "across silos?" with 3D drift (3.03s - 3.65s)
+      // Part 8: Forward camera plunge into Scene 2 (3.65s - 3.98s)
+      // =======================================================================
+      
+      // Part 1: Active typing begins close to camera (scale: 1.45, z: 220)
+      const phraseIntro = "Still\u00A0tracking";
+      for (let i = 1; i <= phraseIntro.length; i++) {
+        const sub = phraseIntro.substring(0, i);
+        const t = 0.04 + (i - 1) * 0.045;
+        tl.set("#hook-typed-prefix", { innerText: sub }, t);
+      }
+
+      // Part 2: Brief hold on "Still tracking|" while camera pulls back
+      // and authentic telemetry batch cards emerge in 3D parallax depth (0.65s - 1.35s)
+      tl.to("#hero-hook-container", { scale: 1.0, z: 0, duration: 0.70, ease: "power2.inOut" }, 0.65);
+      tl.to("#camera-rig", { scale: 1.0, z: 0, duration: 0.70, ease: "power2.inOut" }, 0.65);
+
+      // Telemetry crop cards emerge as camera pulls back
+      tl.set("#hook-bg-fragments", { display: "block" }, 0.65);
+      tl.to("#hook-bg-fragments", { opacity: 1, scale: 1.0, duration: 0.70, ease: "power2.out" }, 0.65);
+
+      // Subtle upward drift & rotational parallax on 7 authentic crop cards
+      tl.to("#crop-card-1", { y: -20, rotationZ: 1.5, duration: 3.2, ease: "sine.inOut" }, 0.65);
+      tl.to("#crop-card-2", { y: -16, rotationZ: -1.0, duration: 3.2, ease: "sine.inOut" }, 0.65);
+      tl.to("#crop-card-3", { y: -22, rotationZ: 1.2, duration: 3.2, ease: "sine.inOut" }, 0.65);
+      tl.to("#crop-card-4", { y: -25, rotationZ: -1.8, duration: 3.2, ease: "sine.inOut" }, 0.65);
+      tl.to("#crop-card-5", { y: -28, rotationZ: 1.6, duration: 3.2, ease: "sine.inOut" }, 0.65);
+      tl.to("#crop-card-6", { y: -18, rotationZ: -1.2, duration: 3.2, ease: "sine.inOut" }, 0.65);
+      tl.to("#crop-card-7", { y: -24, rotationZ: 1.4, duration: 3.2, ease: "sine.inOut" }, 0.65);
+
+      // Part 3: Resume typing with " farm data" naturally (0.95s - 1.42s)
+      const phraseFarmData = "\u00A0farm\u00A0data";
+      for (let j = 1; j <= phraseFarmData.length; j++) {
+        const sub = "Still\u00A0tracking" + phraseFarmData.substring(0, j);
+        const t = 0.95 + (j - 1) * 0.052;
+        tl.set("#hook-typed-prefix", { innerText: sub }, t);
+      }
+
+      // Part 4: Comfortable reading hold on "Still tracking farm data|" (1.42s - 2.18s)
+      // Reference video holds on "Still manually entering" while cards float
+
+      // Part 5: Clean cut to centered active caret (2.18s), exactly like reference frame 68
+      tl.set("#hook-typed-prefix", { innerText: "" }, 2.18);
+      tl.set("#hook-typed-violet", { innerText: "" }, 2.18);
+
+      // Part 6: Type second phrase "across silos?" (2.24s - 3.03s)
+      // "across " in crisp white, "silos?" in glowing electric violet #C084FC
+      const phraseAcross = "across\u00A0";
+      for (let k = 1; k <= phraseAcross.length; k++) {
+        const sub = phraseAcross.substring(0, k);
+        const t = 2.24 + (k - 1) * 0.055;
+        tl.set("#hook-typed-prefix", { innerText: sub }, t);
+      }
+
+      const phraseSilos = "silos?";
+      for (let m = 1; m <= phraseSilos.length; m++) {
+        const sub = phraseSilos.substring(0, m);
+        const t = 2.65 + (m - 1) * 0.075;
+        tl.set("#hook-typed-prefix", { innerText: "across\u00A0" }, t);
+        tl.set("#hook-typed-violet", { innerText: sub }, t);
+      }
+
+      // Part 7: Hold for comprehension on "across silos?|" (3.03s - 3.65s)
+      // Subtle 3D spatial drift
+      tl.to("#hero-hook-container", { z: 25, rotationY: 1.2, duration: 0.60, ease: "sine.inOut" }, 3.03);
+
+      // Part 8: Forward camera plunge / push-through transition (3.65s - 3.98s)
+      tl.to(["#hero-hook-container", "#hook-bg-fragments"], {
+        scale: 2.8,
+        z: 500,
+        opacity: 0,
+        duration: 0.32,
+        ease: "power3.in"
+      }, 3.65);
+      tl.set(["#hero-hook-container", "#hook-bg-fragments"], { display: "none" }, 3.98);
+
+      // =======================================================================
+      // SCENE 2: PYTHON IOT SIMULATOR & "GENERATE DATA" EDITORIAL TITLE (04.00s - 08.80s)
+      // "GENERATE DATA" title enters smoothly above titanium terminal
+      // =======================================================================
+      tl.set(["#scene1-typo", "#terminal-slab"], { display: "block" }, 4.00);
+      tl.to("#scene1-typo", {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        duration: 0.55,
+        ease: "power3.out"
+      }, 4.05);
+
+      tl.to("#terminal-slab", {
+        opacity: 1,
+        z: 20,
+        y: 0,
+        rotationX: 10,
+        rotationY: -6,
+        scale: 1.0,
+        duration: 0.55,
+        ease: "back.out(1.2)"
+      }, 4.05);
+
+      // Subtle breathing drift on terminal
+      tl.to("#terminal-slab", { 
+        rotationY: -3, 
+        rotationX: 7, 
+        y: "+=8", 
+        duration: 3.8, 
+        ease: "sine.inOut" 
+      }, 4.90);
+
+      tl.to("#term-generator-header", {
+        opacity: 1,
+        duration: 0.30,
+        ease: "power2.out"
+      }, 4.30);
+
+      // Command typing with autocomplete ghost (starts @ 4.55s)
+      const cmdSub = "python -m smart_farming.";
+      for (let i = 1; i <= cmdSub.length; i++) {
+        const sub = cmdSub.substring(0, i);
+        const t = 4.55 + (i * 0.033);
+        tl.set("#cmd-typed", { innerText: sub }, t);
+      }
+      tl.to("#cmd-ghost", { opacity: 0.70, duration: 0.12 }, 5.35);
+
+      // Enter struck @ 5.65s (sfx-key-enter)
+      tl.set("#cmd-ghost", { display: "none" }, 5.65);
+      tl.set("#cmd-typed", { innerText: "python -m smart_farming.main" }, 5.65);
+      tl.set("#cmd-cursor", { display: "none" }, 5.70);
+
+      // Telemetry log cascade (5.80s - 6.60s)
+      tl.to("#s01-log-1", { opacity: 1, duration: 0.10 }, 5.80);
+      tl.to("#s01-log-2", { opacity: 1, duration: 0.10 }, 5.96);
+      tl.to("#s01-log-3", { opacity: 1, duration: 0.10 }, 6.12);
+      tl.to("#s01-log-4", { opacity: 1, duration: 0.10 }, 6.28);
+      tl.to("#s01-log-5", { opacity: 1, duration: 0.10 }, 6.44);
+      tl.to("#s01-log-6", { opacity: 1, duration: 0.10 }, 6.60);
+
+      // Title gracefully fades out at 7.85s as viewer finishes absorbing telemetry metrics
+      tl.to("#scene1-typo", {
+        opacity: 0,
+        y: -20,
+        filter: "blur(6px)",
+        duration: 0.45,
+        ease: "power2.in"
+      }, 7.85);
+      tl.set("#scene1-typo", { display: "none" }, 8.35);
+
+      // Confident hold to absorb live streaming metrics (6.60s - 8.45s)
+      // Camera plunge directly through live logs into Eventstream @ 8.45s
+      tl.to("#terminal-slab", {
+        z: 500,
+        scale: 2.2,
+        opacity: 0,
+        filter: "blur(12px)",
+        duration: 0.80,
+        ease: "power2.inOut"
+      }, 8.45);
+      tl.set("#terminal-slab", { display: "none" }, 9.25);
+
+      // =======================================================================
+      // SCENE 3: EVENTSTREAM MULTI-ROUTE HUB (09.50s - 13.12s)
+      // Confident three-quarter angle (rotateY: -22deg, rotateX: 13deg)
+      // Tactile click on SQLNode_DeadLetter + Camera Push-in Zoom (scale: 1.18)
+      // =======================================================================
+      tl.set("#camera-rig", { scale: 1.0, z: 0, x: 0, y: 0 }, 9.30);
+      tl.set(["#scene2-typo", "#slab-02"], { display: "block" }, 9.35);
+      tl.to("#slab-02", {
+        opacity: 1,
+        z: 0,
+        rotationY: -22,
+        rotationX: 13,
+        scale: 1.0,
+        duration: 0.85,
+        ease: "power3.out"
+      }, 9.40);
+      tl.to("#slab-02", { 
+        rotationY: -19, 
+        rotationX: 10, 
+        y: "+=14", 
+        duration: 3.5, 
+        ease: "sine.inOut" 
+      }, 10.25);
+      tl.to("#scene2-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 9.55);
+
+      // Hand pointer cursor glides with natural deceleration to SQLNode_DeadLetter (1001, 216)
+      tl.to("#cursor-02", { opacity: 1, x: 1001, y: 216, duration: 1.20, ease: "power2.inOut" }, 9.90);
+
+      // Beat Downbeat Click @ 11.20s: Restrained cursor micro-dip
+      tl.to("#cursor-02", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 11.20);
+      tl.to("#cursor-02", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 11.28);
+      tl.to("#cursor-02", { opacity: 0, duration: 0.25 }, 11.45);
+      
+      // Depth of field blur on underlying screenshot + physical 3D card elevation
+      tl.to("#img-02", { filter: "blur(5px) brightness(0.94)", duration: 0.35 }, 11.28);
+      tl.to("#callout-02", { 
+        opacity: 1, 
+        y: 0, 
+        z: 80, 
+        scale: 1.05, 
+        duration: 0.45, 
+        ease: "back.out(1.5)" 
+      }, 11.30);
+
+      // Click-to-popup camera push-in: smooth zoom toward SQL DeadLetter callout
+      tl.to("#camera-rig", { scale: 1.15, x: -110, y: 15, duration: 0.55, ease: "power2.out" }, 11.35);
+      tl.to("#camera-rig", { scale: 1.0, x: 0, y: 0, duration: 0.35, ease: "power2.in" }, 12.60);
+
+      // Scene 3 Outro
+      tl.to(["#scene2-typo", "#slab-02", "#callout-02"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 12.75);
+      tl.set(["#scene2-typo", "#slab-02", "#callout-02"], { display: "none" }, 13.12);
+
+      // =======================================================================
+      // SCENE 4: REAL-TIME KQL ENGINE (13.15s - 16.82s)
+      // Confident angle (rotateY: -22deg, rotateX: 12deg)
+      // Click on Run button @ 14.70s + Camera Push-in Zoom (scale: 1.18)
+      // =======================================================================
+      tl.set("#camera-rig", { scale: 1.0, x: 0, y: 0 }, 13.15);
+      tl.set(["#scene3-typo", "#slab-03"], { display: "block" }, 13.15);
+      tl.to("#slab-03", { 
+        opacity: 1, 
+        z: 0, 
+        rotationY: -22, 
+        rotationX: 12, 
+        scale: 1.0, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 13.20);
+      tl.to("#slab-03", { 
+        rotationY: -18, 
+        rotationX: 9, 
+        y: "+=12", 
+        duration: 3.5, 
+        ease: "sine.inOut" 
+      }, 14.00);
+      tl.to("#scene3-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 13.35);
+
+      // Hand pointer cursor glides to query trigger toolbar button (440, 155)
+      tl.to("#cursor-03", { opacity: 1, x: 440, y: 155, duration: 1.00, ease: "power2.inOut" }, 13.70);
+
+      // Downbeat Trigger @ 14.70s: Restrained cursor micro-dip
+      tl.to("#cursor-03", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 14.70);
+      tl.to("#img-03", { filter: "blur(5px) brightness(0.94)", duration: 0.35 }, 14.70);
+      tl.to("#callout-03-code", {
+        opacity: 1,
+        y: 0,
+        z: 80,
+        scale: 1.05,
+        boxShadow: "0 35px 80px rgba(139, 92, 246, 0.45)",
+        borderColor: "#8B5CF6",
+        duration: 0.40,
+        ease: "back.out(1.5)" 
+      }, 14.70);
+      tl.to("#cursor-03", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 14.78);
+      tl.to("#cursor-03", { opacity: 0, duration: 0.25 }, 14.95);
+
+      // Click-to-popup camera push-in: smooth zoom toward KQL query code
+      tl.to("#camera-rig", { scale: 1.15, x: 110, y: -15, duration: 0.55, ease: "power2.out" }, 14.75);
+      tl.to("#camera-rig", { scale: 1.0, x: 0, y: 0, duration: 0.35, ease: "power2.in" }, 16.20);
+
+      // Scene 4 Outro
+      tl.to(["#scene3-typo", "#slab-03", "#callout-03-code"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 16.45);
+      tl.set(["#scene3-typo", "#slab-03", "#callout-03-code"], { display: "none" }, 16.82);
+
+      // =======================================================================
+      // SCENE 5: 17-TILE OPERATIONAL KQL DASHBOARD (16.85s - 20.42s)
+      // Strong horizon tilt (rotateX: 16deg, rotateY: -14deg) + pop translateZ: 85px
+      // =======================================================================
+      tl.set("#camera-rig", { scale: 1.0, x: 0, y: 0 }, 16.85);
+      tl.set(["#scene4-typo", "#slab-04"], { display: "block" }, 16.85);
+      tl.to("#slab-04", { 
+        opacity: 1, 
+        z: 0, 
+        rotationX: 16, 
+        rotationY: -14, 
+        scale: 1.0, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 16.90);
+      tl.to("#scene4-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 17.05);
+      tl.to("#camera-rig", { x: -80, rotationY: 4, duration: 3.2, ease: "sine.inOut" }, 17.20);
+
+      // Beat Pop @ 18.50s: Pops forward in 3D (translateZ: 85px)
+      tl.to("#tile-04-pop", {
+        opacity: 1,
+        y: 0,
+        scale: 1.06,
+        z: 85,
+        boxShadow: "0 35px 80px rgba(168, 85, 247, 0.45)",
+        duration: 0.45,
+        ease: "back.out(1.5)" 
+      }, 18.50);
+      tl.to("#img-04", { filter: "blur(5px) brightness(0.94)", duration: 0.35 }, 18.50);
+
+      // Scene 5 Outro
+      tl.to(["#scene4-typo", "#slab-04", "#tile-04-pop"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 20.05);
+      tl.set(["#scene4-typo", "#slab-04", "#tile-04-pop"], { display: "none" }, 20.42);
+
+      // =======================================================================
+      // SCENE 6: ONELAKE ZERO-COPY ARCHITECTURE (20.45s - 24.92s)
+      // Dimensional Staggered Layout: Left rotateY: -18deg, Right rotateY: -8deg
+      // OneLake Folder Shortcut lifts off in 3D (translateZ: 60px) and lands with highlight
+      // =======================================================================
+      tl.set("#camera-rig", { x: 0, y: 0, scale: 1.0, rotationY: 0 }, 20.45);
+      tl.set(["#scene5-typo", "#slab-05-left", "#slab-05-right", "#scene5-cable-svg", "#scene5-lower-conduit"], { display: "block" }, 20.45);
+      tl.to("#slab-05-left", { 
+        opacity: 1, 
+        z: 0, 
+        rotationY: -18, 
+        rotationX: 11, 
+        scale: 1.0, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 20.50);
+      tl.to("#slab-05-right", { 
+        opacity: 1, 
+        z: 0, 
+        rotationY: -8, 
+        rotationX: 8, 
+        scale: 1.0, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 20.65);
+      tl.to("#scene5-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 20.65);
+
+      // Continuous breathing drift on dual slabs
+      tl.to("#slab-05-left", { rotationY: -15, y: "+=10", duration: 3.5, ease: "sine.inOut" }, 21.30);
+      tl.to("#slab-05-right", { rotationY: -6, y: "+=10", duration: 3.5, ease: "sine.inOut" }, 21.45);
+
+      // Lower OneLake Folder Shortcut Conduit Entrance
+      tl.to("#scene5-lower-conduit", { opacity: 1, duration: 0.45, ease: "power2.out" }, 20.85);
+      tl.to("#s05-center-pill", { opacity: 1, y: 0, duration: 0.50, ease: "back.out(1.2)" }, 21.15);
+
+      // Folder token lifts off in 3D (translateZ: 60px), glides along lower curve, and drops
+      tl.to("#s05-folder-token", { 
+        x: 1000, 
+        duration: 2.70, 
+        ease: "power1.inOut" 
+      }, 21.15);
+      tl.to("#s05-folder-token", { 
+        z: 60, 
+        duration: 2.50, 
+        ease: "power1.inOut" 
+      }, 21.15);
+      tl.to("#s05-folder-token", { y: 55, duration: 1.35, ease: "sine.in", yoyo: true, repeat: 1 }, 21.15);
+
+      // Folder drops into Lakehouse container on right @ 23.85s
+      tl.to("#s05-folder-token", { z: 15, duration: 0.20, ease: "power2.in" }, 23.65);
+
+      // Pulse flash @ 22.80s
+      tl.to("#cable-core", {
+        strokeWidth: 5,
+        duration: 0.20,
+        yoyo: true,
+        repeat: 2
+      }, 22.80);
+
+      // Scene 6 Outro
+      tl.to(["#scene5-typo", "#slab-05-left", "#slab-05-right", "#scene5-cable-svg", "#scene5-lower-conduit"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 24.55);
+      tl.set(["#scene5-typo", "#slab-05-left", "#slab-05-right", "#scene5-cable-svg", "#scene5-lower-conduit"], { display: "none" }, 24.92);
+
+      // =======================================================================
+      // SCENE 7: PYSPARK SILVER TRANSFORMS (24.95s - 29.22s)
+      // Confident angle (rotateY: 16deg, rotateX: 10deg)
+      // Click @ 27.20s + Camera Push-in Zoom (scale: 1.18)
+      // =======================================================================
+      tl.set("#camera-rig", { scale: 1.0, x: 0, y: 0 }, 24.95);
+      tl.set(["#scene6-typo", "#slab-06"], { display: "block" }, 24.95);
+      tl.to("#slab-06", { 
+        opacity: 1, 
+        z: 0, 
+        rotationY: 16, 
+        rotationX: 10, 
+        scale: 0.98, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 25.00);
+      tl.to("#slab-06", { 
+        rotationY: 13, 
+        rotationX: 7, 
+        y: "+=10", 
+        duration: 3.5, 
+        ease: "sine.inOut" 
+      }, 25.80);
+      tl.to("#scene6-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 25.15);
+
+      // Hand pointer cursor glides to Run/Connect button (260, 156)
+      tl.to("#cursor-06", { opacity: 1, x: 260, y: 156, duration: 1.10, ease: "power2.inOut" }, 25.80);
+
+      // Beat Downbeat Trigger @ 27.20s: Restrained cursor micro-dip
+      tl.to("#cursor-06", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 27.20);
+      tl.to("#cursor-06", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 27.28);
+      tl.to("#cursor-06", { opacity: 0, duration: 0.25 }, 27.45);
+      tl.to("#img-06", { filter: "blur(5px) brightness(0.94)", duration: 0.35 }, 27.28);
+      tl.to("#card-06-silver", { 
+        opacity: 1, 
+        y: 0, 
+        z: 80, 
+        scale: 1.05, 
+        duration: 0.45, 
+        ease: "back.out(1.5)" 
+      }, 27.30);
+
+      // Click-to-popup camera push-in: smooth zoom toward PySpark Silver card
+      tl.to("#camera-rig", { scale: 1.15, x: -110, y: 15, duration: 0.55, ease: "power2.out" }, 27.35);
+      tl.to("#camera-rig", { scale: 1.0, x: 0, y: 0, duration: 0.35, ease: "power2.in" }, 28.55);
+
+      // Scene 7 Outro
+      tl.to(["#scene6-typo", "#slab-06", "#card-06-silver"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 28.85);
+      tl.set(["#scene6-typo", "#slab-06", "#card-06-silver"], { display: "none" }, 29.22);
+
+      // =======================================================================
+      // SCENE 8: SELF-HEALING DATA PIPELINES (29.25s - 33.72s)
+      // Confident angle (rotateY: -22deg, rotateX: 13deg)
+      // Click @ 31.40s + Camera Push-in Zoom (scale: 1.18)
+      // =======================================================================
+      tl.set("#camera-rig", { scale: 1.0, x: 0, y: 0 }, 29.25);
+      tl.set(["#scene7-typo", "#slab-07"], { display: "block" }, 29.25);
+      tl.to("#slab-07", { 
+        opacity: 1, 
+        z: 0, 
+        rotationY: -22, 
+        rotationX: 13, 
+        scale: 1.0, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 29.30);
+      tl.to("#slab-07", { 
+        rotationY: -18, 
+        rotationX: 10, 
+        y: "+=12", 
+        duration: 3.5, 
+        ease: "sine.inOut" 
+      }, 30.10);
+      tl.to("#scene7-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 29.45);
+
+      // Hand pointer cursor glides to activity node (338, 308)
+      tl.to("#cursor-07", { opacity: 1, x: 338, y: 308, duration: 1.10, ease: "power2.inOut" }, 30.10);
+
+      // Downbeat Click @ 31.40s: Restrained cursor micro-dip
+      tl.to("#cursor-07", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 31.40);
+      tl.to("#cursor-07", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 31.48);
+      tl.to("#cursor-07", { opacity: 0, duration: 0.25 }, 31.65);
+      tl.to("#img-07", { filter: "blur(5px) brightness(0.94)", duration: 0.35 }, 31.48);
+      tl.to("#callout-07-dlq", { 
+        opacity: 1, 
+        y: 0, 
+        z: 80, 
+        scale: 1.05, 
+        duration: 0.45, 
+        ease: "back.out(1.5)" 
+      }, 31.50);
+
+      // Click-to-popup camera push-in: smooth zoom toward 5-Worker DLQ card
+      tl.to("#camera-rig", { scale: 1.15, x: -110, y: 15, duration: 0.55, ease: "power2.out" }, 31.55);
+      tl.to("#camera-rig", { scale: 1.0, x: 0, y: 0, duration: 0.35, ease: "power2.in" }, 33.05);
+
+      // Scene 8 Outro
+      tl.to(["#scene7-typo", "#slab-07", "#callout-07-dlq"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 33.35);
+      tl.set(["#scene7-typo", "#slab-07", "#callout-07-dlq"], { display: "none" }, 33.72);
+
+      // =======================================================================
+      // SCENE 9: GOLD STAR SCHEMA & FABRIC WAREHOUSE (33.75s - 38.22s)
+      // Confident angle (rotateY: -22deg, rotateX: 12deg) + Multi-tiered Z-depth pills
+      // =======================================================================
+      tl.set("#camera-rig", { scale: 1.0, x: 0, y: 0 }, 33.75);
+      tl.set(["#scene8-typo", "#slab-08"], { display: "block" }, 33.75);
+      tl.to("#slab-08", { 
+        opacity: 1, 
+        z: 0, 
+        rotationY: -22, 
+        rotationX: 12, 
+        scale: 1.0, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 33.80);
+      tl.to("#slab-08", { 
+        rotationY: -18, 
+        rotationX: 8, 
+        y: "+=12", 
+        duration: 3.5, 
+        ease: "sine.inOut" 
+      }, 34.60);
+      tl.to("#scene8-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 33.95);
+
+      // Dimensional Pills cascade in 3D at multi-tiered Z-depths (30px to 102px)
+      tl.to("#dim-1", { opacity: 1, x: 0, z: 30, duration: 0.22 }, 35.60);
+      tl.to("#dim-2", { opacity: 1, x: 0, z: 48, duration: 0.22 }, 35.80);
+      tl.to("#dim-3", { opacity: 1, x: 0, z: 66, duration: 0.22 }, 36.00);
+      tl.to("#dim-4", { opacity: 1, x: 0, z: 84, duration: 0.22 }, 36.20);
+      tl.to("#dim-5", { opacity: 1, x: 0, z: 102, duration: 0.22 }, 36.40);
+
+      tl.to("#camera-rig", { x: 40, rotationY: -3, duration: 3.5, ease: "sine.inOut" }, 34.60);
+
+      // Scene 9 Outro
+      tl.to(["#scene8-typo", "#slab-08", ".dim-pill"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 37.85);
+      tl.set(["#scene8-typo", "#slab-08", ".dim-pill"], { display: "none" }, 38.22);
+
+      // =======================================================================
+      // SCENE 10: DIRECT LAKE POWER BI & MULTI-TIER POPUPS (38.25s - 42.22s)
+      // Dramatic Isometric Angle (rotateY: -22deg, rotateX: 10deg)
+      // Slicer click @ 40.20s + Camera Push-in Zoom (scale: 1.16)
+      // =======================================================================
+      tl.set("#camera-rig", { x: 0, y: 0, scale: 1.0, rotationY: 0 }, 38.25);
+      tl.set(["#scene9-typo", "#slab-09-pbi", "#slab-09-alert", "#slab-09-directlake"], { display: "block" }, 38.25);
+      tl.to("#slab-09-pbi", { 
+        opacity: 1, 
+        z: 0, 
+        rotationY: -22, 
+        rotationX: 10, 
+        scale: 1.0, 
+        duration: 0.80, 
+        ease: "power3.out" 
+      }, 38.30);
+      tl.to("#slab-09-pbi", { 
+        rotationY: -18, 
+        rotationX: 7, 
+        y: "+=12", 
+        duration: 3.5, 
+        ease: "sine.inOut" 
+      }, 39.10);
+      tl.to("#scene9-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 38.45);
+
+      // Hand pointer cursor glides to actual "Usage metrics" control (790, 107)
+      tl.to("#cursor-09", { opacity: 1, x: 790, y: 107, duration: 0.90, ease: "power2.inOut" }, 39.10);
+
+      // Intentional target hold (40.00s - 40.20s), then restrained micro-dip click @ 40.20s
+      tl.to("#cursor-09", { scale: 0.82, duration: 0.08, ease: "power2.in" }, 40.20);
+      tl.to("#cursor-09", { scale: 1.0, duration: 0.16, ease: "back.out(2)" }, 40.28);
+      tl.to("#cursor-09", { opacity: 0, duration: 0.25 }, 40.40);
+
+      tl.to("#img-09", { filter: "blur(5px) brightness(0.94)", duration: 0.35 }, 40.28);
+
+      // Staggered Right-Side Multi-Tiered 3D Popups (Card 1 @ Z=50px, Card 2 @ Z=80px)
+      tl.to("#slab-09-alert", { 
+        opacity: 1, 
+        y: 0, 
+        z: 50, 
+        scale: 1.02, 
+        duration: 0.42, 
+        ease: "back.out(1.5)" 
+      }, 40.40);
+      tl.to("#slab-09-directlake", { 
+        opacity: 1, 
+        y: 0, 
+        z: 80, 
+        scale: 1.05, 
+        duration: 0.42, 
+        ease: "back.out(1.5)" 
+      }, 40.65);
+
+      // Click-to-popup camera push-in: smooth zoom toward alert & Direct Lake cards
+      tl.to("#camera-rig", { scale: 1.15, x: -110, y: 25, duration: 0.55, ease: "power2.out" }, 40.45);
+      tl.to("#camera-rig", { scale: 1.0, x: 0, y: 0, duration: 0.35, ease: "power2.in" }, 41.60);
+
+      // Scene 10 Outro
+      tl.to(["#scene9-typo", "#slab-09-pbi", "#slab-09-alert", "#slab-09-directlake"], { opacity: 0, z: 250, duration: 0.35, ease: "power2.in" }, 41.85);
+      tl.set(["#scene9-typo", "#slab-09-pbi", "#slab-09-alert", "#slab-09-directlake"], { display: "none" }, 42.22);
+
+      // =======================================================================
+      // SCENE 11: 100% UN-TRUNCATED ARCHITECTURE LOCKUP (42.25s - 45.30s)
+      // Centered Monumental Showcase Frame with Generous Headline Clearance
+      // 4 Metric HUD Pills animate upward from depth (translateZ: 20px)
+      // =======================================================================
+      tl.set("#camera-rig", { scale: 1.0, x: 0, y: 0, z: 0, rotationX: 0, rotationY: 0 }, 42.25);
+      tl.set(["#scene10-typo", "#slab-10-arch"], { display: "block" }, 42.25);
+      tl.set("#s10-metrics", { display: "flex" }, 42.25);
+      tl.to("#slab-10-arch", { opacity: 1, z: 0, scale: 1.0, duration: 0.85, ease: "power2.out" }, 42.30);
+      tl.to("#scene10-typo", { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 42.25);
+
+      // 4 Metric HUD pills animate upward from depth beneath diagram
+      tl.to("#s10-metrics", { 
+        opacity: 1, 
+        y: 0, 
+        z: 20, 
+        duration: 0.65, 
+        ease: "back.out(1.4)" 
+      }, 43.10);
+
+      // Camera smooth drift on architecture showcase
+      tl.to("#camera-rig", { z: -30, duration: 2.0, ease: "sine.inOut" }, 42.80);
+
+      // Smooth dissolve into Brand Finale Outro @ 45.10s
+      tl.to(["#scene10-typo", "#slab-10-arch", "#s10-metrics"], {
+        opacity: 0,
+        scale: 0.96,
+        duration: 0.45,
+        ease: "power2.inOut"
+      }, 45.10);
+      tl.set(["#scene10-typo", "#slab-10-arch", "#s10-metrics"], { display: "none" }, 45.60);
+
+      // =======================================================================
+      // SCENE 12: BRAND FINALE · FABRIC LOGO "WINK" OUTRO (45.20s - 48.11s)
+      // 3D Perspective Floating Logo (translateZ: 25px) + Signature Sheen Wink
+      // =======================================================================
+      tl.set("#camera-rig", { z: 0, x: 0, y: 0, scale: 1.0, rotationY: 0, rotationX: 0 }, 45.20);
+      tl.set("#brand-finale-lockup", { display: "block" }, 45.15);
+      
+      // Brand lockup eases into center from depth
+      tl.to("#brand-finale-lockup", {
+        opacity: 1,
+        scale: 1.0,
+        y: 0,
+        z: 25,
+        duration: 0.65,
+        ease: "power3.out"
+      }, 45.20);
+
+      // Confident 3D floating tilt on the Fabric logo
+      tl.to("#fabric-logo-wrapper", {
+        rotationY: 6,
+        rotationX: -3,
+        duration: 2.5,
+        ease: "sine.inOut"
+      }, 45.50);
+
+      // The signature "Wink" / Sheen Glint Sweep across the emerald/cyan facets
+      tl.to("#fabric-sheen-beam", {
+        x: 280,
+        duration: 0.80,
+        ease: "power2.inOut"
+      }, 46.18);
+    </script>
+  </body>
+</html>

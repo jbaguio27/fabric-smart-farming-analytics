@@ -1,0 +1,46 @@
+{
+  "_doc": "Microsoft Fabric Real-Time Smart Farming Analytics - 3D Spatial Film. Timing source of truth.",
+  "name": "fabric-smart-farming-film",
+  "hyperframes": "0.8.117",
+  "gsap": "3.14.2",
+  "width": 1920,
+  "height": 1080,
+  "fps": 60,
+  "bpm": 110,
+  "beats_per_bar": 4,
+  "ground": "#0A0D08",
+  "scenes": [
+    ["s01-edge-ingress", 3],
+    ["s02-eventstream-kql", 3],
+    ["s03-medallion-lakehouse", 3.5],
+    ["s04-selfhealing-dlq", 3],
+    ["s05-directlake-powerbi", 3.5],
+    ["s06-activator-reflex", 2.5],
+    ["s07-architecture-lockup", 3]
+  ],
+  "bgm": { "src": "assets/audio/bgm-edit.wav", "volume": 0.65 },
+  "sfx": {
+    "click": ["click.mp3", 0.50],
+    "whoosh": ["whoosh.mp3", 0.40],
+    "pop": ["pop.mp3", 0.45],
+    "punch": ["punch.mp3", 0.40],
+    "impact": ["impact.mp3", 0.40],
+    "stamp": ["stamp.mp3", 0.45]
+  },
+  "cues": [
+    ["s01-edge-ingress", "2*b", "click"],
+    ["s01-edge-ingress", "4*b", "whoosh"],
+    ["s02-eventstream-kql", 0.10, "punch"],
+    ["s02-eventstream-kql", "4*b", "click"],
+    ["s03-medallion-lakehouse", 0.10, "punch"],
+    ["s03-medallion-lakehouse", "6*b", "stamp"],
+    ["s04-selfhealing-dlq", 0.10, "whoosh"],
+    ["s04-selfhealing-dlq", "4*b", "pop"],
+    ["s05-directlake-powerbi", 0.10, "punch"],
+    ["s05-directlake-powerbi", "6*b", "stamp"],
+    ["s06-activator-reflex", 0.10, "whoosh"],
+    ["s06-activator-reflex", "4*b", "impact"],
+    ["s07-architecture-lockup", 0.10, "impact"],
+    ["s07-architecture-lockup", "5*b", "whoosh"]
+  ]
+}

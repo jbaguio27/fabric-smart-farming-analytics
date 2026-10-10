@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Microsoft Fabric Activator - Reflex Alerting & DLQ Remediation</title>
+  <link rel="stylesheet" href="platform.css">
+  <style>
+    body { background: #0A0D08; color: #F4F6F0; width: 1440px; height: 900px; overflow: hidden; margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+    .activator-canvas { position: relative; width: 1440px; height: 900px; background: radial-gradient(ellipse at 30% 30%, #15160E 0%, #0A0D08 75%); display: flex; flex-direction: column; }
+    
+    .topbar { height: 52px; background: #0D130B; border-bottom: 1px solid rgba(104,121,65,0.25); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 15px; }
+    .reflex-badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 8px; border-radius: 6px; background: rgba(226,115,36,0.15); color: #E27324; border: 1px solid rgba(226,115,36,0.3); font-weight: 600; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #BAC5B0; }
+    
+    .main-body { flex: 1; padding: 24px 32px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; }
+
+    /* Left Card: Activator Rule Reflex */
+    .panel-card { background: #11160C; border: 1px solid rgba(104,121,65,0.3); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 12px 32px rgba(0,0,0,0.45); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; }
+    .panel-title { font-size: 16px; font-weight: 700; color: #F4F6F0; display: flex; align-items: center; gap: 10px; }
+
+    .rule-block { background: #080B07; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.6; }
+    .rule-cond { color: #E27324; font-weight: 700; }
+    .rule-act { color: #4ADE80; font-weight: 700; }
+
+    .action-row { display: flex; flex-direction: column; gap: 10px; }
+    .action-item { display: flex; align-items: center; gap: 12px; background: #0E130B; border: 1px solid rgba(104,121,65,0.2); padding: 12px 16px; border-radius: 8px; font-size: 13px; }
+    .action-dot { width: 10px; height: 10px; border-radius: 50%; background: #4ADE80; }
+
+    /* Right Card: DLQ Self-Healing Loop */
+    .dlq-flow { display: flex; flex-direction: column; gap: 16px; flex: 1; justify-content: center; }
+    .flow-step { background: #0E130B; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; position: relative; }
+    .flow-step.active { border-color: #E27324; background: rgba(226,115,36,0.05); }
+    .flow-step.healed { border-color: #4ADE80; background: rgba(74,222,128,0.05); }
+    
+    .step-badge { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
+    .step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; color: #F4F6F0; }
+    .step-desc { font-size: 12px; color: #BAC5B0; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div id="surface" class="activator-canvas">
+    <div class="topbar">
+      <div class="topbar-left">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E27324" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Microsoft Fabric Activator · Reflex Alerting &amp; Remediation
+        <span class="reflex-badge">REAL-TIME TRIGGERS ACTIVE</span>
+      </div>
+      <div class="topbar-right">
+        <span>Target: Benguet Greenhouse Microclimate SLA</span>
+        <span style="color:#4ADE80">0 False Positives</span>
+      </div>
+    </div>
+
+    <div class="main-body">
+      <!-- Reflex Rule Definition -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E27324" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Reflex Rule: Zone Microclimate Threshold Monitor
+          </div>
+          <span style="font-size:12px; color:#A3BF65; font-family:'JetBrains Mono'">RULE-REFLEX-04</span>
+        </div>
+
+        <div class="rule-block">
+          <span style="color:#6D7A64">// Fabric Activator Evaluation Loop</span><br>
+          <span class="rule-cond">WHEN</span> TelemetryStream.ZoneId <span style="color:#38BDF8">IN</span> ("Z-NFT-08", "Z-AERO-02")<br>
+          <span class="rule-cond">AND</span> (TempC &gt; 26.5 <span style="color:#38BDF8">OR</span> EC &gt; 2.40 <span style="color:#38BDF8">OR</span> pH &lt; 5.50)<br>
+          <span class="rule-cond">FOR AT LEAST</span> 2 consecutive readings (20s)<br>
+          <span class="rule-act">THEN EXECUTE ACTIONS:</span>
+        </div>
+
+        <div class="action-row">
+          <div class="action-item">
+            <span class="action-dot"></span>
+            <div>
+              <strong>Automated Dosing Actuator</strong>
+              <div style="font-size:11px; color:#BAC5B0">Trigger pH neutralizer &amp; cooling mist valve on Facility-01</div>
+            </div>
+          </div>
+          <div class="action-item">
+            <span class="action-dot"></span>
+            <div>
+              <strong>Teams Webhook &amp; PagerDuty</strong>
+              <div style="font-size:11px; color:#BAC5B0">Instant high-priority dispatch with 10s sensor snapshot</div>
+            </div>
+          </div>
+          <div class="action-item">
+            <span class="action-dot"></span>
+            <div>
+              <strong>OneLake Lakehouse Incident Log</strong>
+              <div style="font-size:11px; color:#BAC5B0">Commit audit entry to <code style="color:#A3BF65">fact_incident_remediation</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Self-Healing DLQ Pipeline -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+            Self-Healing DLQ (Dead Letter Queue) Loop
+          </div>
+          <span style="font-size:12px; color:#4ADE80; font-family:'JetBrains Mono'">Zero Pipeline Downtime</span>
+        </div>
+
+        <div class="dlq-flow">
+          <div class="flow-step active">
+            <span class="step-badge" style="background:rgba(226,115,36,0.15); color:#E27324">PHASE 1 · QUARANTINE</span>
+            <div class="step-title">Schema Drift / Malformed Packet Isolated</div>
+            <div class="step-desc">Corrupt or unexpected JSON payload safely routed to Dead Letter Queue without stalling mainstream Eventstream ingestion.</div>
+          </div>
+
+          <div class="flow-step">
+            <span class="step-badge" style="background:rgba(56,189,248,0.15); color:#38BDF8">PHASE 2 · AUTO-CORRECTION</span>
+            <div class="step-title">PySpark Remediation Script Diagnoses &amp; Coerces</div>
+            <div class="step-desc">Applies schema evolution mappings, casts legacy float string fields, and restores payload invariants.</div>
+          </div>
+
+          <div class="flow-step healed">
+            <span class="step-badge" style="background:rgba(74,222,128,0.15); color:#4ADE80">PHASE 3 · REPLAY &amp; RESOLVE</span>
+            <div class="step-title">Re-injected into Silver Lakehouse Delta Table</div>
+            <div class="step-desc">ACID merge commit verifies 100% data fidelity with 0 lost telemetry records. Continuous DataOps integrity preserved.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

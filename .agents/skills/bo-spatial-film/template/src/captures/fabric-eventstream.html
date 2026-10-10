@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Microsoft Fabric Eventstream - Ingress & Routing</title>
+  <link rel="stylesheet" href="platform.css">
+  <style>
+    body { background: #0A0D08; color: #F4F6F0; width: 1440px; height: 900px; overflow: hidden; margin: 0; }
+    .fabric-canvas { position: relative; width: 1440px; height: 900px; background: radial-gradient(ellipse at 50% 20%, #11180E 0%, #0A0D08 80%); }
+    .grid-lines { position: absolute; inset: 0; background-image: linear-gradient(rgba(104,121,65,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(104,121,65,0.08) 1px, transparent 1px); background-size: 32px 32px; }
+    
+    /* Fabric Header */
+    .topbar { height: 52px; background: #0D130B; border-bottom: 1px solid rgba(104,121,65,0.25); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .fabric-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; letter-spacing: -0.02em; color: #F4F6F0; }
+    .stream-tag { font-size: 11px; padding: 3px 8px; border-radius: 6px; background: rgba(74,222,128,0.15); color: #4ADE80; font-weight: 600; border: 1px solid rgba(74,222,128,0.3); }
+    .topbar-right { display: flex; align-items: center; gap: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #BAC5B0; }
+    .metric-pill { background: #131A0F; padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; gap: 8px; align-items: center; }
+    .metric-pill strong { color: #4ADE80; }
+
+    /* Nodes & Canvas Items */
+    .canvas-node { position: absolute; background: #11160C; border: 1px solid rgba(104,121,65,0.35); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.45); }
+    .node-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
+    .node-title { font-weight: 600; font-size: 13px; color: #F4F6F0; display: flex; align-items: center; gap: 8px; }
+    .node-badge { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 2px 6px; border-radius: 4px; background: rgba(104,121,65,0.2); color: #A3BF65; }
+    .node-body { padding: 16px; }
+
+    /* Custom node cards */
+    .src-node { left: 80px; top: 220px; width: 340px; }
+    .hub-node { left: 520px; top: 160px; width: 400px; }
+    .dest-node-1 { left: 1020px; top: 80px; width: 340px; }
+    .dest-node-2 { left: 1020px; top: 320px; width: 340px; }
+    .dest-node-3 { left: 1020px; top: 560px; width: 340px; }
+
+    .json-preview { font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.5; color: #BAC5B0; background: #0A0D08; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+    .json-preview span.k { color: #A3BF65; }
+    .json-preview span.v { color: #E27324; }
+    .json-preview span.n { color: #38BDF8; }
+
+    .live-pulse { width: 8px; height: 8px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 10px #4ADE80; display: inline-block; }
+    .stream-wire { position: absolute; inset: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div id="surface" class="fabric-canvas">
+    <div class="grid-lines"></div>
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="fabric-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="#687941" stroke-width="2"/>
+            <path d="M12 6L7 9V15L12 18L17 15V9L12 6Z" fill="#A3BF65"/>
+          </svg>
+          Microsoft Fabric · Eventstream Studio
+        </div>
+        <span class="stream-tag"><span class="live-pulse"></span> INGESTION ACTIVE</span>
+        <span style="font-size:12px; color:#BAC5B0">benguet-iot-telemetry-hub</span>
+      </div>
+      <div class="topbar-right">
+        <div class="metric-pill">Ingress Rate: <strong>10,480/min</strong></div>
+        <div class="metric-pill">p50 Latency: <strong>1.70s</strong> (SLA &lt; 3.0s)</div>
+        <div class="metric-pill">DLQ Loss: <strong>0.00%</strong></div>
+      </div>
+    </div>
+
+    <!-- SVG Stream Connections -->
+    <svg class="stream-wire" width="1440" height="900" viewBox="0 0 1440 900">
+      <!-- Wire 1: Src -> Hub -->
+      <path d="M 420 320 C 470 320, 470 300, 520 300" fill="none" stroke="#687941" stroke-width="2.5" stroke-dasharray="6 4"/>
+      <!-- Wire 2: Hub -> KQL DB -->
+      <path d="M 920 240 C 970 240, 970 170, 1020 170" fill="none" stroke="#38BDF8" stroke-width="2.5"/>
+      <!-- Wire 3: Hub -> OneLake Delta -->
+      <path d="M 920 300 C 970 300, 970 410, 1020 410" fill="none" stroke="#4ADE80" stroke-width="2.5"/>
+      <!-- Wire 4: Hub -> DLQ Quarantine -->
+      <path d="M 920 360 C 970 360, 970 650, 1020 650" fill="none" stroke="#E27324" stroke-width="2" stroke-dasharray="4 4"/>
+    </svg>
+
+    <!-- Source Node -->
+    <div class="canvas-node src-node">
+      <div class="node-header">
+        <div class="node-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A3BF65" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Benguet IoT Sensor Array
+        </div>
+        <span class="node-badge">8 Facilities · 80 Zones</span>
+      </div>
+      <div class="node-body">
+        <div style="font-size:12px; color:#BAC5B0; margin-bottom:8px">High-Frequency JSON Telemetry:</div>
+        <div class="json-preview">
+          {<br>
+          &nbsp;&nbsp;<span class="k">"facility_id"</span>: <span class="v">"FAC-BENGUET-01"</span>,<br>
+          &nbsp;&nbsp;<span class="k">"zone_id"</span>: <span class="v">"Z-HYPO-04"</span>,<br>
+          &nbsp;&nbsp;<span class="k">"temp_c"</span>: <span class="n">21.84</span>,<br>
+          &nbsp;&nbsp;<span class="k">"humidity_pct"</span>: <span class="n">76.3</span>,<br>
+          &nbsp;&nbsp;<span class="k">"ph"</span>: <span class="n">6.12</span>, <span class="k">"ec"</span>: <span class="n">1.84</span><br>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Hub Node -->
+    <div class="canvas-node hub-node">
+      <div class="node-header">
+        <div class="node-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Fabric Eventstream Routing Hub
+        </div>
+        <span class="node-badge" style="color:#4ADE80; background:rgba(74,222,128,0.15)">Live Stream</span>
+      </div>
+      <div class="node-body">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:12px">
+          <span style="color:#BAC5B0">Stream Partitioning:</span>
+          <span style="color:#F4F6F0; font-family:'JetBrains Mono'">RoundRobin (8 Partitions)</span>
+        </div>
+        <div style="background:#0D1109; border:1px solid rgba(104,121,65,0.2); border-radius:8px; padding:10px 14px; margin-bottom:8px">
+          <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px">
+            <span style="color:#A3BF65">Schema Contract:</span>
+            <span style="color:#4ADE80">Strict Enforcement</span>
+          </div>
+          <div style="font-size:11px; color:#BAC5B0">Validates required fields, type assertions &amp; range invariants</div>
+        </div>
+        <div style="display:flex; gap:10px; font-size:11px; color:#BAC5B0">
+          <div>Dropped: <strong style="color:#F4F6F0">0</strong></div>
+          <div>Quarantined: <strong style="color:#E27324">0.02%</strong></div>
+          <div>Throughput: <strong style="color:#4ADE80">174.6 eps</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dest 1: KQL Eventhouse -->
+    <div class="canvas-node dest-node-1">
+      <div class="node-header">
+        <div class="node-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          Eventhouse KQL DB
+        </div>
+        <span class="node-badge" style="color:#38BDF8; background:rgba(56,189,248,0.15)">Direct Ingestion</span>
+      </div>
+      <div class="node-body">
+        <div style="font-size:12px; color:#BAC5B0">Target Table: <code style="color:#38BDF8">kql_telemetry_live</code></div>
+        <div style="font-size:11px; color:#BAC5B0; margin-top:6px">Streaming retention: 30 days hot cache</div>
+        <div style="margin-top:10px; font-size:11px; color:#4ADE80; font-family:'JetBrains Mono'">Sub-second query readiness &lt; 0.1s</div>
+      </div>
+    </div>
+
+    <!-- Dest 2: Lakehouse Bronze Delta -->
+    <div class="canvas-node dest-node-2">
+      <div class="node-header">
+        <div class="node-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          OneLake Delta Lakehouse
+        </div>
+        <span class="node-badge" style="color:#4ADE80; background:rgba(74,222,128,0.15)">Bronze Raw</span>
+      </div>
+      <div class="node-body">
+        <div style="font-size:12px; color:#BAC5B0">Target: <code style="color:#4ADE80">bronze_telemetry_raw</code></div>
+        <div style="font-size:11px; color:#BAC5B0; margin-top:6px">Append-only Delta Lake format</div>
+        <div style="margin-top:10px; font-size:11px; color:#BAC5B0; font-family:'JetBrains Mono'">ACID commits · PySpark ready</div>
+      </div>
+    </div>
+
+    <!-- Dest 3: DLQ Quarantine -->
+    <div class="canvas-node dest-node-3">
+      <div class="node-header">
+        <div class="node-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E27324" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          DLQ Quarantine
+        </div>
+        <span class="node-badge" style="color:#E27324; background:rgba(226,115,36,0.15)">Self-Healing</span>
+      </div>
+      <div class="node-body">
+        <div style="font-size:12px; color:#BAC5B0">Target: <code style="color:#E27324">dlq_quarantine_events</code></div>
+        <div style="font-size:11px; color:#BAC5B0; margin-top:6px">Automated schema patch &amp; reprocessing</div>
+        <div style="margin-top:10px; font-size:11px; color:#E27324; font-family:'JetBrains Mono'">Auto-remediation · 0 data loss</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
