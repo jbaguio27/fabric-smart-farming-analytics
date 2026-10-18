@@ -1,9 +1,18 @@
 /**
  * HydroGrow: Microsoft Fabric Smart Farming Platform
  * Client-side Controller & Interactive Handlers
+ * 
+ * Upgraded with Apple Design Fluid Interface Principles:
+ * - Direct Manipulation (Pointer Events + setPointerCapture)
+ * - Progressive Boundary Rubber-Banding
+ * - Momentum Projection & Inertial Velocity Handoff
+ * - Spatially Anchored Origins for Modals & Tooltips
+ * - Latency Elimination & Full Interruptibility
+ * - Accessibility (prefers-reduced-motion / reduced-transparency)
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  initAppleTouchFeedback();
   initLightbox();
   initTabs();
   initCodeCopy();
@@ -17,7 +26,46 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Fullscreen Lightbox Modal Controller with Pan & Zoom
+ * Apple Design Principle 1: Response - Kill Latency
+ * Instant tactile feedback on pointerdown
+ */
+function initAppleTouchFeedback() {
+  const interactiveSelector = 'button, .btn, .tab-btn, .walkthrough-tab-btn, .filter-pill, .photo-card, [data-lightbox-src]';
+  document.addEventListener('pointerdown', (e) => {
+    const target = e.target.closest(interactiveSelector);
+    if (!target) return;
+    target.classList.add('apple-pressed');
+
+    const clearPress = () => {
+      target.classList.remove('apple-pressed');
+      window.removeEventListener('pointerup', clearPress);
+      window.removeEventListener('pointercancel', clearPress);
+    };
+
+    window.addEventListener('pointerup', clearPress, { once: true });
+    window.addEventListener('pointercancel', clearPress, { once: true });
+  }, { passive: true });
+}
+
+/**
+ * Apple Design Principle 9: Progressive Rubber-Banding
+ * Soft boundaries that resist progressively instead of stopping hard
+ */
+function rubberband(overshoot, dimension, constant = 0.55) {
+  return (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot));
+}
+
+/**
+ * Apple Design Principle 6: Momentum Projection
+ * Projects resting position based on release velocity
+ */
+function projectMomentum(initialVelocity, decelerationRate = 0.998) {
+  return (initialVelocity / 1000) * decelerationRate / (1 - decelerationRate);
+}
+
+/**
+ * Fullscreen Lightbox Modal Controller with Anchored Spatial Origins & Pan
+ * Apple Principle 7: Spatial Consistency - Expand from triggered card & collapse back
  */
 function initLightbox() {
   const modal = document.getElementById('lightbox-modal');
@@ -39,23 +87,28 @@ function initLightbox() {
   let isDragging = false;
   let startX = 0;
   let startY = 0;
+  let lastMoveTime = 0;
+  let lastX = 0;
+  let lastY = 0;
+  let velocityX = 0;
+  let velocityY = 0;
+  let panAnimFrame = null;
 
   function updateTransform() {
     modalImg.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
     if (zoomLevelTag) {
       zoomLevelTag.textContent = `${Math.round(scale * 100)}%`;
     }
-    if (scale > 1) {
-      modalImg.style.cursor = isDragging ? 'grabbing' : 'grab';
-    } else {
-      modalImg.style.cursor = 'default';
-    }
+    modalImg.style.cursor = scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default';
   }
 
   function resetZoom() {
+    cancelAnimationFrame(panAnimFrame);
     scale = 1;
     posX = 0;
     posY = 0;
+    velocityX = 0;
+    velocityY = 0;
     updateTransform();
   }
 
@@ -77,12 +130,10 @@ function initLightbox() {
     }
   }
 
-  // Hook up zoom buttons
   if (zoomInBtn) zoomInBtn.addEventListener('click', (e) => { e.stopPropagation(); zoomIn(); });
   if (zoomOutBtn) zoomOutBtn.addEventListener('click', (e) => { e.stopPropagation(); zoomOut(); });
   if (zoomResetBtn) zoomResetBtn.addEventListener('click', (e) => { e.stopPropagation(); resetZoom(); });
 
-  // Mouse Wheel Zoom
   if (viewport) {
     viewport.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -94,37 +145,89 @@ function initLightbox() {
     }, { passive: false });
   }
 
-  // Click & Drag to Pan (when zoomed in)
-  modalImg.addEventListener('mousedown', (e) => {
+  // Direct Manipulation Pan with Pointer Events & Momentum Projection
+  modalImg.addEventListener('pointerdown', (e) => {
     if (scale <= 1) return;
     isDragging = true;
+    cancelAnimationFrame(panAnimFrame);
+    modalImg.setPointerCapture(e.pointerId);
+
     startX = e.clientX - posX;
     startY = e.clientY - posY;
-    modalImg.style.cursor = 'grabbing';
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastMoveTime = performance.now();
+    velocityX = 0;
+    velocityY = 0;
+    updateTransform();
     e.preventDefault();
   });
 
-  window.addEventListener('mousemove', (e) => {
+  modalImg.addEventListener('pointermove', (e) => {
     if (!isDragging) return;
+    const now = performance.now();
+    const dt = Math.max(1, now - lastMoveTime);
+
+    velocityX = (e.clientX - lastX) / dt;
+    velocityY = (e.clientY - lastY) / dt;
+
+    lastX = e.clientX;
+    lastY = e.clientY;
+    lastMoveTime = now;
+
     posX = e.clientX - startX;
     posY = e.clientY - startY;
     updateTransform();
   });
 
-  window.addEventListener('mouseup', () => {
-    if (isDragging) {
-      isDragging = false;
-      modalImg.style.cursor = scale > 1 ? 'grab' : 'default';
-    }
-  });
+  const handlePointerEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    updateTransform();
 
-  // Click triggers for any lightbox target
+    const speed = Math.hypot(velocityX, velocityY);
+    if (speed > 0.25) {
+      const glideStartTime = performance.now();
+      const startPosX = posX;
+      const startPosY = posY;
+      const projX = projectMomentum(velocityX * 1000, 0.995);
+      const projY = projectMomentum(velocityY * 1000, 0.995);
+
+      function glideStep(now) {
+        const elapsed = now - glideStartTime;
+        const duration = 500;
+        const progress = Math.min(1, elapsed / duration);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+
+        posX = startPosX + projX * easeOut;
+        posY = startPosY + projY * easeOut;
+        updateTransform();
+
+        if (progress < 1) {
+          panAnimFrame = requestAnimationFrame(glideStep);
+        }
+      }
+
+      panAnimFrame = requestAnimationFrame(glideStep);
+    }
+  };
+
+  modalImg.addEventListener('pointerup', handlePointerEnd);
+  modalImg.addEventListener('pointercancel', handlePointerEnd);
+
+  // Spatially Anchored Trigger: Expand from trigger's viewport coordinates
   const triggerElements = document.querySelectorAll('[data-lightbox-src]');
   triggerElements.forEach(el => {
     el.addEventListener('click', () => {
       const src = el.getAttribute('data-lightbox-src');
       const caption = el.getAttribute('data-lightbox-caption') || el.querySelector('.gallery-item-title')?.textContent || '';
       
+      const rect = el.getBoundingClientRect();
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top + rect.height / 2;
+      modal.style.setProperty('--origin-x', `${originX}px`);
+      modal.style.setProperty('--origin-y', `${originY}px`);
+
       resetZoom();
       if (loader) loader.style.display = 'block';
       modalImg.style.opacity = '0';
@@ -141,20 +244,20 @@ function initLightbox() {
     });
   });
 
-  // Close handlers
   const closeModal = () => {
     modal.classList.remove('active');
-    modalImg.src = '';
-    modalCaption.textContent = '';
-    resetZoom();
+    setTimeout(() => {
+      modalImg.src = '';
+      modalCaption.textContent = '';
+      resetZoom();
+    }, 280);
     document.body.style.overflow = '';
   };
 
   closeBtn.addEventListener('click', closeModal);
 
   modal.addEventListener('click', (e) => {
-    // Only close if clicking outside viewport or controls
-    if (e.target === modal) {
+    if (e.target === modal || e.target === viewport) {
       closeModal();
     }
   });
@@ -186,11 +289,9 @@ function initTabs() {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-tab-target');
 
-      // Update active button
       tabBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Update active panel
       tabPanels.forEach(p => {
         if (p.id === targetId) {
           p.classList.add('active');
@@ -219,17 +320,13 @@ function initCodeCopy() {
       try {
         await navigator.clipboard.writeText(codeText);
         const originalText = btn.textContent;
-        btn.textContent = '✓ Copied!';
-        btn.style.borderColor = 'var(--c-orange-accent)';
-        btn.style.color = 'var(--c-orange-accent)';
-        btn.style.backgroundColor = 'rgba(226, 115, 36, 0.15)';
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
 
         setTimeout(() => {
           btn.textContent = originalText;
-          btn.style.borderColor = '';
-          btn.style.color = '';
-          btn.style.backgroundColor = '';
-        }, 2200);
+          btn.classList.remove('copied');
+        }, 2000);
       } catch (err) {
         console.error('Clipboard copy failed:', err);
       }
@@ -247,7 +344,7 @@ function initScrollSpy() {
   if (!sections.length || !navLinks.length) return;
 
   const onScroll = () => {
-    const scrollPos = window.scrollY + 160;
+    const scrollPos = window.scrollY + 140;
 
     sections.forEach(section => {
       const top = section.offsetTop;
@@ -267,11 +364,11 @@ function initScrollSpy() {
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll(); // initial check
+  onScroll();
 }
 
 /**
- * Mobile Navigation Toggle
+ * Mobile Navigation Toggle with Sheet Backdrop & Spring Entrance
  */
 function initMobileNav() {
   const toggleBtn = document.querySelector('.nav-toggle');
@@ -279,28 +376,54 @@ function initMobileNav() {
 
   if (!toggleBtn || !navLinks) return;
 
-  toggleBtn.addEventListener('click', () => {
+  function toggleMenu() {
+    const isOpen = navLinks.classList.contains('mobile-open');
     navLinks.classList.toggle('mobile-open');
-  });
+    toggleBtn.setAttribute('aria-expanded', !isOpen);
+    toggleBtn.classList.toggle('active', !isOpen);
+    document.body.classList.toggle('nav-sheet-open', !isOpen);
+  }
+
+  toggleBtn.addEventListener('click', toggleMenu);
 
   navLinks.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
       navLinks.classList.remove('mobile-open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.classList.remove('active');
+      document.body.classList.remove('nav-sheet-open');
     });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navLinks.classList.contains('mobile-open')) {
+      toggleMenu();
+    }
   });
 }
 
 /**
- * Animated Metric Number Counter Ticker
+ * Animated Metric Number Counter Ticker (Respects Reduced Motion)
  */
 function initCounters() {
   const counterElements = document.querySelectorAll('[data-counter]');
   if (!counterElements.length || !('IntersectionObserver' in window)) return;
 
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   const observer = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        animateCounter(entry.target);
+        if (prefersReducedMotion) {
+          const el = entry.target;
+          const target = parseFloat(el.getAttribute('data-counter'));
+          const prefix = el.getAttribute('data-prefix') || '';
+          const suffix = el.getAttribute('data-suffix') || '';
+          const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+          el.textContent = `${prefix}${target.toFixed(decimals)}${suffix}`;
+        } else {
+          animateCounter(entry.target);
+        }
         obs.unobserve(entry.target);
       }
     });
@@ -314,14 +437,13 @@ function animateCounter(el) {
   const prefix = el.getAttribute('data-prefix') || '';
   const suffix = el.getAttribute('data-suffix') || '';
   const decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
-  const duration = 1200; // ms
+  const duration = 1100;
   const startTime = performance.now();
 
   function update(now) {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
     
-    // Ease-out cubic easing curve
     const easeOut = 1 - Math.pow(1 - progress, 3);
     const currentVal = (target * easeOut).toFixed(decimals);
 
@@ -345,16 +467,19 @@ function initProblemSwiper() {
   const swiperEl = document.querySelector('.problem-swiper');
   if (!swiperEl) return;
 
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   new Swiper('.problem-swiper', {
-    effect: 'coverflow',
+    effect: prefersReducedMotion ? 'slide' : 'coverflow',
     grabCursor: true,
     centeredSlides: true,
     slidesPerView: 'auto',
     initialSlide: 0,
+    speed: prefersReducedMotion ? 200 : 400,
     coverflowEffect: {
-      rotate: 20,
+      rotate: prefersReducedMotion ? 0 : 20,
       stretch: 0,
-      depth: 120,
+      depth: prefersReducedMotion ? 0 : 120,
       modifier: 1.2,
       slideShadows: false,
     },
@@ -373,7 +498,8 @@ function initProblemSwiper() {
 }
 
 /**
- * Scrolltelling Data Pipeline Visualization Controller for Chapter 4
+ * Scrolltelling Data Pipeline Visualization Controller
+ * Apple Principle 3: Fully Interruptible, Zero Delay Lockouts
  */
 function initScrolltellingPipeline() {
   const layerBlocks = document.querySelectorAll('.layer-block[data-layer-idx]');
@@ -382,38 +508,27 @@ function initScrolltellingPipeline() {
 
   if (!layerBlocks.length || !navNodes.length) return;
 
-  let isManualClick = false;
-  let clickTimeout = null;
+  let isManualScroll = false;
 
   function setActive(idx) {
-    // 1. Highlight target layer block
     layerBlocks.forEach(block => {
       const bIdx = parseInt(block.getAttribute('data-layer-idx'), 10);
-      if (bIdx === idx) {
-        block.classList.add('active-layer');
-      } else {
-        block.classList.remove('active-layer');
-      }
+      block.classList.toggle('active-layer', bIdx === idx);
     });
 
-    // 2. Activate nav node & animate tracker dot
     navNodes.forEach(node => {
       const nIdx = parseInt(node.getAttribute('data-target-layer'), 10);
-      if (nIdx === idx) {
-        node.classList.add('active');
-        if (trackerDot) {
-          const nodeTop = node.offsetTop;
-          const nodeHeight = node.offsetHeight;
-          const dotTop = nodeTop + (nodeHeight / 2) - 5;
-          trackerDot.style.transform = `translateY(${dotTop}px)`;
-        }
-      } else {
-        node.classList.remove('active');
+      const isMatch = nIdx === idx;
+      node.classList.toggle('active', isMatch);
+      if (isMatch && trackerDot) {
+        const nodeTop = node.offsetTop;
+        const nodeHeight = node.offsetHeight;
+        const dotTop = nodeTop + (nodeHeight / 2) - 5;
+        trackerDot.style.transform = `translateY(${dotTop}px)`;
       }
     });
   }
 
-  // Click on pipeline choice
   navNodes.forEach(node => {
     node.addEventListener('click', (e) => {
       e.preventDefault();
@@ -421,40 +536,36 @@ function initScrolltellingPipeline() {
       const targetBlock = document.querySelector(`.layer-block[data-layer-idx="${idx}"]`);
 
       if (targetBlock) {
-        isManualClick = true;
-        clearTimeout(clickTimeout);
         setActive(idx);
-
-        // Scroll target layer into view just below sticky navbar
-        const headerOffset = 140;
+        const headerOffset = 130;
         const targetTop = targetBlock.getBoundingClientRect().top + window.scrollY - headerOffset;
 
+        isManualScroll = true;
         window.scrollTo({
           top: targetTop,
           behavior: 'smooth'
         });
 
-        // Release scroll lock after smooth scroll animation completes
-        clickTimeout = setTimeout(() => {
-          isManualClick = false;
-        }, 850);
+        const onSettled = () => {
+          isManualScroll = false;
+          window.removeEventListener('wheel', onSettled);
+          window.removeEventListener('touchmove', onSettled);
+        };
+        window.addEventListener('wheel', onSettled, { once: true, passive: true });
+        window.addEventListener('touchmove', onSettled, { once: true, passive: true });
+        setTimeout(() => { isManualScroll = false; }, 600);
       }
     });
   });
 
-  // Dynamic onScroll spy using top threshold
   const onScroll = () => {
-    if (isManualClick) return;
-
-    // Viewport threshold just below sticky header
+    if (isManualScroll) return;
     const threshold = 180;
     let activeIdx = 1;
 
     layerBlocks.forEach(block => {
       const rect = block.getBoundingClientRect();
       const bIdx = parseInt(block.getAttribute('data-layer-idx'), 10);
-
-      // As user scrolls down, each layer whose top has crossed the threshold becomes active
       if (rect.top <= threshold) {
         activeIdx = bIdx;
       }
@@ -464,13 +575,8 @@ function initScrolltellingPipeline() {
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  
-  // Set initial Layer 1 on page load
-  setTimeout(() => {
-    setActive(1);
-  }, 100);
+  setTimeout(() => setActive(1), 50);
 }
-
 
 /**
  * Interactive Dashboard Walkthrough Theater & Hotspot Tooltips
@@ -631,7 +737,6 @@ function initDashboardWalkthrough() {
         </div>
       `;
 
-      // Touch toggle for mobile
       item.addEventListener('click', (e) => {
         e.stopPropagation();
         const wasActive = item.classList.contains('active');
@@ -647,25 +752,18 @@ function initDashboardWalkthrough() {
     const data = WALKTHROUGH_DATA[viewKey];
     if (!data) return;
 
-    // Update Buttons
     tabBtns.forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-view') === viewKey);
     });
 
-    // Fade transition on image
-    displayImg.style.opacity = '0';
-    setTimeout(() => {
-      displayImg.src = data.img;
-      displayImg.alt = data.title;
-      if (urlDisplay) urlDisplay.textContent = data.url;
-      if (modeBadge) modeBadge.textContent = data.mode;
-      if (captionText) captionText.textContent = data.caption;
-      displayImg.style.opacity = '1';
-      renderHotspots(data.hotspots);
-    }, 200);
+    displayImg.src = data.img;
+    displayImg.alt = data.title;
+    if (urlDisplay) urlDisplay.textContent = data.url;
+    if (modeBadge) modeBadge.textContent = data.mode;
+    if (captionText) captionText.textContent = data.caption;
+    renderHotspots(data.hotspots);
   }
 
-  // Bind click listeners on view tabs
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const viewKey = btn.getAttribute('data-view');
@@ -673,7 +771,6 @@ function initDashboardWalkthrough() {
     });
   });
 
-  // Expand in Fullscreen Lightbox
   if (expandBtn) {
     expandBtn.addEventListener('click', () => {
       const activeBtn = document.querySelector('.walkthrough-tab-btn.active');
@@ -685,6 +782,10 @@ function initDashboardWalkthrough() {
       const modalImg = document.getElementById('lightbox-img');
       const modalCaption = document.getElementById('lightbox-caption');
       if (modal && modalImg && modalCaption) {
+        const rect = expandBtn.getBoundingClientRect();
+        modal.style.setProperty('--origin-x', `${rect.left + rect.width / 2}px`);
+        modal.style.setProperty('--origin-y', `${rect.top + rect.height / 2}px`);
+
         modalImg.src = data.img;
         modalCaption.textContent = data.caption;
         modal.classList.add('active');
@@ -693,17 +794,19 @@ function initDashboardWalkthrough() {
     });
   }
 
-  // Dismiss open tooltips when clicking anywhere in viewport
   document.addEventListener('click', () => {
     document.querySelectorAll('.hotspot-item').forEach(el => el.classList.remove('active'));
   });
 
-  // Initial load
   setView('executive-ops');
 }
 
 /**
  * Interactive Before & After Telemetry Transformation Slider
+ * Apple Fluid Interface Upgrades:
+ * - Direct Manipulation (Pointer Events with setPointerCapture)
+ * - Progressive Boundary Rubber-Banding
+ * - Release Velocity Tracking & Momentum Handoff
  */
 function initBeforeAfterSlider() {
   const container = document.getElementById('before-after-widget');
@@ -713,55 +816,110 @@ function initBeforeAfterSlider() {
   if (!container || !beforeLayer || !divider) return;
 
   let isDragging = false;
+  let currentPercentage = 50;
+  let history = [];
+  let momentumAnimFrame = null;
 
-  function updateSlider(clientX) {
-    const rect = container.getBoundingClientRect();
-    const offsetX = clientX - rect.left;
-    let percentage = (offsetX / rect.width) * 100;
-
-    // Clamp between 5% and 95%
-    percentage = Math.max(5, Math.min(95, percentage));
-
-    beforeLayer.style.width = `${percentage}%`;
-    divider.style.left = `${percentage}%`;
+  function applyPercentage(pct, withSpring = false) {
+    currentPercentage = pct;
+    beforeLayer.style.width = `${pct}%`;
+    divider.style.left = `${pct}%`;
+    if (withSpring) {
+      beforeLayer.style.transition = 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      divider.style.transition = 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    } else {
+      beforeLayer.style.transition = 'none';
+      divider.style.transition = 'none';
+    }
   }
 
-  // Mouse Events
-  divider.addEventListener('mousedown', (e) => {
+  function handlePointerMove(clientX) {
+    const rect = container.getBoundingClientRect();
+    const rawX = clientX - rect.left;
+    let rawPct = (rawX / rect.width) * 100;
+
+    let finalPct = rawPct;
+    if (rawPct < 5) {
+      const overshoot = 5 - rawPct;
+      finalPct = 5 - rubberband(overshoot, 100, 0.4);
+    } else if (rawPct > 95) {
+      const overshoot = rawPct - 95;
+      finalPct = 95 + rubberband(overshoot, 100, 0.4);
+    }
+
+    applyPercentage(finalPct, false);
+
+    const now = performance.now();
+    history.push({ x: finalPct, time: now });
+    if (history.length > 5) history.shift();
+  }
+
+  function handlePointerDown(e) {
     isDragging = true;
+    cancelAnimationFrame(momentumAnimFrame);
+    history = [{ x: currentPercentage, time: performance.now() }];
+    divider.setPointerCapture(e.pointerId);
+    container.classList.add('is-dragging');
+    handlePointerMove(e.clientX);
     e.preventDefault();
-  });
+  }
 
-  container.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    updateSlider(e.clientX);
-  });
-
-  window.addEventListener('mousemove', (e) => {
+  function handlePointerUp(e) {
     if (!isDragging) return;
-    updateSlider(e.clientX);
-  });
-
-  window.addEventListener('mouseup', () => {
     isDragging = false;
+    container.classList.remove('is-dragging');
+
+    const now = performance.now();
+    let velocity = 0;
+    if (history.length >= 2) {
+      const recent = history[history.length - 1];
+      const prev = history[0];
+      const dt = Math.max(1, recent.time - prev.time);
+      velocity = ((recent.x - prev.x) / dt) * 1000;
+    }
+
+    if (Math.abs(velocity) > 150) {
+      const projectedDelta = projectMomentum(velocity, 0.992) * 0.12;
+      let target = currentPercentage + projectedDelta;
+      target = Math.max(5, Math.min(95, target));
+
+      const startTime = performance.now();
+      const startPct = currentPercentage;
+      const totalDelta = target - startPct;
+
+      function momentumStep(t) {
+        const progress = Math.min(1, (t - startTime) / 450);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = startPct + totalDelta * ease;
+        applyPercentage(current, false);
+
+        if (progress < 1) {
+          momentumAnimFrame = requestAnimationFrame(momentumStep);
+        } else {
+          applyPercentage(target, true);
+        }
+      }
+
+      momentumAnimFrame = requestAnimationFrame(momentumStep);
+    } else {
+      if (currentPercentage < 5) {
+        applyPercentage(5, true);
+      } else if (currentPercentage > 95) {
+        applyPercentage(95, true);
+      }
+    }
+  }
+
+  divider.addEventListener('pointerdown', handlePointerDown);
+  container.addEventListener('pointerdown', handlePointerDown);
+
+  window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    handlePointerMove(e.clientX);
   });
 
-  // Touch Events
-  divider.addEventListener('touchstart', (e) => {
-    isDragging = true;
-  }, { passive: true });
+  window.addEventListener('pointerup', handlePointerUp);
+  window.addEventListener('pointercancel', handlePointerUp);
 
-  container.addEventListener('touchstart', (e) => {
-    isDragging = true;
-    if (e.touches[0]) updateSlider(e.touches[0].clientX);
-  }, { passive: true });
-
-  window.addEventListener('touchmove', (e) => {
-    if (!isDragging || !e.touches[0]) return;
-    updateSlider(e.touches[0].clientX);
-  }, { passive: true });
-
-  window.addEventListener('touchend', () => {
-    isDragging = false;
-  });
+  applyPercentage(50, false);
 }

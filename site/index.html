@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
 </head>
 <body>
@@ -22,9 +22,14 @@
         <span>HydroGrow<span class="brand-sub">Analytics</span></span>
       </a>
 
-      <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+      <button class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="primary-nav-links">
+        <span class="nav-toggle-icon" aria-hidden="true">
+          <span class="nav-toggle-line line-1"></span>
+          <span class="nav-toggle-line line-2"></span>
+        </span>
+      </button>
 
-      <ul class="nav-links">
+      <ul class="nav-links" id="primary-nav-links">
         <li><a href="#origin" class="nav-link">Story</a></li>
         <li><a href="#platform" class="nav-link">Architecture</a></li>
         <li><a href="#spatial-film" class="nav-link nav-link-film"><span class="nav-film-dot"></span><span>3D Film</span></a></li>
@@ -65,13 +70,13 @@
             An end-to-end data platform proof of concept inspired by real operational farming challenges—demonstrating how fragmented IoT telemetry, manual records, and equipment data can be modernized using Microsoft Fabric, real-time ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
           </p>
 
-          <!-- Architecture Category Filter Pills -->
-          <div class="hero-filter-pills">
-            <span class="filter-pill active">Streaming (KQL)</span>
-            <span class="filter-pill">Lakehouse (Delta Parquet)</span>
-            <span class="filter-pill">Warehouse (Kimball)</span>
-            <span class="filter-pill">Direct Lake (Power BI)</span>
-            <span class="filter-pill">Activator (10 Reflex Rules)</span>
+          <!-- Architecture Category Filter Pills (Functional Quick Jumps) -->
+          <div class="hero-filter-pills" role="navigation" aria-label="Architecture Quick Jumps">
+            <a href="#platform" class="filter-pill active">Streaming (KQL)</a>
+            <a href="#platform" class="filter-pill">Lakehouse (Delta Parquet)</a>
+            <a href="#platform" class="filter-pill">Warehouse (Kimball)</a>
+            <a href="#explore" class="filter-pill">Direct Lake (Power BI)</a>
+            <a href="#explore" class="filter-pill">Activator (10 Reflex Rules)</a>
           </div>
 
           <div class="hero-actions">
@@ -1991,6 +1996,6 @@
 
   <!-- Swiper.js Library for 3D Coverflow & Carousels -->
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
