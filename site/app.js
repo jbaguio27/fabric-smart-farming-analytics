@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrolltellingPipeline();
   initDashboardWalkthrough();
   initBeforeAfterSlider();
-  initLiveTelemetryTicker();
+  initTelemetrySignalLoom();
   initKqlDrawers();
   initSliderPresets();
   initLatencyInstrumentHover();
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Instant tactile feedback on pointerdown
  */
 function initAppleTouchFeedback() {
-  const interactiveSelector = 'button, .btn, .tab-btn, .walkthrough-tab-btn, .filter-pill, .photo-card, [data-lightbox-src]';
+  const interactiveSelector = 'button, .btn, .tab-btn, .walkthrough-tab-btn, .filter-pill, .photo-card, [data-lightbox-src], .author-link-btn, .scenario-tab-btn, .terminal-copy-btn, .kql-drawer-btn, .drawer-toggle-btn, .note-summary, .badges-banner-container, .lightbox-btn';
   document.addEventListener('pointerdown', (e) => {
     const target = e.target.closest(interactiveSelector);
     if (!target) return;
@@ -930,53 +930,341 @@ function initBeforeAfterSlider() {
 }
 
 /**
- * Live Simulated Edge Telemetry HUD Controller
- * Demonstrates real-time streaming velocity and IoT microclimate stability
+ * Signature Interaction: Telemetry Signal Loom & Live Incident Simulator
+ * 
+ * Demonstrates real-time Microsoft Fabric data engineering:
+ * - Scenario 1: Nominal Diurnal Telemetry Stream (Edge -> Eventstream -> KQL -> Lakehouse -> Direct Lake)
+ * - Scenario 2: Thermal Runaway Injected Spike (+12.4°C breach > 32°C redline -> Fabric Activator Rule 01 <5s)
+ * - Scenario 3: Corrupt Schema Packet Quarantined to Dead-Letter Queue (Auto-Healed by 5-Worker PySpark 66.1%)
  */
-function initLiveTelemetryTicker() {
+function initTelemetrySignalLoom() {
+  const loomContainer = document.querySelector('.telemetry-signal-loom');
+  if (!loomContainer) return;
+
+  // Header Elements
   const clockEl = document.getElementById('hud-clock');
+  const stationTitleEl = document.getElementById('loom-station-title');
+  const indicatorDot = document.getElementById('loom-indicator-dot');
+  const latencyTag = document.getElementById('loom-latency-tag');
+  const scenarioBtns = document.querySelectorAll('.loom-scenario-btn');
+  
+  // Waveform elements
+  const tempLine = document.getElementById('loom-temp-line');
+  const tempArea = document.getElementById('loom-temp-area');
+  const vpdLine = document.getElementById('loom-vpd-line');
+  const vpdArea = document.getElementById('loom-vpd-area');
+  const beaconPt = document.getElementById('loom-beacon-pt');
+  const statusOverlay = document.getElementById('loom-status-overlay');
+  const statusIcon = document.getElementById('loom-status-icon');
+  const statusMessage = document.getElementById('loom-status-message');
+  const thresholdLabel = document.getElementById('loom-threshold-label');
+
+  // Digital metrics
   const tempEl = document.getElementById('hud-temp');
-  const humEl = document.getElementById('hud-humidity');
+  const tempSub = document.getElementById('loom-temp-sub');
   const vpdEl = document.getElementById('hud-vpd');
+  const vpdSub = document.getElementById('loom-vpd-sub');
   const phEl = document.getElementById('hud-ph');
-  const ecEl = document.getElementById('hud-ec');
+  const phSub = document.getElementById('loom-ph-sub');
   const rateEl = document.getElementById('hud-rate');
+  const rateSub = document.getElementById('loom-rate-sub');
 
-  if (!clockEl || !tempEl) return;
+  // Pipeline Tracer
+  const pipelineStatus = document.getElementById('loom-pipeline-status');
+  const nodeEdge = document.getElementById('tracer-edge');
+  const nodeEventstream = document.getElementById('tracer-eventstream');
+  const nodeKql = document.getElementById('tracer-kql');
+  const nodeLakehouse = document.getElementById('tracer-lakehouse');
+  const nodeDirectLake = document.getElementById('tracer-directlake');
 
+  // Code Drawer
+  const codeDrawer = document.getElementById('loom-code-drawer');
+  const codeToggle = document.getElementById('loom-code-toggle');
+  const codeTitle = document.getElementById('loom-code-title');
+  const codeBlock = document.getElementById('loom-code-block');
+
+  let currentScenario = 'nominal';
+
+  // Live UTC Observatory Clock
   function updateClock() {
-    const now = new Date();
-    clockEl.textContent = now.toTimeString().split(' ')[0] + ' UTC';
+    if (clockEl) {
+      const now = new Date();
+      clockEl.textContent = now.toTimeString().split(' ')[0] + ' UTC';
+    }
   }
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Periodic realistic sensor jitter
-  setInterval(() => {
-    // Temp: 19.2 to 19.6
-    const temp = (19.4 + (Math.random() * 0.4 - 0.2)).toFixed(1);
-    tempEl.innerHTML = `${temp}<span class="hud-metric-unit">°C</span>`;
+  // Scenario Data Profiles
+  const SCENARIO_PROFILES = {
+    'nominal': {
+      station: 'Greenhouse Zone 03 · Telemetry Ingress',
+      indicatorClass: '',
+      latency: 'Ingress 1.70s p50',
+      statusClass: '',
+      statusIconText: '✓',
+      statusText: 'Stream Healthy: 80 zones synchronized within diurnal tolerances',
+      thresholdText: '32°C SLA Threshold',
+      tempVal: '19.4',
+      tempClass: '',
+      tempSubText: 'Nominal Range',
+      vpdVal: '1.12',
+      vpdSubText: 'Optimal Transpiration',
+      phVal: '6.24',
+      phSubText: 'Micro-Dosing Active',
+      rateVal: '1,240',
+      rateClass: 'status-accent',
+      rateSubText: '6 Streams Ingress',
+      pipelineStatusText: 'OneLake Delta Sync',
+      pipelineStatusColor: 'var(--c-orange-accent)',
+      nodes: {
+        edge: 'active',
+        eventstream: 'active',
+        kql: 'active',
+        lakehouse: 'active',
+        directlake: 'active'
+      },
+      waveTempPath: 'M 0,65 L 90,62 L 180,68 L 270,64 L 360,67 L 450,63 L 540,65',
+      waveTempArea: 'M 0,65 L 90,62 L 180,68 L 270,64 L 360,67 L 450,63 L 540,65 L 540,130 L 0,130 Z',
+      waveVpdPath: 'M 0,90 L 90,88 L 180,92 L 270,89 L 360,91 L 450,88 L 540,90',
+      waveVpdArea: 'M 0,90 L 90,88 L 180,92 L 270,89 L 360,91 L 450,88 L 540,90 L 540,130 L 0,130 Z',
+      beacon: { cx: 450, cy: 63, fill: '#E27324' },
+      codeTitle: 'generators/environmental_telemetry.py',
+      code: `# Python Edge Generator: Diurnal cycle with Gaussian jitter
+def generate_telemetry_reading(zone_id: str, t: float) -> dict:
+    diurnal_temp = 18.0 + 4.5 * math.sin(t / 86400 * 2 * math.pi)
+    jitter = random.gauss(0, 0.15)
+    vpd = calculate_vpd(diurnal_temp, humidity=72.5)
+    return {
+        "zone_id": zone_id, "reading_time": utcnow().isoformat(),
+        "temperature_c": round(diurnal_temp + jitter, 2),
+        "vpd_kpa": round(vpd, 3), "status": "SYNCHRONIZED"
+    }`
+    },
+    'thermal-spike': {
+      station: 'Greenhouse Zone 03 · Thermal Runaway Alert',
+      indicatorClass: 'warning',
+      latency: 'Activator SLA 4.82s',
+      statusClass: 'warning',
+      statusIconText: '!',
+      statusText: 'Threshold Breach: Canopy temp 34.8°C exceeds 32.0°C SLA limit',
+      thresholdText: '34.8°C Threshold Breach',
+      tempVal: '34.8',
+      tempClass: 'warn',
+      tempSubText: 'Critical: +12.4°C Spike',
+      vpdVal: '2.45',
+      vpdSubText: 'Transpiration Stress',
+      phVal: '6.18',
+      phSubText: 'Cooling Loop Primed',
+      rateVal: '1,420',
+      rateClass: 'warn',
+      rateSubText: 'Burst Telemetry Mode',
+      pipelineStatusText: 'Activator Reflex Triggered',
+      pipelineStatusColor: '#F59E0B',
+      nodes: {
+        edge: 'active',
+        eventstream: 'active',
+        kql: 'warning',
+        lakehouse: 'active',
+        directlake: 'active'
+      },
+      waveTempPath: 'M 0,65 L 90,64 L 180,66 L 270,55 L 360,35 L 450,18 L 540,16',
+      waveTempArea: 'M 0,65 L 90,64 L 180,66 L 270,55 L 360,35 L 450,18 L 540,16 L 540,130 L 0,130 Z',
+      waveVpdPath: 'M 0,90 L 90,89 L 180,88 L 270,75 L 360,50 L 450,38 L 540,36',
+      waveVpdArea: 'M 0,90 L 90,89 L 180,88 L 270,75 L 360,50 L 450,38 L 540,36 L 540,130 L 0,130 Z',
+      beacon: { cx: 450, cy: 18, fill: '#EF4444' },
+      codeTitle: 'kql/activator_rule_01.kql',
+      code: `// Real-time Eventhouse KQL detection (<5s SLA window)
+EnvironmentalTelemetry
+| where IngestionTime > ago(1m)
+| where Temperature_C > 32.0 or VPD_kPa > 2.20
+| summarize MaxTemp = max(Temperature_C), VpdDeficit = max(VPD_kPa)
+    by ZoneId, bin(IngestionTime, 5s)
+| project ZoneId, MaxTemp, VpdDeficit, AlertSeverity = "CRITICAL"
+// Activator Reflex: Emergency HVAC shade deployment & SMS paging`
+    },
+    'dlq-quarantine': {
+      station: 'Ingress Gateway · Schema Quarantine Sink',
+      indicatorClass: 'danger',
+      latency: 'DLQ Route 0.84s',
+      statusClass: 'danger',
+      statusIconText: '!',
+      statusText: 'Schema Failure: Corrupt epoch and null PK quarantined to Dead-Letter Sink',
+      thresholdText: 'Schema Quarantine Sink',
+      tempVal: 'NULL',
+      tempClass: 'warn',
+      tempSubText: 'Corrupt Schema Frame',
+      vpdVal: 'NaN',
+      vpdSubText: 'Payload Hash Missing',
+      phVal: 'ERR',
+      phSubText: 'Unparseable Frame',
+      rateVal: '480',
+      rateClass: 'warn',
+      rateSubText: 'Quarantine Diverted',
+      pipelineStatusText: 'Dead-Letter Sink (66.1% Auto-Healed)',
+      pipelineStatusColor: '#EF4444',
+      nodes: {
+        edge: 'active',
+        eventstream: 'quarantine',
+        kql: 'quarantine',
+        lakehouse: 'quarantine',
+        directlake: 'active'
+      },
+      waveTempPath: 'M 0,65 L 90,62 L 180,68 L 270,115 L 360,118 L 450,110 L 540,112',
+      waveTempArea: 'M 0,65 L 90,62 L 180,68 L 270,115 L 360,118 L 450,110 L 540,112 L 540,130 L 0,130 Z',
+      waveVpdPath: 'M 0,90 L 90,88 L 180,92 L 270,122 L 360,124 L 450,120 L 540,122',
+      waveVpdArea: 'M 0,90 L 90,88 L 180,92 L 270,122 L 360,124 L 450,120 L 540,122 L 540,130 L 0,130 Z',
+      beacon: { cx: 450, cy: 110, fill: '#EF4444' },
+      codeTitle: 'notebooks/self_healing_dlq.py',
+      code: `# 5-Worker PySpark DLQ Auto-Remediation Notebook (66.1% recovery)
+df_dlq = spark.read.table("bronze_deadletter_telemetry")
+df_remediated = df_dlq.filter(col("error_type") == "CLOCK_SKEW_DRIFT") \\
+    .withColumn("corrected_timestamp", current_timestamp() - expr("INTERVAL 420 SECONDS")) \\
+    .withColumn("quarantine_status", lit("AUTO_HEALED_SILVER_ELIGIBLE"))
+df_remediated.write.format("delta").mode("append").saveAsTable("silver_telemetry_clean")`
+    }
+  };
 
-    // Humidity: 85.8 to 86.6
-    const hum = (86.2 + (Math.random() * 0.8 - 0.4)).toFixed(1);
-    humEl.innerHTML = `${hum}<span class="hud-metric-unit">%</span>`;
+  function applyScenario(scenarioKey) {
+    const profile = SCENARIO_PROFILES[scenarioKey];
+    if (!profile) return;
+    currentScenario = scenarioKey;
+
+    // Station & Indicator
+    if (stationTitleEl) stationTitleEl.textContent = profile.station;
+    if (indicatorDot) {
+      indicatorDot.className = 'loom-pulse-dot ' + profile.indicatorClass;
+    }
+    if (latencyTag) latencyTag.textContent = profile.latency;
+
+    // Status Overlay
+    if (statusOverlay) {
+      statusOverlay.className = 'oscilloscope-status-overlay ' + profile.statusClass;
+    }
+    if (statusIcon) statusIcon.textContent = profile.statusIconText;
+    if (statusMessage) statusMessage.textContent = profile.statusText;
+    if (thresholdLabel) thresholdLabel.textContent = profile.thresholdText;
+
+    // Waveform SVG Paths
+    if (tempLine) tempLine.setAttribute('d', profile.waveTempPath);
+    if (tempArea) tempArea.setAttribute('d', profile.waveTempArea);
+    if (vpdLine) vpdLine.setAttribute('d', profile.waveVpdPath);
+    if (vpdArea) vpdArea.setAttribute('d', profile.waveVpdArea);
+    if (beaconPt) {
+      beaconPt.setAttribute('cx', profile.beacon.cx);
+      beaconPt.setAttribute('cy', profile.beacon.cy);
+      beaconPt.setAttribute('fill', profile.beacon.fill);
+    }
+
+    // Digital Metrics
+    if (tempEl) {
+      tempEl.className = 'loom-m-val ' + profile.tempClass;
+      tempEl.innerHTML = `${profile.tempVal}<span class="loom-m-unit">°C</span>`;
+    }
+    if (tempSub) tempSub.textContent = profile.tempSubText;
+
+    if (vpdEl) {
+      vpdEl.innerHTML = `${profile.vpdVal}<span class="loom-m-unit">kPa</span>`;
+    }
+    if (vpdSub) vpdSub.textContent = profile.vpdSubText;
+
+    if (phEl) {
+      phEl.innerHTML = `${profile.phVal}<span class="loom-m-unit">pH</span>`;
+    }
+    if (phSub) phSub.textContent = profile.phSubText;
+
+    if (rateEl) {
+      rateEl.className = 'loom-m-val ' + profile.rateClass;
+      rateEl.innerHTML = `${profile.rateVal}<span class="loom-m-unit">ev/s</span>`;
+    }
+    if (rateSub) rateSub.textContent = profile.rateSubText;
+
+    // Pipeline Tracer Nodes
+    if (pipelineStatus) {
+      pipelineStatus.textContent = profile.pipelineStatusText;
+      pipelineStatus.style.color = profile.pipelineStatusColor;
+    }
+    if (nodeEdge) nodeEdge.className = 'tracer-node ' + profile.nodes.edge;
+    if (nodeEventstream) nodeEventstream.className = 'tracer-node ' + profile.nodes.eventstream;
+    if (nodeKql) nodeKql.className = 'tracer-node ' + profile.nodes.kql;
+    if (nodeLakehouse) nodeLakehouse.className = 'tracer-node ' + profile.nodes.lakehouse;
+    if (nodeDirectLake) nodeDirectLake.className = 'tracer-node ' + profile.nodes.directlake;
+
+    // Code Drawer Content
+    if (codeTitle) codeTitle.textContent = profile.codeTitle;
+    if (codeBlock) codeBlock.textContent = profile.code;
+  }
+
+  // Wire Scenario Buttons
+  scenarioBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      scenarioBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const scenario = btn.getAttribute('data-scenario');
+      applyScenario(scenario);
+    });
+  });
+
+  // Tactile Keyboard Shortcuts for Technical Reviewers (Keys 1, 2, 3)
+  window.addEventListener('keydown', (e) => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) return;
+    const keyMap = { '1': 'nominal', '2': 'thermal-spike', '3': 'dlq-quarantine' };
+    const targetScenario = keyMap[e.key];
+    if (targetScenario) {
+      const targetBtn = document.querySelector(`.loom-scenario-btn[data-scenario="${targetScenario}"]`);
+      if (targetBtn) {
+        targetBtn.click();
+      }
+    }
+  });
+
+  // Code Drawer Toggle
+  if (codeToggle && codeDrawer) {
+    codeToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isOpen = codeDrawer.classList.contains('is-open');
+      if (isOpen) {
+        codeDrawer.classList.remove('is-open');
+        codeToggle.setAttribute('aria-expanded', 'false');
+        codeToggle.querySelector('span').textContent = 'Inspect Engine Code';
+      } else {
+        codeDrawer.classList.add('is-open');
+        codeToggle.setAttribute('aria-expanded', 'true');
+        codeToggle.querySelector('span').textContent = 'Hide Engine Code';
+      }
+    });
+  }
+
+  // Periodic Micro-Jitter (ONLY when in nominal scenario)
+  setInterval(() => {
+    if (currentScenario !== 'nominal') return;
+    if (!tempEl || !vpdEl || !phEl || !rateEl) return;
+
+    // Temp: 19.3 to 19.6
+    const t = (19.4 + (Math.random() * 0.3 - 0.15)).toFixed(1);
+    tempEl.innerHTML = `${t}<span class="loom-m-unit">°C</span>`;
 
     // VPD: 1.10 to 1.14
-    const vpd = (1.12 + (Math.random() * 0.04 - 0.02)).toFixed(2);
-    vpdEl.innerHTML = `${vpd}<span class="hud-metric-unit">kPa</span>`;
+    const v = (1.12 + (Math.random() * 0.04 - 0.02)).toFixed(2);
+    vpdEl.innerHTML = `${v}<span class="loom-m-unit">kPa</span>`;
 
     // pH: 6.22 to 6.26
-    const ph = (6.24 + (Math.random() * 0.04 - 0.02)).toFixed(2);
-    phEl.innerHTML = `${ph}<span class="hud-metric-unit">pH</span>`;
-
-    // EC: 1.82 to 1.86
-    const ec = (1.84 + (Math.random() * 0.04 - 0.02)).toFixed(2);
-    ecEl.innerHTML = `${ec}<span class="hud-metric-unit">mS/cm</span>`;
+    const p = (6.24 + (Math.random() * 0.04 - 0.02)).toFixed(2);
+    phEl.innerHTML = `${p}<span class="loom-m-unit">pH</span>`;
 
     // Rate: 1,220 to 1,260
-    const rate = Math.floor(1240 + (Math.random() * 40 - 20));
-    rateEl.innerHTML = `${rate.toLocaleString()}<span class="hud-metric-unit">ev/s</span>`;
-  }, 3500);
+    const r = Math.floor(1240 + (Math.random() * 40 - 20));
+    rateEl.innerHTML = `${r.toLocaleString()}<span class="loom-m-unit">ev/s</span>`;
+  }, 3000);
+
+  // Initialize initial scenario
+  applyScenario('nominal');
 }
 
 /**

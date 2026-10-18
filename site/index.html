@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0D08">
+  <meta name="color-scheme" content="dark">
   <title>HydroGrow: Real-Time Smart Farming Analytics Platform — Engineering Proof of Concept</title>
   <meta name="description" content="An independent data engineering proof of concept demonstrating a Microsoft Fabric streaming and medallion lakehouse platform inspired by real agricultural operational challenges and built with synthetic telemetry.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=6">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23687941'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
 </head>
 <body>
 
@@ -17,7 +19,6 @@
   <header class="site-nav">
     <div class="container-wide nav-wrapper">
       <a href="#hero" class="nav-brand">
-        <span class="nav-brand-dot"></span>
         <span>HydroGrow<span class="brand-sub">Analytics</span></span>
       </a>
 
@@ -31,7 +32,7 @@
       <ul class="nav-links" id="primary-nav-links">
         <li><a href="#origin" class="nav-link">Story</a></li>
         <li><a href="#platform" class="nav-link">Architecture</a></li>
-        <li><a href="#spatial-film" class="nav-link nav-link-film"><span class="nav-film-dot"></span><span>3D Film</span></a></li>
+        <li><a href="#spatial-film" class="nav-link nav-link-film"><span>3D Film</span></a></li>
         <li><a href="#results" class="nav-link">Results</a></li>
         <li><a href="#explore" class="nav-link">Explore</a></li>
         <li><a href="#notes" class="nav-link">Notes</a></li>
@@ -54,150 +55,209 @@
       <div class="hero-overlay"></div>
       
       <div class="container-wide hero-content-wrapper">
-        <div class="hero-content">
-          <div class="hero-eyebrow">Independent Engineering Case Study • Microsoft Fabric Proof of Concept</div>
-
-          <h1 class="hero-title">
-            Some portfolio projects start with a dataset.<br>
-            <span class="hero-title-highlight">This one started with a place.</span>
-          </h1>
-
-          <p class="hero-subtitle">
-            An end-to-end data platform proof of concept inspired by real operational farming challenges—demonstrating how fragmented IoT telemetry, manual records, and equipment data can be modernized using Microsoft Fabric, real-time ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
-          </p>
-
-          <!-- Architecture Category Filter Pills (Functional Quick Jumps with Interactive Routing) -->
-          <div class="hero-filter-pills" role="navigation" aria-label="Architecture Quick Jumps">
-            <button class="filter-pill active" data-target-layer="1">Streaming (KQL)</button>
-            <button class="filter-pill" data-target-layer="2">Lakehouse (Delta Parquet)</button>
-            <button class="filter-pill" data-target-layer="3">Warehouse (Kimball)</button>
-            <button class="filter-pill" data-target-layer="4">Direct Lake (Power BI)</button>
-            <button class="filter-pill" data-target-layer="5">Activator (10 Reflex Rules)</button>
-          </div>
-
-          <div class="hero-actions">
-            <a href="#platform" class="btn btn-primary">
-              <span>Explore the Architecture</span>
-              <span class="btn-arrow-capsule">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </span>
-            </a>
-            <a href="#spatial-film" class="btn btn-film-watch">
-              <span class="btn-film-play-icon">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
-              </span>
-              <span>Watch 3D Film (48s)</span>
-            </a>
-            <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-ghost">
-              <svg class="btn-github-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-              </svg>
-              <span>View GitHub Repo</span>
-            </a>
-          </div>
-
-                    <!-- Recruiter & Engineering Summary -->
-          <div class="recruiter-summary-card">
-            <div class="recruiter-summary-eyebrow">
-              <span class="summary-dot"></span>
-              <span>Project Summary &amp; Scope</span>
+        <div class="hero-observatory-grid">
+          
+          <!-- Column A: Editorial Narrative & Command Authority -->
+          <div class="hero-editorial-col">
+            <div class="hero-eyebrow-group">
+              <span class="hero-platform-tag">Microsoft Fabric Platform Architecture · 8 Facilities · 80 IoT Zones</span>
             </div>
-            <p class="recruiter-summary-text">
-              <strong>End-to-end real-time data engineering proof of concept</strong> demonstrating streaming ingestion, medallion lakehouse architecture, Kimball dimensional modeling, automated data-quality remediation, security and governance, observability, and Power BI Direct Lake analytics using Microsoft Fabric and synthetic telemetry.
+
+            <h1 class="hero-title">
+              Real-time farm telemetry, orchestrated into OneLake intelligence.
+            </h1>
+
+            <p class="hero-subtitle">
+              An enterprise data platform proof of concept engineered natively on Microsoft Fabric—demonstrating real-time streaming ingestion, medallion lakehouse architecture, Kimball dimensional modeling, automated dead-letter queue remediation, and sub-second Power BI Direct Lake analytics.
             </p>
-          </div>
 
-          <!-- Live Telemetry HUD: Real-Time Edge Ingress Monitor -->
-          <div class="live-telemetry-hud" role="region" aria-label="Live Telemetry Ingress Stream">
-            <div class="hud-topbar">
-              <div class="hud-status-badge">
-                <span class="hud-status-dot"></span>
-                <span class="hud-status-text">LIVE EDGE STREAM // BENGUET HIGHLANDS STATION 01</span>
-              </div>
-              <span class="hud-timestamp" id="hud-clock">02:52:00 UTC</span>
+            <!-- Architecture Category Filter Pills (Functional Quick Jumps with Interactive Routing) -->
+            <div class="hero-filter-pills" role="navigation" aria-label="Architecture Quick Jumps">
+              <button class="filter-pill active" data-target-layer="1">01 Ingress (KQL)</button>
+              <button class="filter-pill" data-target-layer="2">02 Lakehouse (Delta)</button>
+              <button class="filter-pill" data-target-layer="3">03 Warehouse (Kimball)</button>
+              <button class="filter-pill" data-target-layer="4">04 Direct Lake (Power BI)</button>
+              <button class="filter-pill" data-target-layer="5">05 Activator (10 Rules)</button>
             </div>
-            <div class="hud-grid">
-              <div class="hud-item">
-                <span class="hud-metric-name">CANOPY TEMP</span>
-                <span class="hud-metric-val" id="hud-temp">19.4<span class="hud-metric-unit">°C</span></span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-metric-name">REL HUMIDITY</span>
-                <span class="hud-metric-val" id="hud-humidity">86.2<span class="hud-metric-unit">%</span></span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-metric-name">VPD DEFICIT</span>
-                <span class="hud-metric-val" id="hud-vpd">1.12<span class="hud-metric-unit">kPa</span></span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-metric-name">RESERVOIR pH</span>
-                <span class="hud-metric-val" id="hud-ph">6.24<span class="hud-metric-unit">pH</span></span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-metric-name">ELECTRICAL COND</span>
-                <span class="hud-metric-val" id="hud-ec">1.84<span class="hud-metric-unit">mS/cm</span></span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-metric-name">STREAMING VELOCITY</span>
-                <span class="hud-metric-val status-accent" id="hud-rate">1,240<span class="hud-metric-unit">ev/s</span></span>
-              </div>
+
+            <div class="hero-actions">
+              <a href="#platform" class="btn btn-primary">
+                <span>Explore the Architecture</span>
+                <span class="btn-arrow-capsule">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </span>
+              </a>
+              <a href="#spatial-film" class="btn btn-film-watch">
+                <span class="btn-film-play-icon">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+                </span>
+                <span>Watch 3D Film (48s)</span>
+              </a>
+              <a href="https://github.com/jbaguio27/fabric-smart-farming-analytics" target="_blank" rel="noopener" class="btn btn-ghost">
+                <svg class="btn-github-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                <span>View GitHub Repo</span>
+              </a>
             </div>
           </div>
 
-          <!-- Micro-Visual Pipeline Ribbon with Icons -->
-          <div class="hero-pipeline-microvisual">
-            <span class="ribbon-label">PIPELINE FLOW</span>
-            <div class="pipeline-track">
-              <div class="micro-node" title="Python Edge Simulator">
-                <span class="micro-node-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                </span>
-                <span class="micro-node-text">Python Edge</span>
+          <!-- Column B: Signature Interaction — Telemetry Signal Loom & Live Incident Simulator -->
+          <div class="hero-loom-col">
+            <div class="telemetry-signal-loom" role="region" aria-label="Interactive Telemetry Signal Loom & Incident Simulator">
+              
+              <!-- Loom Top Bar: Station Identity & Live Sync Clock -->
+              <div class="loom-header">
+                <div class="loom-station-id">
+                  <span class="loom-station-name" id="loom-station-title">Greenhouse Zone 03 · Telemetry Ingress</span>
+                </div>
+                <div class="loom-meta-tags">
+                  <span class="loom-latency-badge" id="loom-latency-tag">Ingress 1.70s p50</span>
+                  <span class="loom-clock" id="hud-clock">03:30:00 UTC</span>
+                </div>
               </div>
-              <span class="micro-arrow">→</span>
-              <div class="micro-node" title="Fabric Eventstream (9 Destinations)">
-                <span class="micro-node-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </span>
-                <span class="micro-node-text">Eventstream</span>
+
+              <!-- Interactive Incident Scenario Controller (Direct Manipulation Trigger) -->
+              <div class="loom-scenario-controller" role="tablist" aria-label="Incident Simulation Scenarios">
+                <div class="scenario-btn-group">
+                  <button class="loom-scenario-btn active" data-scenario="nominal" role="tab" aria-selected="true" title="Simulate nominal microclimate stability (Key: 1)">
+                    <span class="btn-scenario-num">01</span>
+                    <span class="btn-scenario-text">Nominal Stream</span>
+                    <span class="btn-scenario-key" aria-hidden="true">1</span>
+                  </button>
+                  <button class="loom-scenario-btn" data-scenario="thermal-spike" role="tab" aria-selected="false" title="Inject +12.4°C thermal runaway spike (Key: 2)">
+                    <span class="btn-scenario-num warn">02</span>
+                    <span class="btn-scenario-text">Thermal Spike (+12.4°C)</span>
+                    <span class="btn-scenario-key" aria-hidden="true">2</span>
+                  </button>
+                  <button class="loom-scenario-btn" data-scenario="dlq-quarantine" role="tab" aria-selected="false" title="Inject corrupt schema packet into Dead-Letter Queue (Key: 3)">
+                    <span class="btn-scenario-num danger">03</span>
+                    <span class="btn-scenario-text">Corrupt DLQ Sink</span>
+                    <span class="btn-scenario-key" aria-hidden="true">3</span>
+                  </button>
+                </div>
               </div>
-              <span class="micro-arrow">→</span>
-              <div class="micro-node" title="Eventhouse KQL DB">
-                <span class="micro-node-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-                </span>
-                <span class="micro-node-text">KQL DB</span>
+
+              <!-- Live Oscilloscope Telemetry Waveform Display -->
+              <div class="loom-oscilloscope-container">
+                <div class="oscilloscope-top-legend">
+                  <div class="legend-channel channel-temp">
+                    <span>Canopy Temp (°C)</span>
+                  </div>
+                  <div class="legend-channel channel-vpd">
+                    <span>VPD Canopy (kPa)</span>
+                  </div>
+                  <div class="legend-threshold">
+                    <span class="threshold-dash"></span>
+                    <span id="loom-threshold-label">32°C SLA Threshold</span>
+                  </div>
+                </div>
+
+                <svg class="loom-oscilloscope-svg" id="loom-svg" viewBox="0 0 540 130" preserveAspectRatio="none" aria-label="Live Telemetry Oscilloscope Waveform">
+                  <defs>
+                    <linearGradient id="loomWaveGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#E27324" stop-opacity="0.35"/>
+                      <stop offset="100%" stop-color="#E27324" stop-opacity="0.0"/>
+                    </linearGradient>
+                    <linearGradient id="loomVpdGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#4ADE80" stop-opacity="0.22"/>
+                      <stop offset="100%" stop-color="#4ADE80" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Oscilloscope Graticule Lines -->
+                  <line x1="0" y1="25" x2="540" y2="25" stroke="rgba(255, 255, 255, 0.08)" stroke-dasharray="3,3" />
+                  <line x1="0" y1="65" x2="540" y2="65" stroke="rgba(255, 255, 255, 0.04)" />
+                  <line x1="0" y1="105" x2="540" y2="105" stroke="rgba(255, 255, 255, 0.04)" />
+
+                  <!-- Channel 2: VPD Curve -->
+                  <path id="loom-vpd-area" d="M 0,90 L 90,88 L 180,92 L 270,89 L 360,91 L 450,88 L 540,90 L 540,130 L 0,130 Z" fill="url(#loomVpdGrad)" />
+                  <path id="loom-vpd-line" d="M 0,90 L 90,88 L 180,92 L 270,89 L 360,91 L 450,88 L 540,90" fill="none" stroke="#4ADE80" stroke-width="1.8" stroke-linecap="round" />
+
+                  <!-- Channel 1: Temperature Curve -->
+                  <path id="loom-temp-area" d="M 0,65 L 90,62 L 180,68 L 270,64 L 360,67 L 450,63 L 540,65 L 540,130 L 0,130 Z" fill="url(#loomWaveGrad)" />
+                  <path id="loom-temp-line" d="M 0,65 L 90,62 L 180,68 L 270,64 L 360,67 L 450,63 L 540,65" fill="none" stroke="#E27324" stroke-width="2.2" stroke-linecap="round" />
+
+                  <!-- Dynamic Anomaly Beacon Point -->
+                  <circle id="loom-beacon-pt" cx="450" cy="63" r="5" fill="#E27324" stroke="#FEFAE0" stroke-width="2" />
+                </svg>
+
+                <div class="oscilloscope-status-overlay" id="loom-status-overlay">
+                  <span class="status-overlay-icon" id="loom-status-icon">✓</span>
+                  <span class="status-overlay-text" id="loom-status-message">Stream Healthy: 80 zones synchronized within diurnal tolerances</span>
+                </div>
               </div>
-              <span class="micro-arrow">→</span>
-              <div class="micro-node" title="OneLake Medallion Lakehouse">
-                <span class="micro-node-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                </span>
-                <span class="micro-node-text">Medallion</span>
+
+              <!-- Digital Telemetry Metering Grid -->
+              <div class="loom-metric-grid">
+                <div class="loom-metric-box">
+                  <span class="loom-m-label">Canopy Temp</span>
+                  <span class="loom-m-val" id="hud-temp">19.4<span class="loom-m-unit">°C</span></span>
+                  <span class="loom-m-sub" id="loom-temp-sub">Nominal Range</span>
+                </div>
+                <div class="loom-metric-box">
+                  <span class="loom-m-label">VPD Deficit</span>
+                  <span class="loom-m-val" id="hud-vpd">1.12<span class="loom-m-unit">kPa</span></span>
+                  <span class="loom-m-sub" id="loom-vpd-sub">Optimal Transpiration</span>
+                </div>
+                <div class="loom-metric-box">
+                  <span class="loom-m-label">Reservoir pH</span>
+                  <span class="loom-m-val" id="hud-ph">6.24<span class="loom-m-unit">pH</span></span>
+                  <span class="loom-m-sub" id="loom-ph-sub">Micro-Dosing Active</span>
+                </div>
+                <div class="loom-metric-box">
+                  <span class="loom-m-label">Stream Velocity</span>
+                  <span class="loom-m-val status-accent" id="hud-rate">1,240<span class="loom-m-unit">ev/s</span></span>
+                  <span class="loom-m-sub" id="loom-rate-sub">6 Streams Ingress</span>
+                </div>
               </div>
-              <span class="micro-arrow">→</span>
-              <div class="micro-node" title="Kimball Star Schema Warehouse">
-                <span class="micro-node-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="5 6 12 3 19 6"></polyline><line x1="4" y1="10" x2="4" y2="21"></line><line x1="20" y1="10" x2="20" y2="21"></line><line x1="8" y1="14" x2="8" y2="17"></line><line x1="12" y1="14" x2="12" y2="17"></line><line x1="16" y1="14" x2="16" y2="17"></line></svg>
-                </span>
-                <span class="micro-node-text">Warehouse</span>
+
+              <!-- Real-Time Fabric Pipeline Routing Beacon -->
+              <div class="loom-pipeline-tracer">
+                <div class="tracer-header">
+                  <span class="tracer-title">Fabric Routing Beacon</span>
+                  <span class="tracer-status" id="loom-pipeline-status">OneLake Delta Sync</span>
+                </div>
+                <div class="tracer-flow-track" id="loom-flow-track">
+                  <div class="tracer-node active" id="tracer-edge" title="Edge Python Telemetry Generator">
+                    <span class="t-node-label">Python Edge</span>
+                  </div>
+                  <span class="tracer-arrow">&rarr;</span>
+                  <div class="tracer-node active" id="tracer-eventstream" title="Microsoft Fabric Eventstream (9 Destinations)">
+                    <span class="t-node-label">Eventstream</span>
+                  </div>
+                  <span class="tracer-arrow">&rarr;</span>
+                  <div class="tracer-node active" id="tracer-kql" title="SmartFarmingKQLDB Ingestion & Materialized Views">
+                    <span class="t-node-label">Eventhouse KQL</span>
+                  </div>
+                  <span class="tracer-arrow">&rarr;</span>
+                  <div class="tracer-node active" id="tracer-lakehouse" title="OneLake Medallion Lakehouse (Delta Parquet)">
+                    <span class="t-node-label">Delta Lake</span>
+                  </div>
+                  <span class="tracer-arrow">&rarr;</span>
+                  <div class="tracer-node active" id="tracer-directlake" title="Power BI Direct Lake Semantic Layer">
+                    <span class="t-node-label">Direct Lake</span>
+                  </div>
+                </div>
               </div>
-              <span class="micro-arrow">→</span>
-              <div class="micro-node" title="Power BI Direct Lake">
-                <span class="micro-node-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                </span>
-                <span class="micro-node-text">Direct Lake</span>
+
+              <!-- Verbatim Engine Code Drawer -->
+              <div class="loom-code-drawer" id="loom-code-drawer">
+                <div class="loom-code-topbar">
+                  <span class="loom-code-title" id="loom-code-title">generators/environmental_telemetry.py</span>
+                  <button class="loom-code-toggle-btn" id="loom-code-toggle" aria-expanded="false">
+                    <span>Inspect Engine Code</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                </div>
+                <div class="loom-code-snippet" id="loom-code-content">
+                  <pre><code id="loom-code-block"># Verbatim Python Edge Generator logic</code></pre>
+                </div>
               </div>
-              <span class="micro-arrow">→</span>
-              <div class="micro-node" title="Fabric Activator Reflex Alerting">
-                <span class="micro-node-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                </span>
-                <span class="micro-node-text">Activator</span>
-              </div>
+
             </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -218,8 +278,6 @@
             </div>
           </div>
 
-          <div class="hero-stat-divider"></div>
-
           <div class="hero-stat-item">
             <div class="hero-stat-icon-wrapper">
               <svg class="stat-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
@@ -231,8 +289,6 @@
               <div class="hero-stat-label">Automated Tests Passing (100% Green)</div>
             </div>
           </div>
-
-          <div class="hero-stat-divider"></div>
 
           <div class="hero-stat-item">
             <div class="hero-stat-icon-wrapper">
@@ -247,8 +303,6 @@
               <div class="hero-stat-label">Modeled Storage Reduction (Cold Tiering)</div>
             </div>
           </div>
-
-          <div class="hero-stat-divider"></div>
 
           <div class="hero-stat-item">
             <div class="hero-stat-icon-wrapper">
@@ -270,7 +324,6 @@
     <!-- Chapter 1: The Origin -->
     <section id="origin" class="section">
       <div class="container">
-        <span class="section-eyebrow">FIELD ORIGIN // BENGUET, PHILIPPINES</span>
         <h2 class="section-title">Why I Built This</h2>
         
         <div class="origin-grid">
@@ -320,7 +373,6 @@
         <!-- The Learning-to-Building Progression Journey -->
         <div class="learning-journey-box">
           <div class="learning-journey-header">
-            <span class="section-eyebrow">Engineering Progression</span>
             <h3 class="journey-title">The Learning-to-Building Journey</h3>
             <p class="journey-sub">
               &ldquo;I saw a real operational data problem in a farming environment. The organization was not ready to modernize it, so I built a separate proof of concept to explore how I would solve that problem as a data engineer.&rdquo;
@@ -390,14 +442,13 @@
     <!-- Chapter 2: The Problem -->
     <section id="problem" class="section section-quiet">
       <div class="container">
-        <span class="section-eyebrow">OPERATIONAL REALITY &amp; DATA SILOS</span>
         <h2 class="section-title">The Physical Problem</h2>
         <p class="section-lead">
-          In farming environments, biological health depends on continuous environmental stability. During my exposure to the local farm, I observed how physical variables—microclimate drift, nutrient balance, and equipment wear—were tracked across manual records and isolated systems. In this proof of concept, those challenges are modeled into four core operational failure scenarios:
+          In farming environments, biological health depends on continuous environmental stability. During my exposure to the local farm, I observed how physical variables—microclimate drift, nutrient balance, and equipment wear—were tracked across manual records and isolated systems. In this proof of concept, those challenges are modeled into 4 core operational failure scenarios:
         </p>
 
-                <!-- Four Physical Failure Modes Matrix (Anti-Slop Clean Engineering Layout) -->
-        <div class="failure-matrix" role="region" aria-label="Four Physical Failure Modes Modeled in the Platform">
+        <!-- 4 Physical Failure Modes Matrix (Anti-Slop Clean Engineering Layout) -->
+        <div class="failure-matrix" role="region" aria-label="4 Physical Failure Modes Modeled in the Platform">
 
           <!-- Card 1: Microclimate Drift -->
           <article class="failure-card">
@@ -412,15 +463,15 @@
             
             <div class="failure-telemetry">
               <div class="telemetry-row">
-                <span class="telemetry-sensor">ZONE-003 AMBIENT</span>
-                <span class="telemetry-data alert">34.8°C <span class="telemetry-flag">SPIKE</span></span>
+                <span class="telemetry-sensor">Zone-003 Ambient</span>
+                <span class="telemetry-data alert">34.8°C <span class="telemetry-flag">Spike</span></span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">RELATIVE HUMIDITY</span>
+                <span class="telemetry-sensor">Relative Humidity</span>
                 <span class="telemetry-data">78.4%</span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">VPD CANOPY INDEX</span>
+                <span class="telemetry-sensor">VPD Canopy Index</span>
                 <span class="telemetry-data">1.84 kPa</span>
               </div>
             </div>
@@ -432,14 +483,14 @@
 
             <div class="failure-mitigation">
               <span class="mitigation-label">Fabric Defense:</span>
-              <span>Eventstream ➔ Eventhouse KQL DB ➔ Activator Rule 01 automated greenhouse ventilation trigger (&lt; 5s SLA).</span>
+              <span>Eventstream &rarr; Eventhouse KQL DB &rarr; Activator Rule 01 automated greenhouse ventilation trigger (&lt; 5s SLA).</span>
               <button class="kql-drawer-btn" aria-expanded="false" data-target-kql="kql-rule-01">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 <span>Inspect KQL Detection Query</span>
               </button>
               <div class="kql-drawer-content" id="kql-rule-01">
                 <pre><code><span class="syn-comm">// Activator Rule 01: Thermal Runaway & VPD Desiccation</span>
-BenguetTelemetry
+EnvironmentalTelemetry
 | where Timestamp &gt; ago(5m)
 | where Temperature_C &gt; 30.0 and RelativeHumidity_Pct &lt; 60.0
 | extend VPD_kPa = round(calculate_vpd(Temperature_C, RelativeHumidity_Pct), 2)
@@ -463,15 +514,15 @@ BenguetTelemetry
             
             <div class="failure-telemetry">
               <div class="telemetry-row">
-                <span class="telemetry-sensor">RESERVOIR pH</span>
-                <span class="telemetry-data critical">5.48 <span class="telemetry-flag">LOCKOUT</span></span>
+                <span class="telemetry-sensor">Reservoir pH</span>
+                <span class="telemetry-data critical">5.48 <span class="telemetry-flag">Lockout</span></span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">ELECTRICAL COND</span>
+                <span class="telemetry-sensor">Electrical Conductivity</span>
                 <span class="telemetry-data">2.65 mS/cm</span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">DOSING STATUS</span>
+                <span class="telemetry-sensor">Dosing Status</span>
                 <span class="telemetry-data">Active Auto</span>
               </div>
             </div>
@@ -512,15 +563,15 @@ ReservoirTelemetry
             
             <div class="failure-telemetry">
               <div class="telemetry-row">
-                <span class="telemetry-sensor">PUMP VIBRATION</span>
-                <span class="telemetry-data warn">7.82 mm/s <span class="telemetry-flag">CAVITATION</span></span>
+                <span class="telemetry-sensor">Pump Vibration</span>
+                <span class="telemetry-data warn">7.82 mm/s <span class="telemetry-flag">Cavitation</span></span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">MOTOR RUNTIME</span>
+                <span class="telemetry-sensor">Motor Runtime</span>
                 <span class="telemetry-data">4,120 hrs</span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">MTBF WEAR INDEX</span>
+                <span class="telemetry-sensor">MTBF Wear Index</span>
                 <span class="telemetry-data">84.2%</span>
               </div>
             </div>
@@ -562,15 +613,15 @@ EquipmentHealth
             
             <div class="failure-telemetry">
               <div class="telemetry-row">
-                <span class="telemetry-sensor">INGRESS STATUS</span>
-                <span class="telemetry-data critical">MALFORMED <span class="telemetry-flag">DLQ SINK</span></span>
+                <span class="telemetry-sensor">Ingress Status</span>
+                <span class="telemetry-data critical">Malformed <span class="telemetry-flag">DLQ Sink</span></span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">CLOCK SKEW</span>
+                <span class="telemetry-sensor">Clock Skew</span>
                 <span class="telemetry-data">+420.0s</span>
               </div>
               <div class="telemetry-row">
-                <span class="telemetry-sensor">REPAIR WORKER</span>
+                <span class="telemetry-sensor">Repair Worker</span>
                 <span class="telemetry-data">Worker 02 OK</span>
               </div>
             </div>
@@ -625,7 +676,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
     <!-- Chapter 3: The Build -->
     <section id="build" class="section">
       <div class="container">
-        <span class="section-eyebrow">SYNTHETIC TELEMETRY &amp; EDGE SIMULATOR</span>
         <h2 class="section-title">The Synthetic Data Simulator</h2>
         <p class="section-lead">
           Because the real farm's systems were not modernized and could not be used for a public platform, I wrote a modular Python telemetry generator. It simulates 8 vertical farming facilities with 10 distinct growing zones each (80 monitored microclimates), generating the realistic data volumes needed to test a modern architecture.
@@ -633,17 +683,17 @@ spark.read.format("delta").table("bronze_dead_letter") \
 
         <div class="build-progression">
           <div class="progression-step">
-            <div class="progression-number">STAGE 1</div>
+            <div class="progression-number">Stage 01</div>
             <div class="progression-title">Observed Farm Reality</div>
             <div class="progression-desc">Encountered fragmented operational records, manual whiteboards, isolated equipment logs, and the practical constraints that prevented immediate on-site modernization.</div>
           </div>
           <div class="progression-step">
-            <div class="progression-number">STAGE 2</div>
+            <div class="progression-number">Stage 02</div>
             <div class="progression-title">Synthetic Telemetry Simulator</div>
             <div class="progression-desc">Engineered a multi-threaded Python simulator emitting 6 continuous IoT-style channels with deterministic seeds, clock skew, and injected anomalies to model the problem without proprietary data.</div>
           </div>
           <div class="progression-step">
-            <div class="progression-number">STAGE 3</div>
+            <div class="progression-number">Stage 03</div>
             <div class="progression-title">Microsoft Fabric Proof of Concept</div>
             <div class="progression-desc">Constructed an end-to-end cloud platform demonstrating how those fragmented sources could be unified through Eventstream, KQL, Delta Medallion Lakehouse, Kimball modeling, and Direct Lake reporting.</div>
           </div>
@@ -699,7 +749,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
     <!-- Chapter 4: The Data Platform -->
     <section id="platform" class="section section-quiet">
       <div class="container">
-          <span class="section-eyebrow">MEDALLION ARCHITECTURE &amp; STREAMING ENGINES</span>
           <h2 class="section-title">The Microsoft Fabric Platform</h2>
           <p class="section-lead">
             The platform combines real-time stream processing and historical batch warehousing into a unified OneLake architecture. Below is the full end-to-end solution blueprint.
@@ -711,8 +760,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
           <div class="spatial-film-showcase" id="spatial-film">
             <div class="spatial-film-header">
               <div class="spatial-film-title-group">
-                <span class="spatial-film-dot"></span>
-                <span class="spatial-film-title">MICROSOFT FABRIC SPATIAL FILM · 3D SYSTEM WALKTHROUGH</span>
+                <span class="spatial-film-title">Microsoft Fabric 3D Architecture Walkthrough</span>
               </div>
               <span class="spatial-film-spec-badge">1080p60 · Continuous 3D Spatial Flythrough · 19 Fabric Artifacts</span>
             </div>
@@ -820,7 +868,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
               <!-- Layer 2: Medallion Lakehouse -->
               <div class="layer-block" data-layer-idx="2">
                 <div class="layer-tag">Layer 02 — Historical Analytics Path</div>
-                <h3 class="layer-title">OneLake Medallion Architecture (Bronze ➔ Silver ➔ Gold)</h3>
+                <h3 class="layer-title">OneLake Medallion Architecture: Bronze, Silver &amp; Gold</h3>
                 <p class="layer-desc">
                   Historical telemetry is curated within <strong>SmartFarming_Lakehouse</strong> using Microsoft Fabric custom schemas. Data quality progressively increases as records move from raw append files to cleansed tables and finally into a business-ready Gold Kimball Star Schema.
                 </p>
@@ -870,24 +918,66 @@ spark.read.format("delta").table("bronze_dead_letter") \
                 <p class="layer-desc">
                   The enterprise semantic model (defined in TMDL format) connects directly to Gold OneLake Delta Parquet files using <strong>Direct Lake mode</strong>. This queries cold storage data directly with in-memory performance, completely bypassing scheduled import refreshes and dataset size limits.
                 </p>
+                <div class="layer-details-grid">
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">Storage Architecture</div>
+                    <div class="layer-detail-val">Direct Lake (TMDL model) reading OneLake Delta Parquet</div>
+                  </div>
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">Query Performance</div>
+                    <div class="layer-detail-val">&lt; 250ms cold memory queries via VertiPaq compression</div>
+                  </div>
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">Capacity Fallback</div>
+                    <div class="layer-detail-val">Seamless DirectQuery fallback if memory limits are exceeded</div>
+                  </div>
+                </div>
               </div>
 
               <!-- Layer 5: Alerting & DataOps -->
               <div class="layer-block" data-layer-idx="5">
                 <div class="layer-tag">Layer 05 — Incident Response &amp; DataOps</div>
-                <h3 class="layer-title">Real-Time Alerting (Fabric Activator) &amp; 5-Worker DLQ Remediation</h3>
+                <h3 class="layer-title">Real-Time Alerting &amp; Dead-Letter Remediation</h3>
                 <p class="layer-desc">
                   <strong>Fabric Activator (Reflex)</strong> monitors live streaming events and triggers automated actions for operational farm anomalies (pH drift, thermal spikes) and DataOps engineering issues (ingestion latency, DLQ spikes). Corrupted payloads are quarantined into a dedicated Dead-Letter table and remediated via an automated 5-worker notebook process.
                 </p>
+                <div class="layer-details-grid">
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">Reflex Alert Rules</div>
+                    <div class="layer-detail-val">10 Automated rules alerting Teams, Email &amp; Webhooks (&lt; 15s SLA)</div>
+                  </div>
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">DLQ Self-Healing</div>
+                    <div class="layer-detail-val">5-Worker automated notebook recovering 66.1% of quarantined payloads</div>
+                  </div>
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">DataOps Tracing</div>
+                    <div class="layer-detail-val">OpenTelemetry distributed spans logged to fact_dataops_pipeline_log</div>
+                  </div>
+                </div>
               </div>
 
               <!-- Layer 6: Security -->
               <div class="layer-block" data-layer-idx="6">
                 <div class="layer-tag">Layer 06 — Security &amp; Governance</div>
-                <h3 class="layer-title">Regional Row-Level Security (RLS) &amp; Dynamic Data Masking (DDM)</h3>
+                <h3 class="layer-title">Row-Level Security &amp; Dynamic Data Masking</h3>
                 <p class="layer-desc">
                   Security is enforced at the warehouse engine level using an inline table-valued predicate function (<code>fn_SecurityPredicate_FacilityRegion</code>) and Security Policies, ensuring regional facility operators can only view data from their assigned geographic jurisdiction. Sensitive operator contact info is dynamically masked using SQL DDM.
                 </p>
+                <div class="layer-details-grid">
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">Row-Level Security</div>
+                    <div class="layer-detail-val">Inline TVF Security.fn_SecurityPredicate_FacilityRegion</div>
+                  </div>
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">Data Masking</div>
+                    <div class="layer-detail-val">SHA-256 and SQL DDM masking technician personal contact info</div>
+                  </div>
+                  <div class="layer-detail-item">
+                    <div class="layer-detail-label">Purview Governance</div>
+                    <div class="layer-detail-val">Lineage cataloging, sensitivity labels, and simulated Entra ID roles</div>
+                  </div>
+                </div>
               </div>
 
             </div>
@@ -899,14 +989,13 @@ spark.read.format("delta").table("bronze_dead_letter") \
     <section id="results" class="metrics-section">
       <div class="container">
         <div class="metrics-header">
-          <span class="section-eyebrow">VERIFIED BENCHMARKS &amp; FINOPS</span>
           <h2 class="section-title">Project at a Glance</h2>
           <p class="section-lead">
             Every metric below represents verified measurements from automated test suites, simulated facility configurations, and documented capacity models in the repository.
           </p>
         </div>
 
-                <!-- Platform Benchmarks & Architectural Specifications (Anti-Slop Technical Layout) -->
+        <!-- Platform Benchmarks & Architectural Specifications (Anti-Slop Technical Layout) -->
         <div class="benchmarks-overview">
 
           <!-- 4 Core Technical Indicators -->
@@ -957,12 +1046,10 @@ spark.read.format("delta").table("bronze_dead_letter") \
             <div class="benchmarks-instrument-panel">
               <div class="panel-header">
                 <div>
-                  <span class="panel-kicker">STREAMING INGRESS TELEMETRY</span>
                   <h3 class="panel-title">Latency Distribution vs SLA Threshold</h3>
                 </div>
                 <span class="instrument-live-tag">
-                  <span class="live-dot"></span>
-                  <span>VERIFIED LOG</span>
+                  <span>Verified Benchmark</span>
                 </span>
               </div>
 
@@ -981,7 +1068,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
                   </defs>
                   <!-- Baseline Reference Lines -->
                   <line x1="0" y1="20" x2="460" y2="20" stroke="rgba(255, 255, 255, 0.08)" stroke-dasharray="3,3" />
-                  <text x="455" y="15" fill="rgba(254, 250, 224, 0.45)" font-size="10" font-family="var(--font-mono)" text-anchor="end">15s SLA THRESHOLD</text>
+                  <text x="455" y="15" fill="rgba(254, 250, 224, 0.45)" font-size="10" font-family="var(--font-mono)" text-anchor="end">15s SLA Threshold</text>
 
                   <line x1="0" y1="75" x2="460" y2="75" stroke="rgba(255, 255, 255, 0.05)" />
                   <line x1="0" y1="45" x2="460" y2="45" stroke="rgba(255, 255, 255, 0.05)" />
@@ -1000,23 +1087,23 @@ spark.read.format("delta").table("bronze_dead_letter") \
 
                 <div class="instrument-data-table">
                   <div class="data-col" data-percentile="p50">
-                    <span class="data-key">p50 MEDIAN</span>
+                    <span class="data-key">p50 Median</span>
                     <span class="data-val">1.70s</span>
                     <span class="data-delta">(-13.30s SLA)</span>
                   </div>
                   <div class="data-col" data-percentile="p95">
-                    <span class="data-key">p95 PERCENTILE</span>
+                    <span class="data-key">p95 Percentile</span>
                     <span class="data-val">4.13s</span>
                     <span class="data-delta">(-10.87s SLA)</span>
                   </div>
                   <div class="data-col" data-percentile="p99">
-                    <span class="data-key">p99 PERCENTILE</span>
+                    <span class="data-key">p99 Percentile</span>
                     <span class="data-val">4.80s</span>
                     <span class="data-delta">(-10.20s SLA)</span>
                   </div>
                   <div class="data-col" data-percentile="pmax">
-                    <span class="data-key">MAX MEASURED</span>
-                    <span class="data-val status-green">5.38s (PASS)</span>
+                    <span class="data-key">Max Measured</span>
+                    <span class="data-val status-green">5.38s (Pass)</span>
                     <span class="data-delta">(-9.62s SLA)</span>
                   </div>
                 </div>
@@ -1027,7 +1114,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
             <div class="benchmarks-specs-panel">
               <div class="panel-header">
                 <div>
-                  <span class="panel-kicker">ARCHITECTURE &amp; SCALE SPECIFICATIONS</span>
                   <h3 class="panel-title">End-to-End Platform Stack</h3>
                 </div>
               </div>
@@ -1077,7 +1163,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
     <!-- Chapter 6: Explore the System -->
     <section id="explore" class="section">
       <div class="container">
-        <span class="section-eyebrow">INTERACTIVE DIRECT LAKE SUITE</span>
         <h2 class="section-title">Explore the System</h2>
         <p class="section-lead">
           Explore the live Microsoft Fabric operational dashboards, Power BI Direct Lake reports, and interactive telemetry intelligence built for this platform.
@@ -1087,7 +1172,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
         <div class="dashboard-theater-wrapper">
           <div class="theater-header-row">
             <div class="theater-title-wrap">
-              <span class="section-eyebrow">Live Intelligence Showcase</span>
               <h3 class="theater-title">Interactive Dashboard Walkthrough</h3>
               <p class="theater-subtitle">
                 Switch views to inspect the proof-of-concept Direct Lake and Real-Time KQL screens. Hover or tap the <span class="hotspot-highlight-text">interactive hotspots</span> to reveal underlying architecture and BI design decisions.
@@ -1139,7 +1223,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
                 <span id="theater-url-display">https://app.fabric.microsoft.com/groups/smart-farming/reports/executive-operations</span>
               </div>
               <div class="browser-status-strip">
-                <span class="browser-status-badge" id="theater-mode-badge">● DIRECT LAKE (VERTIPAQ)</span>
+                <span class="browser-status-badge" id="theater-mode-badge">Direct Lake (VertiPaq)</span>
                 <button class="theater-expand-btn" id="theater-expand-lightbox" title="Expand Fullscreen Lightbox">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="15 3 21 3 21 9"></polyline>
@@ -1173,7 +1257,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
         <!-- 2. Highlight Advanced UI Components -->
         <div class="component-spotlight-section">
           <div class="spotlight-section-header">
-            <span class="section-eyebrow">BI Architecture Breakdown</span>
             <h3 class="spotlight-title">Deconstructing the Dashboard Architecture</h3>
             <p class="spotlight-lead">
               Enterprise BI design is about cognitive hierarchy—structuring data so executives gain situational awareness in seconds while allowing operators to slice to root causes.
@@ -1185,7 +1268,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
             <div class="spotlight-card">
               <div class="spotlight-card-top">
                 <span class="spotlight-num">01</span>
-                <span class="spotlight-kicker">EXECUTIVE COGNITION</span>
+                <span class="spotlight-kicker">Executive Cognition</span>
               </div>
               <h4 class="spotlight-card-title">Single-Row Executive KPI Tracking</h4>
               <p class="spotlight-card-desc">
@@ -1195,26 +1278,26 @@ spark.read.format("delta").table("bronze_dead_letter") \
               <div class="spotlight-preview-frame">
                 <div class="kpi-mini-strip">
                   <div class="kpi-mini-card">
-                    <span class="kpi-mini-lbl">BENGUET HEALTH</span>
+                    <span class="kpi-mini-lbl">Benguet Health</span>
                     <span class="kpi-mini-val val-green">92.94%</span>
                   </div>
                   <div class="kpi-mini-card">
-                    <span class="kpi-mini-lbl">TAGAYTAY HEALTH</span>
+                    <span class="kpi-mini-lbl">Tagaytay Health</span>
                     <span class="kpi-mini-val val-green">93.08%</span>
                   </div>
                   <div class="kpi-mini-card">
-                    <span class="kpi-mini-lbl">CLARK HEALTH</span>
+                    <span class="kpi-mini-lbl">Clark Health</span>
                     <span class="kpi-mini-val val-green">93.13%</span>
                   </div>
                   <div class="kpi-mini-card">
-                    <span class="kpi-mini-lbl">INGRESS SLA</span>
+                    <span class="kpi-mini-lbl">Ingress SLA</span>
                     <span class="kpi-mini-val val-orange">1.70s (p50)</span>
                   </div>
                 </div>
               </div>
               
               <div class="spotlight-engineering-footer">
-                <span class="footer-tag">ENGINEERING BACKING:</span>
+                <span class="footer-tag">Engineering Backing:</span>
                 <span>Pre-aggregated via continuous KQL materialized views and Kimball Gold fact tables to guarantee sub-second initial canvas load.</span>
               </div>
             </div>
@@ -1223,7 +1306,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
             <div class="spotlight-card">
               <div class="spotlight-card-top">
                 <span class="spotlight-num">02</span>
-                <span class="spotlight-kicker">DATA DISCOVERY</span>
+                <span class="spotlight-kicker">Data Discovery</span>
               </div>
               <h4 class="spotlight-card-title">User-Centric Native Filter Sidebars</h4>
               <p class="spotlight-card-desc">
@@ -1252,7 +1335,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
               </div>
 
               <div class="spotlight-engineering-footer">
-                <span class="footer-tag">ENGINEERING BACKING:</span>
+                <span class="footer-tag">Engineering Backing:</span>
                 <span>Powered by conformed dimensions (dim_facility, dim_zone, dim_crop) ensuring star-schema join pruning without Cartesian explosions.</span>
               </div>
             </div>
@@ -1262,13 +1345,12 @@ spark.read.format("delta").table("bronze_dead_letter") \
         <!-- 3. Interactive Before & After Telemetry Transformation Slider -->
         <div class="before-after-section">
           <div class="before-after-header">
-            <span class="section-eyebrow">Pipeline Transformation Impact</span>
             <h3 class="before-after-title">From Raw Telemetry to Direct Lake Intelligence</h3>
             <p class="before-after-lead">
               Drag the interactive vertical divider below to compare raw, malformed sensor packets arriving at the Eventstream against the final, polished Direct Lake visual intelligence.
             </p>
             <div class="slider-preset-toolbar">
-              <span class="preset-toolbar-label">INTERACTION PRESETS:</span>
+              <span class="preset-toolbar-label">Interaction Presets:</span>
               <div class="preset-btn-group">
                 <button class="slider-preset-btn active" data-split="50">50 / 50 Dual Split</button>
                 <button class="slider-preset-btn" data-split="15">Focus Dashboard (85%)</button>
@@ -1282,8 +1364,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
             <div class="slider-after-layer">
               <img src="assets/dashboards/kql_dashboard_business_operations.png" alt="Polished Fabric Dashboard Visualization" class="slider-img">
               <div class="slider-label-pill label-after">
-                <span class="pill-dot dot-green"></span>
-                <span>AFTER: Polished Fabric Intelligence</span>
+                <span>After: Polished Fabric Intelligence</span>
               </div>
             </div>
 
@@ -1294,7 +1375,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
                   <span class="raw-dot dot-red"></span>
                   <span class="raw-dot dot-yellow"></span>
                   <span class="raw-dot dot-green"></span>
-                  <span class="raw-title">RAW_EVENTSTREAM_INGRESS_STREAM // MALFORMED &amp; JITTER</span>
+                  <span class="raw-title">Eventstream Ingress · Malformed &amp; Jitter</span>
                 </div>
                 <pre class="raw-json-stream"><code>{
   "timestamp": "2026-09-25T00:14:02.184Z",
@@ -1322,43 +1403,41 @@ spark.read.format("delta").table("bronze_dead_letter") \
 }</code></pre>
               </div>
               <div class="slider-label-pill label-before">
-                <span class="pill-dot dot-red"></span>
-                <span>BEFORE: Raw Unstructured Stream</span>
+                <span>Before: Raw Unstructured Stream</span>
               </div>
             </div>
 
             <!-- Draggable Handle Divider -->
             <div class="slider-divider" id="slider-divider">
               <div class="slider-handle">
-                <span class="handle-arrow">◄</span>
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 <span class="handle-line"></span>
-                <span class="handle-arrow">►</span>
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </div>
             </div>
           </div>
           <div class="slider-instruction-hint">
-            <span>◄ Drag the divider left or right to inspect the transformation ►</span>
+            <span>Drag the divider left or right to inspect the transformation</span>
           </div>
         </div>
 
         <!-- Key Architecture Inspection Scenarios -->
         <div class="guided-quests-box">
           <div class="quests-header">
-            <span class="section-eyebrow">Key Architecture Inspection Scenarios</span>
             <span class="quests-sub">Key engineering scenarios to inspect across the hubs below:</span>
           </div>
           <div class="quests-grid">
             <div class="quest-card">
               <span class="quest-step">Scenario 01 • Real-Time Control Tower</span>
-              <p>In <strong>Real-Time KQL Dashboards</strong>, inspect <em>Executive Facility Operations</em> to observe live nationwide facility health scores (Benguet 92.94, Clark 93.13), power draw, and equipment wear heatmaps.</p>
+              <p>In <strong>Real-Time KQL Dashboards</strong>, inspect "Executive Facility Operations" to observe live nationwide facility health scores (Benguet 92.94, Clark 93.13), power draw, and equipment wear heatmaps.</p>
             </div>
             <div class="quest-card">
               <span class="quest-step">Scenario 02 • DataOps & Streaming Governance</span>
-              <p>In <strong>Real-Time KQL Dashboards</strong>, inspect <em>Streaming Ingress & DLQ Governance</em> to audit sub-3s ingestion lag, schema violation quarantines, and 100.0% pipeline success rates.</p>
+              <p>In <strong>Real-Time KQL Dashboards</strong>, inspect "Streaming Ingress & DLQ Governance" to audit sub-3s ingestion lag, schema violation quarantines, and 100.0% pipeline success rates.</p>
             </div>
             <div class="quest-card">
               <span class="quest-step">Scenario 03 • Real-Time Reflex Alerting</span>
-              <p>In <strong>Activator Alert Rules</strong>, inspect <em>Rule 03 (Pump Cavitation)</em> and <em>Rule 04 (Streaming Latency SLA)</em> to see how telemetry anomalies trigger automated escalations.</p>
+              <p>In <strong>Activator Alert Rules</strong>, inspect "Rule 03 (Pump Cavitation)" and "Rule 04 (Streaming Latency SLA)" to see how telemetry anomalies trigger automated escalations.</p>
             </div>
           </div>
         </div>
@@ -1656,7 +1735,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
     <!-- Chapter 7: Engineering Notes & Defensibility -->
     <section id="notes" class="section section-quiet">
       <div class="container">
-        <span class="section-eyebrow">TECHNICAL DEFENSIBILITY &amp; GOVERNANCE</span>
         <h2 class="section-title">Engineering Decisions &amp; Defensibility</h2>
         <p class="section-lead">
           Detailed technical rationale behind architectural choices, interview-defensible tradeoffs, honest platform boundaries, and production deployment contrasts.
@@ -1695,7 +1773,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
           </details>
 
           <details class="note-item">
-            <summary class="note-summary">Why Medallion Architecture (Bronze ➔ Silver ➔ Gold)?</summary>
+            <summary class="note-summary">Why Medallion Architecture (Bronze &rarr; Silver &rarr; Gold)?</summary>
             <div class="note-content">
               <p>
                 <strong>The Architectural Driver:</strong> A data platform must separate raw data fidelity from analytical curation so that upstream ingestion errors never corrupt analytical reporting and historical raw data can always be reprocessed.
@@ -1769,8 +1847,7 @@ spark.read.format("delta").table("bronze_dead_letter") \
 
         <!-- Portfolio Implementation vs. Production Deployment Note -->
         <div class="portfolio-vs-prod-note">
-          <span class="section-eyebrow">Positioning &amp; Maturity Statement</span>
-          <h3 class="portfolio-vs-prod-title">Proof-of-Concept Implementation vs. Enterprise Production</h3>
+          <h3 class="portfolio-vs-prod-title">Implementation vs. Production Architecture</h3>
           <p class="portfolio-vs-prod-body">
             This project is an independent technical proof of concept inspired by real operational observations at a local farm. It was not deployed at the farm, nor was it formally commissioned or approved by them. It demonstrates how I would approach solving fragmented operational data problems as a data engineer—contrasting the implemented architecture with what would still be required for an enterprise-grade rollout with real paying users, enterprise identity federation, production capacity sizing, and multi-team operational ownership.
           </p>
@@ -1863,7 +1940,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
         <!-- Project Limitations & Boundary of Measurements -->
         <div class="limitations-container">
           <div class="limitations-header">
-            <span class="section-eyebrow">Honest Engineering Boundaries</span>
             <h3 class="limitations-title">Project Limitations &amp; Measurement Boundaries</h3>
             <p class="limitations-lead">
               A critical mark of engineering maturity is knowing the exact boundary of what was measured versus what requires enterprise production infrastructure:
@@ -1926,13 +2002,11 @@ spark.read.format("delta").table("bronze_dead_letter") \
             <div class="author-portrait-wrap">
               <img src="assets/images/author-portrait.jpg" alt="Joseph Baguio - Data Engineer" class="author-portrait-img">
               <div class="author-status-badge">
-                <span class="status-dot"></span>
                 <span>Open for Engineering Roles</span>
               </div>
             </div>
 
             <div class="author-details">
-              <span class="section-eyebrow">Project Author &amp; Builder</span>
               <h2 class="author-name">Joseph Baguio</h2>
               <div class="author-title-sub">Data Engineer • Microsoft Fabric, Streaming &amp; Lakehouse Systems</div>
 
@@ -2001,33 +2075,33 @@ spark.read.format("delta").table("bronze_dead_letter") \
               </div>
             </div>
 
-                        <div class="credentials-specs-grid">
+            <div class="credentials-specs-grid">
               <div class="credential-item">
-                <span class="credential-issuer">MICROSOFT</span>
+                <span class="credential-issuer">Microsoft</span>
                 <span class="credential-name">Fabric &amp; AI Skills Fest 2026</span>
               </div>
               <div class="credential-item">
-                <span class="credential-issuer">MICROSOFT</span>
+                <span class="credential-issuer">Microsoft</span>
                 <span class="credential-name">Certified Associate &amp; Fundamentals</span>
               </div>
               <div class="credential-item">
-                <span class="credential-issuer">DATABRICKS</span>
+                <span class="credential-issuer">Databricks</span>
                 <span class="credential-name">Certified Data Engineer Associate</span>
               </div>
               <div class="credential-item">
-                <span class="credential-issuer">SNOWFLAKE</span>
+                <span class="credential-issuer">Snowflake</span>
                 <span class="credential-name">Hands On Essentials (Warehouse, Lake, Apps)</span>
               </div>
               <div class="credential-item">
-                <span class="credential-issuer">DBT LABS</span>
+                <span class="credential-issuer">dbt Labs</span>
                 <span class="credential-name">dbt Learn Fundamentals</span>
               </div>
               <div class="credential-item">
-                <span class="credential-issuer">GOOGLE</span>
+                <span class="credential-issuer">Google</span>
                 <span class="credential-name">Data Analytics Professional Certificate</span>
               </div>
               <div class="credential-item">
-                <span class="credential-issuer">DATACAMP</span>
+                <span class="credential-issuer">DataCamp</span>
                 <span class="credential-name">Certified Data Engineer &amp; Python Associate</span>
               </div>
             </div>
@@ -2085,7 +2159,6 @@ spark.read.format("delta").table("bronze_dead_letter") \
     </div>
   </div>
 
-  <!-- Swiper.js Library for 3D Coverflow & Carousels -->
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
