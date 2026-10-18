@@ -8,8 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
 </head>
 <body>
@@ -56,10 +55,7 @@
       
       <div class="container-wide hero-content-wrapper">
         <div class="hero-content">
-          <div class="hero-badge-pill">
-            <span class="badge-dot"></span>
-            <span>Independent Engineering Case Study • Microsoft Fabric Proof of Concept</span>
-          </div>
+          <div class="hero-eyebrow">Independent Engineering Case Study • Microsoft Fabric Proof of Concept</div>
 
           <h1 class="hero-title">
             Some portfolio projects start with a dataset.<br>
@@ -103,7 +99,7 @@
                     <!-- Recruiter & Engineering Summary -->
           <div class="recruiter-summary-card">
             <div class="recruiter-summary-eyebrow">
-              <span class="recruiter-pulse-dot"></span>
+              
               <span>Project Summary &amp; Scope</span>
             </div>
             <p class="recruiter-summary-text">
@@ -237,7 +233,7 @@
     <!-- Chapter 1: The Origin -->
     <section id="origin" class="section">
       <div class="container">
-        <span class="chapter-badge">FIELD ORIGIN // BENGUET, PHILIPPINES</span>
+        <span class="section-eyebrow">FIELD ORIGIN // BENGUET, PHILIPPINES</span>
         <h2 class="section-title">Why I Built This</h2>
         
         <div class="origin-grid">
@@ -287,7 +283,7 @@
         <!-- The Learning-to-Building Progression Journey -->
         <div class="learning-journey-box">
           <div class="learning-journey-header">
-            <span class="journey-badge">Engineering Progression</span>
+            <span class="section-eyebrow">Engineering Progression</span>
             <h3 class="journey-title">The Learning-to-Building Journey</h3>
             <p class="journey-sub">
               &ldquo;I saw a real operational data problem in a farming environment. The organization was not ready to modernize it, so I built a separate proof of concept to explore how I would solve that problem as a data engineer.&rdquo;
@@ -357,164 +353,163 @@
     <!-- Chapter 2: The Problem -->
     <section id="problem" class="section section-quiet">
       <div class="container">
-        <span class="chapter-badge">OPERATIONAL REALITY &amp; DATA SILOS</span>
+        <span class="section-eyebrow">OPERATIONAL REALITY &amp; DATA SILOS</span>
         <h2 class="section-title">The Physical Problem</h2>
         <p class="section-lead">
           In farming environments, biological health depends on continuous environmental stability. During my exposure to the local farm, I observed how physical variables—microclimate drift, nutrient balance, and equipment wear—were tracked across manual records and isolated systems. In this proof of concept, those challenges are modeled into four core operational failure scenarios:
         </p>
 
-        <!-- 3D Coverflow Slider for the 4 Physical Challenges -->
-        <div class="problem-coverflow-wrapper">
-          <div class="swiper problem-swiper">
-            <div class="swiper-wrapper">
+                <!-- Four Physical Failure Modes Matrix (Anti-Slop Clean Engineering Layout) -->
+        <div class="failure-matrix" role="region" aria-label="Four Physical Failure Modes Modeled in the Platform">
 
-              <!-- Slide 1: Microclimate Drift -->
-              <div class="swiper-slide challenge-slide challenge-thermal">
-                <div class="challenge-card">
-                  <div class="challenge-header">
-                    <span class="challenge-num">01</span>
-                    <span class="challenge-badge badge-red">Thermal & VPD Drift</span>
-                  </div>
-                  <h3 class="challenge-title">Microclimate Drift</h3>
-                  <p class="challenge-desc">
-                    Air temperature, relative humidity, CO2 levels, and Photosynthetically Active Radiation (PAR) fluctuate dynamically across 80 growing zones.
-                  </p>
-                  
-                  <div class="challenge-visual visual-thermal">
-                    <div class="telemetry-pill-group">
-                      <div class="telemetry-pill warn">
-                        <span class="pill-label">ZONE-003 TEMP</span>
-                        <span class="pill-val">34.8°C <span class="pill-tag">SPIKE</span></span>
-                      </div>
-                      <div class="telemetry-pill">
-                        <span class="pill-label">REL HUMIDITY</span>
-                        <span class="pill-val">78.4%</span>
-                      </div>
-                      <div class="telemetry-pill">
-                        <span class="pill-label">VPD INDEX</span>
-                        <span class="pill-val">1.84 kPa</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="challenge-impact">
-                    <strong>Impact on Crops:</strong> Stomatal closure, rapid biological stress, and tip burn on high-value leafy greens.
-                  </div>
-                </div>
+          <!-- Card 1: Microclimate Drift -->
+          <article class="failure-card">
+            <div class="failure-card-head">
+              <span class="failure-idx">01</span>
+              <span class="failure-category">Microclimate Drift</span>
+            </div>
+            <h3 class="failure-title">Atmospheric &amp; Thermal Runaway</h3>
+            <p class="failure-desc">
+              Canopy temperature, relative humidity, CO2 levels, and Photosynthetically Active Radiation (PAR) fluctuate rapidly across 80 growing zones.
+            </p>
+            
+            <div class="failure-telemetry">
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">ZONE-003 AMBIENT</span>
+                <span class="telemetry-data alert">34.8°C <span class="telemetry-flag">SPIKE</span></span>
               </div>
-
-              <!-- Slide 2: Nutrient & Irrigation Imbalances -->
-              <div class="swiper-slide challenge-slide challenge-nutrient">
-                <div class="challenge-card">
-                  <div class="challenge-header">
-                    <span class="challenge-num">02</span>
-                    <span class="challenge-badge badge-green">Osmotic & pH Lockout</span>
-                  </div>
-                  <h3 class="challenge-title">Nutrient & Irrigation Imbalances</h3>
-                  <p class="challenge-desc">
-                    Electrical conductivity (EC) and pH levels in hydroponic reservoirs must remain strictly balanced to avoid root burn or nutrient lockout.
-                  </p>
-                  
-                  <div class="challenge-visual visual-nutrient">
-                    <div class="telemetry-pill-group">
-                      <div class="telemetry-pill critical">
-                        <span class="pill-label">RESERVOIR pH</span>
-                        <span class="pill-val">5.48 <span class="pill-tag">LOCKOUT</span></span>
-                      </div>
-                      <div class="telemetry-pill">
-                        <span class="pill-label">ELECTRICAL COND</span>
-                        <span class="pill-val">2.65 mS/cm</span>
-                      </div>
-                      <div class="telemetry-pill ok">
-                        <span class="pill-label">DOSING VALVE</span>
-                        <span class="pill-val">Active Auto</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="challenge-impact">
-                    <strong>Impact on Crops:</strong> Irreversible nutrient blockage within 6 hours, leading to severe crop stunt and 40%+ harvest loss.
-                  </div>
-                </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">RELATIVE HUMIDITY</span>
+                <span class="telemetry-data">78.4%</span>
               </div>
-
-              <!-- Slide 3: Mechanical Equipment Degradation -->
-              <div class="swiper-slide challenge-slide challenge-equipment">
-                <div class="challenge-card">
-                  <div class="challenge-header">
-                    <span class="challenge-num">03</span>
-                    <span class="challenge-badge badge-orange">Bearing Wear & Cavitation</span>
-                  </div>
-                  <h3 class="challenge-title">Mechanical Equipment Degradation</h3>
-                  <p class="challenge-desc">
-                    Submersible dosing pumps, chillers, and HVAC blowers experience thermal stress and mechanical vibration before outright physical failure.
-                  </p>
-
-                  <div class="challenge-visual visual-equipment">
-                    <div class="telemetry-pill-group">
-                      <div class="telemetry-pill warn">
-                        <span class="pill-label">PUMP VIBRATION</span>
-                        <span class="pill-val">7.8 mm/s <span class="pill-tag">CAVITATION</span></span>
-                      </div>
-                      <div class="telemetry-pill">
-                        <span class="pill-label">MOTOR RUNTIME</span>
-                        <span class="pill-val">4,120 hrs</span>
-                      </div>
-                      <div class="telemetry-pill warn">
-                        <span class="pill-label">MTBF WEAR</span>
-                        <span class="pill-val">84.2%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="challenge-impact">
-                    <strong>Impact on Operations:</strong> Unplanned irrigation pump shutdown, dry root channels, and costly emergency maintenance dispatch.
-                  </div>
-                </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">VPD CANOPY INDEX</span>
+                <span class="telemetry-data">1.84 kPa</span>
               </div>
-
-              <!-- Slide 4: Data Quality & Sensor Anomalies -->
-              <div class="swiper-slide challenge-slide challenge-sensor">
-                <div class="challenge-card">
-                  <div class="challenge-header">
-                    <span class="challenge-num">04</span>
-                    <span class="challenge-badge badge-purple">Schema Drift & Noise</span>
-                  </div>
-                  <h3 class="challenge-title">Data Quality & Sensor Anomalies</h3>
-                  <p class="challenge-desc">
-                    Physical IoT hardware occasionally drops packets, emits null timestamps, or generates out-of-bounds electrical noise that must be quarantined.
-                  </p>
-
-                  <div class="challenge-visual visual-sensor">
-                    <div class="telemetry-pill-group">
-                      <div class="telemetry-pill critical">
-                        <span class="pill-label">INGRESS STATUS</span>
-                        <span class="pill-val">MALFORMED <span class="pill-tag">DLQ SINK</span></span>
-                      </div>
-                      <div class="telemetry-pill">
-                        <span class="pill-label">CLOCK SKEW</span>
-                        <span class="pill-val">+420.0s</span>
-                      </div>
-                      <div class="telemetry-pill ok">
-                        <span class="pill-label">AUTO-REPAIR</span>
-                        <span class="pill-val">Worker 01 OK</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="challenge-impact">
-                    <strong>Impact on Downstream:</strong> Corrupted Gold lakehouse aggregations and distorted Direct Lake reporting if not quarantined.
-                  </div>
-                </div>
-              </div>
-
             </div>
 
-            <!-- Swiper Controls -->
-            <div class="swiper-pagination problem-pagination"></div>
-            <div class="swiper-button-prev problem-nav-prev" aria-label="Previous Challenge">‹</div>
-            <div class="swiper-button-next problem-nav-next" aria-label="Next Challenge">›</div>
-          </div>
+            <div class="failure-consequence">
+              <div class="consequence-label">Biological Consequence</div>
+              <div class="consequence-text">Rapid stomatal closure, impaired transpiration, and irreversible tip burn on high-value greens within 90 minutes.</div>
+            </div>
+
+            <div class="failure-mitigation">
+              <span class="mitigation-label">Fabric Defense:</span>
+              <span>Eventstream ➔ Eventhouse KQL DB ➔ Activator Rule 01 automated greenhouse ventilation trigger (&lt; 5s SLA).</span>
+            </div>
+          </article>
+
+          <!-- Card 2: Nutrient & Irrigation Imbalances -->
+          <article class="failure-card">
+            <div class="failure-card-head">
+              <span class="failure-idx">02</span>
+              <span class="failure-category">Nutrient Imbalance</span>
+            </div>
+            <h3 class="failure-title">Osmotic &amp; pH Lockout</h3>
+            <p class="failure-desc">
+              Hydroponic reservoir electrical conductivity (EC) and pH levels drift as crops consume ionic nutrients, risking chemical lockout.
+            </p>
+            
+            <div class="failure-telemetry">
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">RESERVOIR pH</span>
+                <span class="telemetry-data critical">5.48 <span class="telemetry-flag">LOCKOUT</span></span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">ELECTRICAL COND</span>
+                <span class="telemetry-data">2.65 mS/cm</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">DOSING STATUS</span>
+                <span class="telemetry-data">Active Auto</span>
+              </div>
+            </div>
+
+            <div class="failure-consequence">
+              <div class="consequence-label">Biological Consequence</div>
+              <div class="consequence-text">Roots cannot absorb micronutrients (iron/calcium) when pH drops below 5.5, risking severe crop stunt and 40%+ harvest loss.</div>
+            </div>
+
+            <div class="failure-mitigation">
+              <span class="mitigation-label">Fabric Defense:</span>
+              <span>Continuous KQL update policy computes moving pH averages; Activator Rule 02 alerts facility dosing controller.</span>
+            </div>
+          </article>
+
+          <!-- Card 3: Mechanical Equipment Degradation -->
+          <article class="failure-card">
+            <div class="failure-card-head">
+              <span class="failure-idx">03</span>
+              <span class="failure-category">Mechanical Degradation</span>
+            </div>
+            <h3 class="failure-title">Pump Cavitation &amp; Bearing Wear</h3>
+            <p class="failure-desc">
+              Submersible dosing pumps and HVAC circulation blowers experience thermal stress and vibration spikes before physical seizure.
+            </p>
+            
+            <div class="failure-telemetry">
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">PUMP VIBRATION</span>
+                <span class="telemetry-data warn">7.82 mm/s <span class="telemetry-flag">CAVITATION</span></span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">MOTOR RUNTIME</span>
+                <span class="telemetry-data">4,120 hrs</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">MTBF WEAR INDEX</span>
+                <span class="telemetry-data">84.2%</span>
+              </div>
+            </div>
+
+            <div class="failure-consequence">
+              <div class="consequence-label">Operational Consequence</div>
+              <div class="consequence-text">Pump seizure cuts nutrient flow to vertical tiers, causing dry roots within 4 hours and costly emergency technician dispatch.</div>
+            </div>
+
+            <div class="failure-mitigation">
+              <span class="mitigation-label">Fabric Defense:</span>
+              <span>Telemetry partitioned to <code>fact_equipment_health_daily</code>; Activator Rule 03 escalates maintenance work orders.</span>
+            </div>
+          </article>
+
+          <!-- Card 4: Sensor & Ingress Anomalies -->
+          <article class="failure-card">
+            <div class="failure-card-head">
+              <span class="failure-idx">04</span>
+              <span class="failure-category">Data Quality Anomaly</span>
+            </div>
+            <h3 class="failure-title">Telemetry Corruption &amp; Clock Skew</h3>
+            <p class="failure-desc">
+              Edge IoT hardware drops packets, emits null identifiers, or generates electrical noise spikes that threaten downstream analytics.
+            </p>
+            
+            <div class="failure-telemetry">
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">INGRESS STATUS</span>
+                <span class="telemetry-data critical">MALFORMED <span class="telemetry-flag">DLQ SINK</span></span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">CLOCK SKEW</span>
+                <span class="telemetry-data">+420.0s</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-sensor">REPAIR WORKER</span>
+                <span class="telemetry-data">Worker 02 OK</span>
+              </div>
+            </div>
+
+            <div class="failure-consequence">
+              <div class="consequence-label">Downstream Consequence</div>
+              <div class="consequence-text">Corrupts Gold Kimball fact joins and distorts Direct Lake reports if bad records are allowed into Silver Delta tables.</div>
+            </div>
+
+            <div class="failure-mitigation">
+              <span class="mitigation-label">Fabric Defense:</span>
+              <span>Schema filter routes malformed events to <code>Dest_DeadLetterTelemetry</code>; 5-worker notebook achieves 66.1% self-healing.</span>
+            </div>
+          </article>
+
         </div>
 
         <!-- Problem Context & Engineering Question Row -->
@@ -542,7 +537,7 @@
     <!-- Chapter 3: The Build -->
     <section id="build" class="section">
       <div class="container">
-        <span class="chapter-badge">SYNTHETIC TELEMETRY &amp; EDGE SIMULATOR</span>
+        <span class="section-eyebrow">SYNTHETIC TELEMETRY &amp; EDGE SIMULATOR</span>
         <h2 class="section-title">The Synthetic Data Simulator</h2>
         <p class="section-lead">
           Because the real farm's systems were not modernized and could not be used for a public platform, I wrote a modular Python telemetry generator. It simulates 8 vertical farming facilities with 10 distinct growing zones each (80 monitored microclimates), generating the realistic data volumes needed to test a modern architecture.
@@ -615,9 +610,8 @@
 
     <!-- Chapter 4: The Data Platform -->
     <section id="platform" class="section section-quiet">
-      <div class="container-wide">
-        <div class="container">
-          <span class="chapter-badge">MEDALLION ARCHITECTURE &amp; STREAMING ENGINES</span>
+      <div class="container">
+          <span class="section-eyebrow">MEDALLION ARCHITECTURE &amp; STREAMING ENGINES</span>
           <h2 class="section-title">The Microsoft Fabric Platform</h2>
           <p class="section-lead">
             The platform combines real-time stream processing and historical batch warehousing into a unified OneLake architecture. Below is the full end-to-end solution blueprint.
@@ -811,201 +805,177 @@
             </div>
           </div>
         </div>
-      </div>
     </section>
 
     <!-- Chapter 5: The Results (Bento Box Grid) -->
     <section id="results" class="metrics-section">
       <div class="container">
         <div class="metrics-header">
-          <span class="chapter-badge">VERIFIED BENCHMARKS &amp; FINOPS</span>
+          <span class="section-eyebrow">VERIFIED BENCHMARKS &amp; FINOPS</span>
           <h2 class="section-title">Project at a Glance</h2>
           <p class="section-lead">
             Every metric below represents verified measurements from automated test suites, simulated facility configurations, and documented capacity models in the repository.
           </p>
         </div>
 
-        <!-- Asymmetrical Bento Box Grid -->
-        <div class="bento-results-grid">
+                <!-- Platform Benchmarks & Architectural Specifications (Anti-Slop Technical Layout) -->
+        <div class="benchmarks-overview">
 
-          <!-- Bento 1: Wide Feature Block - Streaming Ingestion Sparkline -->
-          <div class="bento-card bento-sparkline-hero">
-            <div>
-              <div class="bento-eyebrow">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                </svg>
-                <span>Real-Time Ingestion Velocity &amp; Latency</span>
+          <!-- 4 Core Technical Indicators -->
+          <div class="benchmarks-metrics-strip">
+            
+            <div class="benchmark-metric-card">
+              <div class="metric-eyebrow">Ingestion Latency (p50)</div>
+              <div class="metric-value-wrap">
+                <span class="metric-num" data-counter="1.70" data-suffix="s" data-decimals="2">1.70s</span>
+                <span class="metric-badge-sub">Target &lt; 15.0s</span>
               </div>
-              <div class="bento-val-huge" data-counter="1.70" data-suffix="s (p50)" data-decimals="2">1.70s</div>
-              <div class="bento-card-title">Streaming Ingestion vs &lt; 15.0s SLA Target</div>
-              <p class="bento-card-desc">
-                High-throughput telemetry ingestion into Fabric Eventstream and Eventhouse KQL DB with sub-second analytical materialized views.
-              </p>
+              <div class="metric-label">Observed max 5.38s into Fabric Eventstream &amp; KQL DB</div>
             </div>
 
-            <!-- Interactive Sparkline SVG Graph -->
-            <div class="sparkline-container">
-              <svg class="sparkline-svg" viewBox="0 0 400 80">
-                <defs>
-                  <linearGradient id="sparklineGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#E27324" stop-opacity="0.35"/>
-                    <stop offset="100%" stop-color="#E27324" stop-opacity="0.0"/>
-                  </linearGradient>
-                </defs>
-                <path d="M 0,65 L 40,58 L 80,62 L 120,45 L 160,52 L 200,30 L 240,42 L 280,25 L 320,38 L 360,20 L 400,32 L 400,80 L 0,80 Z" fill="url(#sparklineGrad)"/>
-                <path d="M 0,65 L 40,58 L 80,62 L 120,45 L 160,52 L 200,30 L 240,42 L 280,25 L 320,38 L 360,20 L 400,32" fill="none" stroke="#E27324" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="200" cy="30" r="4" fill="#FEFAE0" stroke="#E27324" stroke-width="2"/>
-                <circle cx="280" cy="25" r="4" fill="#FEFAE0" stroke="#E27324" stroke-width="2"/>
-                <circle cx="360" cy="20" r="5" fill="#22C55E" stroke="#FEFAE0" stroke-width="2"/>
-              </svg>
-              <div class="sparkline-stats-row">
-                <span>p50: <strong>1.70s</strong></span>
-                <span>p95: <strong>4.13s</strong></span>
-                <span>p99: <strong>4.80s</strong></span>
-                <span>Max: <strong>5.38s</strong> (PASS)</span>
+            <div class="benchmark-metric-card">
+              <div class="metric-eyebrow">Automated Test Suite</div>
+              <div class="metric-value-wrap">
+                <span class="metric-num" data-counter="53" data-suffix=" / 53">53 / 53</span>
+                <span class="metric-badge-sub status-green">100% Pass</span>
               </div>
+              <div class="metric-label">Continuous testing across 12 Fabric milestones in 0.34s</div>
             </div>
+
+            <div class="benchmark-metric-card">
+              <div class="metric-eyebrow">Modeled Storage Reduction</div>
+              <div class="metric-value-wrap">
+                <span class="metric-num" data-counter="62" data-suffix="%">62%</span>
+                <span class="metric-badge-sub">FinOps Tiering</span>
+              </div>
+              <div class="metric-label">7-day Hot NVMe KQL Cache vs 30-day Delta Parquet Cold Tier</div>
+            </div>
+
+            <div class="benchmark-metric-card">
+              <div class="metric-eyebrow">Self-Healing DLQ Rate</div>
+              <div class="metric-value-wrap">
+                <span class="metric-num" data-counter="66.1" data-suffix="%" data-decimals="1">66.1%</span>
+                <span class="metric-badge-sub">Auto-Remediated</span>
+              </div>
+              <div class="metric-label">5-Worker automated notebook repairing schema drift &amp; null keys</div>
+            </div>
+
           </div>
 
-          <!-- Bento 2: 100% Automated Test Suite Verification Shield -->
-          <div class="bento-card bento-tests-card">
-            <div>
-              <div class="bento-eyebrow" style="color: #10B981;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-                <span>Automated Test Coverage</span>
-              </div>
-              <div class="tests-shield-badge">
-                <div class="shield-icon-wrapper">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
+          <!-- Technical Breakdown: Latency Instrument + Architectural Specification Table -->
+          <div class="benchmarks-detail-grid">
+
+            <!-- Panel A: Ingestion Latency Distribution -->
+            <div class="benchmarks-instrument-panel">
+              <div class="panel-header">
                 <div>
-                  <div class="bento-val-large" data-counter="53" data-suffix=" / 53">53 / 53</div>
-                  <div style="color: #10B981; font-weight: 700; font-family: var(--font-mono); font-size: 0.85rem;">100% GREEN</div>
+                  <span class="panel-kicker">STREAMING INGRESS TELEMETRY</span>
+                  <h3 class="panel-title">Latency Distribution vs SLA Threshold</h3>
                 </div>
+                <span class="instrument-live-tag">
+                  <span class="live-dot"></span>
+                  <span>VERIFIED LOG</span>
+                </span>
               </div>
-            </div>
-            <p class="bento-card-desc">
-              Full unit and integration test suite executing across all 12 platform milestones in ~0.34s via GitHub Actions.
-            </p>
-          </div>
 
-          <!-- Bento 3: Tall Column - Core Unified Tech Stack -->
-          <div class="bento-card bento-stack-tall">
-            <div>
-              <div class="bento-eyebrow">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                  <polyline points="2 17 12 22 22 17"></polyline>
-                  <polyline points="2 12 12 17 22 12"></polyline>
+              <p class="panel-desc">
+                High-frequency synthetic IoT telemetry ingested via Custom App endpoint into Microsoft Fabric Eventstream, continuously streaming to Eventhouse KQL Database.
+              </p>
+
+              <!-- Precision Instrument Graph -->
+              <div class="instrument-chart-wrapper">
+                <svg class="instrument-svg" viewBox="0 0 460 110" aria-label="Ingestion latency percentiles curve">
+                  <defs>
+                    <linearGradient id="instGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#E27324" stop-opacity="0.28"/>
+                      <stop offset="100%" stop-color="#E27324" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Baseline Reference Lines -->
+                  <line x1="0" y1="20" x2="460" y2="20" stroke="rgba(255, 255, 255, 0.08)" stroke-dasharray="3,3" />
+                  <text x="455" y="15" fill="rgba(254, 250, 224, 0.45)" font-size="10" font-family="var(--font-mono)" text-anchor="end">15s SLA THRESHOLD</text>
+
+                  <line x1="0" y1="75" x2="460" y2="75" stroke="rgba(255, 255, 255, 0.05)" />
+                  <line x1="0" y1="45" x2="460" y2="45" stroke="rgba(255, 255, 255, 0.05)" />
+
+                  <!-- Shaded Area Under Curve -->
+                  <path d="M 0,92 L 45,86 L 90,89 L 140,78 L 190,82 L 240,68 L 290,74 L 340,62 L 390,70 L 430,58 L 460,65 L 460,110 L 0,110 Z" fill="url(#instGrad)"/>
+                  
+                  <!-- Clean Precision Line -->
+                  <path d="M 0,92 L 45,86 L 90,89 L 140,78 L 190,82 L 240,68 L 290,74 L 340,62 L 390,70 L 430,58 L 460,65" fill="none" stroke="#E27324" stroke-width="2" stroke-linecap="round"/>
+                  
+                  <!-- Calibration Points -->
+                  <circle cx="240" cy="68" r="3.5" fill="#FEFAE0" stroke="#E27324" stroke-width="1.5"/>
+                  <circle cx="340" cy="62" r="3.5" fill="#FEFAE0" stroke="#E27324" stroke-width="1.5"/>
+                  <circle cx="430" cy="58" r="4.5" fill="#10B981" stroke="#FEFAE0" stroke-width="1.5"/>
                 </svg>
-                <span>Core Unified Tech Stack</span>
-              </div>
-              <div class="bento-card-title">Platform &amp; DataOps Tooling</div>
-              
-              <div class="bento-stack-list">
-                <div class="bento-stack-item">
-                  <span class="stack-item-icon">
-                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                  </span>
-                  <div>
-                    <div class="stack-item-name">Microsoft Fabric</div>
-                    <div class="stack-item-sub">Eventstream • KQL • OneLake • Direct Lake</div>
-                  </div>
-                </div>
-                <div class="bento-stack-item">
-                  <span class="stack-item-icon">
-                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-                  </span>
-                  <div>
-                    <div class="stack-item-name">Python 3.12 Engine</div>
-                    <div class="stack-item-sub">Async Event Dispatcher • Math Models</div>
-                  </div>
-                </div>
-                <div class="bento-stack-item">
-                  <span class="stack-item-icon">
-                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                  </span>
-                  <div>
-                    <div class="stack-item-name">Delta Lake &amp; Spark</div>
-                    <div class="stack-item-sub">Medallion Cleansing • SHA-256 Masking</div>
-                  </div>
-                </div>
-                <div class="bento-stack-item">
-                  <span class="stack-item-icon">
-                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                  </span>
-                  <div>
-                    <div class="stack-item-name">Kimball Star Schema</div>
-                    <div class="stack-item-sub">6 Dimensions • 8 Fact Tables • SQL DDL</div>
-                  </div>
-                </div>
-                <div class="bento-stack-item">
-                  <span class="stack-item-icon">
-                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                  </span>
-                  <div>
-                    <div class="stack-item-name">Power BI Direct Lake</div>
-                    <div class="stack-item-sub">TMDL Modeling • Sub-Second Queries</div>
-                  </div>
-                </div>
-                <div class="bento-stack-item">
-                  <span class="stack-item-icon">
-                    <svg class="stack-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><line x1="2" y1="12" x2="22" y2="12"></line></svg>
-                  </span>
-                  <div>
-                    <div class="stack-item-name">OpenTelemetry &amp; CI/CD</div>
-                    <div class="stack-item-sub">Span Logging • GitHub Actions CI</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Bento 4: FinOps Storage Lifecycle Optimization -->
-          <div class="bento-card bento-finops-card">
-            <div>
-              <div class="bento-eyebrow">
-                <span>FinOps Storage Tiering</span>
+                <div class="instrument-data-table">
+                  <div class="data-col">
+                    <span class="data-key">p50 MEDIAN</span>
+                    <span class="data-val">1.70s</span>
+                  </div>
+                  <div class="data-col">
+                    <span class="data-key">p95 PERCENTILE</span>
+                    <span class="data-val">4.13s</span>
+                  </div>
+                  <div class="data-col">
+                    <span class="data-key">p99 PERCENTILE</span>
+                    <span class="data-val">4.80s</span>
+                  </div>
+                  <div class="data-col">
+                    <span class="data-key">MAX MEASURED</span>
+                    <span class="data-val status-green">5.38s (PASS)</span>
+                  </div>
+                </div>
               </div>
-              <div class="bento-val-large" data-counter="62" data-suffix="%" style="color: var(--c-warm-amber);">62%</div>
-              <div class="bento-card-title">Storage Cost Reduction</div>
             </div>
-            <p class="bento-card-desc">
-              Achieved by tiering 7-day Hot NVMe KQL Cache with 30-day cold OneLake Parquet lifecycle with Delta V-Order.
-            </p>
-          </div>
 
-          <!-- Bento 5: Self-Healing DLQ Remediation -->
-          <div class="bento-card bento-dlq-card">
-            <div>
-              <div class="bento-eyebrow">
-                <span>Self-Healing DLQ</span>
+            <!-- Panel B: Editorial Tech Specs Table (Replacing cards-inside-cards) -->
+            <div class="benchmarks-specs-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="panel-kicker">ARCHITECTURE &amp; SCALE SPECIFICATIONS</span>
+                  <h3 class="panel-title">End-to-End Platform Stack</h3>
+                </div>
               </div>
-              <div class="bento-val-large" data-counter="66.1" data-suffix="%" data-decimals="1" style="color: #A855F7;">66.1%</div>
-              <div class="bento-card-title">Auto-Remediation Rate</div>
-            </div>
-            <p class="bento-card-desc">
-              5-Worker automated notebook repairing schema drift and null primary keys without pipeline downtime.
-            </p>
-          </div>
 
-          <!-- Bento 6: Wide Scale & Topology -->
-          <div class="bento-card bento-topology-card">
-            <div>
-              <div class="bento-eyebrow">
-                <span>Nationwide Topology</span>
+              <div class="specs-table">
+                <div class="spec-row">
+                  <span class="spec-label">Simulation Topology</span>
+                  <span class="spec-value">8 Facilities • 80 Growing Zones • 6 Streams (Benguet, Tagaytay, Clark, Davao, Iloilo, Laguna, Metro Manila)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Streaming Ingestion</span>
+                  <span class="spec-value"><strong>Microsoft Fabric Eventstream</strong> with 9 partitioned routing targets and dead-letter quarantine</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Operational KQL Store</span>
+                  <span class="spec-value"><strong>Eventhouse KQL DB</strong> with 7-day NVMe hot cache, materialized views &amp; 17-tile dashboard</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Medallion Lakehouse</span>
+                  <span class="spec-value"><strong>OneLake Delta Lake</strong> (Bronze append shortcuts, Silver cleansing/PII masking, Gold Delta V-Order)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Dimensional Warehouse</span>
+                  <span class="spec-value"><strong>Kimball Star Schema</strong> (6 conformed dimensions, 8 fact tables, Regional Row-Level Security)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Business Intelligence</span>
+                  <span class="spec-value"><strong>Power BI Direct Lake Mode</strong> (TMDL semantic model, sub-250ms cold memory queries)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Automated Remediation</span>
+                  <span class="spec-value"><strong>5-Worker DLQ Notebook</strong> (66.1% self-healing of schema drift &amp; missing keys)</span>
+                </div>
+                <div class="spec-row">
+                  <span class="spec-label">Alerting &amp; DataOps</span>
+                  <span class="spec-value"><strong>Fabric Activator (10 Reflex Rules)</strong> &amp; OpenTelemetry distributed span logging</span>
+                </div>
               </div>
-              <div class="bento-val-large">8 Facilities • 80 Zones • 6 Streams</div>
-              <div class="bento-card-title">Philippine Agricultural Simulation Scale</div>
             </div>
-            <p class="bento-card-desc">
-              Continuous multi-stream simulation modeled after high-density hydroponic facilities across Benguet, Tagaytay, Clark, Davao, Iloilo, Laguna, and Metro Manila.
-            </p>
+
           </div>
 
         </div>
@@ -1015,7 +985,7 @@
     <!-- Chapter 6: Explore the System -->
     <section id="explore" class="section">
       <div class="container">
-        <span class="chapter-badge">INTERACTIVE DIRECT LAKE SUITE</span>
+        <span class="section-eyebrow">INTERACTIVE DIRECT LAKE SUITE</span>
         <h2 class="section-title">Explore the System</h2>
         <p class="section-lead">
           Explore the live Microsoft Fabric operational dashboards, Power BI Direct Lake reports, and interactive telemetry intelligence built for this platform.
@@ -1025,10 +995,10 @@
         <div class="dashboard-theater-wrapper">
           <div class="theater-header-row">
             <div class="theater-title-wrap">
-              <span class="theater-badge">Live Intelligence Showcase</span>
+              <span class="section-eyebrow">Live Intelligence Showcase</span>
               <h3 class="theater-title">Interactive Dashboard Walkthrough</h3>
               <p class="theater-subtitle">
-                Switch views to inspect the proof-of-concept Direct Lake and Real-Time KQL screens. Hover or tap the <span class="hotspot-highlight-text"><span class="pulse-indicator"></span>pulsing hotspots</span> to reveal underlying architecture and BI design decisions.
+                Switch views to inspect the proof-of-concept Direct Lake and Real-Time KQL screens. Hover or tap the <span class="hotspot-highlight-text">interactive hotspots</span> to reveal underlying architecture and BI design decisions.
               </p>
             </div>
 
@@ -1111,7 +1081,7 @@
         <!-- 2. Highlight Advanced UI Components -->
         <div class="component-spotlight-section">
           <div class="spotlight-section-header">
-            <span class="spotlight-badge">BI Architecture Breakdown</span>
+            <span class="section-eyebrow">BI Architecture Breakdown</span>
             <h3 class="spotlight-title">Deconstructing the Dashboard Architecture</h3>
             <p class="spotlight-lead">
               Enterprise BI design is about cognitive hierarchy—structuring data so executives gain situational awareness in seconds while allowing operators to slice to root causes.
@@ -1123,7 +1093,7 @@
             <div class="spotlight-card">
               <div class="spotlight-card-top">
                 <span class="spotlight-num">01</span>
-                <span class="spotlight-card-tag">EXECUTIVE COGNITION</span>
+                <span class="spotlight-kicker">EXECUTIVE COGNITION</span>
               </div>
               <h4 class="spotlight-card-title">Single-Row Executive KPI Tracking</h4>
               <p class="spotlight-card-desc">
@@ -1161,7 +1131,7 @@
             <div class="spotlight-card">
               <div class="spotlight-card-top">
                 <span class="spotlight-num">02</span>
-                <span class="spotlight-card-tag">DATA DISCOVERY</span>
+                <span class="spotlight-kicker">DATA DISCOVERY</span>
               </div>
               <h4 class="spotlight-card-title">User-Centric Native Filter Sidebars</h4>
               <p class="spotlight-card-desc">
@@ -1200,7 +1170,7 @@
         <!-- 3. Interactive Before & After Telemetry Transformation Slider -->
         <div class="before-after-section">
           <div class="before-after-header">
-            <span class="before-after-badge">Pipeline Transformation Impact</span>
+            <span class="section-eyebrow">Pipeline Transformation Impact</span>
             <h3 class="before-after-title">From Raw Telemetry to Direct Lake Intelligence</h3>
             <p class="before-after-lead">
               Drag the interactive vertical divider below to compare raw, malformed sensor packets arriving at the Eventstream against the final, polished Direct Lake visual intelligence.
@@ -1271,23 +1241,23 @@
           </div>
         </div>
 
-        <!-- Guided Discovery Exploration Quests -->
+        <!-- Key Architecture Inspection Scenarios -->
         <div class="guided-quests-box">
           <div class="quests-header">
-            <span class="quests-badge"><svg class="inline-svg-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Guided Exploration Quests</span>
+            <span class="section-eyebrow">Key Architecture Inspection Scenarios</span>
             <span class="quests-sub">Key engineering scenarios to inspect across the hubs below:</span>
           </div>
           <div class="quests-grid">
             <div class="quest-card">
-              <span class="quest-step">Quest 01 • Operations Control Tower</span>
+              <span class="quest-step">Scenario 01 • Real-Time Control Tower</span>
               <p>In <strong>Real-Time KQL Dashboards</strong>, inspect <em>Executive Facility Operations</em> to observe live nationwide facility health scores (Benguet 92.94, Clark 93.13), power draw, and equipment wear heatmaps.</p>
             </div>
             <div class="quest-card">
-              <span class="quest-step">Quest 02 • DataOps & Streaming Governance</span>
+              <span class="quest-step">Scenario 02 • DataOps & Streaming Governance</span>
               <p>In <strong>Real-Time KQL Dashboards</strong>, inspect <em>Streaming Ingress & DLQ Governance</em> to audit sub-3s ingestion lag, schema violation quarantines, and 100.0% pipeline success rates.</p>
             </div>
             <div class="quest-card">
-              <span class="quest-step">Quest 03 • Real-Time Reflex Alerting</span>
+              <span class="quest-step">Scenario 03 • Real-Time Reflex Alerting</span>
               <p>In <strong>Activator Alert Rules</strong>, inspect <em>Rule 03 (Pump Cavitation)</em> and <em>Rule 04 (Streaming Latency SLA)</em> to see how telemetry anomalies trigger automated escalations.</p>
             </div>
           </div>
@@ -1586,7 +1556,7 @@
     <!-- Chapter 7: Engineering Notes & Defensibility -->
     <section id="notes" class="section section-quiet">
       <div class="container">
-        <span class="chapter-badge">TECHNICAL DEFENSIBILITY &amp; GOVERNANCE</span>
+        <span class="section-eyebrow">TECHNICAL DEFENSIBILITY &amp; GOVERNANCE</span>
         <h2 class="section-title">Engineering Decisions &amp; Defensibility</h2>
         <p class="section-lead">
           Detailed technical rationale behind architectural choices, interview-defensible tradeoffs, honest platform boundaries, and production deployment contrasts.
@@ -1699,7 +1669,7 @@
 
         <!-- Portfolio Implementation vs. Production Deployment Note -->
         <div class="portfolio-vs-prod-note">
-          <div class="portfolio-vs-prod-badge">Positioning &amp; Maturity Statement</div>
+          <span class="section-eyebrow">Positioning &amp; Maturity Statement</span>
           <h3 class="portfolio-vs-prod-title">Proof-of-Concept Implementation vs. Enterprise Production</h3>
           <p class="portfolio-vs-prod-body">
             This project is an independent technical proof of concept inspired by real operational observations at a local farm. It was not deployed at the farm, nor was it formally commissioned or approved by them. It demonstrates how I would approach solving fragmented operational data problems as a data engineer—contrasting the implemented architecture with what would still be required for an enterprise-grade rollout with real paying users, enterprise identity federation, production capacity sizing, and multi-team operational ownership.
@@ -1793,7 +1763,7 @@
         <!-- Project Limitations & Boundary of Measurements -->
         <div class="limitations-container">
           <div class="limitations-header">
-            <span class="limitations-badge">Honest Engineering Boundaries</span>
+            <span class="section-eyebrow">Honest Engineering Boundaries</span>
             <h3 class="limitations-title">Project Limitations &amp; Measurement Boundaries</h3>
             <p class="limitations-lead">
               A critical mark of engineering maturity is knowing the exact boundary of what was measured versus what requires enterprise production infrastructure:
@@ -1862,7 +1832,7 @@
             </div>
 
             <div class="author-details">
-              <div class="author-role-tag">Project Author &amp; Builder</div>
+              <span class="section-eyebrow">Project Author &amp; Builder</span>
               <h2 class="author-name">Joseph Baguio</h2>
               <div class="author-title-sub">Data Engineer • Microsoft Fabric, Streaming &amp; Lakehouse Systems</div>
 
@@ -1931,14 +1901,35 @@
               </div>
             </div>
 
-            <div class="badge-tags-strip">
-              <span class="badge-pill-tag"><strong>Microsoft:</strong> Fabric & AI Skills Fest 2026</span>
-              <span class="badge-pill-tag"><strong>Microsoft:</strong> Certified Associate & Fundamentals</span>
-              <span class="badge-pill-tag"><strong>Databricks:</strong> Certified Data Engineer Associate</span>
-              <span class="badge-pill-tag"><strong>Snowflake:</strong> Hands On Essentials (Warehouse, Lake, Apps)</span>
-              <span class="badge-pill-tag"><strong>dbt:</strong> dbt Learn Fundamentals</span>
-              <span class="badge-pill-tag"><strong>Google:</strong> Data Analytics Certificate</span>
-              <span class="badge-pill-tag"><strong>DataCamp:</strong> Certified Data Engineer & Python Associate</span>
+                        <div class="credentials-specs-grid">
+              <div class="credential-item">
+                <span class="credential-issuer">MICROSOFT</span>
+                <span class="credential-name">Fabric &amp; AI Skills Fest 2026</span>
+              </div>
+              <div class="credential-item">
+                <span class="credential-issuer">MICROSOFT</span>
+                <span class="credential-name">Certified Associate &amp; Fundamentals</span>
+              </div>
+              <div class="credential-item">
+                <span class="credential-issuer">DATABRICKS</span>
+                <span class="credential-name">Certified Data Engineer Associate</span>
+              </div>
+              <div class="credential-item">
+                <span class="credential-issuer">SNOWFLAKE</span>
+                <span class="credential-name">Hands On Essentials (Warehouse, Lake, Apps)</span>
+              </div>
+              <div class="credential-item">
+                <span class="credential-issuer">DBT LABS</span>
+                <span class="credential-name">dbt Learn Fundamentals</span>
+              </div>
+              <div class="credential-item">
+                <span class="credential-issuer">GOOGLE</span>
+                <span class="credential-name">Data Analytics Professional Certificate</span>
+              </div>
+              <div class="credential-item">
+                <span class="credential-issuer">DATACAMP</span>
+                <span class="credential-name">Certified Data Engineer &amp; Python Associate</span>
+              </div>
             </div>
           </div>
 
@@ -1995,7 +1986,6 @@
   </div>
 
   <!-- Swiper.js Library for 3D Coverflow & Carousels -->
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollSpy();
   initMobileNav();
   initCounters();
-  initProblemSwiper();
+  // Swiper replaced with accessible failure matrix
   initScrolltellingPipeline();
   initDashboardWalkthrough();
   initBeforeAfterSlider();
