@@ -23,6 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrolltellingPipeline();
   initDashboardWalkthrough();
   initBeforeAfterSlider();
+  initLiveTelemetryTicker();
+  initKqlDrawers();
+  initSliderPresets();
+  initLatencyInstrumentHover();
+  initHeroFilterPills();
 });
 
 /**
@@ -922,4 +927,194 @@ function initBeforeAfterSlider() {
   window.addEventListener('pointercancel', handlePointerUp);
 
   applyPercentage(50, false);
+}
+
+/**
+ * Live Simulated Edge Telemetry HUD Controller
+ * Demonstrates real-time streaming velocity and IoT microclimate stability
+ */
+function initLiveTelemetryTicker() {
+  const clockEl = document.getElementById('hud-clock');
+  const tempEl = document.getElementById('hud-temp');
+  const humEl = document.getElementById('hud-humidity');
+  const vpdEl = document.getElementById('hud-vpd');
+  const phEl = document.getElementById('hud-ph');
+  const ecEl = document.getElementById('hud-ec');
+  const rateEl = document.getElementById('hud-rate');
+
+  if (!clockEl || !tempEl) return;
+
+  function updateClock() {
+    const now = new Date();
+    clockEl.textContent = now.toTimeString().split(' ')[0] + ' UTC';
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Periodic realistic sensor jitter
+  setInterval(() => {
+    // Temp: 19.2 to 19.6
+    const temp = (19.4 + (Math.random() * 0.4 - 0.2)).toFixed(1);
+    tempEl.innerHTML = `${temp}<span class="hud-metric-unit">°C</span>`;
+
+    // Humidity: 85.8 to 86.6
+    const hum = (86.2 + (Math.random() * 0.8 - 0.4)).toFixed(1);
+    humEl.innerHTML = `${hum}<span class="hud-metric-unit">%</span>`;
+
+    // VPD: 1.10 to 1.14
+    const vpd = (1.12 + (Math.random() * 0.04 - 0.02)).toFixed(2);
+    vpdEl.innerHTML = `${vpd}<span class="hud-metric-unit">kPa</span>`;
+
+    // pH: 6.22 to 6.26
+    const ph = (6.24 + (Math.random() * 0.04 - 0.02)).toFixed(2);
+    phEl.innerHTML = `${ph}<span class="hud-metric-unit">pH</span>`;
+
+    // EC: 1.82 to 1.86
+    const ec = (1.84 + (Math.random() * 0.04 - 0.02)).toFixed(2);
+    ecEl.innerHTML = `${ec}<span class="hud-metric-unit">mS/cm</span>`;
+
+    // Rate: 1,220 to 1,260
+    const rate = Math.floor(1240 + (Math.random() * 40 - 20));
+    rateEl.innerHTML = `${rate.toLocaleString()}<span class="hud-metric-unit">ev/s</span>`;
+  }, 3500);
+}
+
+/**
+ * KQL Detection Query Accordions in Failure Matrix
+ */
+function initKqlDrawers() {
+  const btns = document.querySelectorAll('.kql-drawer-btn');
+  btns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = btn.getAttribute('data-target-kql');
+      const drawer = document.getElementById(targetId);
+      if (!drawer) return;
+
+      const isOpen = drawer.classList.contains('is-open');
+      if (isOpen) {
+        drawer.classList.remove('is-open');
+        btn.classList.remove('is-active');
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        drawer.classList.add('is-open');
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+}
+
+/**
+ * Interactive Before & After Slider Preset Toolbar
+ */
+function initSliderPresets() {
+  const presetBtns = document.querySelectorAll('.slider-preset-btn');
+  const divider = document.querySelector('.slider-divider');
+  const container = document.getElementById('before-after-widget');
+  const beforeLayer = document.getElementById('slider-before-layer');
+  if (!presetBtns.length || !divider || !beforeLayer || !container) return;
+
+  presetBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      presetBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const split = parseFloat(btn.getAttribute('data-split'));
+      // Smoothly animate divider to target split using spring
+      const startSplit = parseFloat(divider.style.left) || 50;
+      const targetSplit = split;
+      const startTime = performance.now();
+      const duration = 400; // ms
+
+      function step(t) {
+        const progress = Math.min(1, (t - startTime) / duration);
+        // Custom Apple-style ease-out spring
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const current = startSplit + (targetSplit - startSplit) * ease;
+
+        divider.style.left = `${current}%`;
+        beforeLayer.style.clipPath = `polygon(0 0, ${current}% 0, ${current}% 100%, 0 100%)`;
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  });
+}
+
+/**
+ * Latency Instrument Interactive Tooltip & Point Inspection
+ */
+function initLatencyInstrumentHover() {
+  const cols = document.querySelectorAll('.instrument-data-table .data-col');
+  const pts = {
+    'p50': document.getElementById('pt-p50'),
+    'p95': document.getElementById('pt-p95'),
+    'pmax': document.getElementById('pt-pmax')
+  };
+
+  cols.forEach(col => {
+    const key = col.getAttribute('data-percentile');
+    const pt = pts[key];
+
+    col.addEventListener('mouseenter', () => {
+      cols.forEach(c => c.classList.remove('is-active'));
+      col.classList.add('is-active');
+      if (pt) pt.classList.add('highlighted');
+    });
+
+    col.addEventListener('mouseleave', () => {
+      col.classList.remove('is-active');
+      if (pt) pt.classList.remove('highlighted');
+    });
+  });
+
+  Object.entries(pts).forEach(([key, pt]) => {
+    if (!pt) return;
+    pt.addEventListener('mouseenter', () => {
+      const col = document.querySelector(`.instrument-data-table .data-col[data-percentile="${key}"]`);
+      if (col) col.classList.add('is-active');
+      pt.classList.add('highlighted');
+    });
+    pt.addEventListener('mouseleave', () => {
+      const col = document.querySelector(`.instrument-data-table .data-col[data-percentile="${key}"]`);
+      if (col) col.classList.remove('is-active');
+      pt.classList.remove('highlighted');
+    });
+  });
+}
+
+/**
+ * Hero Architecture Filter Pills Interactive Quick-Jump
+ */
+function initHeroFilterPills() {
+  const pills = document.querySelectorAll('.hero-filter-pills .filter-pill');
+  const railNodes = document.querySelectorAll('.pipeline-nav-node');
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      pills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+
+      const targetLayer = pill.getAttribute('data-target-layer');
+      const targetBlock = document.querySelector(`.layer-block[data-layer-idx="${targetLayer}"]`);
+      const targetNode = document.querySelector(`.pipeline-nav-node[data-target-layer="${targetLayer}"]`);
+
+      if (targetBlock) {
+        targetBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Pulse layer border to confirm destination
+        targetBlock.classList.add('active-layer');
+      }
+
+      if (targetNode && railNodes.length) {
+        railNodes.forEach(n => n.classList.remove('active'));
+        targetNode.classList.add('active');
+      }
+    });
+  });
 }

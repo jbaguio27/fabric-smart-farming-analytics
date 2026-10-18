@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=6">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
 </head>
 <body>
@@ -66,13 +66,13 @@
             An end-to-end data platform proof of concept inspired by real operational farming challenges—demonstrating how fragmented IoT telemetry, manual records, and equipment data can be modernized using Microsoft Fabric, real-time ingestion, medallion lakehouse architecture, Kimball dimensional modeling, Power BI Direct Lake analytics, automated alerting, and platform observability.
           </p>
 
-          <!-- Architecture Category Filter Pills (Functional Quick Jumps) -->
+          <!-- Architecture Category Filter Pills (Functional Quick Jumps with Interactive Routing) -->
           <div class="hero-filter-pills" role="navigation" aria-label="Architecture Quick Jumps">
-            <a href="#platform" class="filter-pill active">Streaming (KQL)</a>
-            <a href="#platform" class="filter-pill">Lakehouse (Delta Parquet)</a>
-            <a href="#platform" class="filter-pill">Warehouse (Kimball)</a>
-            <a href="#explore" class="filter-pill">Direct Lake (Power BI)</a>
-            <a href="#explore" class="filter-pill">Activator (10 Reflex Rules)</a>
+            <button class="filter-pill active" data-target-layer="1">Streaming (KQL)</button>
+            <button class="filter-pill" data-target-layer="2">Lakehouse (Delta Parquet)</button>
+            <button class="filter-pill" data-target-layer="3">Warehouse (Kimball)</button>
+            <button class="filter-pill" data-target-layer="4">Direct Lake (Power BI)</button>
+            <button class="filter-pill" data-target-layer="5">Activator (10 Reflex Rules)</button>
           </div>
 
           <div class="hero-actions">
@@ -99,12 +99,49 @@
                     <!-- Recruiter & Engineering Summary -->
           <div class="recruiter-summary-card">
             <div class="recruiter-summary-eyebrow">
-              
+              <span class="summary-dot"></span>
               <span>Project Summary &amp; Scope</span>
             </div>
             <p class="recruiter-summary-text">
               <strong>End-to-end real-time data engineering proof of concept</strong> demonstrating streaming ingestion, medallion lakehouse architecture, Kimball dimensional modeling, automated data-quality remediation, security and governance, observability, and Power BI Direct Lake analytics using Microsoft Fabric and synthetic telemetry.
             </p>
+          </div>
+
+          <!-- Live Telemetry HUD: Real-Time Edge Ingress Monitor -->
+          <div class="live-telemetry-hud" role="region" aria-label="Live Telemetry Ingress Stream">
+            <div class="hud-topbar">
+              <div class="hud-status-badge">
+                <span class="hud-status-dot"></span>
+                <span class="hud-status-text">LIVE EDGE STREAM // BENGUET HIGHLANDS STATION 01</span>
+              </div>
+              <span class="hud-timestamp" id="hud-clock">02:52:00 UTC</span>
+            </div>
+            <div class="hud-grid">
+              <div class="hud-item">
+                <span class="hud-metric-name">CANOPY TEMP</span>
+                <span class="hud-metric-val" id="hud-temp">19.4<span class="hud-metric-unit">°C</span></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-metric-name">REL HUMIDITY</span>
+                <span class="hud-metric-val" id="hud-humidity">86.2<span class="hud-metric-unit">%</span></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-metric-name">VPD DEFICIT</span>
+                <span class="hud-metric-val" id="hud-vpd">1.12<span class="hud-metric-unit">kPa</span></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-metric-name">RESERVOIR pH</span>
+                <span class="hud-metric-val" id="hud-ph">6.24<span class="hud-metric-unit">pH</span></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-metric-name">ELECTRICAL COND</span>
+                <span class="hud-metric-val" id="hud-ec">1.84<span class="hud-metric-unit">mS/cm</span></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-metric-name">STREAMING VELOCITY</span>
+                <span class="hud-metric-val status-accent" id="hud-rate">1,240<span class="hud-metric-unit">ev/s</span></span>
+              </div>
+            </div>
           </div>
 
           <!-- Micro-Visual Pipeline Ribbon with Icons -->
@@ -396,6 +433,20 @@
             <div class="failure-mitigation">
               <span class="mitigation-label">Fabric Defense:</span>
               <span>Eventstream ➔ Eventhouse KQL DB ➔ Activator Rule 01 automated greenhouse ventilation trigger (&lt; 5s SLA).</span>
+              <button class="kql-drawer-btn" aria-expanded="false" data-target-kql="kql-rule-01">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <span>Inspect KQL Detection Query</span>
+              </button>
+              <div class="kql-drawer-content" id="kql-rule-01">
+                <pre><code><span class="syn-comm">// Activator Rule 01: Thermal Runaway & VPD Desiccation</span>
+BenguetTelemetry
+| where Timestamp &gt; ago(5m)
+| where Temperature_C &gt; 30.0 and RelativeHumidity_Pct &lt; 60.0
+| extend VPD_kPa = round(calculate_vpd(Temperature_C, RelativeHumidity_Pct), 2)
+| where VPD_kPa &gt; 1.60
+| project Timestamp, FacilityId, ZoneId, Temperature_C, RelativeHumidity_Pct, VPD_kPa
+| extend AlertSeverity = "CRITICAL_ACTION_REQUIRED"</code></pre>
+              </div>
             </div>
           </article>
 
@@ -433,6 +484,18 @@
             <div class="failure-mitigation">
               <span class="mitigation-label">Fabric Defense:</span>
               <span>Continuous KQL update policy computes moving pH averages; Activator Rule 02 alerts facility dosing controller.</span>
+              <button class="kql-drawer-btn" aria-expanded="false" data-target-kql="kql-rule-02">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <span>Inspect KQL Detection Query</span>
+              </button>
+              <div class="kql-drawer-content" id="kql-rule-02">
+                <pre><code><span class="syn-comm">// Activator Rule 02: Dosing Controller Lockout Alert</span>
+ReservoirTelemetry
+| where Timestamp &gt; ago(10m)
+| summarize MovingAvg_pH = round(avg(Reservoir_pH), 2), MovingAvg_EC = round(avg(ElectricalConductivity_mS), 2) by StationId
+| where MovingAvg_pH &lt; 5.50 or MovingAvg_EC &gt; 2.80
+| extend Remediation = iff(MovingAvg_pH &lt; 5.50, "TRIGGER_ALKALINE_BUFFER", "TRIGGER_RO_DILUTION")</code></pre>
+              </div>
             </div>
           </article>
 
@@ -470,6 +533,19 @@
             <div class="failure-mitigation">
               <span class="mitigation-label">Fabric Defense:</span>
               <span>Telemetry partitioned to <code>fact_equipment_health_daily</code>; Activator Rule 03 escalates maintenance work orders.</span>
+              <button class="kql-drawer-btn" aria-expanded="false" data-target-kql="kql-rule-03">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <span>Inspect KQL Detection Query</span>
+              </button>
+              <div class="kql-drawer-content" id="kql-rule-03">
+                <pre><code><span class="syn-comm">// Activator Rule 03: Mechanical Equipment Degradation</span>
+EquipmentHealth
+| where Timestamp &gt; ago(15m)
+| where Vibration_mm_s &gt; 7.0 or BearingTemp_C &gt; 75.0
+| project Timestamp, FacilityId, PumpId, Vibration_mm_s, BearingTemp_C, MTBF_Hours
+| extend AnomalyType = "BEARING_CAVITATION"
+| extend Escalation = "DISPATCH_FIELD_TECHNICIAN"</code></pre>
+              </div>
             </div>
           </article>
 
@@ -507,6 +583,18 @@
             <div class="failure-mitigation">
               <span class="mitigation-label">Fabric Defense:</span>
               <span>Schema filter routes malformed events to <code>Dest_DeadLetterTelemetry</code>; 5-worker notebook achieves 66.1% self-healing.</span>
+              <button class="kql-drawer-btn" aria-expanded="false" data-target-kql="kql-rule-04">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <span>Inspect Remediation Logic</span>
+              </button>
+              <div class="kql-drawer-content" id="kql-rule-04">
+                <pre><code><span class="syn-comm">// 5-Worker Automated Dead-Letter Queue Remediation Engine</span>
+spark.read.format("delta").table("bronze_dead_letter") \
+    .filter("status = 'UNRESOLVED'") \
+    .withColumn("remediated_zone_id", when(col("zone_id").isNull(), lookup_zone_udf(col("payload.sensor_mac"))).otherwise(col("zone_id"))) \
+    .withColumn("remediation_flag", lit("AUTO_REPAIRED_WORKER_02")) \
+    .write.format("delta").mode("append").saveAsTable("silver_telemetry_clean")</code></pre>
+              </div>
             </div>
           </article>
 
@@ -904,28 +992,32 @@
                   <!-- Clean Precision Line -->
                   <path d="M 0,92 L 45,86 L 90,89 L 140,78 L 190,82 L 240,68 L 290,74 L 340,62 L 390,70 L 430,58 L 460,65" fill="none" stroke="#E27324" stroke-width="2" stroke-linecap="round"/>
                   
-                  <!-- Calibration Points -->
-                  <circle cx="240" cy="68" r="3.5" fill="#FEFAE0" stroke="#E27324" stroke-width="1.5"/>
-                  <circle cx="340" cy="62" r="3.5" fill="#FEFAE0" stroke="#E27324" stroke-width="1.5"/>
-                  <circle cx="430" cy="58" r="4.5" fill="#10B981" stroke="#FEFAE0" stroke-width="1.5"/>
+                  <!-- Calibration Points with Data Anchors -->
+                  <circle id="pt-p50" cx="240" cy="68" r="4" fill="#FEFAE0" stroke="#E27324" stroke-width="2" class="inst-point" data-label="p50 Median: 1.70s"/>
+                  <circle id="pt-p95" cx="340" cy="62" r="4" fill="#FEFAE0" stroke="#E27324" stroke-width="2" class="inst-point" data-label="p95 Percentile: 4.13s"/>
+                  <circle id="pt-pmax" cx="430" cy="58" r="5" fill="#22C55E" stroke="#FEFAE0" stroke-width="2" class="inst-point" data-label="Max Observed: 5.38s"/>
                 </svg>
 
                 <div class="instrument-data-table">
-                  <div class="data-col">
+                  <div class="data-col" data-percentile="p50">
                     <span class="data-key">p50 MEDIAN</span>
                     <span class="data-val">1.70s</span>
+                    <span class="data-delta">(-13.30s SLA)</span>
                   </div>
-                  <div class="data-col">
+                  <div class="data-col" data-percentile="p95">
                     <span class="data-key">p95 PERCENTILE</span>
                     <span class="data-val">4.13s</span>
+                    <span class="data-delta">(-10.87s SLA)</span>
                   </div>
-                  <div class="data-col">
+                  <div class="data-col" data-percentile="p99">
                     <span class="data-key">p99 PERCENTILE</span>
                     <span class="data-val">4.80s</span>
+                    <span class="data-delta">(-10.20s SLA)</span>
                   </div>
-                  <div class="data-col">
+                  <div class="data-col" data-percentile="pmax">
                     <span class="data-key">MAX MEASURED</span>
                     <span class="data-val status-green">5.38s (PASS)</span>
+                    <span class="data-delta">(-9.62s SLA)</span>
                   </div>
                 </div>
               </div>
@@ -1175,6 +1267,14 @@
             <p class="before-after-lead">
               Drag the interactive vertical divider below to compare raw, malformed sensor packets arriving at the Eventstream against the final, polished Direct Lake visual intelligence.
             </p>
+            <div class="slider-preset-toolbar">
+              <span class="preset-toolbar-label">INTERACTION PRESETS:</span>
+              <div class="preset-btn-group">
+                <button class="slider-preset-btn active" data-split="50">50 / 50 Dual Split</button>
+                <button class="slider-preset-btn" data-split="15">Focus Dashboard (85%)</button>
+                <button class="slider-preset-btn" data-split="85">Inspect Raw Stream (85%)</button>
+              </div>
+            </div>
           </div>
 
           <div class="interactive-slider-container" id="before-after-widget">
@@ -1986,6 +2086,6 @@
   </div>
 
   <!-- Swiper.js Library for 3D Coverflow & Carousels -->
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
