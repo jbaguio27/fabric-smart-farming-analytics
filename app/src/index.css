@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* ==============================================================================
+   HydroGrow: Microsoft Fabric Smart Farming Platform
+   Design System: Apple Fluid Design System meets High-Tech AgTech Intelligence
+   Integrated with ui-ux-pro-max & apple-design skills
+   ============================================================================== */
+
+:root {
+  /* Apple System & Modern Technical Typography Stack */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", "Geist", system-ui, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", "JetBrains Mono", Menlo, Monaco, Consolas, ui-monospace, monospace;
+
+  /* Coordinated Palette Tokens */
+  --c-sage:           #606C38; /* Sage Green */
+  --c-dark-olive:     #283618; /* Dark Olive */
+  --c-cream:          #FEFAE0; /* Cream */
+  --c-amber:          #DDA15E; /* Earth Amber */
+  --c-rust:           #BC6C25; /* Rust Brown */
+
+  /* Surface & Background Depths */
+  --bg-base:          #0A0F08; /* Deepest carbon-obsidian with dark olive undertone */
+  --bg-surface:       #12190E; /* Dark Olive primary surface */
+  --bg-surface-elev:  #1B2515; /* Elevated Dark Olive card surface */
+  --bg-surface-glass: rgba(18, 25, 14, 0.85);
+  --bg-chassis:       #0F150B;
+
+  /* Functional Component Mapping */
+  --c-moss:           #606C38; /* Sage Green botanical accent */
+  --c-moss-dark:      #424B27;
+  --c-moss-soft:      rgba(96, 108, 56, 0.18);
+  --c-warm-amber:     #DDA15E; /* Earth Amber telemetry accent */
+  --c-amber-soft:     rgba(221, 161, 94, 0.16);
+  --c-orange:         #BC6C25; /* Rust Brown: High-impact Microsoft Fabric accent */
+  --c-orange-hover:   #CF7B30;
+  --c-orange-soft:    rgba(188, 108, 37, 0.16);
+  --c-destructive:    #EF4444; /* Critical telemetry anomaly redline */
+  --c-destructive-soft: rgba(239, 68, 68, 0.16);
+  --c-success:        #606C38; /* Sage Green for healthy pipeline stream */
+  --c-success-soft:   rgba(96, 108, 56, 0.18);
+
+  /* High-Contrast Typographic Colors (Cream #FEFAE0) */
+  --text-primary:     #FEFAE0; /* Cream for effortless, non-fatiguing readability */
+  --text-secondary:   rgba(254, 250, 224, 0.85);
+  --text-muted:       rgba(254, 250, 224, 0.65);
+  --text-faint:       rgba(254, 250, 224, 0.42);
+
+  /* Translucent Micro-Borders & Highlights */
+  --border-subtle:    rgba(96, 108, 56, 0.22); /* Sage Green micro-border */
+  --border-glass:     rgba(254, 250, 224, 0.12); /* Cream glass border */
+  --border-accent:    rgba(188, 108, 37, 0.45); /* Rust Brown accent border */
+  --border-active:    #BC6C25; /* Rust Brown active border */
+  --rim-highlight:    rgba(254, 250, 224, 0.16);
+
+  /* Radii */
+  --radius-xs:        4px;
+  --radius-sm:        8px;
+  --radius-md:        12px;
+  --radius-lg:        18px;
+  --radius-xl:        24px;
+  --radius-pill:      9999px;
+
+  /* Apple Fluid Spring Physics */
+  --ease-spring:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out:         cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-press:       cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Layered so Tailwind utilities (p-*, m-*, gap) can override it. */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* Tabular figures for telemetry & metrics */
+.tabular-nums {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-family: var(--font-mono);
+}
+
+/* Apple Instant Tactile Feedback on pointer-down */
+button, .btn, [role="tab"], .filter-pill, .gallery-card {
+  transition: transform 120ms var(--ease-press), background-color 150ms ease, border-color 150ms ease;
+}
+
+button:active, .btn:active, .filter-pill:active {
+  transform: scale(0.97);
+}
+
+/* Clear, accessible keyboard focus rings */
+:focus-visible {
+  outline: 2px solid var(--c-orange);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* Apple Design: Reduced Motion & Accessibility (gentle non-vestibular transition, not total breakage) */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *:not([class*="ish-"]):not([class*="hero-stream"]) {
+    animation-iteration-count: 1 !important;
+  }
+}

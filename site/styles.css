@@ -24,28 +24,28 @@
   --duration-modal:    260ms;
 
   /* Core Natural Farming & Developer Palette */
-  --c-moss-green:    #687941; /* Moss Green Accent / Subtle Badges */
-  --c-forest-dark:   #283618; /* Deep Forest Green Surface */
-  --c-cream-light:   #FEFAE0; /* High-Legibility Typography / Headings / Icons */
-  --c-warm-amber:    #DDA15E; /* Warm Sandy Amber / Eyebrows / Accents */
-  --c-earth-bronze:  #BC6C25; /* Earth Terracotta Base */
+  --c-moss-green:    #606C38; /* Sage Green / Subtle Badges */
+  --c-forest-dark:   #283618; /* Dark Olive Surface */
+  --c-cream-light:   #FEFAE0; /* Cream / High-Legibility Typography / Headings / Icons */
+  --c-warm-amber:    #DDA15E; /* Earth Amber / Eyebrows / Accents */
+  --c-earth-bronze:  #BC6C25; /* Rust Brown Base */
   
-  /* Sharp Vibrant Developer Orange Accent */
-  --c-orange-accent: #E27324; /* Primary High-Impact CTA / Active Focus */
-  --c-orange-hover:  #F48232; /* Hover State */
-  --c-orange-glow:   rgba(226, 115, 36, 0.12); /* Subdued focus halo */
+  /* High-Impact Fabric Accent */
+  --c-orange-accent: #BC6C25; /* Rust Brown: Primary High-Impact CTA / Active Focus */
+  --c-orange-hover:  #CF7B30; /* Hover State */
+  --c-orange-glow:   rgba(188, 108, 37, 0.16); /* Subdued focus halo */
 
-  /* Deep Black Developer Surfaces */
-  --bg-base:         #0A0D08; /* Deep Velvety Black Background */
-  --bg-surface:      #11160C; /* Primary Dark Surface */
-  --bg-surface-alt:  #161E10; /* Secondary Surface */
-  --bg-surface-elev: #1C2615; /* Elevated Surface / Code Container */
-  --bg-photo-frame:  #141C10; /* Photo Frame */
+  /* Deep Developer Surfaces (Dark Olive + Obsidian Depth) */
+  --bg-base:         #0A0F08; /* Deep Obsidian-Olive Canvas */
+  --bg-surface:      #12190E; /* Dark Olive Primary Surface */
+  --bg-surface-alt:  #162012; /* Dark Olive Secondary Surface */
+  --bg-surface-elev: #1B2515; /* Elevated Surface / Code Container */
+  --bg-photo-frame:  #141C0F; /* Photo Frame */
 
   /* Border & Line Tokens */
-  --border-subtle:   rgba(104, 121, 65, 0.22);
-  --border-accent:   rgba(226, 115, 36, 0.35);
-  --border-active:   #E27324;
+  --border-subtle:   rgba(96, 108, 56, 0.22);
+  --border-accent:   rgba(188, 108, 37, 0.35);
+  --border-active:   #BC6C25;
 
   /* Ambient Multi-Layer Shadows (Tinted with Moss-Obsidian Base) */
   --shadow-sm:       0 2px 8px -2px rgba(10, 13, 8, 0.7), 0 0 0 1px var(--border-subtle);
@@ -1390,6 +1390,15 @@ img {
   color: var(--text-muted);
   margin-bottom: 0;
   line-height: 1.6;
+}
+
+.nda-callout-expanded {
+  background: rgba(12, 18, 10, 0.92);
+  border: 1px solid rgba(221, 161, 94, 0.3);
+  border-left: 4px solid var(--c-warm-amber);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem 2.75rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 }
 
 /* ==============================================================================
